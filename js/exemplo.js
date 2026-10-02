@@ -11,10 +11,10 @@ import { criarSettings } from './settings.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
-export const CONSTRUTORA = { nome: 'Construtora Exemplo', sigla: 'CE', cnpj: '00.000.000/0001-00' };
+export const CONSTRUTORA = { nome: 'Construtora Exemplo', sigla: 'CE', ein: '00-0000000' };
 export const PESSOAS = {
   campo: { nome: 'Carlos Mendes', papel: 'Mestre de obras' },
-  escritorio: { nome: 'Ana Ribeiro', papel: 'Engenheira responsável · CREA 000000/SP' },
+  escritorio: { nome: 'Ana Ribeiro', papel: 'Engenheira responsável · PE, NH nº 00000' },
 };
 
 /* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
@@ -29,18 +29,18 @@ export const CONTAS_DEMO = ['u-carlos', 'u-ana'];
 const OBRAS = [
   {
     id: 'jardim', nome: 'Residencial Jardim das Flores', cliente: 'Incorporadora Horizonte',
-    endereco: 'Rua das Hortênsias, 300 · Jardim Botânico', cidade: 'Campinas/SP',
-    lat: -22.8458, lon: -47.0559, etapa: 'Alvenaria do 3º pavimento', inicio: -120, prazo: 240,
+    endereco: '1450 Elm St · North End', cidade: 'Manchester, NH 03104',
+    lat: 43.0040, lon: -71.4635, etapa: 'Alvenaria do 3º pavimento', inicio: -120, prazo: 240,
   },
   {
     id: 'atlantico', nome: 'Edifício Atlântico', cliente: 'Condomínio Atlântico',
-    endereco: 'Av. Bartolomeu de Gusmão, 120 · Embaré', cidade: 'Santos/SP',
-    lat: -23.9741, lon: -46.3166, etapa: 'Estrutura do 7º pavimento', inicio: -200, prazo: 400,
+    endereco: '120 Market St · Downtown', cidade: 'Portsmouth, NH 03801',
+    lat: 43.0757, lon: -70.7568, etapa: 'Estrutura do 7º pavimento', inicio: -200, prazo: 400,
   },
   {
     id: 'galpao', nome: 'Galpão Logístico Rodovia', cliente: 'LogSul Armazéns',
-    endereco: 'Rod. Anhanguera, km 58 · Distrito Industrial', cidade: 'Jundiaí/SP',
-    lat: -23.1567, lon: -46.9452, etapa: 'Piso industrial', inicio: -60, prazo: 150,
+    endereco: '45 Northeastern Blvd · Industrial Park', cidade: 'Nashua, NH 03062',
+    lat: 42.7268, lon: -71.4402, etapa: 'Piso industrial', inicio: -60, prazo: 150,
   },
 ];
 
@@ -141,7 +141,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 7;
+export const VERSAO_DADOS = 8;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();

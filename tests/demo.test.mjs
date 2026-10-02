@@ -18,7 +18,7 @@ function verificar(cond, texto) {
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const context = await browser.newContext({
   viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
-  geolocation: { latitude: -22.84571, longitude: -47.05612, accuracy: 8 }, permissions: ['geolocation'],
+  geolocation: { latitude: 43.00411, longitude: -71.46353, accuracy: 8 }, permissions: ['geolocation'],
 });
 const page = await context.newPage();
 // Horário fixo (quarta-feira, 16h30): os alertas do prazo do RDO dependem do dia e da hora.

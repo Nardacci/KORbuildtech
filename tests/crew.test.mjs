@@ -16,7 +16,7 @@ function verificar(cond, texto) {
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const context = await browser.newContext({
   viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, acceptDownloads: true,
-  geolocation: { latitude: -22.84571, longitude: -47.05612, accuracy: 8 }, permissions: ['geolocation'],
+  geolocation: { latitude: 43.00411, longitude: -71.46353, accuracy: 8 }, permissions: ['geolocation'],
 });
 const page = await context.newPage();
 await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
@@ -35,7 +35,7 @@ await context.route('https://router.project-osrm.org/**', (r) => {
   coords.push(pts[pts.length - 1]);
   r.fulfill({ json: { code: 'Ok', routes: [{ distance: 41800, duration: 2460, geometry: { type: 'LineString', coordinates: coords } }] } });
 });
-await context.route('https://nominatim.openstreetmap.org/**', (r) => r.fulfill({ json: { address: { road: 'Rua Teste', house_number: '100', suburb: 'Jardim Botânico', city: 'Campinas' } } }));
+await context.route('https://nominatim.openstreetmap.org/**', (r) => r.fulfill({ json: { address: { road: 'Test St', house_number: '100', suburb: 'North End', city: 'Manchester' } } }));
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/crew-' + nome + '.png', fullPage: true }); };
 const como = async (id, hash) => { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), id); await page.goto(BASE + hash); };
 const estadoDe = (nome) => page.locator('.lista-equipe li', { hasText: nome }).locator('.estado-ponto').textContent();
@@ -225,7 +225,7 @@ verificar(await kpiNum('Total da semana') === antesAnterior, 'semana anterior ma
 await page.goto(BASE + '#/crew/dia/f-lucas/2026-09-29');
 await page.waitForSelector('.percurso');
 verificar(await page.locator('.percurso .parada').count() === 2, 'percurso: duas obras na ordem da visita');
-verificar((await page.textContent('.percurso')).includes('Rod. Anhanguera, km 58'), 'percurso: endereço da obra');
+verificar((await page.textContent('.percurso')).includes('45 Northeastern Blvd'), 'percurso: endereço da obra');
 await page.waitForFunction(() => /pelas ruas/.test(document.querySelector('.perna-deslocamento .perna-dist').textContent));
 verificar((await page.textContent('.perna-deslocamento')).includes('41,8 km pelas ruas'), 'percurso: deslocamento pelas ruas com a distância');
 verificar(await page.locator('#mapa-dia .pino-parada').count() === 2, 'mapa: pinos numerados das obras');
@@ -252,7 +252,7 @@ await page.click('[data-acao="crew-reproduzir"]');
 verificar((await page.textContent('[data-acao="crew-reproduzir"]')).includes('Reproduzir'), 'reprodução pausa');
 await print('8c-percurso');
 await page.goto(BASE + '#/crew/dia/f-marcos/2026-10-06');
-await page.waitForFunction(() => /perto de Rua Teste/.test((document.querySelector('.parada-fora') || {}).textContent || ''));
+await page.waitForFunction(() => /perto de 100 Test St/.test((document.querySelector('.parada-fora') || {}).textContent || ''));
 verificar(true, 'percurso: endereço aproximado de onde a entrada fora da obra foi batida');
 await page.goto(BASE + '#/crew/dia/f-diego/2026-09-29');
 await page.waitForSelector('#mapa-dia.com-ruas .leaflet-interactive');

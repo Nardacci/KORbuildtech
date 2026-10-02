@@ -274,7 +274,7 @@ export function telaConta(u) {
     conteudo:
       '<div class="conta-grade">' +
         '<section class="cartao"><h2 class="cartao-titulo">Empresa</h2>' +
-          '<div class="empresa-id"><span class="rel-logo">' + esc(d.empresa.sigla) + '</span><div><b>' + esc(d.empresa.nome) + '</b><span class="mudo">CNPJ ' + esc(d.empresa.cnpj) + '</span></div></div>' +
+          '<div class="empresa-id"><span class="rel-logo">' + esc(d.empresa.sigla) + '</span><div><b>' + esc(d.empresa.nome) + '</b><span class="mudo">EIN ' + esc(d.empresa.ein) + '</span></div></div>' +
           '<p class="mudo pequeno">O logotipo e o nome aparecem nos relatórios em PDF e no link do cliente.</p>' +
           '<div class="linha-info"><span>Cliente desde</span><b>' + dataCurta(d.empresa.desde) + '</b></div>' +
           '<div class="linha-info"><span>Identificador da conta</span><b class="codigo">' + esc(d.empresa.id) + '</b></div>' +

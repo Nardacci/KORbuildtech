@@ -46,7 +46,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
   const empresa = estado().empresa;
   return '<article class="relatorio">' +
     '<header class="rel-topo">' +
-      '<div class="rel-marca"><span class="rel-logo">' + esc(empresa.sigla) + '</span><div><b>' + esc(empresa.nome) + '</b><small>CNPJ ' + esc(empresa.cnpj) + '</small></div></div>' +
+      '<div class="rel-marca"><span class="rel-logo">' + esc(empresa.sigla) + '</span><div><b>' + esc(empresa.nome) + '</b><small>EIN ' + esc(empresa.ein) + '</small></div></div>' +
       '<div class="rel-titulo"><h1>Relatório Diário de Obra</h1><p>RDO nº ' + r.numero + ' · ' + diaDaSemana(r.data) + ', ' + dataCurta(r.data) + '</p></div>' +
       '<div class="rel-status">' + seloStatus(r) + '</div>' +
     '</header>' +

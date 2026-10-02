@@ -1024,11 +1024,11 @@ const enderecosCache = new Map();
 function enderecoAproximado(lat, lon) {
   const chave = lat.toFixed(5) + ',' + lon.toFixed(5);
   if (!enderecosCache.has(chave)) {
-    const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&accept-language=pt-BR&lat=' + lat + '&lon=' + lon;
+    const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&accept-language=en-US&lat=' + lat + '&lon=' + lon;
     enderecosCache.set(chave, fetch(url).then((r) => (r.ok ? r.json() : null)).then((j) => {
       if (!j) return null;
       const a = j.address || {};
-      const rua = [a.road, a.house_number].filter(Boolean).join(', ');
+      const rua = [a.house_number, a.road].filter(Boolean).join(' '); // formato americano: número antes da rua
       const resto = [a.suburb || a.neighbourhood, a.city || a.town || a.village].filter(Boolean).join(' · ');
       return [rua, resto].filter(Boolean).join(' · ') || j.display_name || null;
     }).catch(() => { enderecosCache.delete(chave); return null; }));
