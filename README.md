@@ -77,7 +77,7 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 
 **Crew: ponto da equipe** (análise em [`docs/crew-analise.md`](docs/crew-analise.md))
 - **Encarregado (celular):** bate o ponto da equipe inteira num aparelho: entrada, intervalo e volta, troca de obra (com o deslocamento, que conta como hora), chegada e saída. Cada batida guarda a hora, a obra, a etapa (cost code), o GPS com a precisão, se estava dentro da **cerca** da obra (150 m), quem registrou e se teve foto. Fora da cerca, a batida não é bloqueada: fica marcada para conferência. Vê as horas da equipe na semana, com alertas (sem saída, fora da obra, sem intervalo).
-- **Escritório:** **Agora** (quem está trabalhando em cada obra, em intervalo ou em deslocamento, e as batidas fora da obra para conferir); **Timesheets** por semana (horas por dia, total, extra acima de 40 h com 1,5×, custo, aprovar ou devolver, ajustar com motivo e exportar CSV para a folha); **Custos** de mão de obra por obra e etapa, com o deslocamento e o adicional de hora extra; **mapa do dia** de cada pessoa (trilha simulada, só com o ponto aberto) e linha do tempo.
+- **Escritório:** **Agora** (quem está trabalhando em cada obra, em intervalo ou em deslocamento, e as batidas fora da obra para conferir); **Timesheets** por semana (horas por dia, total, extra acima de 40 h com 1,5×, custo, aprovar ou devolver, ajustar com motivo e exportar CSV para a folha); **Custos** de mão de obra por obra e etapa, com o deslocamento e o adicional de hora extra; **mapa do dia** de cada pessoa, em largura total, com mapa de ruas (OpenStreetMap), zoom, arrastar e tela cheia: cerca da obra, trilha simulada (só com o ponto aberto), batidas com horário e saídas da cerca; embaixo, a linha do tempo. Sem internet, o mapa vira um desenho simples.
 - **Regras:** batida nunca é editada nem apagada (ajuste é uma batida nova com quem, quando e por quê); sem arredondamento de minutos; hora extra semanal (FLSA); deslocamento entre obras é hora paga.
 - **Ligação com o Daily:** ao começar um RDO, a equipe vem de quem bateu entrada na obra no dia (botão para atualizar).
 
@@ -128,6 +128,7 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 | `js/crew.js` | Crew: modelo do ponto (batidas, jornada, semana, hora extra, custos) e os dados de exemplo de duas semanas |
 | `js/crew-telas.js` | Crew: telas do encarregado e do escritório, mapa do dia e notificações |
 | `js/prazos.js` | Daily: prazo do RDO e régua de alertas |
+| `vendor/leaflet/` | Leaflet 1.9.4 (biblioteca de mapas, licença BSD-2), guardada no projeto para funcionar sem CDN |
 | `sw.js` | Service worker: o app abre sem internet |
 
 Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/measure`; no Crew, `#/crew` (abre a área do papel), encarregado em `#/crew/equipe` e `#/crew/horas`, escritório em `#/crew/agora`, `#/crew/timesheets/SEMANA`, `#/crew/semana/FUNCIONÁRIO/SEMANA` e `#/crew/custos/SEMANA`, e o dia em `#/crew/dia/FUNCIONÁRIO/DATA`; no Daily, `#/daily` (abre a área do papel), campo em `#/daily/campo`, `#/daily/campo/obra/ID`, `#/daily/campo/rdo/ID` e `#/daily/historico`, administrador em `#/daily/painel`, `#/daily/aprovacoes`, `#/daily/obras`, `#/daily/obras/ID` e `#/daily/painel/rdo/ID`, e o PDF em `#/daily/pdf/ID`; e o link público `#/cliente/CÓDIGO`.
@@ -136,7 +137,7 @@ Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/measure`; no Crew, `#/cr
 
 `tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (87 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
-`tests/crew.test.mjs` cobre o Crew (37 verificações, quarta-feira às 16h30): ponto da equipe com GPS e cerca, troca de obra e chegada, intervalo, horas, permissões, equipe do RDO vinda do ponto, "Agora", batida para conferir, sininho, aprovação, CSV, ajuste de saída esquecida, custos e mapa do dia.
+`tests/crew.test.mjs` cobre o Crew (40 verificações, quarta-feira às 16h30): ponto da equipe com GPS e cerca, troca de obra e chegada, intervalo, horas, permissões, equipe do RDO vinda do ponto, "Agora", batida para conferir, sininho, aprovação, CSV, ajuste de saída esquecida, custos e mapa do dia.
 
 ```bash
 npm install playwright   # uma vez

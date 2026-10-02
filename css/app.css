@@ -660,7 +660,19 @@ body[data-modo="pdf"] { background: #475467; }
 .barra-valor { font-variant-numeric: tabular-nums; color: var(--texto-2); font-weight: 600; white-space: nowrap; }
 .custo-obra .cartao-cabeca b { font-size: 18px; }
 .dia-grade { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.mapa-dia { width: 100%; height: auto; display: block; margin-top: 8px; border-radius: var(--raio); background: #F1F4F2; border: 1px solid var(--borda); }
+.mapa-dia { width: 100%; height: 100%; display: block; background: #F1F4F2; }
+.dia-coluna { display: flex; flex-direction: column; gap: 16px; }
+.mapa-area { height: clamp(380px, 64vh, 720px); margin-top: 8px; border-radius: var(--raio); overflow: hidden; border: 1px solid var(--borda); background: #F1F4F2; position: relative; z-index: 0; }
+.mapa-area .mapa-dia { height: 100%; }
+.mapa-cartao .cartao-titulo .etiqueta { margin-left: 4px; }
+.mapa-cartao.tela-cheia { position: fixed; inset: 0; z-index: 60; border-radius: 0; display: flex; flex-direction: column; padding: 12px 16px; }
+.mapa-cartao.tela-cheia .mapa-area { flex: 1; height: auto; }
+.mapa-cartao.tela-cheia > .mudo { display: none; }
+body.sem-rolagem { overflow: hidden; }
+.mapa-rotulo-obra { background: var(--superficie); border: 1px solid var(--cor-crew); color: var(--cor-crew); font-weight: 700; font-size: 12px; box-shadow: var(--sombra); }
+.mapa-rotulo-hora { background: rgba(255,255,255,0.92); border: 0; box-shadow: var(--sombra); font-weight: 700; font-size: 11.5px; padding: 1px 6px; }
+.mapa-rotulo-hora::before { display: none; }
+.leaflet-container { font-family: var(--fonte); }
 .mapa-grade { stroke: #DDE3DF; stroke-width: 1; }
 .mapa-cerca { fill: rgba(15, 118, 110, 0.12); stroke: var(--cor-crew); stroke-width: 2; stroke-dasharray: 5 4; }
 .mapa-obra { font-size: 12px; font-weight: 700; fill: var(--texto-2); }
@@ -716,7 +728,7 @@ body[data-modo="pdf"] { background: #475467; }
   .abas-item .contador { position: absolute; top: 6px; left: calc(50% + 6px); min-width: 18px; height: 18px; font-size: 10.5px; padding: 0 5px; }
   .pagina { padding: 16px 16px 32px; }
   .pagina-titulo h1 { font-size: 21px; }
-  .painel-grade, .revisao, .conta-grade, .dia-grade { grid-template-columns: 1fr; }
+  .painel-grade, .revisao, .conta-grade { grid-template-columns: 1fr; }
   .revisao-lado { order: -1; }
   .revisao-lado .fixo { position: static; }
   .toast { bottom: 84px; }

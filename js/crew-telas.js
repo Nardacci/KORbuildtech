@@ -225,6 +225,7 @@ function obraAtualDe(id) {
 }
 
 export const acoesCrew = {
+  'crew-mapa-cheio'() { alternarTelaCheia(); },
   'crew-marcar'(el) {
     if (el.checked) selecionados.add(el.dataset.id); else selecionados.delete(el.dataset.id);
     app.desenhar();
@@ -642,6 +643,103 @@ function mapaSvg(j, trilha) {
     (linha ? '<polyline points="' + linha + '" class="mapa-trilha"/>' : '') + foras + marcas + '</svg>';
 }
 
+/* ---------- Mapa de ruas (Leaflet + OpenStreetMap) ----------
+ * A biblioteca fica no próprio projeto (vendor/leaflet). Os mapas de rua vêm da internet;
+ * sem internet ou sem a biblioteca, fica o desenho simples (SVG) que já está na tela. */
+
+function dadosDoMapa(j, trilha) {
+  const obrasIds = Array.from(new Set(j.segmentos.map((s) => s.obraId).concat(j.batidas.map((b) => b.obraId)).filter(Boolean)));
+  return {
+    cercas: obrasIds.map((id) => { const o = acharObra(id); return { lat: o.cerca.lat, lon: o.cerca.lon, raio: o.cerca.raio, nome: o.nome }; }),
+    trilha: trilha.pontos.map((p) => [Number(p.lat.toFixed(6)), Number(p.lon.toFixed(6)), p.fora ? 1 : 0]),
+    batidas: j.batidas.filter((b) => b.lat != null).map((b) => ({
+      lat: b.lat, lon: b.lon, tipo: b.tipo, hora: horaCurta(b.em), fora: b.dentroCerca === false,
+      texto: ROTULO_BATIDA[b.tipo] + ' às ' + horaCurta(b.em) + ' · ' + nomeObra(b.obraId) + (b.dentroCerca === false ? ' · fora da cerca' : ''),
+    })),
+  };
+}
+
+let leafletPromessa = null;
+function carregarLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+  if (!leafletPromessa) {
+    leafletPromessa = new Promise((ok, falha) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'vendor/leaflet/leaflet.css';
+      document.head.appendChild(css);
+      const js = document.createElement('script');
+      js.src = 'vendor/leaflet/leaflet.js';
+      js.onload = () => ok(window.L);
+      js.onerror = () => { leafletPromessa = null; falha(new Error('Leaflet indisponível')); };
+      document.head.appendChild(js);
+    });
+  }
+  return leafletPromessa;
+}
+
+let mapaAtual = null;
+const COR_BATIDA = { entrada: '#0F766E', 'intervalo-inicio': '#667085', 'intervalo-fim': '#667085', troca: '#1D4ED8', chegada: '#1D4ED8', etapa: '#0F766E', saida: '#141B26' };
+
+async function montarMapa() {
+  const area = document.getElementById('mapa-dia');
+  if (!area || area.dataset.montado) return;
+  area.dataset.montado = '1';
+  let L;
+  try { L = await carregarLeaflet(); } catch (e) { return; } // fica o SVG
+  if (!document.body.contains(area)) return;
+  const d = JSON.parse(area.dataset.mapa);
+  area.innerHTML = '';
+  area.classList.add('com-ruas');
+  const m = L.map(area, { scrollWheelZoom: true, zoomControl: true, attributionControl: true });
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
+  const limites = [];
+  for (const c of d.cercas) {
+    L.circle([c.lat, c.lon], { radius: c.raio, color: '#0F766E', weight: 2, dashArray: '6 5', fillColor: '#0F766E', fillOpacity: 0.12 }).addTo(m);
+    // nome da obra logo acima da cerca, para não cobrir as batidas
+    L.tooltip({ permanent: true, direction: 'top', className: 'mapa-rotulo-obra', offset: [0, -4] })
+      .setLatLng([c.lat + c.raio / 111320, c.lon]).setContent(c.nome).addTo(m);
+    limites.push(L.latLng(c.lat, c.lon).toBounds(c.raio * 2));
+  }
+  if (d.trilha.length > 1) {
+    const linha = L.polyline(d.trilha.map((p) => [p[0], p[1]]), { color: '#2E90FA', weight: 4, opacity: 0.85, lineJoin: 'round' }).addTo(m);
+    limites.push(linha.getBounds());
+  }
+  for (const p of d.trilha.filter((x) => x[2])) {
+    L.circleMarker([p[0], p[1]], { radius: 4, color: '#B42318', weight: 1, fillColor: '#F04438', fillOpacity: 1 }).addTo(m);
+  }
+  for (const b of d.batidas) {
+    const intervalo = b.tipo.startsWith('intervalo') && !b.fora;
+    const mk = L.circleMarker([b.lat, b.lon], { radius: intervalo ? 6 : 8, color: '#fff', weight: 2, fillColor: b.fora ? '#F04438' : (COR_BATIDA[b.tipo] || '#0F766E'), fillOpacity: 1 }).addTo(m);
+    // horários fixos só para entrada, saída, troca/chegada e fora da cerca; o intervalo aparece ao tocar
+    mk.bindTooltip(intervalo ? b.texto : b.hora, { permanent: !intervalo, direction: 'right', className: 'mapa-rotulo-hora', offset: [8, 0] });
+    mk.bindPopup(b.texto);
+    limites.push(L.latLngBounds([b.lat, b.lon], [b.lat, b.lon]));
+  }
+  const total = limites.reduce((acc, l) => acc.extend(l), L.latLngBounds(limites[0].getSouthWest(), limites[0].getNorthEast()));
+  m.fitBounds(total, { padding: [40, 40], maxZoom: 17 });
+  mapaAtual = m;
+}
+
+/* Chamado depois de desenhar uma tela do Crew. */
+export function aposDesenharCrew() {
+  mapaAtual = null;
+  montarMapa();
+}
+
+function alternarTelaCheia(forcarSair) {
+  const cartao = document.getElementById('mapa-cartao');
+  if (!cartao) return;
+  const cheio = forcarSair ? false : !cartao.classList.contains('tela-cheia');
+  cartao.classList.toggle('tela-cheia', cheio);
+  document.body.classList.toggle('sem-rolagem', cheio);
+  const rotulo = cartao.querySelector('[data-acao="crew-mapa-cheio"] span');
+  if (rotulo) rotulo.textContent = cheio ? 'Sair da tela cheia' : 'Tela cheia';
+  if (mapaAtual) setTimeout(() => mapaAtual.invalidateSize(), 50);
+}
+
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') alternarTelaCheia(true); });
+
 function telaDia(funcId, iso) {
   const f = funcionario(funcId);
   if (!f) return { trocar: '#/crew' };
@@ -664,9 +762,10 @@ function telaDia(funcId, iso) {
     voltar,
     conteudo:
       (j.alertas.length ? '<p class="alertas-dia">' + j.alertas.map((a) => '<span class="etiqueta etiqueta-alerta">' + esc(a.texto) + '</span>').join('') + '</p>' : '') +
-      '<div class="' + (admin ? 'dia-grade' : '') + '">' +
-        (admin ? '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Mapa do dia</h2><span class="etiqueta etiqueta-neutro">Simulado</span></div>' +
-          (j.batidas.length ? mapaSvg(j, trilha) : '<p class="vazio">Sem batidas neste dia.</p>') +
+      '<div class="dia-coluna">' +
+        (admin ? '<section class="cartao mapa-cartao" id="mapa-cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Mapa do dia <span class="etiqueta etiqueta-neutro">Trilha simulada</span></h2>' +
+            (j.batidas.length ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-mapa-cheio">' + icone('olho', 16) + '<span>Tela cheia</span></button>' : '') + '</div>' +
+          (j.batidas.length ? '<div class="mapa-area" id="mapa-dia" data-mapa="' + esc(JSON.stringify(dadosDoMapa(j, trilha))) + '">' + mapaSvg(j, trilha) + '</div>' : '<p class="vazio">Sem batidas neste dia.</p>') +
           '<p class="legenda-mapa"><span><i class="lg-trilha"></i>trilha (só com o ponto aberto)</span><span><i class="lg-cerca"></i>cerca da obra</span><span><i class="lg-batida"></i>batida</span><span><i class="lg-fora"></i>fora da cerca</span></p>' +
           '<p class="mudo pequeno">A trilha só é registrada com o ponto aberto, o trabalhador é avisado e também vê o próprio mapa. No protótipo, a trilha é simulada a partir das batidas; na versão real, ela exige o app nativo.</p></section>' : '') +
         '<section class="cartao"><h2 class="cartao-titulo">Linha do tempo</h2>' +

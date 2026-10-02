@@ -24,6 +24,9 @@ const erros = [];
 page.on('pageerror', (e) => erros.push(e.message));
 await context.route('https://api.open-meteo.com/**', (r) => r.abort());
 await context.route('https://fonts.**', (r) => r.abort());
+// Blocos do mapa de ruas (OpenStreetMap): no teste, uma imagem cinza no lugar
+const BLOCO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8+v9/PQAJBQPq1V7ZVgAAAABJRU5ErkJggg==', 'base64');
+await context.route('https://tile.openstreetmap.org/**', (r) => r.fulfill({ contentType: 'image/png', body: BLOCO }));
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/crew-' + nome + '.png', fullPage: true }); };
 const como = async (id, hash) => { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), id); await page.goto(BASE + hash); };
 const estadoDe = (nome) => page.locator('.lista-equipe li', { hasText: nome }).locator('.estado-ponto').textContent();
@@ -151,8 +154,16 @@ verificar((await page.textContent('.pagina')).includes('Deslocamento entre obras
 verificar((await page.locator('.kpi', { hasText: 'Adicional de hora extra' }).textContent()).includes('US$'), 'custos: adicional de hora extra em US$');
 await print('7-custos');
 await page.goto(BASE + '#/crew/dia/f-diego/2026-09-29');
-await page.waitForSelector('svg.mapa-dia');
-verificar(await page.locator('svg.mapa-dia .mapa-fora').count() > 0, 'mapa do dia: trilha fora da cerca');
+await page.waitForSelector('#mapa-dia.com-ruas .leaflet-interactive');
+verificar(await page.locator('#mapa-dia path[fill="#F04438"]').count() > 0, 'mapa do dia (ruas): trilha fora da cerca');
+verificar(await page.locator('#mapa-dia .mapa-rotulo-obra').count() === 1, 'mapa do dia: nome da obra na cerca');
+const alturaMapa = await page.locator('#mapa-dia').evaluate((el) => el.getBoundingClientRect().height);
+verificar(alturaMapa >= 380, 'mapa do dia maior (' + Math.round(alturaMapa) + ' px de altura)');
+await page.click('[data-acao="crew-mapa-cheio"]');
+const cheio = await page.locator('#mapa-cartao').evaluate((el) => el.getBoundingClientRect().height);
+verificar(cheio >= 840, 'tela cheia ocupa a tela toda');
+await print('8b-mapa-cheio');
+await page.keyboard.press('Escape');
 verificar((await page.textContent('.linha-tempo')).includes('Saiu da cerca com o ponto aberto'), 'linha do tempo: saída da cerca com o ponto aberto');
 await print('8-mapa');
 

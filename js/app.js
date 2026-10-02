@@ -13,7 +13,7 @@ import {
   usuarioAtual, entrar, sair, usuarioPorEmail, ehAdmin, registrarInteresse, modulo, definirPodeInstalar,
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
 } from './plataforma.js';
-import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew } from './crew-telas.js';
+import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
@@ -215,6 +215,7 @@ function desenhar() {
   }
   hidratarFotos(app);
   if (p[0] === 'cliente') verificarLacreNaTela(p[1]);
+  if (p[0] === 'crew') aposDesenharCrew();
 }
 
 function chaveDoFoco(el) {
