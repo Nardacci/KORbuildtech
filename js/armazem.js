@@ -74,8 +74,19 @@ async function operacao(modo, fn) {
   });
 }
 
-export function guardarFoto(id, blob) { return operacao('readwrite', (s) => s.put(blob, id)); }
-export function apagarFoto(id) { urls.delete(id); return operacao('readwrite', (s) => s.delete(id)); }
+/* Cada foto tem duas versões: a do relatório (id) e a miniatura das listas (id + '-mini'). */
+export function idMiniatura(id) { return id + '-mini'; }
+
+export function guardarFoto(id, blob, mini) {
+  return operacao('readwrite', (s) => { if (mini) s.put(mini, idMiniatura(id)); return s.put(blob, id); });
+}
+
+export function apagarFoto(id) {
+  urls.delete(id);
+  urls.delete(idMiniatura(id));
+  return operacao('readwrite', (s) => { s.delete(idMiniatura(id)); return s.delete(id); });
+}
+
 export function lerFoto(id) { return operacao('readonly', (s) => s.get(id)); }
 
 const urls = new Map();
@@ -92,7 +103,8 @@ export async function urlDaFoto(id) {
 export function hidratarFotos(raiz) {
   const imgs = Array.from(raiz.querySelectorAll('img[data-foto]'));
   return Promise.all(imgs.map(async (img) => {
-    const url = await urlDaFoto(img.dataset.foto);
+    // Fotos antigas, sem miniatura, caem na versão do relatório.
+    const url = (await urlDaFoto(img.dataset.foto)) || (img.dataset.fotoReserva ? await urlDaFoto(img.dataset.fotoReserva) : '');
     if (!url) return;
     img.src = url;
     if (!img.complete) await new Promise((ok) => { img.onload = ok; img.onerror = ok; });

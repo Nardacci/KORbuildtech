@@ -145,9 +145,14 @@ body[data-modo="inicio"] { background: var(--ink); color: #fff; }
 .cartao-obra:hover, .item-rdo:hover { border-color: var(--line-strong); color: var(--ink); }
 .cartao-obra-topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 16px; }
 .seta { font-size: 24px; color: var(--muted); line-height: 1; }
-.item-rdo { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
-.item-rdo > div { display: flex; flex-direction: column; min-width: 0; }
-.item-rdo .mudo { font-size: 13px; }
+.item-rdo { gap: 8px; }
+.item-rdo-topo { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.item-rdo-trecho { font-size: 14px; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item-rdo-trecho.mudo { font-style: italic; }
+.item-rdo-fotos { display: flex; gap: 8px; align-items: center; }
+.item-rdo-fotos img { width: 96px; height: 72px; object-fit: cover; border-radius: 9px; background: var(--neutral-tint); display: block; }
+.item-rdo-mais { display: grid; place-items: center; width: 44px; height: 72px; border-radius: 9px; background: var(--neutral-tint); color: var(--muted); font-weight: 700; font-size: 14px; }
+.item-rdo-meta { font-size: 12.5px; }
 .etiqueta { align-self: flex-start; margin-top: 6px; font-size: 12.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
 .etiqueta-ambar { background: var(--amber-tint); color: var(--amber); }
 .etiqueta-neutro { background: var(--neutral-tint); color: var(--muted); }

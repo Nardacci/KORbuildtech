@@ -55,6 +55,14 @@ verificar((await page.textContent('a[href="#/campo/obra/jardim"]')).includes('n�
 await print('02-campo');
 
 await page.click('a[href="#/campo/obra/jardim"]');
+await page.waitForSelector('.item-rdo-fotos img[src^="blob:"]');
+const item = page.locator('.item-rdo').first();
+verificar(await item.locator('.item-rdo-fotos img').count() === 2, 'lista de RDOs: duas fotos por item');
+verificar(await item.locator('.item-rdo-mais').textContent() === '+1', 'lista de RDOs: "+1" quando há mais fotos');
+const mini = await item.locator('.item-rdo-fotos img').first().evaluate((img) => img.naturalWidth);
+verificar(mini === 320, 'lista de RDOs: miniatura de 320 px, não a foto inteira (' + mini + ')');
+verificar((await item.locator('.item-rdo-trecho').textContent()).startsWith('Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D'), 'lista de RDOs: começo da primeira atividade');
+await print('02b-lista-rdos');
 await page.click('[data-acao="novo-rdo"][data-copiar="1"]');
 await page.waitForSelector('#s-clima');
 await page.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2);
@@ -88,6 +96,8 @@ const sugestao = await page.inputValue('dialog textarea');
 verificar(/^Hoje a equipe concluiu a viga 2\. Porém, houve falta de cimento, pois a entrega sofreu atraso\.$/.test(sugestao), 'texto melhorado: ' + sugestao);
 await print('03-ia');
 await page.click('dialog button:has-text("Usar este texto")');
+await page.waitForSelector('dialog', { state: 'detached' });
+await page.waitForFunction((t) => Array.from(document.querySelectorAll('#s-atividades textarea')).some((c) => c.value === t), sugestao);
 verificar((await page.locator('#s-atividades textarea').nth(n - 1).inputValue()) === sugestao, 'texto melhorado aplicado');
 
 // Ocorrência

@@ -6,7 +6,7 @@ import {
 } from './util.js';
 import {
   estado, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
-  guardarFoto, apagarFoto, hidratarFotos, apagarTudo,
+  guardarFoto, apagarFoto, hidratarFotos, apagarTudo, idMiniatura,
 } from './armazem.js';
 import { criarDemonstracao, PESSOAS, CONSTRUTORA } from './exemplo.js';
 import { processarFoto } from './fotos.js';
@@ -251,10 +251,28 @@ function telaObraCampo(id) {
   });
 }
 
+const TRECHO_MAXIMO = 120;
+
+function trecho(texto) {
+  const t = texto.trim().replace(/\s+/g, ' ');
+  return t.length > TRECHO_MAXIMO ? t.slice(0, TRECHO_MAXIMO).replace(/\s+\S*$/, '') + '…' : t;
+}
+
+/* Item da lista de RDOs: duas primeiras fotos em miniatura e o começo da primeira atividade. */
 function itemRdo(r) {
   const pessoas = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
-  return '<a class="item-rdo" href="#/campo/rdo/' + r.id + '"><div><b>RDO nº ' + r.numero + ' · ' + dataRelativa(r.data) + '</b>' +
-    '<span class="mudo">' + pessoas + ' pessoas · ' + r.atividades.length + ' atividades · ' + r.fotos.length + ' fotos</span></div>' + seloStatus(r) + '</a>';
+  const atividade = r.atividades.find((a) => a.descricao.trim());
+  const fotos = r.fotos.slice(0, 2);
+  const restantes = r.fotos.length - fotos.length;
+  return '<a class="item-rdo" href="#/campo/rdo/' + r.id + '">' +
+    '<div class="item-rdo-topo"><b>RDO nº ' + r.numero + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
+    '<p class="item-rdo-trecho' + (atividade ? '' : ' mudo') + '">' + (atividade ? esc(trecho(atividade.descricao)) : 'Nenhuma atividade descrita') + '</p>' +
+    (fotos.length
+      ? '<div class="item-rdo-fotos">' + fotos.map((f, i) =>
+          '<img data-foto="' + esc(idMiniatura(f.id)) + '" data-foto-reserva="' + esc(f.id) + '" alt="Foto ' + (i + 1) + (f.legenda ? ': ' + esc(f.legenda) : '') + '" width="96" height="72" loading="lazy">').join('') +
+        (restantes > 0 ? '<span class="item-rdo-mais" aria-label="mais ' + restantes + ' fotos">+' + restantes + '</span>' : '') + '</div>'
+      : '') +
+    '<span class="mudo item-rdo-meta">' + pessoas + ' pessoas · ' + r.atividades.length + ' atividades · ' + r.fotos.length + ' fotos</span></a>';
 }
 
 function novoRdo(obraId, copiar) {
@@ -925,9 +943,9 @@ app.addEventListener('change', async (ev) => {
     fotosProcessando = 'Carimbando e reduzindo a foto' + (arquivos.length > 1 ? ' ' + (i + 1) + ' de ' + arquivos.length : '') + '…';
     desenhar();
     try {
-      const { blob, meta } = await processarFoto(arquivos[i], o, daCamera);
+      const { blob, mini, meta } = await processarFoto(arquivos[i], o, daCamera);
       const id = novoId('foto');
-      await guardarFoto(id, blob);
+      await guardarFoto(id, blob, mini);
       r.fotos.push({ id, legenda: '', ...meta });
       salvarComAviso();
       ultimo = meta;

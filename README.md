@@ -4,6 +4,10 @@ Relatório Diário de Obra (RDO) no celular: fotos com data, hora e GPS, clima a
 
 **Protótipo de validação com dados fictícios.** Não há servidor: tudo fica no navegador do aparelho (localStorage para os dados, IndexedDB para as fotos). Campo e escritório são simulados no mesmo navegador.
 
+## Idioma
+
+O protótipo é em português para a validação. **A versão final do produto será toda em inglês.** As regras para não amarrar o código ao português estão em `CLAUDE.md`.
+
 ## Como abrir
 
 É um site estático, sem build. Qualquer servidor serve:
@@ -32,6 +36,7 @@ O mesmo roteiro aparece na tela inicial do app.
 
 **Canteiro (celular)**
 - Lista de obras com a situação do RDO de hoje e o aviso de ajustes pedidos pelo escritório.
+- Lista dos RDOs de cada obra com duas fotos em miniatura (320 px, geradas junto com a foto), "+N" quando há mais fotos e o começo da primeira atividade do dia.
 - **Copiar o RDO anterior:** traz a equipe (com as faltas zeradas), os equipamentos e só as atividades que ainda estavam em andamento.
 - **Clima automático** pela coordenada da obra ([Open-Meteo](https://open-meteo.com/), gratuito e sem chave): manhã (7h às 12h) e tarde (13h às 17h). Com mais de 2 mm de chuva no turno, o turno fica "impraticável". Tudo pode ser corrigido à mão, e o relatório diz se o clima foi automático, ajustado ou manual.
 - **Equipe e equipamentos** com botões de + e −, chips das funções e equipamentos mais comuns e campo para "outro".
@@ -78,7 +83,7 @@ Rotas: `#/` (início), `#/campo`, `#/campo/obra/ID`, `#/campo/rdo/ID`, `#/painel
 
 ## Testes
 
-`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (37 verificações): copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
+`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (41 verificações): copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
 ```bash
 npm install playwright   # uma vez

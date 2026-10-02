@@ -61,6 +61,16 @@ async function comprimir(canvas) {
   return blob;
 }
 
+/* Miniatura para listas: 320 px de largura, poucos KB. Feita da foto já carimbada. */
+const LARGURA_MINIATURA = 320;
+function miniatura(canvas) {
+  const mini = document.createElement('canvas');
+  mini.width = LARGURA_MINIATURA;
+  mini.height = Math.round(canvas.height * LARGURA_MINIATURA / canvas.width);
+  mini.getContext('2d').drawImage(canvas, 0, 0, mini.width, mini.height);
+  return canvasParaBlob(mini, 0.7);
+}
+
 async function carregarImagem(arquivo) {
   if (window.createImageBitmap) {
     try { return await createImageBitmap(arquivo, { imageOrientation: 'from-image' }); } catch (e) { /* cai no <img> */ }
@@ -91,9 +101,10 @@ export async function processarFoto(arquivo, obra, daCamera) {
   // Foto da câmera: o momento é agora. Da galeria: a data do arquivo (quando foi tirada).
   const quando = daCamera ? Date.now() : (arquivo.lastModified || Date.now());
   carimbar(ctx, largura, altura, { obraNome: obra.nome, quando, lat: posicao.lat, lon: posicao.lon, fonte: posicao.fonte });
-  const blob = await comprimir(canvas);
+  const [blob, mini] = await Promise.all([comprimir(canvas), miniatura(canvas)]);
   return {
     blob,
+    mini,
     meta: {
       tiradaEm: quando,
       origem: daCamera ? 'camera' : 'galeria',
@@ -190,6 +201,6 @@ export async function fotoDeExemplo({ cena, obra, quando, semente }) {
   ctx.fillText('Foto de exemplo', 24, 40);
 
   carimbar(ctx, largura, altura, { obraNome: obra.nome, quando, lat: obra.lat + (rnd() - 0.5) * 0.0004, lon: obra.lon + (rnd() - 0.5) * 0.0004, fonte: 'gps' });
-  const blob = await comprimir(canvas);
-  return { blob, largura, altura };
+  const [blob, mini] = await Promise.all([comprimir(canvas), miniatura(canvas)]);
+  return { blob, mini, largura, altura };
 }

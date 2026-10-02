@@ -61,6 +61,31 @@ const ATIVIDADES = {
   ],
 };
 
+/* Primeira atividade de cada dia, para os RDOs não parecerem cópias na lista. */
+const ATIVIDADE_DO_DIA = {
+  jardim: [
+    'Marcação da primeira fiada de alvenaria do 3º pavimento, eixos A a D.',
+    'Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A e B.',
+    'Execução de vergas e contravergas das janelas do 2º pavimento.',
+    'Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos C e D.',
+    'Encunhamento da alvenaria do 2º pavimento e conferência de prumo.',
+    'Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D.',
+  ],
+  atlantico: [
+    'Concretagem dos pilares do 6º pavimento, 18 m³, com caminhão-bomba.',
+    'Montagem de fôrmas dos pilares do 7º pavimento.',
+    'Armação dos pilares P1 a P11 do 7º pavimento.',
+    'Escoramento e montagem de fôrmas das vigas do 7º pavimento.',
+    'Montagem de fôrmas das vigas e da laje do 7º pavimento.',
+  ],
+  galpao: [
+    'Regularização e nivelamento da base do piso, quadrantes 1 e 2.',
+    'Instalação de barras de transferência nas juntas do quadrante 2.',
+    'Armação em tela soldada do quadrante 2 do piso industrial.',
+    'Compactação da sub-base do piso, quadrantes 3 e 4.',
+  ],
+};
+
 const OCORRENCIAS = {
   'jardim:-1': [['material', 'Entrega de cimento atrasou 3 horas; assentamento começou às 10h.']],
   'atlantico:0': [['visita', 'Visita do fiscal do cliente às 10h; sem apontamentos.']],
@@ -106,9 +131,9 @@ export async function criarDemonstracao() {
       const qtdFotos = recente ? 3 : 2;
       for (let f = 0; f < qtdFotos; f++) {
         const quando = momento(data, 9 + f * 2, 10 + f * 7);
-        const { blob, largura, altura } = await fotoDeExemplo({ cena: f === 2 && obra.id !== 'galpao' ? 'concreto' : CENA[obra.id], obra, quando, semente: semente++ });
+        const { blob, mini, largura, altura } = await fotoDeExemplo({ cena: f === 2 && obra.id !== 'galpao' ? 'concreto' : CENA[obra.id], obra, quando, semente: semente++ });
         const id = novoId('foto');
-        await guardarFoto(id, blob);
+        await guardarFoto(id, blob, mini);
         fotos.push({
           id, legenda: ['Vista geral da frente de serviço', 'Detalhe da execução', 'Chegada de material'][f],
           tiradaEm: quando, origem: 'camera', lat: obra.lat, lon: obra.lon, fonteGps: 'gps', precisao: 6,
@@ -134,7 +159,9 @@ export async function criarDemonstracao() {
         },
         equipe: EQUIPES[obra.id].map(([funcao, presentes, faltas]) => ({ funcao, presentes: presentes - (i % 2 && presentes > 2 ? 1 : 0), faltas })),
         equipamentos: EQUIPAMENTOS[obra.id].map(([nome, qtd, st]) => ({ nome, qtd, status: st })),
-        atividades: ATIVIDADES[obra.id].map(([descricao, local, situacao], k) => ({ id: novoId('at'), descricao, local, situacao: desloc < -2 && k === 0 ? 'andamento' : situacao })),
+        atividades: ATIVIDADES[obra.id].map(([descricao, local, situacao], k) => ({
+          id: novoId('at'), descricao: k === 0 ? ATIVIDADE_DO_DIA[obra.id][i] : descricao, local, situacao: desloc < -2 && k === 0 ? 'andamento' : situacao,
+        })),
         ocorrencias: (OCORRENCIAS[obra.id + ':' + desloc] || []).map(([tipo, descricao]) => ({ id: novoId('oc'), tipo, descricao })),
         fotos,
         observacoes: '',
