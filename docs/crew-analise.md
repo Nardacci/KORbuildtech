@@ -2,6 +2,8 @@
 
 Documento de análise de negócio, feito antes de desenhar telas. A lista de funcionalidades que veio da pesquisa rápida (clock-in, GPS, geofence, quilometragem, escalas…) serviu de ponto de partida, **não de roteiro**: cada item foi avaliado pelo valor para o cliente, pelo risco legal e pelo custo técnico.
 
+> **Mercado-alvo: Estados Unidos.** As regras, integrações e decisões abaixo seguem os EUA. A seção 7.2 (Brasil) fica só como referência; o Brasil não é mercado-alvo neste momento.
+
 > **Tese:** o Crew não vende "ponto eletrônico". Vende **saber quanto custou cada obra, com prova**, sem que o mestre de obras perca tempo, e alimenta o Daily com a equipe do dia.
 
 ---
@@ -148,7 +150,7 @@ A pesquisa confirma que os líderes do mercado (ClockShark, busybusy, Workyard) 
 
 ## 7. Regras de jornada e pagamento que o Crew precisa calcular
 
-### 7.1 Estados Unidos (mercado da versão final)
+### 7.1 Estados Unidos (mercado-alvo)
 
 - **FLSA (lei federal):** hora extra (1,5×) acima de **40 horas na semana**. Arredondamento de minutos (ex.: "regra dos 7 minutos", para o quarto de hora mais próximo) é permitido **só se for neutro**, sem favorecer o empregador ao longo do tempo. Mais simples e mais seguro: **não arredondar** e pagar o minuto.
 - **Deslocamento:** casa → primeira obra **não conta**; obra → obra durante o dia **conta como hora trabalhada**. Por isso a troca de obra precisa registrar o deslocamento.
@@ -158,7 +160,7 @@ A pesquisa confirma que os líderes do mercado (ClockShark, busybusy, Workyard) 
 
 **Implicação de produto:** as regras de hora extra e intervalo devem ser **configuráveis por estado/empresa** ("perfil de regras"), não fixas no código.
 
-### 7.2 Brasil (onde estamos validando)
+### 7.2 Brasil (só referência: fora do mercado-alvo)
 
 - **Ponto eletrônico tem regulamentação própria (Portaria MTP 671/2021).** Um app de ponto é um **REP-P** e precisa, entre outros: registro do programa no **INPI**, hora sincronizada com a Hora Legal Brasileira (variação máxima de 30 s), relógio digital com segundos na tela da batida, **comprovante** para o trabalhador e os arquivos fiscais **AFD** e **AEJ**. A alternativa (REP-A) exige acordo ou convenção coletiva.
 - Controle de jornada é obrigatório para empresas com mais de 20 empregados (CLT, art. 74). Intervalo de refeição obrigatório (1 h para jornadas acima de 6 h). Desde a reforma de 2017, o trajeto casa–obra não conta como jornada.
@@ -168,7 +170,7 @@ A pesquisa confirma que os líderes do mercado (ClockShark, busybusy, Workyard) 
 1. **Apontamento de horas por obra** (gestão de custo, não é o ponto oficial). Sem as exigências da Portaria 671. Rápido de lançar e suficiente para o custo da obra.
 2. **Ponto oficial (REP-P).** Certificação, arquivos fiscais e comprovante. Mais caro e demorado.
 
-Como a versão final é em inglês e o mercado-alvo é o dos EUA, a recomendação é **projetar o Crew para as regras americanas** e, no Brasil, oferecer o **apontamento** (opção 1) até decidir se vale a certificação.
+**Decisão:** o mercado-alvo é o dos EUA. O Crew é projetado pelas regras americanas; esta seção fica só como referência, caso o Brasil volte a ser considerado (aí, começar pelo apontamento, opção 1).
 
 ---
 
@@ -211,7 +213,6 @@ Nenhum dos concorrentes pesquisados fecha esse ciclo **ponto → RDO → orçame
 | Regras trabalhistas variam por estado | Perfil de regras configurável; não arredondar; registrar tudo |
 | Biometria | Foto sem reconhecimento facial |
 | Exigir app nativo cedo demais | Lançar níveis 1 e 2 no app web; nativo só quando a trilha for validada como necessária |
-| Brasil: Portaria 671 | Começar como "apontamento de horas por obra", não ponto oficial |
 
 ---
 
@@ -243,8 +244,9 @@ Nenhum dos concorrentes pesquisados fecha esse ciclo **ponto → RDO → orçame
 - Timesheet semanal, aprovação/devolução, ajustes com motivo e trilha de auditoria.
 - Hora extra semanal (perfil de regras simples) e exportação CSV para a folha.
 - Equipe do RDO preenchida pelo ponto.
+- **App do trabalhador em inglês e espanhol** (mercado americano).
 
-**Fora do MVP** (fase 2 em diante): trilha contínua e mapa do dia, cerca que lembra de bater ponto, integrações diretas com a folha, escalas, folha certificada, quilometragem, espanhol no app do trabalhador.
+**Fora do MVP** (fase 2 em diante): trilha contínua e mapa do dia, cerca que lembra de bater ponto, integrações diretas com a folha, escalas, folha certificada, quilometragem.
 
 **No protótipo** (antes do MVP real), dá para demonstrar: ponto pela equipe, troca de obra, intervalo, cerca com sinalização, "quem está trabalhando", timesheet com aprovação, equipe do RDO preenchida e um **mapa do dia simulado**, com dados fictícios, para validar a reação dos clientes ao recurso.
 

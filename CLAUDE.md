@@ -2,6 +2,12 @@
 
 Protótipo de validação da plataforma KORbuild (veja o README). Site estático, sem build: HTML, CSS e módulos JS em `js/`.
 
+## Mercado: Estados Unidos
+
+- **O produto é feito para o mercado americano** (pelo menos neste momento). Regras de negócio, legislação (FLSA, leis estaduais, OSHA, Davis-Bacon), unidades, formatos e integrações seguem os EUA.
+- O Brasil não é mercado-alvo agora. Exigências só brasileiras (Portaria 671/REP-P, CNPJ, CREA, LGPD como regra principal) não orientam o produto.
+- O protótipo continua em português só para a nossa conversa interna; termos, dados de exemplo, unidades e formatos dos EUA entram na etapa de localização (veja "Idioma").
+
 ## Produto
 
 - **Plataforma SaaS** com três módulos: **KORbuild Daily** (diário de obra / RDO), **KORbuild Crew** (ponto da equipe → horas → custo) e **KORbuild Measure** (plantas → medições → quantidades → orçamento). Estes são os nomes definidos; não use "DailyLog", "Workforce", "Takeoff" nem "STACK" (marca de terceiros).

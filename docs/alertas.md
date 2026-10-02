@@ -33,9 +33,7 @@ O responsável pelo canteiro é obrigado a enviar o RDO de cada dia de trabalho.
 ## Canais: o que esperar
 
 - **Notificação no celular:** sem custo. Android: funciona com o app instalado ou aberto no navegador. iPhone: só com o app instalado na tela inicial (iOS 16.4+).
-- **SMS:** pago por mensagem, sem aprovação de modelos.
-  - **Brasil:** basta uma conta num provedor (Zenvia, Twilio e similares).
-  - **EUA (versão em inglês):** exige o registro **A2P 10DLC** (marca e campanha, pelo provedor), que leva de dias a semanas, e consentimento do usuário, com saída por "STOP". Começar esse registro com antecedência.
+- **SMS (mercado-alvo: EUA):** pago por mensagem (provedores como Twilio). Exige o registro **A2P 10DLC** (marca e campanha, pelo provedor), que leva de dias a semanas, e consentimento do usuário para receber mensagens (TCPA), com saída por "STOP". Começar esse registro com antecedência. Prazo e horários seguem o fuso de cada obra.
 - **E-mail:** para o resumo diário do escritório.
 
 ## No protótipo

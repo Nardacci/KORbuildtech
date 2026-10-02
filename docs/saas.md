@@ -1,5 +1,7 @@
 # KORbuild — estrutura SaaS
 
+> **Mercado-alvo: Estados Unidos.** Preços em dólar, cobrança recorrente por cartão (ex.: Stripe), impostos sobre venda de software conforme o estado, contratos e termos de uso em inglês, privacidade conforme as leis estaduais (ex.: CCPA na Califórnia).
+
 Documento de análise de negócio. Descreve como a plataforma se organiza como SaaS: quem é o cliente, o que ele contrata, quem usa e como os dados ficam separados. O protótipo já segue esta estrutura com uma empresa fictícia; o que ainda é simulado está marcado.
 
 ## Conceitos

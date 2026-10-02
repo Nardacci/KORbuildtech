@@ -10,6 +10,8 @@ Plataforma SaaS de gestão de obra, com três módulos que compartilham os mesmo
 
 Todos entram pelo mesmo login e caem na página dos módulos. Os papéis (campo e administrador) valem dentro de cada módulo: no Daily, o campo preenche e o escritório acompanha e aprova. A estrutura SaaS (empresa, plano, módulos contratados, usuários e papéis) está descrita em [`docs/saas.md`](docs/saas.md). A análise do controle de ponto do Crew (funcionalidades, GPS, regras legais nos EUA e no Brasil, concorrência e MVP) está em [`docs/crew-analise.md`](docs/crew-analise.md).
 
+**Mercado-alvo: Estados Unidos.** O protótipo está em português só para a conversa interna; termos, unidades, formatos e dados de exemplo americanos entram na localização.
+
 **Protótipo de validação com dados fictícios.** Não há servidor: tudo fica no navegador do aparelho (localStorage para os dados, IndexedDB para as fotos). Campo e escritório são simulados no mesmo navegador, trocando de usuário.
 
 ## Idioma
