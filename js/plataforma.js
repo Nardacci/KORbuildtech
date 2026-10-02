@@ -6,15 +6,13 @@
 
 import { esc, dataCurta, diasEntre, hoje, dataHora } from './util.js';
 import { estado, salvar } from './armazem.js';
+import { pode, perfilDe, modulosDe } from './settings.js';
 import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
 
 const CHAVE_SESSAO = 'kbt.sessao';
 
-/* Papéis no Daily. Na plataforma todos entram do mesmo jeito; o papel vale dentro do módulo. */
-export const PAPEIS = {
-  admin: { nome: 'Administrador', descricao: 'Escritório: vê todas as obras, aprova, gerencia a conta e os usuários' },
-  campo: { nome: 'Campo', descricao: 'Canteiro: preenche e envia os relatórios das obras em que atua' },
-};
+/* O que cada pessoa pode fazer vem do perfil de acesso (Settings › Perfis de acesso). */
+export { pode, perfilDe, modulosDe } from './settings.js';
 
 /* Os módulos da plataforma. "status" diz se já existe; a empresa contrata os que existem. */
 export const MODULOS = [
@@ -67,7 +65,16 @@ export function usuarioPorEmail(email) {
   return estado().usuarios.find((u) => u.email.toLowerCase() === e && u.ativo) || null;
 }
 
-export function ehAdmin(u) { return !!u && u.papel === 'admin'; }
+/* Módulos que a pessoa abre e estão contratados (Settings vem em todo plano). */
+export function modulosLiberados(u) {
+  const contratados = estado().empresa.modulos;
+  return modulosDe(u).filter((id) => id === 'settings' || contratados.includes(id));
+}
+/* Para onde a pessoa vai ao entrar: com um módulo só (ex.: o trabalhador, só ponto), direto para ele. */
+export function inicioDoUsuario(u) {
+  const mods = modulosLiberados(u);
+  return mods.length === 1 ? '#/' + mods[0] : '#/inicio';
+}
 
 export function diasDeTeste() {
   const p = estado().empresa.plano;
@@ -159,7 +166,7 @@ export function casca(o) {
       '<span class="topo-espaco"></span>' +
       (o.topoExtra || '') +
       sino(u) +
-      '<a class="topo-botao" href="#/inicio" aria-label="Módulos" title="Módulos">' + icone('modulos') + '</a>' +
+      (modulosLiberados(u).length > 1 ? '<a class="topo-botao" href="#/inicio" aria-label="Módulos" title="Módulos">' + icone('modulos') + '</a>' : '') +
       menuUsuario(u) +
     '</div></header>' +
     '<div class="corpo' + (nav.length ? ' com-lateral' : '') + (abas ? ' com-abas' : '') + '">' +
@@ -178,8 +185,8 @@ function menuUsuario(u) {
   return '<details class="menu-usuario"><summary aria-label="Menu de ' + esc(u.nome) + '"><span class="avatar">' + esc(iniciais(u.nome)) + '</span></summary>' +
     '<div class="menu">' +
       '<div class="menu-quem"><span class="avatar grande">' + esc(iniciais(u.nome)) + '</span><div><b>' + esc(u.nome) + '</b><span>' + esc(u.email) + '</span>' +
-        '<span class="menu-papel">' + esc(estado().empresa.nome) + ' · ' + PAPEIS[u.papel].nome + ' no Daily</span></div></div>' +
-      (ehAdmin(u) ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + 'Conta da empresa</a>' : '') +
+        '<span class="menu-papel">' + esc(estado().empresa.nome) + ' · ' + esc((perfilDe(u) || {}).nome || 'sem perfil') + '</span></div></div>' +
+      (pode(u, 'settings.conta') ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + 'Conta da empresa</a>' : '') +
       (podeInstalar ? '<button type="button" class="menu-item" data-acao="instalar">' + icone('instalar', 18) + 'Instalar no celular</button>' : '') +
       '<button type="button" class="menu-item" data-acao="recomecar">' + icone('recomecar', 18) + 'Recomeçar demonstração</button>' +
       '<button type="button" class="menu-item" data-acao="sair">' + icone('sair', 18) + 'Sair</button>' +
@@ -189,9 +196,8 @@ function menuUsuario(u) {
 /* ---------- Login ---------- */
 
 export function telaLogin(usuarios) {
-  const campo = usuarios.filter((u) => u.papel === 'campo');
-  const admin = usuarios.filter((u) => u.papel === 'admin');
-  const lista = (us) => us.map((u) => '<button type="button" class="email-demo" data-acao="preencher-email" data-email="' + esc(u.email) + '">' + esc(u.email) + '</button>').join(', ');
+  const email = (u) => '<button type="button" class="email-demo" data-acao="preencher-email" data-email="' + esc(u.email) + '">' + esc(u.email) + '</button>';
+  const admin = usuarios.filter((u) => pode(u, 'settings.acesso'));
   return '<div class="login-pagina">' +
     '<section class="login-marca">' +
       marca(40) +
@@ -213,7 +219,7 @@ export function telaLogin(usuarios) {
         '<label class="lembrar"><input type="checkbox" checked> Manter conectado</label>' +
         '<p class="login-erro" id="login-erro" role="alert" hidden></p>' +
         '<button type="submit" class="btn btn-primario btn-bloco btn-grande">Entrar</button>' +
-        '<p class="usuarios-demo"><b>Usuários do Daily</b> · Campo: ' + lista(campo) + ' · Administrador: ' + lista(admin) + '</p>' +
+        '<p class="usuarios-demo"><b>Usuários de demonstração</b>' + usuarios.map((u) => ' · ' + esc((perfilDe(u) || {}).nome || '') + ': ' + email(u)).join('') + '</p>' +
       '</form>' +
     '</section>' +
   '</div>';
@@ -224,7 +230,9 @@ export function telaLogin(usuarios) {
 export function telaModulos(u, saudacao) {
   const d = estado();
   // Settings vem em todo plano, mas só aparece para quem pode configurar (escritório)
-  const cartoes = MODULOS.filter((m) => !m.soAdmin || ehAdmin(u)).map((m) => {
+  // Só os módulos que o perfil abre; os "em breve" aparecem para quem usa mais de um módulo (escritório)
+  const meus = modulosDe(u);
+  const cartoes = MODULOS.filter((m) => (m.status === 'em-breve' ? meus.length > 1 : meus.includes(m.id))).map((m) => {
     const contratado = m.incluso || d.empresa.modulos.includes(m.id);
     const disponivel = m.status === 'disponivel';
     const etiqueta = disponivel
@@ -298,14 +306,13 @@ export function telaConta(u) {
             : '<span class="etiqueta ' + (contratado ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + (m.incluso ? 'Incluído no plano' : contratado ? 'Contratado' : 'Não contratado') + '</span>') + '</li>';
       }).join('') + '</ul></section>' +
       '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Usuários</h2>' +
-        '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="em-breve" data-texto="Convidar usuários ainda não faz parte do protótipo.">' + icone('mais', 16) + 'Convidar usuário</button></div>' +
-        '<div class="tabela-rolagem"><table class="rel-tabela tabela-usuarios"><thead><tr><th>Usuário</th><th>Papel no Daily</th><th>Último acesso</th></tr></thead><tbody>' +
+        (pode(u, 'settings.acesso') ? '<a class="btn btn-contorno btn-pequeno" href="#/settings/usuarios">Gerenciar em Settings</a>' : '') + '</div>' +
+        '<div class="tabela-rolagem"><table class="rel-tabela tabela-usuarios"><thead><tr><th>Usuário</th><th>Perfil de acesso</th><th>Último acesso</th></tr></thead><tbody>' +
         d.usuarios.map((x) => '<tr><td><b>' + esc(x.nome) + '</b><span class="mudo pequeno usuario-detalhe">' + esc(x.cargo) + ' · ' + esc(x.email) + '</span></td>' +
-          '<td><span class="etiqueta ' + (x.papel === 'admin' ? 'etiqueta-azul' : 'etiqueta-neutro') + '">' + PAPEIS[x.papel].nome + '</span></td>' +
+          '<td><span class="etiqueta etiqueta-neutro">' + esc((perfilDe(x) || {}).nome || '—') + '</span></td>' +
           '<td>' + (x.ultimoAcesso ? dataHora(x.ultimoAcesso) : '<span class="mudo">Nunca</span>') + '</td></tr>').join('') +
         '</tbody></table></div>' +
-        '<ul class="papeis">' + Object.values(PAPEIS).map((pp) => '<li><b>' + pp.nome + '</b>: ' + esc(pp.descricao) + '.</li>').join('') +
-          '<li><b>Cliente (convidado)</b>: recebe os relatórios aprovados por link, sem conta e sem custo.</li></ul>' +
+        '<p class="mudo pequeno">O que cada perfil pode fazer é configurado em Settings › Perfis de acesso. O cliente (convidado) recebe os relatórios aprovados por link, sem conta e sem custo.</p>' +
       '</section>',
   });
 }

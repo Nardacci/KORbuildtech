@@ -940,3 +940,37 @@ body.sem-rolagem { overflow: hidden; }
   .linha-cert, .linha-encargo { grid-template-columns: minmax(0, 1fr) 130px; }
   .modulos:has(> :nth-child(4)) { grid-template-columns: 1fr; }
 }
+
+/* Meu ponto (trabalhador) */
+.meu-ponto { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; border-top: 3px solid var(--cor-crew); padding: 24px 18px; }
+.relogio-grande { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.botoes-meu-ponto { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 360px; margin-top: 8px; }
+.botoes-meu-ponto .btn { width: 100%; justify-content: center; }
+.minha-semana { list-style: none; margin: 8px 0 0; padding: 0; }
+.minha-semana li { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid var(--borda); font-variant-numeric: tabular-nums; }
+.minha-semana li.total { font-weight: 700; border-top: 2px solid var(--borda-forte); }
+
+/* Perfis de acesso e usuários */
+.matriz-perfis th, .matriz-perfis td { vertical-align: middle; }
+.matriz-perfis thead th { white-space: normal; font-size: 13px; color: var(--texto); }
+.matriz-perfis .col-perfil { text-align: center; min-width: 120px; }
+.matriz-perfis .nome-perm { font-weight: 400; min-width: 260px; position: sticky; left: 0; background: var(--superficie); z-index: 1; }
+.matriz-perfis tr.grupo th { background: var(--superficie-2); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mudo); }
+.matriz-perfis .celula-perm { text-align: center; }
+.matriz-perfis .celula-perm input { width: 20px; height: 20px; accent-color: var(--primario); }
+.matriz-perfis .linha-inicio th, .matriz-perfis .linha-inicio td { background: #FFF8F3; text-align: center; color: var(--texto-2); }
+.matriz-perfis .linha-inicio th { text-align: left; }
+.opcoes-perfil { display: flex; flex-direction: column; gap: 8px; }
+.opcao-perfil { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--borda); border-radius: var(--raio); cursor: pointer; }
+.opcao-perfil:has(input:checked) { border-color: var(--primario); background: #FFF8F3; }
+.opcao-perfil input { margin-top: 3px; accent-color: var(--primario); width: 18px; height: 18px; }
+.opcao-perfil > span { display: flex; flex-direction: column; gap: 2px; }
+.inicio-perfil { display: inline-flex; align-items: center; gap: 4px; color: var(--primario); font-weight: 600; }
+@media (max-width: 760px) {
+  .matriz-perfis .nome-perm { position: static; min-width: 170px; }
+  .matriz-perfis .col-perfil { min-width: 96px; }
+}
+.matriz-perfis .nome-perm, .matriz-perfis thead th { white-space: normal; }
+@media (max-width: 760px) {
+  .matriz-perfis { min-width: 680px; }
+}

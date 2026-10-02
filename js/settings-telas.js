@@ -1,28 +1,31 @@
 /* KORbuild Settings — telas: funcionários, encargos, regras de jornada e auditoria.
  * Só o escritório (administrador) entra. */
 
-import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast } from './util.js';
+import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast, abrirDialogo } from './util.js';
 import { estado } from './armazem.js';
-import { casca, usuarioAtual, ehAdmin } from './plataforma.js';
+import { casca, usuarioAtual, pode, MODULOS } from './plataforma.js';
 import { icone } from './icones.js';
 import { dinheiro, valorAtual, equipe, inicioDaSemana } from './crew.js';
 import {
   funcionarios, salvarFuncionario, certificacoesAVencer, CLASSIFICACOES, FLSA, SITUACOES_FUNC,
   regraEm, historicoRegras, novaRegra, resumoRegra, MODELOS_REGRA,
   encargosVersao, encargosEm, historicoEncargos, novosEncargos, auditoria, segundaDe,
+  PERMISSOES, perfis, perfilDe, modulosDe, salvarPermissoes, criarPerfil, excluirPerfil, salvarUsuario,
 } from './settings.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarSettings(funcoes) { app = { ...app, ...funcoes }; }
 
 function nav() {
-  const alertas = funcionarios().filter((f) => f.situacao !== 'desligado' && certificacoesAVencer(f).length).length;
-  return [
-    { id: 'funcionarios', href: '#/settings/funcionarios', rotulo: 'Funcionários', icone: 'crew', contador: alertas },
-    { id: 'encargos', href: '#/settings/encargos', rotulo: 'Encargos', icone: 'dinheiro' },
-    { id: 'regras', href: '#/settings/regras', rotulo: 'Regras de jornada', icone: 'relogio' },
-    { id: 'auditoria', href: '#/settings/auditoria', rotulo: 'Auditoria', icone: 'historico' },
-  ];
+  const u = usuarioAtual();
+  const itens = [];
+  if (pode(u, 'settings.funcionarios')) {
+    const alertas = funcionarios().filter((f) => f.situacao !== 'desligado' && certificacoesAVencer(f).length).length;
+    itens.push({ id: 'funcionarios', href: '#/settings/funcionarios', rotulo: 'Funcionários', icone: 'crew', contador: alertas });
+  }
+  if (pode(u, 'settings.regras')) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: 'Encargos', icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: 'Jornada', icone: 'relogio' });
+  if (pode(u, 'settings.acesso')) itens.push({ id: 'usuarios', href: '#/settings/usuarios', rotulo: 'Usuários', icone: 'conta' }, { id: 'perfis', href: '#/settings/perfis', rotulo: 'Perfis', icone: 'aprovacoes' }, { id: 'auditoria', href: '#/settings/auditoria', rotulo: 'Auditoria', icone: 'historico' });
+  return itens;
 }
 
 function moldura(o) {
@@ -35,8 +38,14 @@ const proximaSegunda = () => somarDias(segundaDe(hoje()), 7);
 
 /* Rotas #/settings/... */
 export function telaSettings(q) {
-  if (!ehAdmin(usuarioAtual())) return { trocar: '#/inicio' };
-  if (!q.length) return { trocar: '#/settings/funcionarios' };
+  const u = usuarioAtual();
+  const precisa = { funcionarios: 'settings.funcionarios', funcionario: 'settings.funcionarios', encargos: 'settings.regras', regras: 'settings.regras', usuarios: 'settings.acesso', usuario: 'settings.acesso', perfis: 'settings.acesso', auditoria: 'settings.acesso' };
+  const primeira = nav()[0];
+  if (!primeira) return { trocar: '#/inicio' };
+  if (!q.length || (precisa[q[0]] && !pode(u, precisa[q[0]]))) return { trocar: primeira.href };
+  if (q[0] === 'usuarios') return telaUsuarios();
+  if (q[0] === 'usuario') return telaFormUsuario(q[1] === 'novo' ? null : q[1]);
+  if (q[0] === 'perfis') return telaPerfis();
   if (q[0] === 'funcionarios') return telaFuncionarios(q[1]);
   if (q[0] === 'funcionario' && q[1] === 'novo') return telaFormFuncionario(null);
   if (q[0] === 'funcionario' && q[2] === 'editar') return telaFormFuncionario(q[1]);
@@ -46,7 +55,7 @@ export function telaSettings(q) {
   if (q[0] === 'regras' && q[1] === 'nova') return telaFormRegra();
   if (q[0] === 'regras') return telaRegras();
   if (q[0] === 'auditoria') return telaAuditoria();
-  return { trocar: '#/settings/funcionarios' };
+  return { trocar: primeira.href };
 }
 
 /* ---------- Funcionários ---------- */
@@ -265,6 +274,80 @@ function telaFormRegra() {
   });
 }
 
+/* ---------- Usuários ---------- */
+
+function telaUsuarios() {
+  const us = estado().usuarios.slice().sort((a, b) => (b.ativo - a.ativo) || a.nome.localeCompare(b.nome));
+  return moldura({
+    ativo: 'usuarios', titulo: 'Usuários', subtitulo: 'Quem entra no KORbuild e com qual perfil de acesso',
+    acoes: '<a class="btn btn-primario btn-pequeno" href="#/settings/usuario/novo">' + icone('mais', 16) + 'Novo usuário</a>',
+    conteudo: '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-usuarios-settings"><thead><tr><th>Usuário</th><th>Perfil de acesso</th><th>Funcionário</th><th>Situação</th><th>Último acesso</th></tr></thead><tbody>' +
+      us.map((x) => {
+        const f = x.funcionarioId && funcionarios().find((y) => y.id === x.funcionarioId);
+        return '<tr><td><a href="#/settings/usuario/' + x.id + '"><b>' + esc(x.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(x.email) + '</span></td>' +
+          '<td><span class="etiqueta etiqueta-neutro">' + esc((perfilDe(x) || {}).nome || '—') + '</span></td>' +
+          '<td>' + (f ? esc(f.nome) + '<span class="mudo pequeno bloco">' + esc(f.codigo || '') + '</span>' : '<span class="mudo">—</span>') + '</td>' +
+          '<td>' + (x.ativo ? '<span class="etiqueta etiqueta-verde">Ativo</span>' : '<span class="etiqueta etiqueta-neutro">Inativo</span>') + '</td>' +
+          '<td>' + (x.ultimoAcesso ? dataHora(x.ultimoAcesso) : '<span class="mudo">Nunca</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div></section>' +
+      '<p class="dica">Usuário é quem tem login. Funcionário é quem trabalha nas obras. O trabalhador que bate o próprio ponto precisa dos dois, ligados. Quem só tem o ponto batido pelo encarregado não precisa de login.</p>',
+  });
+}
+
+function descricaoInicio(p) {
+  const mods = modulosDe({ perfilId: p.id });
+  if (!mods.length) return 'Sem acesso';
+  if (mods.length === 1) {
+    if (mods[0] === 'crew' && p.permissoes.length === 1 && p.permissoes[0] === 'crew.ponto.proprio') return 'Direto no "Meu ponto", sem a tela de módulos';
+    return 'Direto no ' + (MODULOS.find((m) => m.id === mods[0]) || {}).nome + ', sem a tela de módulos';
+  }
+  return 'Tela de módulos (' + mods.map((id) => (MODULOS.find((m) => m.id === id) || {}).nome).join(', ') + ')';
+}
+
+function telaFormUsuario(id) {
+  const x = id ? estado().usuarios.find((y) => y.id === id) : null;
+  if (id && !x) return { trocar: '#/settings/usuarios' };
+  const v = x || { ativo: true, perfilId: 'trabalhador' };
+  const livres = funcionarios().filter((f) => f.situacao !== 'desligado' && (!estado().usuarios.some((y) => y.funcionarioId === f.id) || f.id === v.funcionarioId));
+  return moldura({
+    ativo: 'usuarios', largo: false, titulo: x ? x.nome : 'Novo usuário', voltar: { href: '#/settings/usuarios', rotulo: 'Usuários' },
+    conteudo: '<form id="form-usuario" class="form-settings" data-id="' + (x ? x.id : '') + '" onsubmit="return false"><section class="cartao"><div class="grade-campos">' +
+        '<div class="campo"><label class="rotulo-pequeno" for="us-nome">Nome</label><input type="text" id="us-nome" name="nome" value="' + esc(v.nome || '') + '"></div>' +
+        '<div class="campo"><label class="rotulo-pequeno" for="us-email">E-mail (login)</label><input type="email" id="us-email" name="email" value="' + esc(v.email || '') + '"></div>' +
+        '<div class="campo"><label class="rotulo-pequeno" for="us-cargo">Cargo</label><input type="text" id="us-cargo" name="cargo" value="' + esc(v.cargo || '') + '"></div>' +
+        '<div class="campo"><label class="rotulo-pequeno" for="us-func">Cadastro de funcionário</label><select id="us-func" name="funcionarioId"><option value="">Não é funcionário de obra</option>' +
+          livres.map((f) => '<option value="' + f.id + '"' + (f.id === v.funcionarioId ? ' selected' : '') + '>' + esc(f.nome) + ' · ' + esc(f.funcao) + '</option>').join('') + '</select></div>' +
+      '</div></section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">Perfil de acesso</h2><div class="opcoes-perfil">' +
+        perfis().map((p) => '<label class="opcao-perfil"><input type="radio" name="perfilId" value="' + p.id + '"' + (p.id === v.perfilId ? ' checked' : '') + '>' +
+          '<span><b>' + esc(p.nome) + '</b><span class="mudo pequeno">' + esc(p.descricao || '') + '</span><span class="pequeno inicio-perfil">' + icone('seta', 14) + esc(descricaoInicio(p)) + '</span></span></label>').join('') +
+      '</div><p class="mudo pequeno">O que cada perfil pode fazer está em <a href="#/settings/perfis">Perfis de acesso</a>.</p></section>' +
+      (x ? '<section class="cartao"><label class="check"><input type="checkbox" name="ativo" value="1"' + (v.ativo ? ' checked' : '') + '> Acesso ativo (desmarque para bloquear o login)</label></section>' : '') +
+      '<div class="rodape-form"><a class="btn btn-contorno" href="#/settings/usuarios">Cancelar</a><button type="button" class="btn btn-primario" data-acao="settings-salvar-usuario">' + (x ? 'Salvar' : 'Criar usuário') + '</button></div>' +
+    '</form>',
+  });
+}
+
+/* ---------- Perfis de acesso: matriz de permissões ---------- */
+
+function telaPerfis() {
+  const ps = perfis();
+  const usando = (p) => estado().usuarios.filter((u) => u.perfilId === p.id && u.ativo).length;
+  const cab = '<tr><th>Permissão</th>' + ps.map((p) => '<th class="col-perfil"><b>' + esc(p.nome) + '</b><span class="mudo pequeno bloco">' + usando(p) + (usando(p) === 1 ? ' usuário' : ' usuários') + (p.sistema ? ' · fixo' : '') + '</span>' +
+    (!p.sistema && !usando(p) ? '<button type="button" class="link-botao pequeno" data-acao="settings-excluir-perfil" data-id="' + p.id + '">excluir</button>' : '') + '</th>').join('') + '</tr>';
+  const linhas = PERMISSOES.map((g) => '<tr class="grupo"><th colspan="' + (ps.length + 1) + '">' + esc(g.grupo) + '</th></tr>' +
+    g.itens.map((i) => '<tr><th class="nome-perm"><b>' + esc(i.nome) + '</b><span class="mudo pequeno bloco">' + esc(i.descricao) + (i.requer ? ' · inclui "' + esc(i.requer.map((r) => PERMISSOES.flatMap((x) => x.itens).find((y) => y.id === r).nome).join(', ')) + '"' : '') + '</span></th>' +
+      ps.map((p) => '<td class="celula-perm"><input type="checkbox" name="' + p.id + '|' + i.id + '" aria-label="' + esc(p.nome + ': ' + i.nome) + '"' + (p.permissoes.includes(i.id) ? ' checked' : '') + (p.sistema ? ' disabled' : '') + '></td>').join('') + '</tr>').join('')).join('') +
+    '<tr class="linha-inicio"><th>Ao entrar</th>' + ps.map((p) => '<td class="pequeno">' + esc(descricaoInicio(p)) + '</td>').join('') + '</tr>';
+  return moldura({
+    ativo: 'perfis', titulo: 'Perfis de acesso', subtitulo: 'O que cada perfil pode fazer. Nada fica fixo no código: crie perfis e ajuste as permissões',
+    acoes: '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="settings-novo-perfil">' + icone('mais', 16) + 'Novo perfil</button>' +
+      '<button type="button" class="btn btn-primario btn-pequeno" data-acao="settings-salvar-perfis">Salvar permissões</button></div>',
+    conteudo: '<form id="form-perfis" onsubmit="return false"><section class="cartao"><div class="tabela-rolagem"><table class="tabela matriz-perfis"><thead>' + cab + '</thead><tbody>' + linhas + '</tbody></table></div></section></form>' +
+      '<p class="dica">O perfil Administrador é fixo, para a empresa nunca ficar sem quem gerencie os acessos. Para um administrador que também preenche o RDO, crie um perfil novo a partir dele. Toda mudança vai para a auditoria.</p>',
+  });
+}
+
 /* ---------- Auditoria ---------- */
 
 function telaAuditoria() {
@@ -283,6 +366,45 @@ function telaAuditoria() {
 const valorDe = (form, nome) => { const el = form.querySelector('[name="' + nome + '"]'); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; };
 
 export const acoesSettings = {
+  'settings-salvar-usuario'() {
+    const form = document.getElementById('form-usuario');
+    const marcado = form.querySelector('[name="perfilId"]:checked');
+    const ativo = form.querySelector('[name="ativo"]');
+    const r = salvarUsuario(form.dataset.id || null, {
+      nome: valorDe(form, 'nome'), email: valorDe(form, 'email'), cargo: valorDe(form, 'cargo'), funcionarioId: valorDe(form, 'funcionarioId'),
+      perfilId: marcado ? marcado.value : '', ativo: ativo ? ativo.checked : true,
+    }, usuarioAtual().nome, usuarioAtual());
+    if (r.erro) { toast(r.erro); return; }
+    toast(form.dataset.id ? 'Acesso atualizado.' : 'Usuário criado. Na versão real, ele recebe um convite por e-mail.');
+    app.ir('#/settings/usuarios');
+  },
+  'settings-salvar-perfis'() {
+    const form = document.getElementById('form-perfis');
+    const mapa = {};
+    for (const p of perfis()) mapa[p.id] = [];
+    form.querySelectorAll('input[type="checkbox"]:checked').forEach((c) => { const [pid, perm] = c.name.split('|'); if (mapa[pid]) mapa[pid].push(perm); });
+    const r = salvarPermissoes(mapa, usuarioAtual().nome);
+    toast(r.mudancas.length ? 'Permissões salvas: ' + r.mudancas.join(', ') + '.' : 'Nada mudou.');
+    app.desenhar();
+  },
+  async 'settings-novo-perfil'() {
+    const res = await abrirDialogo({
+      titulo: 'Novo perfil de acesso',
+      corpo: '<label class="rotulo-pequeno" for="np-nome">Nome</label><input type="text" id="np-nome" name="nome" placeholder="Ex.: Encarregado com aprovação">' +
+        '<label class="rotulo-pequeno" for="np-base">Começar com as permissões de</label><select id="np-base" name="base"><option value="">Nenhuma</option>' + perfis().map((p) => '<option value="' + p.id + '">' + esc(p.nome) + '</option>').join('') + '</select>',
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Criar perfil', valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = criarPerfil(res.campos.nome, res.campos.base, usuarioAtual().nome);
+    if (r.erro) { toast(r.erro); return; }
+    toast('Perfil criado. Ajuste as permissões e salve.');
+    app.desenhar();
+  },
+  'settings-excluir-perfil'(el) {
+    const r = excluirPerfil(el.dataset.id, usuarioAtual().nome);
+    toast(r.erro || 'Perfil excluído.');
+    app.desenhar();
+  },
   'settings-salvar-func'() {
     const form = document.getElementById('form-func');
     const dados = {};
@@ -330,7 +452,7 @@ export const acoesSettings = {
 
 /* Sininho: certificações vencendo (só para o escritório). */
 export function notificacoesSettings(u) {
-  if (!ehAdmin(u)) return [];
+  if (!pode(u, 'settings.funcionarios')) return [];
   return funcionarios().filter((f) => f.situacao !== 'desligado').flatMap((f) => certificacoesAVencer(f).map((c) => ({
     id: 'cert-' + f.id + '-' + c.nome + '-' + c.validade, em: new Date(hoje() + 'T07:30:00').getTime(), modulo: 'settings',
     titulo: f.nome + ': ' + c.nome + (c.validade < hoje() ? ' venceu em ' : ' vence em ') + dataCurta(c.validade),

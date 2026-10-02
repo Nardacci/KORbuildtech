@@ -199,6 +199,132 @@ export function certificacoesAVencer(f, dias) {
   return (f.certificacoes || []).filter((c) => c.validade && c.validade <= limite);
 }
 
+/* ---------- Permissões e perfis de acesso ----------
+ * O catálogo de permissões é o vocabulário do produto (o que existe para liberar). Quais perfis têm
+ * quais permissões, e quem tem qual perfil, é configuração da empresa (Settings › Perfis de acesso). */
+
+export const PERMISSOES = [
+  { grupo: 'Crew · ponto', modulo: 'crew', itens: [
+    { id: 'crew.ponto.proprio', nome: 'Bater o próprio ponto', descricao: 'Entrada, intervalo e saída no próprio celular, com GPS' },
+    { id: 'crew.ponto.equipe', nome: 'Bater o ponto da equipe', descricao: 'Encarregado: marca a equipe e vê as horas dela' },
+  ] },
+  { grupo: 'Crew · escritório', modulo: 'crew', itens: [
+    { id: 'crew.acompanhar', nome: 'Acompanhar ponto e timesheets', descricao: 'Agora, timesheets e mapa do dia' },
+    { id: 'crew.aprovar', nome: 'Aprovar e ajustar timesheets', descricao: 'Aprovar, devolver, ajustar e exportar para a folha', requer: ['crew.acompanhar'] },
+    { id: 'crew.custos', nome: 'Ver custos e valores em dinheiro', descricao: 'Custo das obras, orçamento, salários nos timesheets', requer: ['crew.acompanhar'] },
+  ] },
+  { grupo: 'Daily', modulo: 'daily', itens: [
+    { id: 'daily.preencher', nome: 'Preencher o diário de obra', descricao: 'Criar e enviar o RDO das suas obras' },
+    { id: 'daily.acompanhar', nome: 'Acompanhar todas as obras', descricao: 'Painel, obras e relatórios enviados' },
+    { id: 'daily.aprovar', nome: 'Aprovar RDO e enviar ao cliente', descricao: 'Aprovar, pedir ajuste, PDF e link do cliente', requer: ['daily.acompanhar'] },
+  ] },
+  { grupo: 'Settings', modulo: 'settings', itens: [
+    { id: 'settings.funcionarios', nome: 'Cadastro de funcionários', descricao: 'Dados, certificações e valor hora' },
+    { id: 'settings.regras', nome: 'Encargos e regras de jornada', descricao: 'Mudanças com vigência, sem mexer no passado' },
+    { id: 'settings.acesso', nome: 'Usuários e perfis de acesso', descricao: 'Quem entra e o que cada perfil pode fazer' },
+    { id: 'settings.conta', nome: 'Conta da empresa e plano', descricao: 'Dados da empresa, plano e módulos' },
+  ] },
+];
+export const TODAS_PERMISSOES = PERMISSOES.flatMap((g) => g.itens.map((i) => i.id));
+export function permissao(id) { return PERMISSOES.flatMap((g) => g.itens).find((i) => i.id === id); }
+
+export const PERFIS_INICIAIS = [
+  { id: 'administrador', nome: 'Administrador', descricao: 'Escritório: tudo, inclusive o Settings', sistema: true, permissoes: TODAS_PERMISSOES.filter((p) => p !== 'crew.ponto.proprio' && p !== 'crew.ponto.equipe' && p !== 'daily.preencher') },
+  { id: 'gestor', nome: 'Gestor de obras', descricao: 'Vê tudo dos módulos e aprova, sem mexer nas configurações', permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar'] },
+  { id: 'encarregado', nome: 'Encarregado', descricao: 'Campo: ponto da equipe e diário de obra', permissoes: ['crew.ponto.proprio', 'crew.ponto.equipe', 'daily.preencher'] },
+  { id: 'trabalhador', nome: 'Trabalhador', descricao: 'Só bate o próprio ponto: entra direto no ponto, sem a tela de módulos', permissoes: ['crew.ponto.proprio'] },
+];
+
+export function perfis() { return cfg().perfis || []; }
+export function perfilDe(u) { return u ? perfis().find((p) => p.id === u.perfilId) || null : null; }
+export function pode(u, perm) { const p = perfilDe(u); return !!p && p.permissoes.includes(perm); }
+export function podeAlgum(u, prefixo) { const p = perfilDe(u); return !!p && p.permissoes.some((x) => x.startsWith(prefixo)); }
+
+/* Módulos que a pessoa pode abrir, na ordem da tela de módulos. */
+export function modulosDe(u) {
+  const out = [];
+  if (podeAlgum(u, 'daily.')) out.push('daily');
+  if (podeAlgum(u, 'crew.')) out.push('crew');
+  if (podeAlgum(u, 'settings.')) out.push('settings');
+  return out;
+}
+
+/* Inclui as permissões que outra exige (ex.: aprovar exige acompanhar). */
+function completar(lista) {
+  const set = new Set(lista.filter((p) => TODAS_PERMISSOES.includes(p)));
+  for (const id of Array.from(set)) for (const r of (permissao(id).requer || [])) set.add(r);
+  return TODAS_PERMISSOES.filter((p) => set.has(p));
+}
+
+export function salvarPermissoes(mapa, por) {
+  // mapa: { perfilId: [permissões] }
+  const mudancas = [];
+  for (const p of perfis()) {
+    if (p.sistema || !mapa[p.id]) continue;
+    const nova = completar(mapa[p.id]);
+    const antes = p.permissoes;
+    const add = nova.filter((x) => !antes.includes(x)), rem = antes.filter((x) => !nova.includes(x));
+    if (!add.length && !rem.length) continue;
+    p.permissoes = nova;
+    mudancas.push(p.nome);
+    auditar('Perfis de acesso', 'Permissões do perfil ' + p.nome, rem.map((x) => permissao(x).nome).join(' · '), add.map((x) => permissao(x).nome).join(' · '), '', por);
+  }
+  salvar();
+  return { ok: true, mudancas };
+}
+
+export function criarPerfil(nome, copiarDe, por) {
+  if (!nome || !nome.trim()) return { erro: 'Informe o nome do perfil.' };
+  if (perfis().some((p) => p.nome.toLowerCase() === nome.trim().toLowerCase())) return { erro: 'Já existe um perfil com esse nome.' };
+  const base = perfis().find((p) => p.id === copiarDe);
+  const p = { id: novoId('pf'), nome: nome.trim(), descricao: base ? 'Criado a partir de ' + base.nome : '', permissoes: base ? base.permissoes.slice() : [] };
+  cfg().perfis.push(p);
+  auditar('Perfis de acesso', 'Novo perfil: ' + p.nome, '', p.permissoes.map((x) => permissao(x).nome).join(' · ') || 'sem permissões', '', por);
+  salvar();
+  return { ok: true, id: p.id };
+}
+
+export function excluirPerfil(id, por) {
+  const p = perfis().find((x) => x.id === id);
+  if (!p || p.sistema) return { erro: 'Este perfil não pode ser excluído.' };
+  const usando = estado().usuarios.filter((u) => u.perfilId === id).length;
+  if (usando) return { erro: 'Há ' + usando + (usando === 1 ? ' usuário' : ' usuários') + ' com este perfil. Troque o perfil deles antes.' };
+  cfg().perfis = perfis().filter((x) => x.id !== id);
+  auditar('Perfis de acesso', 'Perfil excluído: ' + p.nome, '', '', '', por);
+  salvar();
+  return { ok: true };
+}
+
+/* Usuários (quem tem login). O trabalhador que só bate ponto também é usuário, ligado ao seu cadastro de funcionário. */
+export function salvarUsuario(id, dados, por, quemSalva) {
+  const lista = estado().usuarios;
+  const nome = (dados.nome || '').trim(), email = (dados.email || '').trim().toLowerCase();
+  if (!nome || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { erro: 'Informe nome e e-mail válidos.' };
+  if (!perfis().some((p) => p.id === dados.perfilId)) return { erro: 'Escolha um perfil de acesso.' };
+  if (lista.some((u) => u.email.toLowerCase() === email && u.id !== id)) return { erro: 'Já existe um usuário com esse e-mail.' };
+  const perfilNovo = perfis().find((p) => p.id === dados.perfilId);
+  if (perfilNovo.permissoes.includes('crew.ponto.proprio') && !dados.funcionarioId) return { erro: 'Este perfil bate o próprio ponto: ligue o usuário ao cadastro de funcionário dele.' };
+  const ativo = dados.ativo !== false;
+  if (id) {
+    const u = lista.find((x) => x.id === id);
+    // sempre precisa sobrar alguém que consiga gerenciar os acessos
+    const gerentes = lista.filter((x) => x.ativo && (x.id === id ? (ativo && (perfis().find((p) => p.id === dados.perfilId) || { permissoes: [] }).permissoes.includes('settings.acesso')) : pode(x, 'settings.acesso')));
+    if (!gerentes.length) return { erro: 'Precisa ficar pelo menos um usuário ativo que gerencie os acessos.' };
+    if (quemSalva && quemSalva.id === id && !ativo) return { erro: 'Você não pode desativar o seu próprio acesso.' };
+    const antes = (perfilDe(u) || {}).nome + (u.ativo ? '' : ' (inativo)');
+    Object.assign(u, { nome, email, perfilId: dados.perfilId, funcionarioId: dados.funcionarioId || null, cargo: (dados.cargo || '').trim(), ativo });
+    const depois = (perfilDe(u) || {}).nome + (u.ativo ? '' : ' (inativo)');
+    auditar('Usuários', 'Acesso de ' + u.nome, antes !== depois ? antes : '', antes !== depois ? depois : 'dados atualizados', '', por);
+    salvar();
+    return { ok: true, id };
+  }
+  const u = { id: novoId('u'), nome, email, perfilId: dados.perfilId, funcionarioId: dados.funcionarioId || null, cargo: (dados.cargo || '').trim(), telefone: '', ativo: true, ultimoAcesso: null };
+  lista.push(u);
+  auditar('Usuários', 'Novo usuário: ' + u.nome, '', (perfilDe(u) || {}).nome + ' · ' + email, '', por);
+  salvar();
+  return { ok: true, id: u.id };
+}
+
 /* ---------- Auditoria ---------- */
 
 export function auditar(area, descricao, antes, depois, motivo, por) {
@@ -214,6 +340,7 @@ export function criarSettings(desde, dataRegistro) {
   return {
     regras: [{ id: 'rg-inicial', desde, ...structuredClone(MODELOS_REGRA.federal), motivo: 'Configuração inicial da empresa', por: 'Ana Ribeiro', em: dataRegistro }],
     encargos: [{ id: 'en-inicial', desde, itens: structuredClone(ENCARGOS_INICIAIS), motivo: 'Configuração inicial da empresa', por: 'Ana Ribeiro', em: dataRegistro }],
+    perfis: structuredClone(PERFIS_INICIAIS),
     funcoes: ['Pedreiro', 'Servente', 'Carpinteiro', 'Armador', 'Eletricista', 'Encanador', 'Pintor', 'Mestre de obras', 'Encarregado', 'Operador de máquinas'],
     auditoria: [{ id: 'au-inicial', em: dataRegistro, por: 'Ana Ribeiro', area: 'Empresa', descricao: 'Configuração inicial: regra New Hampshire (FLSA federal) e encargos padrão', antes: '', depois: '', motivo: '' }],
   };

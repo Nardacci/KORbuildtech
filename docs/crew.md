@@ -38,24 +38,27 @@ O ponto alimenta o RDO do Daily (equipe do dia) e o custo da obra. **Nenhum conc
 
 ## 2. Perfis e permissões
 
+Quem pode o quê vem dos **perfis de acesso** do Settings (configuráveis; ver [`settings.md` §5](settings.md)). Perfis prontos:
+
 | Perfil | Quem é | O que faz no Crew | Onde |
 | --- | --- | --- | --- |
-| **Encarregado** (campo) | Mestre de obras ou encarregado da equipe (Carlos, Roberto) | Bate o ponto da equipe toda (entrada, intervalo, troca de obra, chegada, saída) e acompanha as horas da equipe | Celular, abas **Ponto** e **Horas** |
-| **Escritório** (admin) | Gestor, RH ou financeiro (Ana, Márcia) | Vê quem está trabalhando agora, confere batidas fora da obra, aprova timesheets, ajusta com motivo, exporta para a folha, cuida do valor hora, dos orçamentos e dos custos | Computador, abas **Agora**, **Timesheets** e **Custos**, mais o **Settings** (funcionários, encargos, regras) |
-| **Trabalhador** | Quem bate o ponto ou tem o ponto batido pelo encarregado | Na versão real: vê as próprias horas e o próprio mapa (transparência) | App nativo (fase 2) |
+| **Trabalhador** | Quem bate o próprio ponto (Diego) | **Meu ponto**: entrada, intervalo, troca de obra, saída, o dia e as horas da semana (sem valores) | Celular; entra direto no Meu ponto, sem a tela de módulos |
+| **Encarregado** (campo) | Mestre de obras ou encarregado (Carlos, Roberto) | Bate o ponto da equipe toda e acompanha as horas dela; também preenche o RDO do Daily | Celular, abas **Ponto** e **Horas** |
+| **Gestor de obras** | Diretora de obras (Márcia) | Acompanha, aprova timesheets e vê custos; não mexe no Settings | Computador |
+| **Administrador** (escritório) | Gestor, RH ou financeiro (Ana) | Tudo do escritório, mais o Settings (funcionários, encargos, regras, usuários, perfis) | Computador, abas **Agora**, **Timesheets** e **Custos**, mais o **Settings** |
 
 Regras de acesso:
-- **Valor hora, custos e orçamentos são só do escritório.** O encarregado vê horas, nunca dinheiro.
-- O mapa do dia (localização) é visto pelo escritório e, na versão real, pelo próprio trabalhador.
-- Login de demonstração: Carlos (campo) e Ana (escritório). Os papéis valem dentro de cada módulo.
-
----
+- **Valores em dinheiro** (custos, salário nos timesheets) exigem a permissão "Ver custos e valores em dinheiro". O trabalhador e o encarregado veem horas, nunca dinheiro.
+- **Aprovar, devolver, ajustar e exportar** exigem "Aprovar e ajustar timesheets". Sem ela, os timesheets ficam só para consulta.
+- O mapa do dia (localização) é visto por quem acompanha o ponto; na versão real, também pelo próprio trabalhador.
+- Login de demonstração: Diego (trabalhador), Carlos (encarregado) e Ana (administradora).
 
 ## 3. Mapa das telas
 
 ### Campo (encarregado)
 | Tela | Rota | Para quê |
 | --- | --- | --- |
+| **Meu ponto** (trabalhador) | `#/crew/meu` | Relógio, estado do dia, botões grandes só com o que cabe agora (bater entrada, começar intervalo, ir para outra obra, bater saída), as batidas de hoje e as horas da semana |
 | **Ponto da equipe** | `#/crew/equipe` | Lista da equipe com o estado de cada pessoa. O encarregado seleciona uma pessoa ou todas e usa os botões **Entrada · Intervalo · Volta · Trocar obra · Chegou · Saída**. Cada batida mostra a distância até a obra e se está dentro da cerca |
 | **Horas da equipe** | `#/crew/horas` | Horas da semana por pessoa e dia, com alertas (sem saída, fora da obra, sem intervalo) |
 

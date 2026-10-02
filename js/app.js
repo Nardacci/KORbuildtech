@@ -10,7 +10,7 @@ import {
 } from './armazem.js';
 import { criarDemonstracao, CONTAS_DEMO, VERSAO_DADOS } from './exemplo.js';
 import {
-  usuarioAtual, entrar, sair, usuarioPorEmail, ehAdmin, registrarInteresse, modulo, definirPodeInstalar,
+  usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, registrarInteresse, modulo, definirPodeInstalar,
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
 } from './plataforma.js';
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
@@ -121,7 +121,7 @@ async function notificar(titulo, corpo, tag) {
  * Na versão final, quem dispara é o servidor (notificação no celular e no sininho), mesmo com o app fechado. */
 function conferirLembretes() {
   const u = usuarioAtual();
-  if (!u || ehAdmin(u)) { atualizarBadge(0); return; }
+  if (!u || !pode(u, 'daily.preencher')) { atualizarBadge(0); return; }
   const p = pendenciasDoCampo();
   atualizarBadge(p.total);
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -173,13 +173,12 @@ function desenhar() {
   let modo = p[0];
   if (p[0] === 'daily') {
     const q = rotaDaily();
-    if (!estado().empresa.modulos.includes('daily')) return trocarRota('#/inicio');
-    // Dentro do Daily, cada papel tem a sua área: escritório (painel, aprovações, obras) e campo (hoje, histórico).
-    const inicioDoPapel = ehAdmin(u) ? '#/daily/painel' : '#/daily/campo';
+    if (!modulosLiberados(u).includes('daily')) return trocarRota(inicioDoUsuario(u));
+    // Dentro do Daily, cada perfil tem a sua área: quem acompanha (painel, aprovações, obras) e quem preenche (hoje, histórico).
+    const inicioDoPapel = pode(u, 'daily.acompanhar') ? '#/daily/painel' : '#/daily/campo';
     if (!q.length) return trocarRota(inicioDoPapel);
-    const doEscritorio = ['painel', 'aprovacoes', 'obras'].includes(q[0]);
-    const doCampo = ['campo', 'historico'].includes(q[0]);
-    if ((doEscritorio && !ehAdmin(u)) || (doCampo && ehAdmin(u))) return trocarRota(inicioDoPapel);
+    const precisa = { painel: 'daily.acompanhar', obras: 'daily.acompanhar', aprovacoes: 'daily.aprovar', campo: 'daily.preencher', historico: 'daily.preencher', pdf: 'daily.acompanhar' }[q[0]];
+    if (precisa && !pode(u, precisa) && !(q[0] === 'pdf' && pode(u, 'daily.preencher'))) return trocarRota(inicioDoPapel);
     modo = q[0];
     if (q[0] === 'campo' && q[1] === 'obra') html = telaObraCampo(q[2]);
     else if (q[0] === 'campo' && q[1] === 'rdo') html = telaRdoCampo(q[2]);
@@ -195,9 +194,9 @@ function desenhar() {
   } else if (p[0] === 'cliente') html = telaCliente(p[1]);
   else if (p[0] === 'entrar') html = telaLogin(estado().usuarios.filter((x) => CONTAS_DEMO.includes(x.id)));
   else if (p[0] === 'conta') {
-    if (!ehAdmin(u)) return trocarRota('#/inicio');
+    if (!pode(u, 'settings.conta')) return trocarRota(inicioDoUsuario(u));
     html = telaConta(u);
-  } else if (p[0] === 'crew' && estado().empresa.modulos.includes('crew')) {
+  } else if (p[0] === 'crew' && modulosLiberados(u).includes('crew')) {
     const r = telaCrew(p.slice(1));
     if (r && r.trocar) return trocarRota(r.trocar);
     html = r;
@@ -208,7 +207,12 @@ function desenhar() {
     html = r;
     modo = 'settings';
   } else if (modulo(p[0])) html = telaEmBreve(u, p[0]);
-  else if (p[0] === 'inicio') html = telaModulos(u, saudacao());
+  else if (p[0] === 'inicio') {
+    // com um módulo só (ex.: trabalhador que só bate ponto), não há tela de módulos
+    const destino = inicioDoUsuario(u);
+    if (destino !== '#/inicio') return trocarRota(destino);
+    html = telaModulos(u, saudacao());
+  }
   else return trocarRota('#/inicio');
   app.innerHTML = html;
   document.body.dataset.modo = modo;
@@ -241,20 +245,18 @@ function ir(hash) {
 function navDaily() {
   const u = usuarioAtual();
   const { rdos } = estado();
-  if (ehAdmin(u)) {
-    const pendentes = rdos.filter((r) => recebido(r) && r.status === 'enviado').length;
-    return [
-      { id: 'painel', href: '#/daily/painel', rotulo: 'Painel', icone: 'painel' },
-      { id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: 'Aprovações', icone: 'aprovacoes', contador: pendentes },
-      { id: 'obras', href: '#/daily/obras', rotulo: 'Obras', icone: 'obras' },
-    ];
+  const itens = [];
+  if (pode(u, 'daily.acompanhar')) {
+    itens.push({ id: 'painel', href: '#/daily/painel', rotulo: 'Painel', icone: 'painel' });
+    if (pode(u, 'daily.aprovar')) itens.push({ id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: 'Aprovações', icone: 'aprovacoes', contador: rdos.filter((r) => recebido(r) && r.status === 'enviado').length });
+    itens.push({ id: 'obras', href: '#/daily/obras', rotulo: 'Obras', icone: 'obras' });
   }
-  // Contador de Hoje: dias atrasados, obras sem RDO hoje e ajustes pedidos.
-  const pendentes = pendenciasDoCampo().total;
-  return [
-    { id: 'hoje', href: '#/daily/campo', rotulo: 'Hoje', icone: 'hoje', contador: pendentes },
-    { id: 'historico', href: '#/daily/historico', rotulo: 'Histórico', icone: 'historico' },
-  ];
+  if (pode(u, 'daily.preencher')) {
+    // Contador de Hoje: dias atrasados, obras sem RDO hoje e ajustes pedidos.
+    itens.push({ id: 'hoje', href: '#/daily/campo', rotulo: 'Hoje', icone: 'hoje', contador: pendenciasDoCampo().total });
+    itens.push({ id: 'historico', href: '#/daily/historico', rotulo: 'Histórico', icone: 'historico' });
+  }
+  return itens;
 }
 
 function botaoConexao() {
@@ -857,7 +859,7 @@ function telaPdf(id) {
   const r = acharRdo(id);
   if (!r) return naoEncontrado('#/daily');
   const o = acharObra(r.obraId);
-  const voltar = ehAdmin(usuarioAtual()) ? '#/daily/painel/rdo/' + r.id : '#/daily/campo/rdo/' + r.id;
+  const voltar = pode(usuarioAtual(), 'daily.acompanhar') ? '#/daily/painel/rdo/' + r.id : '#/daily/campo/rdo/' + r.id;
   return '<div class="pdf-barra nao-imprimir"><a class="btn btn-escuro btn-pequeno" href="' + voltar + '">' + icone('voltar', 16) + 'Voltar</a>' +
       '<span>Pré-visualização do PDF (A4)</span>' +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="imprimir">' + icone('baixar', 16) + 'Baixar PDF</button></div>' +
@@ -1377,15 +1379,15 @@ function carregando() {
 function notificacoesDaily(u) {
   const lista = [];
   const { rdos } = estado();
-  if (ehAdmin(u)) {
+  if (pode(u, 'daily.acompanhar')) {
     for (const { obra, data } of semRdoOntem()) {
       const resp = estado().usuarios.find((x) => x.id === obra.responsavelId);
       lista.push({ id: 'd-semrdo-' + obra.id + data, em: new Date(hoje() + 'T08:00:00').getTime(), modulo: 'daily', titulo: obra.nome + ' ficou sem RDO em ' + dataCurta(data).slice(0, 5) + (resp ? ' (' + resp.nome + ')' : ''), href: '#/daily/obras/' + obra.id });
     }
-    for (const r of rdos.filter((x) => recebido(x) && x.status === 'enviado')) {
+    for (const r of rdos.filter((x) => pode(u, 'daily.aprovar') && recebido(x) && x.status === 'enviado')) {
       lista.push({ id: 'd-recebido-' + r.id, em: r.enviadoEm, modulo: 'daily', titulo: 'RDO nº ' + r.numero + ' de ' + acharObra(r.obraId).nome + ' aguardando aprovação', href: '#/daily/painel/rdo/' + r.id });
     }
-  } else {
+  } else if (pode(u, 'daily.preencher')) {
     const p = pendenciasDoCampo();
     for (const { obra, situacao } of p.hojeSemRdo) if (situacao === 'lembrete') {
       lista.push({ id: 'd-lembrete-' + obra.id + hoje(), em: new Date(hoje() + 'T16:00:00').getTime(), modulo: 'daily', titulo: 'Falta o RDO de hoje de ' + obra.nome + ' · prazo ' + PRAZO_HORA + 'h', href: '#/daily/campo/obra/' + obra.id });

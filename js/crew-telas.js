@@ -5,7 +5,7 @@
 
 import { esc, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
 import { estado, salvar, obra as acharObra } from './armazem.js';
-import { casca, usuarioAtual, ehAdmin } from './plataforma.js';
+import { casca, usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { obterPosicao } from './fotos.js';
 import {
@@ -39,18 +39,17 @@ function nomeCurto(id) { return nomeObra(id).split(' ').slice(0, 2).join(' '); }
 
 function navCrew() {
   const u = usuarioAtual();
-  if (ehAdmin(u)) {
-    const pendentes = todosFuncionarios().filter((f) => semana(f.id, somarDias(inicioDaSemana(hoje()), -7)).status === 'pendente').length;
-    return [
-      { id: 'agora', href: '#/crew/agora', rotulo: 'Agora', icone: 'pino' },
-      { id: 'timesheets', href: '#/crew/timesheets', rotulo: 'Timesheets', icone: 'tabela', contador: pendentes },
-      { id: 'custos', href: '#/crew/custos', rotulo: 'Custos', icone: 'dinheiro' },
-    ];
+  const itens = [];
+  if (pode(u, 'crew.ponto.equipe')) {
+    itens.push({ id: 'equipe', href: '#/crew/equipe', rotulo: 'Ponto', icone: 'relogio' }, { id: 'horas', href: '#/crew/horas', rotulo: 'Horas', icone: 'tabela' });
+  } else if (pode(u, 'crew.ponto.proprio')) itens.push({ id: 'meu', href: '#/crew/meu', rotulo: 'Meu ponto', icone: 'relogio' });
+  if (pode(u, 'crew.acompanhar')) {
+    const pendentes = pode(u, 'crew.aprovar') ? todosFuncionarios().filter((f) => semana(f.id, somarDias(inicioDaSemana(hoje()), -7)).status === 'pendente').length : 0;
+    itens.push({ id: 'agora', href: '#/crew/agora', rotulo: 'Agora', icone: 'pino' }, { id: 'timesheets', href: '#/crew/timesheets', rotulo: 'Timesheets', icone: 'tabela', contador: pendentes });
   }
-  return [
-    { id: 'equipe', href: '#/crew/equipe', rotulo: 'Ponto', icone: 'relogio' },
-    { id: 'horas', href: '#/crew/horas', rotulo: 'Horas', icone: 'tabela' },
-  ];
+  if (pode(u, 'crew.custos')) itens.push({ id: 'custos', href: '#/crew/custos', rotulo: 'Custos', icone: 'dinheiro' });
+  // com uma tela só (ex.: o trabalhador, só "Meu ponto"), sem menu
+  return itens.length > 1 ? itens : [];
 }
 
 function moldura(o) {
@@ -61,12 +60,14 @@ function moldura(o) {
 export function telaCrew(q) {
   const u = usuarioAtual();
   pararRelogio();
-  const doAdmin = ['agora', 'timesheets', 'custos', 'semana'];
-  const doCampo = ['equipe', 'horas'];
-  const inicio = ehAdmin(u) ? '#/crew/agora' : '#/crew/equipe';
+  // cada tela pede uma permissão do perfil (Settings › Perfis de acesso)
+  const precisa = { equipe: 'crew.ponto.equipe', horas: 'crew.ponto.equipe', meu: 'crew.ponto.proprio', agora: 'crew.acompanhar', timesheets: 'crew.acompanhar', semana: 'crew.acompanhar', custos: 'crew.custos' };
+  const inicio = pode(u, 'crew.ponto.equipe') ? '#/crew/equipe' : pode(u, 'crew.ponto.proprio') ? '#/crew/meu' : pode(u, 'crew.acompanhar') ? '#/crew/agora' : '#/inicio';
   if (!q.length) return { trocar: inicio };
-  if ((doAdmin.includes(q[0]) && !ehAdmin(u)) || (doCampo.includes(q[0]) && ehAdmin(u))) return { trocar: inicio };
+  if (precisa[q[0]] && !pode(u, precisa[q[0]])) return { trocar: inicio };
+  if (q[0] === 'dia' && !pode(u, 'crew.acompanhar') && !pode(u, 'crew.ponto.equipe')) return { trocar: inicio };
   if (q[0] === 'equipe') return telaEquipe();
+  if (q[0] === 'meu') return telaMeuPonto();
   if (q[0] === 'horas') return telaHorasEquipe(q[1]);
   if (q[0] === 'agora') return telaAgora();
   if (q[0] === 'timesheets') return telaTimesheets(q[1]);
@@ -149,6 +150,42 @@ function telaEquipe() {
   });
 }
 
+/* ---------- Trabalhador: o próprio ponto (sem tela de módulos) ---------- */
+
+function telaMeuPonto() {
+  const u = usuarioAtual();
+  const f = u.funcionarioId && funcionario(u.funcionarioId);
+  if (!f) return moldura({ ativo: 'meu', titulo: 'Meu ponto', conteudo: '<p class="vazio">Seu acesso ainda não está ligado ao seu cadastro de funcionário. Fale com o escritório.</p>' });
+  selecionados.clear();
+  selecionados.add(f.id); // os botões do ponto valem só para a própria pessoa
+  const j = jornada(f.id, hoje());
+  const d = descricaoEstado(j);
+  const ap = aplicaveis([f.id]);
+  const s = semana(f.id, inicioDaSemana(hoje()));
+  const botao = (acao, rotulo, ic, ok, classe) => ok.length ? '<button type="button" class="btn ' + (classe || 'btn-contorno') + ' btn-grande" data-acao="crew-' + acao + '">' + icone(ic, 20) + rotulo + '</button>' : '';
+  iniciarRelogio();
+  return moldura({
+    ativo: 'meu', titulo: 'Olá, ' + f.nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
+    conteudo:
+      '<section class="cartao meu-ponto"><span class="mudo pequeno">Hora oficial do ponto</span><b id="relogio-crew" class="relogio-grande">' + horaComSegundos() + '</b>' +
+        '<span class="estado-ponto estado-' + d.classe + '">' + esc(d.texto) + '</span>' +
+        (j.pago ? '<span class="mudo">Hoje: <b>' + horas(j.pago) + '</b> trabalhadas</span>' : '') +
+        '<div class="botoes-meu-ponto">' +
+          botao('entrada', 'Bater entrada', 'entrar', ap.entrada, 'btn-primario') + botao('intervalo', 'Começar intervalo', 'cafe', ap.intervalo) +
+          botao('volta', 'Voltar do intervalo', 'cafe', ap.volta, 'btn-primario') + botao('troca', 'Ir para outra obra', 'troca', ap.troca) +
+          botao('chegada', 'Cheguei na obra', 'pino', ap.chegada, 'btn-primario') + botao('saida', 'Bater saída', 'sair', ap.saida) +
+        '</div></section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">Hoje</h2>' +
+        (j.batidas.length ? '<ol class="linha-tempo">' + j.batidas.map((b) => '<li class="' + (b.dentroCerca === false ? 'fora' : '') + '"><span class="lt-hora">' + horaCurta(b.em) + '</span><div><span><b>' + ROTULO_BATIDA[b.tipo] + '</b> · ' + esc(nomeObra(b.obraId)) + '</span>' +
+          '<span class="mudo pequeno">' + (b.fonteGps === 'gps' ? (b.dentroCerca ? 'Dentro da obra' : 'Fora da obra') : 'Sem GPS') + (b.registradoPor !== u.id ? ' · registrado pelo encarregado' : '') + '</span></div></li>').join('') + '</ol>' : '<p class="vazio">Nenhuma batida hoje.</p>') +
+      '</section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">Minha semana</h2><ul class="minha-semana">' +
+        s.dias.filter((x) => x.pago || x.iso === hoje()).map((x) => '<li><span>' + primeiraMaiuscula(diaDaSemana(x.iso)).slice(0, 3) + ' ' + dataCurta(x.iso).slice(0, 5) + '</span><b>' + (x.pago ? horas(x.pago) : '–') + '</b></li>').join('') +
+        '<li class="total"><span>Total</span><b>' + horas(s.total) + (s.extra + s.dobra ? ' · ' + horas(s.extra + s.dobra) + ' extras' : '') + '</b></li></ul></section>' +
+      '<p class="dica centro">Sua localização só é registrada com o ponto aberto: na batida e durante a jornada. Nada no intervalo nem depois da saída.</p>',
+  });
+}
+
 function horaComSegundos() {
   const d = new Date();
   return [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':');
@@ -218,10 +255,13 @@ async function dialogoComLocal({ titulo, obraId, corpoAntes, corpoDepois, rotulo
   return { campos: res.campos, obraId: obraEscolhida, loc };
 }
 
+/* A pessoa batendo o próprio ponto (Meu ponto), e não o encarregado pela equipe. */
+function proprio(ids) { return ids.length === 1 && ids[0] === usuarioAtual().funcionarioId; }
+
 function aplicar(ids, tipo, obraId, etapa, loc, extra) {
   registrarBatidas(ids, {
     tipo, obraId, etapa, lat: loc.lat, lon: loc.lon, precisao: loc.precisao, dentroCerca: loc.fonte === 'gps' ? !!loc.dentro : false,
-    fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: 'equipe', ...(extra || {}),
+    fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: proprio(ids) ? 'pessoal' : 'equipe', ...(extra || {}),
   });
 }
 
@@ -282,23 +322,23 @@ export const acoesCrew = {
   },
   async 'crew-entrada'() {
     const ids = aplicaveis(Array.from(selecionados)).entrada;
-    const eq = equipeDoEncarregado(usuarioAtual().id);
+    const eq = equipeDoEncarregado(usuarioAtual().id) || equipe(funcionario(ids[0]).equipeId) || { obraBaseId: estado().obras[0].id };
     const r = await dialogoComLocal({
-      titulo: 'Entrada de ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas'), obraId: eq.obraBaseId, comObra: true, rotulo: 'Bater entrada',
+      titulo: proprio(ids) ? 'Sua entrada' : 'Entrada de ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas'), obraId: eq.obraBaseId, comObra: true, rotulo: 'Bater entrada',
       corpoDepois: '<label class="rotulo-pequeno" for="crew-etapa">Etapa (cost code)</label><select id="crew-etapa" name="etapa">' + opcoesEtapas(acharObra(eq.obraBaseId).etapa.includes('Alvenaria') ? 'Alvenaria' : ETAPAS[0]) + '</select>' +
         '<label class="lembrar"><input type="checkbox" name="foto" value="1"> Foto da equipe (no celular, abre a câmera)</label>',
     });
     if (!r) return;
     aplicar(ids, 'entrada', r.obraId, r.campos.etapa, r.loc, { foto: !!r.campos.foto });
     selecionados.clear();
-    toast('Entrada registrada para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + ' às ' + horaCurta(Date.now()) + '.');
+    toast('Entrada registrada' + (proprio(ids) ? '' : ' para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas')) + ' às ' + horaCurta(Date.now()) + '.');
     app.desenhar();
   },
   async 'crew-intervalo'() { await batidaSimples('intervalo', 'intervalo-inicio', 'Intervalo iniciado'); },
   async 'crew-volta'() { await batidaSimples('volta', 'intervalo-fim', 'Volta do intervalo registrada'); },
   async 'crew-saida'() {
     const ids = aplicaveis(Array.from(selecionados)).saida;
-    if (!(await confirmar('Bater a saída de ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + '?', 'A jornada de hoje é encerrada. Se alguém continuar trabalhando, deixe essa pessoa de fora.', 'Bater saída'))) return;
+    if (!(await confirmar(proprio(ids) ? 'Bater a sua saída?' : 'Bater a saída de ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + '?', 'A jornada de hoje é encerrada. Se alguém continuar trabalhando, deixe essa pessoa de fora.', 'Bater saída'))) return;
     await batidaSimples('saida', 'saida', 'Saída registrada', true);
   },
   async 'crew-troca'() {
@@ -432,11 +472,11 @@ async function batidaSimples(acao, tipo, mensagem, saida) {
     registrarBatidas([id], {
       tipo, obraId: a.obraId || obraId, etapa: a.etapa || null, lat: loc.lat, lon: loc.lon, precisao: loc.precisao,
       dentroCerca: loc.fonte === 'gps' ? dentroDaCerca(acharObra(a.obraId || obraId), loc.lat, loc.lon) : false,
-      fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: 'equipe',
+      fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: proprio(ids) ? 'pessoal' : 'equipe',
     });
   }
   selecionados.clear();
-  toast(mensagem + ' para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + (saida ? '.' : ' às ' + horaCurta(Date.now()) + '.'));
+  toast(mensagem + (proprio(ids) ? '' : ' para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas')) + (saida ? '.' : ' às ' + horaCurta(Date.now()) + '.'));
   app.desenhar();
 }
 
@@ -529,19 +569,20 @@ function telaTimesheets(param) {
   for (const id of Array.from(selecionados)) if (!pendentes.some((f) => f.id === id)) selecionados.delete(id);
   const totais = funcs.map((f) => semana(f.id, segunda));
   const soma = (k) => totais.reduce((t, s) => t + s[k], 0);
+  const podeAprovar = pode(usuarioAtual(), 'crew.aprovar'), verDinheiro = pode(usuarioAtual(), 'crew.custos');
   return moldura({
     ativo: 'timesheets', largo: true, titulo: 'Timesheets', subtitulo: 'Horas por funcionário · ' + regraEm(segunda).nome + ' (configurável em Settings), sem arredondamento',
-    acoes: '<div class="btn-linha">' +
+    acoes: !podeAprovar ? '' : '<div class="btn-linha">' +
       '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-csv" data-semana="' + segunda + '">' + icone('baixar', 16) + 'Exportar CSV (aprovados)</button>' +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-aprovar" data-semana="' + segunda + '"' + (selecionados.size ? '' : ' disabled') + '>Aprovar selecionados' + (selecionados.size ? ' (' + selecionados.size + ')' : '') + '</button></div>',
     conteudo: seletorSemana('#/crew/timesheets', segunda) +
       '<div class="kpis">' +
         '<div class="kpi"><span>Horas na semana</span><b>' + horas(soma('total')) + '</b></div>' +
         '<div class="kpi' + ((soma('extra') + soma('dobra')) ? ' kpi-alerta' : '') + '"><span>Horas extras</span><b>' + horas(soma('extra') + soma('dobra')) + '</b></div>' +
-        '<div class="kpi"><span>Custo de mão de obra</span><b>' + dinheiro(soma('custo')) + '</b></div>' +
+        (verDinheiro ? '<div class="kpi"><span>Custo de mão de obra</span><b>' + dinheiro(soma('custo')) + '</b></div>' : '<div class="kpi"><span>Pessoas</span><b>' + funcs.length + '</b></div>') +
         '<div class="kpi' + (pendentes.length ? ' kpi-azul' : ' kpi-verde') + '"><span>Aguardando aprovação</span><b>' + pendentes.length + '</b></div>' +
       '</div>' +
-      tabelaSemana(funcs, segunda, { selecao: true, custo: true, link: (f) => '#/crew/semana/' + f.id + '/' + segunda }),
+      tabelaSemana(funcs, segunda, { selecao: podeAprovar, custo: verDinheiro, link: (f) => '#/crew/semana/' + f.id + '/' + segunda }),
   });
 }
 
@@ -551,12 +592,13 @@ function telaSemanaFuncionario(funcId, segunda) {
   const s = semana(funcId, segunda);
   const ap = aprovacaoDaSemana(funcId, segunda);
   const [cls, txt] = STATUS_SEMANA[s.status];
-  const decisao = s.status === 'pendente' || s.status === 'devolvido'
+  const podeAprovar = pode(usuarioAtual(), 'crew.aprovar'), verDinheiro = pode(usuarioAtual(), 'crew.custos');
+  const decisao = podeAprovar && (s.status === 'pendente' || s.status === 'devolvido')
     ? '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-devolver" data-id="' + f.id + '" data-semana="' + segunda + '">Devolver</button>' +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-aprovar" data-id="' + f.id + '" data-semana="' + segunda + '">Aprovar semana</button></div>'
     : '';
   return moldura({
-    ativo: 'timesheets', largo: true, titulo: f.nome, subtitulo: f.funcao + ' · ' + (equipe(f.equipeId) || {}).nome + ' · ' + dinheiro(valorAtual(f)) + '/h',
+    ativo: 'timesheets', largo: true, titulo: f.nome, subtitulo: f.funcao + ' · ' + (equipe(f.equipeId) || {}).nome + (verDinheiro ? ' · ' + dinheiro(valorAtual(f)) + '/h' : ''),
     voltar: { href: '#/crew/timesheets/' + segunda, rotulo: 'Timesheets' },
     acoes: decisao,
     conteudo:
@@ -564,7 +606,7 @@ function telaSemanaFuncionario(funcId, segunda) {
         '<div class="kpi"><span>Total na semana</span><b>' + horas(s.total) + '</b></div>' +
         '<div class="kpi"><span>Regulares</span><b>' + horas(s.regular) + '</b></div>' +
         '<div class="kpi' + ((s.extra + s.dobra) ? ' kpi-alerta' : '') + '"><span>Horas extras</span><b>' + horas(s.extra + s.dobra) + '</b></div>' +
-        '<div class="kpi"><span>Custo</span><b>' + dinheiro(s.custo) + '</b></div>' +
+        (verDinheiro ? '<div class="kpi"><span>Custo</span><b>' + dinheiro(s.custo) + '</b></div>' : '') +
       '</div>' +
       '<p><span class="etiqueta ' + cls + '">' + txt + '</span>' + (ap ? ' <span class="mudo pequeno">por ' + esc(ap.por) + ' em ' + dataHora(ap.em) + (ap.motivo ? ' · "' + esc(ap.motivo) + '"' : '') + '</span>' : '') + '</p>' +
       '<div class="lista">' + s.dias.filter((d) => d.batidas.length).map((d) =>
@@ -573,7 +615,7 @@ function telaSemanaFuncionario(funcId, segunda) {
           '<ul class="segmentos">' + d.segmentos.map((sg) => '<li class="seg-' + sg.tipo + '"><span>' + horaCurta(sg.ini) + '–' + (sg.fim ? horaCurta(sg.fim) : (sg.aberto ? 'agora' : '?')) + '</span><b>' +
             (sg.tipo === 'trabalho' ? esc(nomeObra(sg.obraId)) + ' · ' + esc(sg.etapa) : sg.tipo === 'intervalo' ? 'Intervalo' : 'Deslocamento para ' + esc(nomeObra(sg.obraId))) + '</b></li>').join('') + '</ul>' +
           '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/crew/dia/' + f.id + '/' + d.iso + '">' + icone('pino', 16) + 'Mapa do dia</a>' +
-          (s.status !== 'aprovado' ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-ajustar" data-id="' + f.id + '" data-dia="' + d.iso + '">Ajustar</button>' : '') + '</div></section>').join('') + '</div>',
+          (podeAprovar && s.status !== 'aprovado' ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-ajustar" data-id="' + f.id + '" data-dia="' + d.iso + '">Ajustar</button>' : '') + '</div></section>').join('') + '</div>',
   });
 }
 
@@ -1281,7 +1323,7 @@ function telaDia(funcId, iso) {
   const f = funcionario(funcId);
   if (!f) return { trocar: '#/crew' };
   const u = usuarioAtual();
-  const admin = ehAdmin(u);
+  const admin = pode(u, 'crew.acompanhar');
   const j = jornada(funcId, iso);
   const trilha = admin ? trilhaDoDia(f, iso, j) : { pontos: [], excursoes: [] };
   const percurso = admin ? percursoDoDia(j, trilha) : null;
@@ -1324,14 +1366,14 @@ export function notificacoesCrew(u) {
   if (!c) return [];
   const lista = [];
   const hojeIso = hoje();
-  if (ehAdmin(u)) {
+  if (pode(u, 'crew.acompanhar')) {
     const anterior = somarDias(inicioDaSemana(hojeIso), -7);
     const pend = todosFuncionarios().filter((f) => semana(f.id, anterior).status === 'pendente').length;
-    if (pend) lista.push({ id: 'crew-ts-' + anterior, em: new Date(inicioDaSemana(hojeIso) + 'T08:00:00').getTime(), modulo: 'crew', titulo: pend + ' timesheets da semana passada aguardando aprovação', href: '#/crew/timesheets/' + anterior });
+    if (pend && pode(u, 'crew.aprovar')) lista.push({ id: 'crew-ts-' + anterior, em: new Date(inicioDaSemana(hojeIso) + 'T08:00:00').getTime(), modulo: 'crew', titulo: pend + ' timesheets da semana passada aguardando aprovação', href: '#/crew/timesheets/' + anterior });
     for (const b of c.batidas.filter((x) => x.dentroCerca === false && !x.conferida && x.em > Date.now() - 2 * 86400000)) {
       lista.push({ id: 'crew-fora-' + b.id, em: b.em, modulo: 'crew', titulo: funcionario(b.funcionarioId).nome + ': ' + ROTULO_BATIDA[b.tipo].toLowerCase() + ' fora da obra', href: '#/crew/agora' });
     }
-  } else {
+  } else if (pode(u, 'crew.ponto.equipe')) {
     const eq = equipeDoEncarregado(u.id);
     if (eq) {
       const ms = membros(eq.id);

@@ -18,13 +18,16 @@ export const PESSOAS = {
 };
 
 /* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
+// perfilId: perfil de acesso do Settings (Administrador, Gestor de obras, Encarregado, Trabalhador)
 const USUARIOS = [
-  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com.br', papel: 'campo', cargo: 'Mestre de obras', telefone: '(19) 99876-5432' },
-  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com.br', papel: 'admin', cargo: 'Engenheira responsável', telefone: '(19) 99111-2233' },
-  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com.br', papel: 'campo', cargo: 'Encarregado', telefone: '(11) 99555-7788' },
-  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com.br', papel: 'admin', cargo: 'Diretora de obras', telefone: '(11) 99222-4455' },
+  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: 'Mestre de obras', telefone: '(603) 555-0142' },
+  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com', perfilId: 'administrador', cargo: 'Engenheira responsável', telefone: '(603) 555-0187' },
+  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: 'Encarregado', telefone: '(603) 555-0163' },
+  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com', perfilId: 'gestor', cargo: 'Diretora de obras', telefone: '(603) 555-0119' },
+  { id: 'u-diego', nome: 'Diego Santos', email: 'diego@construtoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: 'Pedreiro', telefone: '(603) 555-0175' },
 ];
-export const CONTAS_DEMO = ['u-carlos', 'u-ana'];
+// Contas da tela de login: uma de cada jeito de usar (só ponto, campo, escritório)
+export const CONTAS_DEMO = ['u-diego', 'u-carlos', 'u-ana'];
 
 const OBRAS = [
   {
@@ -141,7 +144,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 8;
+export const VERSAO_DADOS = 9;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();

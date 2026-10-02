@@ -27,6 +27,8 @@ Documento de análise de negócio. Descreve como a plataforma se organiza como S
 
 ## Papéis
 
+> **Atualizado:** os papéis viraram **perfis de acesso configuráveis** no Settings (Trabalhador, Encarregado, Gestor de obras, Administrador e os que a empresa criar). Ver [`settings.md` §5](settings.md). A tabela abaixo é a versão original.
+
 | Papel | Onde trabalha | Pode |
 | --- | --- | --- |
 | **Administrador** | Escritório | Ver todas as obras, aprovar e pedir ajustes, gerar PDF e link do cliente, gerenciar a conta, o plano e os usuários |

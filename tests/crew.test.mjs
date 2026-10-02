@@ -338,6 +338,70 @@ await como('u-carlos', '#/settings/funcionarios');
 await page.waitForSelector('.modulos');
 verificar(await page.locator('.modulos .modulo-settings').count() === 0, 'campo não vê nem abre o Settings');
 
+// Permissões: perfis de acesso configuráveis no Settings
+console.log('Permissões');
+await como('u-diego', '#/inicio');
+await page.reload(); // mesmo endereço do usuário anterior: recarrega para entrar como Diego
+await page.waitForSelector('.meu-ponto');
+verificar(page.url().endsWith('#/crew/meu'), 'trabalhador entra direto no Meu ponto, sem a tela de módulos');
+verificar(await page.locator('.topo-botao[aria-label="Módulos"]').count() === 0 && await page.locator('.lateral').count() === 0, 'trabalhador: sem botão de módulos e sem menu');
+if (await page.locator('.meu-ponto [data-acao="crew-saida"]').count()) {
+  await page.click('.meu-ponto [data-acao="crew-saida"]');
+  await page.click('dialog button:has-text("Bater saída")');
+} else {
+  await page.click('.meu-ponto [data-acao="crew-entrada"]');
+  await page.click('dialog button:has-text("Bater entrada")');
+}
+await page.waitForFunction(() => /Saiu às|Trabalhando desde/.test(document.querySelector('.meu-ponto').textContent) && /Saída|Entrada/.test(document.querySelector('.linha-tempo').textContent));
+verificar(true, 'trabalhador bate o próprio ponto');
+verificar(await page.locator('.minha-semana .total').count() === 1 && !(await page.textContent('.pagina')).includes('US$'), 'trabalhador vê as próprias horas, sem valores em dinheiro');
+await print('11-meu-ponto');
+for (const h of ['#/crew/agora', '#/daily/painel', '#/settings/funcionarios']) {
+  await page.goto(BASE + h);
+  await page.waitForSelector('.meu-ponto');
+  verificar(page.url().endsWith('#/crew/meu'), 'trabalhador não abre ' + h);
+}
+await como('u-marcia', '#/inicio');
+await page.waitForSelector('.modulos');
+verificar(await page.locator('.modulos .modulo-daily').count() === 1 && await page.locator('.modulos .modulo-crew').count() === 1 && await page.locator('.modulos .modulo-settings').count() === 0, 'gestor de obras vê os módulos, sem o Settings');
+await page.goto(BASE + '#/crew/custos');
+await page.waitForSelector('.custo-obra');
+verificar(true, 'gestor vê os custos');
+await como('u-ana', '#/settings/perfis');
+await page.waitForSelector('.matriz-perfis');
+verificar(await page.locator('.matriz-perfis input[name^="administrador|"]:disabled').count() > 0, 'perfil Administrador é fixo');
+verificar((await page.textContent('.linha-inicio')).includes('Direto no "Meu ponto"'), 'matriz mostra para onde cada perfil vai ao entrar');
+await print('12-perfis');
+await page.check('.matriz-perfis input[name="trabalhador|daily.preencher"]');
+await page.click('[data-acao="settings-salvar-perfis"]');
+await page.waitForFunction(() => /Permissões salvas/.test((document.getElementById('toast') || {}).textContent || ''));
+await como('u-diego', '#/inicio');
+await page.waitForSelector('.modulos');
+verificar(await page.locator('.modulos .modulo-daily').count() === 1 && await page.locator('.modulos .modulo-crew').count() === 1, 'trabalhador que também preenche o RDO passa a ver a tela de módulos');
+await como('u-ana', '#/settings/perfis');
+await page.waitForSelector('.matriz-perfis');
+await page.click('[data-acao="settings-novo-perfil"]');
+await page.fill('dialog input[name="nome"]', 'Encarregado com aprovação');
+await page.selectOption('dialog select[name="base"]', 'encarregado');
+await page.click('dialog button:has-text("Criar perfil")');
+await page.waitForFunction(() => /Encarregado com aprovação/.test(document.querySelector('.matriz-perfis thead').textContent));
+verificar(true, 'novo perfil criado a partir de outro');
+await page.goto(BASE + '#/settings/usuario/novo');
+await page.waitForSelector('#form-usuario');
+await page.fill('#form-usuario [name="nome"]', 'Bruno Alves');
+await page.fill('#form-usuario [name="email"]', 'bruno@construtoraexemplo.com');
+await page.check('#form-usuario input[value="trabalhador"]');
+await page.click('[data-acao="settings-salvar-usuario"]');
+await page.waitForFunction(() => /ligue o usuário ao cadastro/.test((document.getElementById('toast') || {}).textContent || ''));
+verificar(true, 'quem bate o próprio ponto precisa estar ligado ao funcionário');
+await page.selectOption('#form-usuario [name="funcionarioId"]', 'f-bruno');
+await page.click('[data-acao="settings-salvar-usuario"]');
+await page.waitForSelector('.tabela-usuarios-settings');
+verificar((await page.textContent('.tabela-usuarios-settings')).includes('bruno@construtoraexemplo.com'), 'novo usuário ligado ao funcionário');
+await page.goto(BASE + '#/settings/auditoria');
+await page.waitForSelector('.lista-auditoria');
+verificar((await page.textContent('.lista-auditoria')).includes('Permissões do perfil Trabalhador') && (await page.textContent('.lista-auditoria')).includes('Novo usuário: Bruno Alves'), 'auditoria registra permissões e usuários');
+
 verificar(erros.length === 0, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.join(' | ') : ''));
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');
 await browser.close();

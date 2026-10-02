@@ -1,6 +1,6 @@
 # KORbuild Settings — configuração e parametrização da plataforma
 
-> **Status:** análise de negócio aprovada (seção 8). **Primeira etapa construída no protótipo:** funcionários, encargos e regras de jornada, com auditoria (seção 7). Nome definido: **Settings**.
+> **Status:** análise de negócio aprovada (seção 8). **Construído no protótipo:** funcionários, encargos e regras de jornada, **usuários e perfis de acesso** e auditoria (seções 5 e 7). Nome definido: **Settings**.
 >
 > **Mercado-alvo:** Estados Unidos. **Relacionados:** [`saas.md`](saas.md) (empresa, papéis, cobrança), [`crew.md`](crew.md) (módulo Crew).
 
@@ -92,24 +92,51 @@ Exemplos:
 
 A tela sempre mostra **de onde vem o valor** ("padrão da empresa" ou "definido nesta obra"), para ninguém se perder.
 
-## 5. Permissões
+## 5. Permissões (construído)
 
-O Settings só abre para quem tem permissão (hoje: o administrador). Proposta: papéis prontos, cada um com permissões que podem ser ajustadas.
+**Decisão:** nada fixo no código. O produto define o **catálogo de permissões** (o que existe para liberar). A empresa define os **perfis de acesso** (quais permissões cada perfil tem) e **quem tem qual perfil**, em **Settings › Perfis** e **Settings › Usuários**. Toda mudança vai para a auditoria.
 
-| Permissão | Admin da conta | Gestor de obras | RH / Financeiro | Encarregado | Campo |
-| --- | :-: | :-: | :-: | :-: | :-: |
-| Configurar empresa, plano e usuários | ✓ | | | | |
-| Configurar regras (jornada, encargos, prazos, GPS) | ✓ | | ✓ | | |
-| Cadastrar obras e tabelas | ✓ | ✓ | | | |
-| Cadastrar pessoas | ✓ | ✓ | ✓ | | |
-| **Ver valores em dinheiro** (valor hora, custos) | ✓ | opcional | ✓ | | |
-| Alterar valor hora | ✓ | | ✓ | | |
-| Aprovar timesheet / RDO | ✓ | ✓ | ✓ | | |
-| Bater ponto da equipe | | | | ✓ | |
-| Preencher RDO | ✓ | ✓ | | ✓ | ✓ |
-| Ver auditoria | ✓ | | ✓ | | |
+### 5.1 Catálogo de permissões
 
-"**Ver valores em dinheiro**" é uma permissão separada de propósito: um engenheiro pode aprovar horas sem ver o salário de cada um.
+| Grupo | Permissão | O que libera |
+| --- | --- | --- |
+| Crew · ponto | Bater o próprio ponto | Entrada, intervalo e saída no próprio celular (tela **Meu ponto**) |
+| Crew · ponto | Bater o ponto da equipe | Encarregado: marca a equipe e vê as horas dela |
+| Crew · escritório | Acompanhar ponto e timesheets | Agora, timesheets e mapa do dia |
+| Crew · escritório | Aprovar e ajustar timesheets | Aprovar, devolver, ajustar e exportar CSV (inclui "acompanhar") |
+| Crew · escritório | **Ver custos e valores em dinheiro** | Custos das obras, orçamento, salários nos timesheets (inclui "acompanhar") |
+| Daily | Preencher o diário de obra | Criar e enviar o RDO |
+| Daily | Acompanhar todas as obras | Painel, obras e relatórios enviados |
+| Daily | Aprovar RDO e enviar ao cliente | Aprovar, pedir ajuste, PDF e link do cliente (inclui "acompanhar") |
+| Settings | Cadastro de funcionários | Dados, certificações e valor hora |
+| Settings | Encargos e regras de jornada | Versões com vigência |
+| Settings | Usuários e perfis de acesso | Quem entra e o que cada perfil pode |
+| Settings | Conta da empresa e plano | Dados da empresa, plano e módulos |
+
+"Ver valores em dinheiro" é separada de propósito: um engenheiro pode aprovar horas sem ver o salário de cada um.
+
+### 5.2 Perfis que já vêm prontos (editáveis, menos o Administrador)
+
+| Perfil | Permissões | Ao entrar |
+| --- | --- | --- |
+| **Trabalhador** | Bater o próprio ponto | **Direto no "Meu ponto", sem a tela de módulos** e sem menu |
+| **Encarregado** | Próprio ponto, ponto da equipe, preencher o RDO | Tela de módulos (Daily e Crew) |
+| **Gestor de obras** | Acompanhar e aprovar no Crew e no Daily, ver custos | Tela de módulos (Daily e Crew), sem o Settings |
+| **Administrador** | Tudo do escritório, inclusive o Settings | Tela de módulos (Daily, Crew e Settings) |
+
+Exemplos:
+- **"Trabalhador que também faz o RDO":** marque "Preencher o diário de obra" no perfil, ou crie um perfil novo a partir do Trabalhador. Ele passa a ver a tela de módulos com Daily e Crew.
+- **"Encarregado com aprovação":** crie um perfil a partir do Encarregado e marque "Aprovar e ajustar timesheets".
+
+### 5.3 Regras
+1. **A tela inicial sai das permissões.** Com um módulo só, a pessoa entra direto nele, sem tela de módulos nem botão de módulos. A matriz mostra para onde cada perfil vai ("Ao entrar").
+2. **Administrador é fixo:** a empresa nunca fica sem quem gerencie os acessos. Também é preciso sobrar pelo menos um usuário ativo com "Usuários e perfis de acesso", e ninguém desativa o próprio acesso.
+3. **Dependências automáticas:** aprovar inclui acompanhar; ver custos inclui acompanhar.
+4. **Quem bate o próprio ponto precisa estar ligado ao cadastro de funcionário.** Usuário é quem tem login; funcionário é quem trabalha na obra. O trabalhador que só tem o ponto batido pelo encarregado não precisa de login.
+5. **Perfil em uso não pode ser excluído:** primeiro, troque o perfil dos usuários.
+6. **Sem permissão, a tela não abre:** o endereço digitado leva de volta à tela inicial da pessoa.
+
+**Próximos passos:** permissão por obra (ex.: encarregado só vê as obras dele, gestor só a sua regional) e convite por e-mail de verdade.
 
 ## 6. Inventário: o que hoje está fixo no código
 
@@ -151,7 +178,7 @@ O Settings só abre para quem tem permissão (hoje: o administrador). Proposta: 
 6. **Ponto e GPS**, **Diário de obra** e **Custos e projeção**: os parâmetros do inventário, lidos pelos módulos em vez das constantes.
 7. **Cadastros:** funções, etapas, equipes, equipamentos e feriados.
 8. **Obras:** cadastro e edição (hoje elas só existem nos dados de exemplo).
-9. **Usuários e permissões:** papéis prontos e a matriz da seção 5, com "ver valores em dinheiro".
+9. **Usuários e permissões:** papéis prontos e a matriz da seção 5, com "ver valores em dinheiro". ✓
 10. **Auditoria:** lista das mudanças com antes e depois. ✓
 
 **Fase B:** exceções por obra (prevailing wage, raio, calendário), workers' comp por classe de função, mais estados, integrações com a folha e configuração de notificações por usuário.
@@ -162,6 +189,7 @@ O Settings só abre para quem tem permissão (hoje: o administrador). Proposta: 
 | --- | --- | --- |
 | 1 | Nome | **Settings** |
 | 2 | Cadastro de funcionário | Sai do Crew e vai para o Settings; o Crew só usa esse cadastro |
-| 3 | Quem acessa | Por enquanto, só o **escritório (administrador)**. O campo (encarregado) não vê o Settings. Os papéis mais finos da seção 5 (RH/Financeiro, Gestor, "ver valores em dinheiro") ficam para a etapa de Usuários e permissões |
+| 3 | Quem acessa | Quem tem as permissões do Settings no seu perfil (padrão: o Administrador). Perfis e permissões configuráveis (seção 5) |
+| 6 | Trabalhador que só bate ponto | Entra direto no "Meu ponto", sem a tela de módulos |
 | 4 | Estados | **Não amarrar a um estado.** Regra configurável, com modelos só para preencher. A empresa está em **New Hampshire** (padrão do protótipo) |
 | 5 | Prioridade | Começar por Funcionários + Encargos + Regras de jornada (feito) |
