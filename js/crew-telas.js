@@ -647,16 +647,84 @@ function mapaSvg(j, trilha) {
  * A biblioteca fica no próprio projeto (vendor/leaflet). Os mapas de rua vêm da internet;
  * sem internet ou sem a biblioteca, fica o desenho simples (SVG) que já está na tela. */
 
-function dadosDoMapa(j, trilha) {
+/* Percurso do dia: as obras na ordem em que a pessoa esteve (paradas) e os trechos entre elas (pernas).
+ * Perna = deslocamento entre obras ou saída da cerca com o ponto aberto (ida e volta). */
+function percursoDoDia(j, trilha) {
+  const paradas = [];
+  const pernas = [];
+  let atual = null;
+  for (const sg of j.segmentos) {
+    const fim = sg.fim || (sg.aberto ? Date.now() : null);
+    if (sg.tipo === 'deslocamento') {
+      const destino = acharObra(sg.obraId);
+      pernas.push({ tipo: 'deslocamento', ini: sg.ini, fim, de: atual ? [atual.lat, atual.lon] : null, para: [destino.cerca.lat, destino.cerca.lon], deNome: atual ? atual.nome : '', paraNome: destino.nome });
+      atual = null;
+      continue;
+    }
+    if (!atual || atual.obraId !== sg.obraId) {
+      const o = acharObra(sg.obraId);
+      atual = { n: paradas.length + 1, obraId: o.id, nome: o.nome, endereco: o.endereco, cidade: o.cidade, lat: o.cerca.lat, lon: o.cerca.lon, chegada: sg.ini, saida: fim, aberto: !!sg.aberto, fora: [] };
+      paradas.push(atual);
+    } else {
+      atual.saida = fim;
+      atual.aberto = !!sg.aberto;
+    }
+  }
+  // perna sem origem (ex.: troca logo na primeira batida): usa a obra anterior conhecida
+  pernas.forEach((p) => { if (!p.de && paradas.length) { p.de = [paradas[0].lat, paradas[0].lon]; p.deNome = paradas[0].nome; } });
+  for (const e of trilha.excursoes) {
+    const o = paradas.find((p) => e.ini >= p.chegada && (!p.saida || e.ini <= p.saida)) || paradas[0];
+    if (!o) continue;
+    pernas.push({ tipo: 'saida-cerca', ini: e.ini, fim: e.fim, de: [o.lat, o.lon], via: [e.lat, e.lon], para: [o.lat, o.lon], deNome: o.nome, paraNome: o.nome, local: e.local });
+  }
+  // batidas fora da cerca: o endereço aproximado é buscado depois (geocodificação reversa)
+  j.batidas.filter((b) => b.dentroCerca === false && b.lat != null).forEach((b) => {
+    const p = paradas.find((x) => x.obraId === b.obraId) || paradas[0];
+    if (!p) return;
+    const o = acharObra(b.obraId);
+    p.fora.push({ id: b.id, tipo: ROTULO_BATIDA[b.tipo], hora: horaCurta(b.em), lat: b.lat, lon: b.lon, distancia: distanciaM(o.cerca.lat, o.cerca.lon, b.lat, b.lon) });
+  });
+  pernas.sort((a, b) => a.ini - b.ini);
+  return { paradas, pernas };
+}
+
+function dadosDoMapa(j, trilha, percurso) {
   const obrasIds = Array.from(new Set(j.segmentos.map((s) => s.obraId).concat(j.batidas.map((b) => b.obraId)).filter(Boolean)));
+  const dentroDePerna = (em) => percurso.pernas.some((p) => em >= p.ini && em <= (p.fim || p.ini));
   return {
     cercas: obrasIds.map((id) => { const o = acharObra(id); return { lat: o.cerca.lat, lon: o.cerca.lon, raio: o.cerca.raio, nome: o.nome }; }),
-    trilha: trilha.pontos.map((p) => [Number(p.lat.toFixed(6)), Number(p.lon.toFixed(6)), p.fora ? 1 : 0]),
+    paradas: percurso.paradas.map((p) => ({ n: p.n, lat: p.lat, lon: p.lon, nome: p.nome, endereco: p.endereco + ' · ' + p.cidade })),
+    pernas: percurso.pernas.map((p) => ({ tipo: p.tipo, de: p.de, via: p.via || null, para: p.para, local: p.local || '' })),
+    trilha: trilha.pontos.filter((p) => !dentroDePerna(p.em)).map((p) => [Number(p.lat.toFixed(6)), Number(p.lon.toFixed(6)), p.fora ? 1 : 0]),
     batidas: j.batidas.filter((b) => b.lat != null).map((b) => ({
       lat: b.lat, lon: b.lon, tipo: b.tipo, hora: horaCurta(b.em), fora: b.dentroCerca === false,
       texto: ROTULO_BATIDA[b.tipo] + ' às ' + horaCurta(b.em) + ' · ' + nomeObra(b.obraId) + (b.dentroCerca === false ? ' · fora da cerca' : ''),
     })),
+    fora: percurso.paradas.flatMap((p) => p.fora.map((f) => ({ id: f.id, lat: f.lat, lon: f.lon }))),
   };
+}
+
+function minutosEntre(a, b) { return Math.max(0, Math.round((b - a) / 60000)); }
+function formatarDistancia(m) { return m >= 1000 ? (m / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(m) + ' m'; }
+
+function htmlPercurso(percurso) {
+  const itens = percurso.paradas.map((p) => ({ em: p.chegada, html:
+    '<li class="parada"><span class="parada-num">' + p.n + '</span><div><b>' + esc(p.nome) + '</b>' +
+      '<span class="parada-endereco">' + icone('pino', 14) + esc(p.endereco) + ' · ' + esc(p.cidade) + '</span>' +
+      '<span class="mudo pequeno">Chegada ' + horaCurta(p.chegada) + ' · ' + (p.aberto ? 'ainda na obra' : p.saida ? 'saída ' + horaCurta(p.saida) : 'sem saída') +
+        (p.saida || p.aberto ? ' · ' + horas(minutosEntre(p.chegada, p.saida || Date.now())) : '') + '</span>' +
+      p.fora.map((f) => '<span class="parada-fora" id="fora-' + esc(f.id) + '">' + esc(f.tipo) + ' às ' + f.hora + ' batida a ' + formatarDistancia(f.distancia) + ' da obra · <span class="endereco-fora">' + f.lat.toFixed(5) + ', ' + f.lon.toFixed(5) + '</span></span>').join('') +
+    '</div></li>' }));
+  percurso.pernas.forEach((p, i) => itens.push({ em: p.ini + 1, html:
+    '<li class="perna perna-' + p.tipo + '" id="perna-' + i + '"><span class="perna-linha"></span><div>' +
+      (p.tipo === 'deslocamento'
+        ? '<b>Deslocamento ' + horaCurta(p.ini) + '–' + (p.fim ? horaCurta(p.fim) : 'agora') + (p.fim ? ' (' + minutosEntre(p.ini, p.fim) + ' min)' : '') + '</b><span class="mudo pequeno">' + esc(p.deNome) + ' → ' + esc(p.paraNome) + '</span>'
+        : '<b>Saiu da cerca ' + horaCurta(p.ini) + '–' + horaCurta(p.fim) + ' (' + minutosEntre(p.ini, p.fim) + ' min)</b><span class="mudo pequeno">' + esc(p.local) + ', com o ponto aberto</span>') +
+      '<span class="perna-dist">' + formatarDistancia(distanciaM(p.de[0], p.de[1], (p.via || p.para)[0], (p.via || p.para)[1]) * (p.via ? 2 : 1)) + ' em linha reta' + (p.via ? ' (ida e volta)' : '') + '</span>' +
+    '</div></li>' }));
+  itens.sort((a, b) => a.em - b.em);
+  return '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Percurso do dia</h2><span class="mudo pequeno">' + percurso.paradas.length + (percurso.paradas.length === 1 ? ' obra' : ' obras') + '</span></div>' +
+    '<ol class="percurso">' + itens.map((x) => x.html).join('') + '</ol></section>';
 }
 
 let leafletPromessa = null;
@@ -678,6 +746,38 @@ function carregarLeaflet() {
   return leafletPromessa;
 }
 
+/* Rota pelas ruas entre pontos (serviço público OSRM, gratuito para protótipo).
+ * Devolve { coords: [[lat, lon]…], distancia (m), duracao (s) } ou null sem internet. */
+const rotasCache = new Map();
+function rotaPelasRuas(pontos) {
+  const chave = pontos.map((p) => p[1].toFixed(5) + ',' + p[0].toFixed(5)).join(';');
+  if (!rotasCache.has(chave)) {
+    const url = 'https://router.project-osrm.org/route/v1/driving/' + chave + '?overview=full&geometries=geojson';
+    rotasCache.set(chave, fetch(url).then((r) => (r.ok ? r.json() : null)).then((j) => {
+      const rota = j && j.code === 'Ok' && j.routes && j.routes[0];
+      return rota ? { coords: rota.geometry.coordinates.map(([lon, lat]) => [lat, lon]), distancia: rota.distance, duracao: rota.duration } : null;
+    }).catch(() => { rotasCache.delete(chave); return null; }));
+  }
+  return rotasCache.get(chave);
+}
+
+/* Endereço aproximado de uma coordenada (Nominatim / OpenStreetMap). */
+const enderecosCache = new Map();
+function enderecoAproximado(lat, lon) {
+  const chave = lat.toFixed(5) + ',' + lon.toFixed(5);
+  if (!enderecosCache.has(chave)) {
+    const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&accept-language=pt-BR&lat=' + lat + '&lon=' + lon;
+    enderecosCache.set(chave, fetch(url).then((r) => (r.ok ? r.json() : null)).then((j) => {
+      if (!j) return null;
+      const a = j.address || {};
+      const rua = [a.road, a.house_number].filter(Boolean).join(', ');
+      const resto = [a.suburb || a.neighbourhood, a.city || a.town || a.village].filter(Boolean).join(' · ');
+      return [rua, resto].filter(Boolean).join(' · ') || j.display_name || null;
+    }).catch(() => { enderecosCache.delete(chave); return null; }));
+  }
+  return enderecosCache.get(chave);
+}
+
 let mapaAtual = null;
 const COR_BATIDA = { entrada: '#0F766E', 'intervalo-inicio': '#667085', 'intervalo-fim': '#667085', troca: '#1D4ED8', chegada: '#1D4ED8', etapa: '#0F766E', saida: '#141B26' };
 
@@ -696,14 +796,49 @@ async function montarMapa() {
   const limites = [];
   for (const c of d.cercas) {
     L.circle([c.lat, c.lon], { radius: c.raio, color: '#0F766E', weight: 2, dashArray: '6 5', fillColor: '#0F766E', fillOpacity: 0.12 }).addTo(m);
-    // nome da obra logo acima da cerca, para não cobrir as batidas
-    L.tooltip({ permanent: true, direction: 'top', className: 'mapa-rotulo-obra', offset: [0, -4] })
-      .setLatLng([c.lat + c.raio / 111320, c.lon]).setContent(c.nome).addTo(m);
     limites.push(L.latLng(c.lat, c.lon).toBounds(c.raio * 2));
   }
-  if (d.trilha.length > 1) {
-    const linha = L.polyline(d.trilha.map((p) => [p[0], p[1]]), { color: '#2E90FA', weight: 4, opacity: 0.85, lineJoin: 'round' }).addTo(m);
-    limites.push(linha.getBounds());
+  // obras na ordem da visita: pino numerado com nome e endereço, logo acima da cerca
+  for (const p of d.paradas) {
+    const c = d.cercas.find((x) => x.nome === p.nome);
+    const topo = [p.lat + (c ? c.raio : 150) / 111320, p.lon];
+    L.marker(topo, { icon: L.divIcon({ className: 'pino-parada', html: '<span class="pino"><b>' + p.n + '</b></span>', iconSize: [28, 28], iconAnchor: [14, 28] }) })
+      .addTo(m).bindTooltip('<b>' + esc(p.nome) + '</b><br>' + esc(p.endereco), { permanent: true, direction: 'top', className: 'mapa-rotulo-obra', offset: [0, -26] });
+  }
+  // dentro das obras: a trilha em trechos (sem ligar uma obra à outra em linha reta)
+  let trecho = [];
+  const fecharTrecho = () => { if (trecho.length > 1) L.polyline(trecho, { color: '#2E90FA', weight: 3, opacity: 0.75, lineJoin: 'round' }).addTo(m); trecho = []; };
+  for (const p of d.trilha) {
+    const ultimo = trecho[trecho.length - 1];
+    if (ultimo && distanciaM(ultimo[0], ultimo[1], p[0], p[1]) > 1000) fecharTrecho();
+    trecho.push([p[0], p[1]]);
+  }
+  fecharTrecho();
+  // pernas: primeiro em linha reta tracejada; depois, pelas ruas (OSRM), quando houver internet
+  d.pernas.forEach((p, i) => {
+    const pontos = [p.de].concat(p.via ? [p.via] : []).concat([p.para]);
+    const cor = p.tipo === 'deslocamento' ? '#1D4ED8' : '#F04438';
+    const reta = L.polyline(pontos, { color: cor, weight: 3, opacity: 0.7, dashArray: '8 8' }).addTo(m);
+    limites.push(reta.getBounds());
+    if (p.tipo === 'saida-cerca' && p.via) {
+      // ponto mais distante da saída da cerca
+      L.circleMarker(p.via, { radius: 6, color: '#fff', weight: 2, fillColor: '#F04438', fillOpacity: 1 })
+        .bindTooltip('Fora da cerca' + (p.local ? ' · ' + p.local : ''), { direction: 'top' }).addTo(m);
+    }
+    rotaPelasRuas(pontos).then((r) => {
+      if (!r || !document.body.contains(area)) return;
+      m.removeLayer(reta);
+      L.polyline(r.coords, { color: cor, weight: 5, opacity: 0.85, lineJoin: 'round' }).addTo(m);
+      const el = document.querySelector('#perna-' + i + ' .perna-dist');
+      if (el) el.textContent = formatarDistancia(r.distancia) + ' pelas ruas' + (p.via ? ' (ida e volta)' : '') + ' · cerca de ' + Math.max(1, Math.round(r.duracao / 60)) + ' min de carro';
+    });
+  });
+  // endereço aproximado de onde foram batidas as entradas/saídas fora da cerca
+  for (const f of d.fora) {
+    enderecoAproximado(f.lat, f.lon).then((txt) => {
+      const el = txt && document.querySelector('#fora-' + CSS.escape(f.id) + ' .endereco-fora');
+      if (el) el.textContent = 'perto de ' + txt;
+    });
   }
   for (const p of d.trilha.filter((x) => x[2])) {
     L.circleMarker([p[0], p[1]], { radius: 4, color: '#B42318', weight: 1, fillColor: '#F04438', fillOpacity: 1 }).addTo(m);
@@ -747,6 +882,7 @@ function telaDia(funcId, iso) {
   const admin = ehAdmin(u);
   const j = jornada(funcId, iso);
   const trilha = admin ? trilhaDoDia(f, iso, j) : { pontos: [], excursoes: [] };
+  const percurso = admin ? percursoDoDia(j, trilha) : null;
   const eventos = j.batidas.map((b) => ({
     em: b.em, html: '<span><b>' + ROTULO_BATIDA[b.tipo] + '</b> · ' + esc(nomeObra(b.obraId)) + (b.etapa ? ' · ' + esc(b.etapa) : '') + '</span>' +
       '<span class="mudo pequeno">' + (b.ajuste ? 'Ajuste de ' + esc(b.ajuste.por) + ': "' + esc(b.ajuste.motivo) + '"'
@@ -765,9 +901,10 @@ function telaDia(funcId, iso) {
       '<div class="dia-coluna">' +
         (admin ? '<section class="cartao mapa-cartao" id="mapa-cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Mapa do dia <span class="etiqueta etiqueta-neutro">Trilha simulada</span></h2>' +
             (j.batidas.length ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-mapa-cheio">' + icone('olho', 16) + '<span>Tela cheia</span></button>' : '') + '</div>' +
-          (j.batidas.length ? '<div class="mapa-area" id="mapa-dia" data-mapa="' + esc(JSON.stringify(dadosDoMapa(j, trilha))) + '">' + mapaSvg(j, trilha) + '</div>' : '<p class="vazio">Sem batidas neste dia.</p>') +
-          '<p class="legenda-mapa"><span><i class="lg-trilha"></i>trilha (só com o ponto aberto)</span><span><i class="lg-cerca"></i>cerca da obra</span><span><i class="lg-batida"></i>batida</span><span><i class="lg-fora"></i>fora da cerca</span></p>' +
-          '<p class="mudo pequeno">A trilha só é registrada com o ponto aberto, o trabalhador é avisado e também vê o próprio mapa. No protótipo, a trilha é simulada a partir das batidas; na versão real, ela exige o app nativo.</p></section>' : '') +
+          (j.batidas.length ? '<div class="mapa-area" id="mapa-dia" data-mapa="' + esc(JSON.stringify(dadosDoMapa(j, trilha, percurso))) + '">' + mapaSvg(j, trilha) + '</div>' : '<p class="vazio">Sem batidas neste dia.</p>') +
+          '<p class="legenda-mapa"><span><i class="lg-parada">1</i>obra (ordem da visita)</span><span><i class="lg-cerca"></i>cerca da obra</span><span><i class="lg-desloc"></i>deslocamento</span><span><i class="lg-trilha"></i>trilha na obra</span><span><i class="lg-batida"></i>batida</span><span><i class="lg-fora"></i>fora da cerca</span></p>' +
+          '<p class="mudo pequeno">A trilha só é registrada com o ponto aberto, o trabalhador é avisado e também vê o próprio mapa. Os trechos entre as obras seguem as ruas (com internet). No protótipo, a trilha é simulada a partir das batidas; na versão real, ela vem do GPS do app nativo.</p></section>' +
+          (j.batidas.length ? htmlPercurso(percurso) : '') : '') +
         '<section class="cartao"><h2 class="cartao-titulo">Linha do tempo</h2>' +
           (eventos.length ? '<ol class="linha-tempo">' + eventos.map((e) => '<li class="' + e.classe + '"><span class="lt-hora">' + horaCurta(e.em) + '</span><div>' + e.html + '</div></li>').join('') + '</ol>' : '<p class="vazio">Sem batidas neste dia.</p>') +
           '<div class="resumo-dia"><span>Trabalho <b>' + horas(j.trabalho) + '</b></span><span>Deslocamento <b>' + horas(j.deslocamento) + '</b></span><span>Intervalo <b>' + horas(j.intervalo) + '</b></span></div>' +

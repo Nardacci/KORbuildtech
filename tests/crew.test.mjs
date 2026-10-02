@@ -27,6 +27,15 @@ await context.route('https://fonts.**', (r) => r.abort());
 // Blocos do mapa de ruas (OpenStreetMap): no teste, uma imagem cinza no lugar
 const BLOCO = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8+v9/PQAJBQPq1V7ZVgAAAABJRU5ErkJggg==', 'base64');
 await context.route('https://tile.openstreetmap.org/**', (r) => r.fulfill({ contentType: 'image/png', body: BLOCO }));
+// Rotas pelas ruas (OSRM) e endereço aproximado (Nominatim): simulados no teste
+await context.route('https://router.project-osrm.org/**', (r) => {
+  const pts = new URL(r.request().url()).pathname.split('/').pop().split(';').map((x) => x.split(',').map(Number));
+  const coords = [];
+  for (let i = 0; i < pts.length - 1; i++) coords.push(pts[i], [(pts[i][0] + pts[i + 1][0]) / 2 + 0.01, (pts[i][1] + pts[i + 1][1]) / 2]);
+  coords.push(pts[pts.length - 1]);
+  r.fulfill({ json: { code: 'Ok', routes: [{ distance: 41800, duration: 2460, geometry: { type: 'LineString', coordinates: coords } }] } });
+});
+await context.route('https://nominatim.openstreetmap.org/**', (r) => r.fulfill({ json: { address: { road: 'Rua Teste', house_number: '100', suburb: 'Jardim Botânico', city: 'Campinas' } } }));
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/crew-' + nome + '.png', fullPage: true }); };
 const como = async (id, hash) => { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), id); await page.goto(BASE + hash); };
 const estadoDe = (nome) => page.locator('.lista-equipe li', { hasText: nome }).locator('.estado-ponto').textContent();
@@ -153,6 +162,19 @@ await page.waitForSelector('.custo-obra');
 verificar((await page.textContent('.pagina')).includes('Deslocamento entre obras'), 'custos: deslocamento entre obras aparece como custo');
 verificar((await page.locator('.kpi', { hasText: 'Adicional de hora extra' }).textContent()).includes('US$'), 'custos: adicional de hora extra em US$');
 await print('7-custos');
+// Percurso: Lucas troca de obra (Jardim → Galpão) na terça da semana anterior
+await page.goto(BASE + '#/crew/dia/f-lucas/2026-09-29');
+await page.waitForSelector('.percurso');
+verificar(await page.locator('.percurso .parada').count() === 2, 'percurso: duas obras na ordem da visita');
+verificar((await page.textContent('.percurso')).includes('Rod. Anhanguera, km 58'), 'percurso: endereço da obra');
+await page.waitForFunction(() => /pelas ruas/.test(document.querySelector('.perna-deslocamento .perna-dist').textContent));
+verificar((await page.textContent('.perna-deslocamento')).includes('41,8 km pelas ruas'), 'percurso: deslocamento pelas ruas com a distância');
+verificar(await page.locator('#mapa-dia .pino-parada').count() === 2, 'mapa: pinos numerados das obras');
+verificar((await page.textContent('#mapa-dia')).includes('Galpão Logístico Rodovia'), 'mapa: nome e endereço da obra no pino');
+await print('8c-percurso');
+await page.goto(BASE + '#/crew/dia/f-marcos/2026-10-06');
+await page.waitForFunction(() => /perto de Rua Teste/.test((document.querySelector('.parada-fora') || {}).textContent || ''));
+verificar(true, 'percurso: endereço aproximado de onde a entrada fora da obra foi batida');
 await page.goto(BASE + '#/crew/dia/f-diego/2026-09-29');
 await page.waitForSelector('#mapa-dia.com-ruas .leaflet-interactive');
 verificar(await page.locator('#mapa-dia path[fill="#F04438"]').count() > 0, 'mapa do dia (ruas): trilha fora da cerca');
@@ -165,6 +187,7 @@ verificar(cheio >= 840, 'tela cheia ocupa a tela toda');
 await print('8b-mapa-cheio');
 await page.keyboard.press('Escape');
 verificar((await page.textContent('.linha-tempo')).includes('Saiu da cerca com o ponto aberto'), 'linha do tempo: saída da cerca com o ponto aberto');
+verificar(await page.locator('.percurso .perna-saida-cerca').count() === 1, 'percurso: saída da cerca como trecho de ida e volta');
 await print('8-mapa');
 
 verificar(erros.length === 0, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.join(' | ') : ''));
