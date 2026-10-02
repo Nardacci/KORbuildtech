@@ -2,6 +2,10 @@
 
 Protótipo de validação do Relatório Diário de Obra (veja o README). Site estático, sem build: HTML, CSS e módulos JS em `js/`.
 
+## Branch
+
+A branch principal é a `main`: é a que o GitHub Pages publica e a que vai para a demonstração. Trabalhe e publique nela.
+
 ## Idioma: o protótipo é em português, a versão final será toda em inglês
 
 - O protótipo e a demonstração continuam em português (pt-BR) por enquanto.
