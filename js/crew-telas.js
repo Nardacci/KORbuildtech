@@ -3,14 +3,16 @@
  *   e vê as horas da semana.
  * Administrador: quem está trabalhando agora, timesheets com aprovação e ajustes, custo por obra e o mapa do dia. */
 
-import { esc, hoje, somarDias, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
+import { esc, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
 import { estado, salvar, obra as acharObra } from './armazem.js';
 import { casca, usuarioAtual, ehAdmin } from './plataforma.js';
 import { icone } from './icones.js';
 import { obterPosicao } from './fotos.js';
 import {
   ETAPAS, REGRAS, distanciaM, dentroDaCerca, inicioDaSemana, diasDaSemana, horas, dinheiro, funcionario, equipe,
-  equipeDoEncarregado, membros, jornada, semana, aprovacaoDaSemana, custosDaSemana, registrarBatidas, decidirSemana,
+  equipeDoEncarregado, membros, jornada, semana, aprovacaoDaSemana, registrarBatidas, decidirSemana,
+  valorHoraEm, valorAtual, historicoDeValores, alterarValorHora, encargos, ENCARGOS_PADRAO, definirEncargos, orcamento, definirOrcamento,
+  custosDoPeriodo, resumoDaObra, statusSemana,
 } from './crew.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -42,6 +44,7 @@ function navCrew() {
       { id: 'agora', href: '#/crew/agora', rotulo: 'Agora', icone: 'pino' },
       { id: 'timesheets', href: '#/crew/timesheets', rotulo: 'Timesheets', icone: 'tabela', contador: pendentes },
       { id: 'custos', href: '#/crew/custos', rotulo: 'Custos', icone: 'dinheiro' },
+      { id: 'funcionarios', href: '#/crew/funcionarios', rotulo: 'Funcionários', icone: 'crew' },
     ];
   }
   return [
@@ -58,7 +61,7 @@ function moldura(o) {
 export function telaCrew(q) {
   const u = usuarioAtual();
   pararRelogio();
-  const doAdmin = ['agora', 'timesheets', 'custos', 'semana'];
+  const doAdmin = ['agora', 'timesheets', 'custos', 'semana', 'funcionarios', 'funcionario'];
   const doCampo = ['equipe', 'horas'];
   const inicio = ehAdmin(u) ? '#/crew/agora' : '#/crew/equipe';
   if (!q.length) return { trocar: inicio };
@@ -68,7 +71,9 @@ export function telaCrew(q) {
   if (q[0] === 'agora') return telaAgora();
   if (q[0] === 'timesheets') return telaTimesheets(q[1]);
   if (q[0] === 'semana') return telaSemanaFuncionario(q[1], q[2]);
-  if (q[0] === 'custos') return telaCustos(q[1]);
+  if (q[0] === 'custos') return telaCustos(q[1], q[2]);
+  if (q[0] === 'funcionarios') return telaFuncionarios();
+  if (q[0] === 'funcionario') return telaFuncionario(q[1]);
   if (q[0] === 'dia') return telaDia(q[1], q[2]);
   return { trocar: inicio };
 }
@@ -226,6 +231,62 @@ function obraAtualDe(id) {
 
 export const acoesCrew = {
   'crew-mapa-cheio'() { alternarTelaCheia(); },
+  async 'crew-valor-hora'(el) {
+    const f = funcionario(el.dataset.id);
+    // padrão: a partir da próxima segunda (semana nova, ainda aberta)
+    const proxSegunda = somarDias(inicioDaSemana(hoje()), 7);
+    const res = await abrirDialogo({
+      titulo: 'Alterar valor hora · ' + f.nome,
+      corpo: '<p class="mudo pequeno">Valor atual: <b>' + dinheiro(valorAtual(f)) + '/h</b>. O novo valor vale a partir da data escolhida; o histórico fica guardado.</p>' +
+        '<label class="rotulo-pequeno" for="vh-valor">Novo valor hora (US$)</label><input type="number" id="vh-valor" name="valor" min="1" step="0.01" value="' + valorAtual(f).toFixed(2) + '" inputmode="decimal">' +
+        '<label class="rotulo-pequeno" for="vh-desde">A partir de</label><input type="date" id="vh-desde" name="desde" value="' + proxSegunda + '">' +
+        '<label class="rotulo-pequeno" for="vh-motivo">Motivo</label><input type="text" id="vh-motivo" name="motivo" placeholder="Ex.: reajuste anual, promoção, nova certificação">' +
+        '<p class="mudo pequeno">Não é possível começar dentro de uma semana já aprovada (já foi para a folha).</p>',
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Salvar novo valor', valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = alterarValorHora(f.id, Number(String(res.campos.valor).replace(',', '.')), res.campos.desde, res.campos.motivo, usuarioAtual().nome);
+    if (r.erro) { toast(r.erro); return; }
+    toast('Novo valor de ' + f.nome.split(' ')[0] + ': ' + dinheiro(Number(String(res.campos.valor).replace(',', '.'))) + '/h a partir de ' + dataCurta(res.campos.desde) + '.');
+    app.desenhar();
+  },
+  async 'crew-orcamento'(el) {
+    const id = el.dataset.obra;
+    const o = orcamento(id) || { valor: '', avanco: '' };
+    const res = await abrirDialogo({
+      titulo: 'Orçamento de mão de obra · ' + nomeObra(id),
+      corpo: '<label class="rotulo-pequeno" for="or-valor">Orçamento total de mão de obra (US$)</label><input type="number" id="or-valor" name="valor" min="0" step="100" value="' + (o.valor || '') + '" inputmode="decimal">' +
+        '<label class="rotulo-pequeno" for="or-avanco">Avanço físico da obra (%)</label><input type="number" id="or-avanco" name="avanco" min="0" max="100" step="1" value="' + (o.avanco || '') + '" inputmode="numeric">' +
+        '<p class="mudo pequeno">O avanço físico é quanto da obra já foi executado (medição). Com ele, a projeção compara o que foi gasto com o que foi feito. Na versão completa, ele virá do RDO (Daily) e das medições.</p>',
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Salvar', valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const valor = Number(res.campos.valor), avanco = res.campos.avanco === '' ? null : Number(res.campos.avanco);
+    if (!(valor > 0) || (avanco != null && (avanco < 0 || avanco > 100))) { toast('Informe um orçamento maior que zero e um avanço entre 0 e 100%.'); return; }
+    definirOrcamento(id, { valor, avanco }, usuarioAtual().nome);
+    toast('Orçamento de ' + nomeObra(id) + ' atualizado.');
+    app.desenhar();
+  },
+  async 'crew-encargos'() {
+    const e = (estado().crew.config && estado().crew.config.encargos) || ENCARGOS_PADRAO;
+    const campo = (k, rot) => '<label class="rotulo-pequeno" for="enc-' + k + '">' + rot + ' (%)</label><input type="number" id="enc-' + k + '" name="' + k + '" min="0" max="100" step="0.01" value="' + e[k] + '" inputmode="decimal">';
+    const res = await abrirDialogo({
+      titulo: 'Encargos sobre a folha',
+      corpo: '<p class="mudo pequeno">Somados ao salário para chegar ao custo real da hora. Variam por estado e por função (o workers\' comp da construção é alto).</p>' +
+        campo('fica', 'FICA (Social Security + Medicare)') + campo('desemprego', 'Seguro-desemprego (FUTA + SUTA)') + campo('workersComp', 'Workers\' comp') + campo('beneficios', 'Benefícios (saúde, férias, etc.)'),
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Salvar', valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const partes = {};
+    for (const k of ['fica', 'desemprego', 'workersComp', 'beneficios']) {
+      const v = Number(String(res.campos[k]).replace(',', '.'));
+      if (!(v >= 0 && v <= 100)) { toast('Cada encargo deve ficar entre 0 e 100%.'); return; }
+      partes[k] = v;
+    }
+    definirEncargos(partes);
+    toast('Encargos atualizados: ' + pct(encargos(), 2) + ' sobre a folha.');
+    app.desenhar();
+  },
   'crew-reproduzir'() { if (mapaAtual) mapaAtual.reproduzir(); },
   'crew-passo'(el) { if (mapaAtual) mapaAtual.selecionarPasso(Number(el.dataset.n), 'lista'); },
   'crew-marcar'(el) {
@@ -514,7 +575,7 @@ function telaSemanaFuncionario(funcId, segunda) {
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-aprovar" data-id="' + f.id + '" data-semana="' + segunda + '">Aprovar semana</button></div>'
     : '';
   return moldura({
-    ativo: 'timesheets', largo: true, titulo: f.nome, subtitulo: f.funcao + ' · ' + (equipe(f.equipeId) || {}).nome + ' · ' + dinheiro(f.valorHora) + '/h',
+    ativo: 'timesheets', largo: true, titulo: f.nome, subtitulo: f.funcao + ' · ' + (equipe(f.equipeId) || {}).nome + ' · ' + dinheiro(valorAtual(f)) + '/h',
     voltar: { href: '#/crew/timesheets/' + segunda, rotulo: 'Timesheets' },
     acoes: decisao,
     conteudo:
@@ -535,31 +596,250 @@ function telaSemanaFuncionario(funcId, segunda) {
   });
 }
 
-/* ---------- Administrador: custos por obra ---------- */
+/* ---------- Administrador: funcionários, valor hora e histórico ---------- */
 
-function telaCustos(param) {
-  const segunda = param || inicioDaSemana(hoje());
-  const { porObra, adicionalExtra } = custosDaSemana(segunda);
-  const ids = Object.keys(porObra).sort((a, b) => porObra[b].custo - porObra[a].custo);
-  const total = ids.reduce((t, id) => t + porObra[id].custo, 0) + adicionalExtra;
-  const maior = Math.max(1, ...ids.flatMap((id) => Object.values(porObra[id].etapas).map((e) => e.custo)));
+function pct(v, casas) { return (v * 100).toFixed(casas || 0).replace('.', ',') + '%'; }
+function dinheiroInteiro(v) { return 'US$ ' + Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function dinheiroCurto(v) {
+  if (Math.abs(v) < 10000) return dinheiroInteiro(v);
+  if (Math.abs(v) < 100000) return 'US$ ' + (v / 1000).toFixed(1).replace('.', ',').replace(',0', '') + ' mil';
+  return 'US$ ' + (v / 1000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' mil';
+}
+
+function telaFuncionarios() {
+  const c = estado().crew;
+  const enc = encargos();
+  const linhas = c.funcionarios.slice().sort((a, b) => (a.equipeId + a.nome).localeCompare(b.equipeId + b.nome)).map((f) => {
+    const hist = historicoDeValores(f);
+    const atual = hist.find((x) => x.desde <= hoje()) || hist[hist.length - 1];
+    const futuro = hist.find((x) => x.desde > hoje());
+    const anterior = hist[hist.indexOf(atual) + 1];
+    return '<tr><td><a href="#/crew/funcionario/' + f.id + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(f.funcao) + '</span></td>' +
+      '<td>' + esc((equipe(f.equipeId) || {}).nome || '—') + '</td>' +
+      '<td class="num"><b>' + dinheiro(valorAtual(f)) + '</b></td>' +
+      '<td class="num">' + dinheiro(valorAtual(f) * (1 + enc)) + '</td>' +
+      '<td>' + dataCurta(atual.desde) + (anterior ? '<span class="mudo pequeno bloco">antes ' + dinheiro(anterior.valor) + '</span>' : '<span class="mudo pequeno bloco">admissão</span>') +
+        (futuro ? '<span class="etiqueta etiqueta-neutro">' + dinheiro(futuro.valor) + ' a partir de ' + dataCurta(futuro.desde) + '</span>' : '') + '</td></tr>';
+  }).join('');
   return moldura({
-    ativo: 'custos', largo: true, titulo: 'Custo de mão de obra', subtitulo: 'Por obra e por etapa, calculado das horas do ponto',
-    conteudo: seletorSemana('#/crew/custos', segunda) +
-      '<div class="kpis">' +
-        '<div class="kpi"><span>Total da semana</span><b>' + dinheiro(total) + '</b></div>' +
-        '<div class="kpi' + (adicionalExtra ? ' kpi-alerta' : '') + '"><span>Adicional de hora extra</span><b>' + dinheiro(adicionalExtra) + '</b></div>' +
-        '<div class="kpi"><span>Horas</span><b>' + horas(ids.reduce((t, id) => t + porObra[id].horas, 0)) + '</b></div>' +
-        '<div class="kpi"><span>Obras com horas</span><b>' + ids.length + '</b></div>' +
+    ativo: 'funcionarios', largo: true, titulo: 'Funcionários', subtitulo: 'Valor hora de cada pessoa, com o histórico de mudanças',
+    conteudo: '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-funcionarios"><thead><tr><th>Nome</th><th>Equipe</th><th class="num">Valor hora</th><th class="num">Custo carregado</th><th>Vigente desde</th></tr></thead><tbody>' + linhas + '</tbody></table></div></section>' +
+      '<p class="dica">Custo carregado = valor hora + ' + pct(enc, 2).replace(',00', '') + ' de encargos sobre a folha (impostos do empregador, workers\' comp e benefícios). É o valor usado no custo das obras. ' +
+      '<a href="#/crew/custos" >Ver custos</a>.</p>',
+  });
+}
+
+function telaFuncionario(id) {
+  const f = funcionario(id);
+  if (!f) return { trocar: '#/crew/funcionarios' };
+  const hist = historicoDeValores(f);
+  const enc = encargos();
+  const atual = valorAtual(f);
+  const linhas = hist.map((x, i) => {
+    const ate = i > 0 ? somarDias(hist[i - 1].desde, -1) : null;
+    const ant = hist[i + 1];
+    const variacao = ant ? (x.valor - ant.valor) / ant.valor : null;
+    const vigente = x.desde <= hoje() && (!ate || ate >= hoje());
+    return '<tr' + (vigente ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + ' → ' + (ate ? dataCurta(ate) : (x.desde > hoje() ? '…' : 'hoje')) +
+      (vigente ? ' <span class="etiqueta etiqueta-verde">vigente</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">futuro</span>' : '') + '</td>' +
+      '<td class="num"><b>' + dinheiro(x.valor) + '</b></td>' +
+      '<td class="num">' + (variacao == null ? '—' : (variacao >= 0 ? '+' : '') + pct(variacao, 1)) + '</td>' +
+      '<td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>';
+  }).join('');
+  return moldura({
+    ativo: 'funcionarios', largo: true, titulo: f.nome, subtitulo: f.funcao + ' · ' + ((equipe(f.equipeId) || {}).nome || '') + ' · admissão em ' + dataCurta(f.admissao),
+    voltar: { href: '#/crew/funcionarios', rotulo: 'Funcionários' },
+    conteudo:
+      '<div class="kpis kpis-3">' +
+        '<div class="kpi kpi-azul"><span>Valor hora atual</span><b>' + dinheiro(atual) + '</b></div>' +
+        '<div class="kpi"><span>Hora extra (1,5×)</span><b>' + dinheiro(atual * REGRAS.fatorExtra) + '</b></div>' +
+        '<div class="kpi"><span>Custo carregado (+' + pct(enc, 2).replace(',00', '') + ' encargos)</span><b>' + dinheiro(atual * (1 + enc)) + '</b></div>' +
       '</div>' +
-      (ids.length ? ids.map((id) => {
-        const o = porObra[id];
-        const etapas = Object.entries(o.etapas).sort((a, b) => b[1].custo - a[1].custo);
-        return '<section class="cartao custo-obra"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(nomeObra(id)) + '</h2><b>' + dinheiro(o.custo) + '</b></div>' +
-          '<p class="mudo pequeno">' + horas(o.horas) + ' · ' + o.pessoasDia.size + ' pessoas-dia</p>' +
-          '<ul class="barras">' + etapas.map(([nome, e]) => '<li><span class="barra-rotulo">' + esc(nome) + '</span><span class="barra"><span style="width:' + Math.max(2, Math.round(e.custo / maior * 100)) + '%"' + (nome.startsWith('Deslocamento') ? ' class="desl"' : '') + '></span></span><span class="barra-valor">' + dinheiro(e.custo) + ' · ' + horas(e.horas) + '</span></li>').join('') + '</ul></section>';
-      }).join('') : '<p class="vazio">Nenhuma hora registrada nesta semana.</p>') +
-      '<p class="dica">Custo base = horas × valor/hora de cada pessoa. O adicional de hora extra (0,5× acima de 40 h na semana) aparece à parte porque é da pessoa, não de uma obra. Na versão real, o rateio por obra é configurável.</p>',
+      '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Histórico do valor hora</h2>' +
+        '<button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-valor-hora" data-id="' + f.id + '">' + icone('dinheiro', 16) + '<span>Alterar valor hora</span></button></div>' +
+        '<p class="mudo pequeno">Cada mudança vale a partir de uma data e nunca apaga a anterior: as horas de cada dia são pagas e custeadas pelo valor vigente naquele dia.</p>' +
+        '<div class="tabela-rolagem"><table class="tabela tabela-valores"><thead><tr><th>Vigência</th><th class="num">Valor hora</th><th class="num">Variação</th><th>Motivo</th><th>Registrado por</th></tr></thead><tbody>' + linhas + '</tbody></table></div></section>' +
+      '<p class="dica"><a href="#/crew/semana/' + f.id + '/' + inicioDaSemana(hoje()) + '">Ver as horas desta semana</a></p>',
+  });
+}
+
+/* ---------- Administrador: custos ---------- */
+
+const STATUS_OBRA = {
+  'no-rumo': ['No rumo', 'etiqueta-verde'], atencao: ['Atenção', 'etiqueta-ambar'], estouro: ['Estouro previsto', 'etiqueta-alerta'], 'sem-orcamento': ['Sem orçamento', 'etiqueta-neutro'],
+};
+
+function abasCustos(ativa) {
+  const abas = [['obras', 'Obras', '#/crew/custos'], ['mes', 'Mês', '#/crew/custos/mes'], ['semana', 'Semana', '#/crew/custos/semana']];
+  return '<nav class="abas-segmento" aria-label="Período">' + abas.map(([id, r, h]) => '<a href="' + h + '"' + (id === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>';
+}
+
+function blocoEncargos() {
+  const e = (estado().crew.config && estado().crew.config.encargos) || ENCARGOS_PADRAO;
+  return '<p class="dica">Custos com <b>' + pct(encargos(), 2).replace(',00', '') + ' de encargos sobre a folha</b> (FICA ' + String(e.fica).replace('.', ',') + '% · desemprego ' + String(e.desemprego).replace('.', ',') + '% · workers\' comp ' + String(e.workersComp).replace('.', ',') + '% · benefícios ' + String(e.beneficios).replace('.', ',') + '%). ' +
+    '<button type="button" class="link-botao" data-acao="crew-encargos">Alterar encargos</button></p>';
+}
+
+function telaCustos(modo, ref) {
+  // compatibilidade: #/crew/custos/AAAA-MM-DD = semana
+  if (modo && /^\d{4}-\d{2}-\d{2}$/.test(modo)) { ref = modo; modo = 'semana'; }
+  if (modo === 'semana') return telaCustosPeriodo('semana', ref || inicioDaSemana(hoje()));
+  if (modo === 'mes') return telaCustosPeriodo('mes', ref || hoje().slice(0, 7));
+  return telaCustosObras();
+}
+
+function telaCustosObras() {
+  const resumos = estado().obras.map((o) => resumoDaObra(o.id)).filter((r) => r.realizado > 0 || r.orcamento);
+  const soma = (k) => resumos.reduce((t, r) => t + (r[k] || 0), 0);
+  const saldo = soma('orcamento') - soma('projecao');
+  return moldura({
+    ativo: 'custos', largo: true, titulo: 'Custo de mão de obra', subtitulo: 'Orçado × realizado × projeção para o fim de cada obra',
+    conteudo: abasCustos('obras') +
+      '<div class="kpis">' +
+        '<div class="kpi"><span>Orçamento de mão de obra</span><b>' + dinheiroCurto(soma('orcamento')) + '</b></div>' +
+        '<div class="kpi kpi-azul"><span>Realizado até hoje</span><b>' + dinheiroCurto(soma('realizado')) + '</b></div>' +
+        '<div class="kpi"><span>Projeção ao final</span><b>' + dinheiroCurto(soma('projecao')) + '</b></div>' +
+        '<div class="kpi ' + (saldo >= 0 ? 'kpi-verde' : 'kpi-alerta') + '"><span>' + (saldo >= 0 ? 'Sobra projetada' : 'Estouro projetado') + '</span><b>' + dinheiroCurto(Math.abs(saldo)) + '</b></div>' +
+      '</div>' +
+      resumos.sort((a, b) => (a.saldo == null ? 1 : b.saldo == null ? -1 : a.saldo / a.orcamento - b.saldo / b.orcamento)).map(cartaoObra).join('') +
+      blocoEncargos() +
+      '<p class="dica">Como projetamos: com o <b>avanço físico</b> informado, projeção = realizado ÷ avanço (se gastou 31% e fez 30%, vai gastar ~3% a mais que o orçado). Sem avanço, usamos o <b>ritmo</b> das últimas 4 semanas até o fim do prazo. Só mão de obra: material, subempreiteiros e equipamentos ficam de fora (ver docs/crew.md).</p>',
+  });
+}
+
+function cartaoObra(r) {
+  const [rot, cls] = STATUS_OBRA[r.status];
+  const barra = (rotulo, v, classe) => '<li><span class="barra-rotulo">' + rotulo + '</span><span class="barra"><span class="' + classe + '" style="width:' + Math.min(100, Math.round(v * 100)) + '%"></span></span><span class="barra-valor">' + pct(v) + '</span></li>';
+  const etapas = r.etapas.filter((e) => e.orcado || e.custo).map((e) => {
+    const uso = e.orcado ? e.custo / e.orcado : null;
+    return '<tr><td>' + esc(e.nome) + '</td><td class="num">' + (e.orcado ? dinheiroInteiro(e.orcado) : '<span class="mudo">não orçado</span>') + '</td><td class="num">' + dinheiroInteiro(e.custo) + '</td>' +
+      '<td class="num">' + (uso == null ? '—' : pct(uso)) + '</td><td>' + horas(e.min) + '</td></tr>';
+  }).join('');
+  return '<section class="cartao custo-obra" id="obra-' + r.obra.id + '"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(r.obra.nome) + ' <span class="etiqueta ' + cls + '">' + rot + '</span></h2>' +
+      '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-orcamento" data-obra="' + r.obra.id + '">Editar orçamento</button></div>' +
+    '<p class="mudo pequeno">' + dataCurta(r.obra.inicio) + ' a ' + dataCurta(r.obra.prazo) + ' · faltam ' + Math.round(r.semanasRestantes) + ' semanas</p>' +
+    '<div class="numeros-obra">' +
+      '<div><span>Orçamento</span><b>' + (r.orcamento ? dinheiroInteiro(r.orcamento) : '—') + '</b></div>' +
+      '<div><span>Realizado</span><b>' + dinheiroInteiro(r.realizado) + '</b>' + (r.pctConsumido != null ? '<small>' + pct(r.pctConsumido) + ' do orçamento</small>' : '') + '</div>' +
+      '<div><span>Projeção ao final</span><b>' + dinheiroInteiro(r.projecao) + '</b><small>' + (r.projecaoAvanco != null ? 'pelo avanço físico' : 'pelo ritmo recente') + '</small></div>' +
+      '<div class="' + (r.saldo == null ? '' : r.saldo >= 0 ? 'positivo' : 'negativo') + '"><span>' + (r.saldo == null || r.saldo >= 0 ? 'Sobra projetada' : 'Estouro projetado') + '</span><b>' + (r.saldo == null ? '—' : dinheiroInteiro(Math.abs(r.saldo))) + '</b>' + (r.saldo != null ? '<small>' + pct(Math.abs(r.saldo) / r.orcamento, 1) + ' do orçamento</small>' : '') + '</div>' +
+    '</div>' +
+    '<ul class="barras barras-ritmo">' + barra('Prazo decorrido', r.pctPrazo, 'b-prazo') + (r.pctConsumido != null ? barra('Orçamento consumido', r.pctConsumido, r.status === 'estouro' ? 'b-estouro' : 'b-consumo') : '') + (r.avanco != null ? barra('Avanço físico', r.avanco, 'b-avanco') : '') + '</ul>' +
+    graficoObra(r) +
+    '<details class="detalhe-etapas"><summary>Orçado × realizado por etapa</summary><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>Etapa</th><th class="num">Orçado</th><th class="num">Realizado</th><th class="num">Consumido</th><th>Horas</th></tr></thead><tbody>' + etapas + '</tbody></table></div></details>' +
+    '<details class="detalhe-etapas"><summary>Semana a semana (tabela)</summary><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>Semana</th><th class="num">Custo</th><th class="num">Acumulado</th><th>Horas</th></tr></thead><tbody>' +
+      r.semanas.slice().reverse().map((x) => '<tr><td><a href="#/crew/custos/semana/' + x.segunda + '">' + dataCurta(x.segunda) + '</a></td><td class="num">' + dinheiroInteiro(x.custo) + '</td><td class="num">' + dinheiroInteiro(x.acumulado) + '</td><td>' + horas(x.min) + '</td></tr>').join('') +
+    '</tbody></table></div></details></section>';
+}
+
+/* Gráfico da obra: custo acumulado (realizado), o planejado (orçamento distribuído no prazo) e a projeção até o fim. */
+function graficoObra(r) {
+  const W = 760, H = 260, m = { l: 84, r: 132, t: 18, b: 30 };
+  const n = Math.max(1, Math.ceil(diasEntre(inicioDaSemana(r.obra.inicio), r.obra.prazo) / 7));
+  // escala "redonda": 4 ou 5 linhas de grade com passos 1, 2, 2,5 ou 5 × 10^k
+  const bruto = Math.max(r.orcamento || 0, r.projecao, r.realizado, 1) * 1.04 / 4;
+  const pot = Math.pow(10, Math.floor(Math.log10(bruto)));
+  const passo = [1, 2, 2.5, 5, 10].map((k) => k * pot).find((v) => v >= bruto);
+  const ymax = Math.ceil(Math.max(r.orcamento || 0, r.projecao, r.realizado, 1) * 1.04 / passo) * passo;
+  const x = (i) => m.l + (W - m.l - m.r) * i / n;
+  const y = (v) => H - m.b - (H - m.t - m.b) * v / ymax;
+  const f1 = (v) => v.toFixed(1);
+  const real = r.semanas.map((s, i) => [x(i + 1), y(s.acumulado)]);
+  const ultimo = real.length ? real[real.length - 1] : [x(0), y(0)];
+  const linha = (pts) => 'M' + pts.map((p) => f1(p[0]) + ',' + f1(p[1])).join('L');
+  const passoY = [];
+  for (let v = passo; v <= ymax + 0.5; v += passo) passoY.push(v);
+  const grade = passoY.map((v) => '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + f1(y(v)) + '" y2="' + f1(y(v)) + '" class="g-grade"/><text x="' + (m.l - 8) + '" y="' + f1(y(v) + 4) + '" class="g-eixo" text-anchor="end">' + esc(dinheiroCurto(v)) + '</text>').join('');
+  const hojeX = ultimo[0];
+  const rotulosX = '<text x="' + m.l + '" y="' + (H - 8) + '" class="g-eixo">' + dataCurta(r.obra.inicio).slice(0, 5) + '</text>' +
+    '<text x="' + f1(hojeX) + '" y="' + (H - 8) + '" class="g-eixo" text-anchor="middle">hoje</text>' +
+    '<text x="' + (W - m.r) + '" y="' + (H - 8) + '" class="g-eixo" text-anchor="end">' + dataCurta(r.obra.prazo).slice(0, 5) + '</text>';
+  // rótulos à direita (orçamento e projeção) afastados no mínimo 30 unidades para não encavalar
+  let yOrc = r.orcamento ? y(r.orcamento) : null, yProj = y(r.projecao);
+  if (yOrc != null && Math.abs(yOrc - yProj) < 30) {
+    const meio = (yOrc + yProj) / 2, sinal = r.projecao > r.orcamento ? 1 : -1;
+    yProj = meio - sinal * 15; yOrc = meio + sinal * 15;
+  }
+  const rotulo = (yy, titulo, valor) => '<text x="' + (W - m.r + 10) + '" y="' + f1(yy - 2) + '" class="g-rotulo">' + titulo + '</text><text x="' + (W - m.r + 10) + '" y="' + f1(yy + 11) + '" class="g-rotulo-valor">' + esc(valor) + '</text>';
+  const orc = r.orcamento ? '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + f1(y(r.orcamento)) + '" y2="' + f1(y(r.orcamento)) + '" class="g-orcamento"/>' + rotulo(yOrc, 'Orçamento', dinheiroCurto(r.orcamento)) : '';
+  const plano = r.orcamento ? '<path d="' + linha([[x(0), y(0)], [x(n), y(r.orcamento)]]) + '" class="g-planejado"/>' : '';
+  const proj = '<path d="' + linha([ultimo, [x(n), y(r.projecao)]]) + '" class="g-projecao"/>' +
+    '<circle cx="' + f1(x(n)) + '" cy="' + f1(y(r.projecao)) + '" r="4" class="g-ponto-projecao"/>' +
+    rotulo(yProj, 'Projeção', dinheiroCurto(r.projecao));
+  const dados = {
+    x0: m.l, larg: W - m.l - m.r, n, W, ini: inicioDaSemana(r.obra.inicio),
+    sem: r.semanas.map((s) => [Math.round(s.custo), Math.round(s.acumulado)]), orc: r.orcamento || 0, proj: Math.round(r.projecao),
+  };
+  return '<div class="grafico-obra"><p class="legenda-grafico"><span><i class="lg-real"></i>Realizado (acumulado)</span>' + (r.orcamento ? '<span><i class="lg-plano"></i>Planejado</span>' : '') + '<span><i class="lg-proj"></i>Projeção</span></p>' +
+    '<div class="grafico-area" data-grafico="' + esc(JSON.stringify(dados)) + '"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Custo acumulado da obra: realizado ' + esc(dinheiroInteiro(r.realizado)) + ', projeção ' + esc(dinheiroInteiro(r.projecao)) + (r.orcamento ? ', orçamento ' + esc(dinheiroInteiro(r.orcamento)) : '') + '">' +
+      grade + '<line x1="' + f1(hojeX) + '" x2="' + f1(hojeX) + '" y1="' + m.t + '" y2="' + (H - m.b) + '" class="g-hoje"/>' + orc + plano + proj +
+      '<path d="' + linha([[x(0), y(0)]].concat(real)) + '" class="g-realizado"/>' + rotulosX +
+      '<line class="g-cruz" x1="0" x2="0" y1="' + m.t + '" y2="' + (H - m.b) + '" visibility="hidden"/></svg><div class="g-dica" hidden></div></div></div>';
+}
+
+function ligarGraficos() {
+  document.querySelectorAll('.grafico-area').forEach((area) => {
+    const d = JSON.parse(area.dataset.grafico);
+    const svg = area.querySelector('svg'), cruz = svg.querySelector('.g-cruz'), dica = area.querySelector('.g-dica');
+    const mostrar = (ev) => {
+      const r = svg.getBoundingClientRect();
+      const vx = (ev.clientX - r.left) * d.W / r.width;
+      const i = Math.round((vx - d.x0) / d.larg * d.n);
+      if (i < 1 || i > d.n) { esconder(); return; }
+      const xi = d.x0 + d.larg * i / d.n;
+      cruz.setAttribute('x1', xi); cruz.setAttribute('x2', xi); cruz.setAttribute('visibility', 'visible');
+      const sem = d.sem[i - 1];
+      const linhas = [['Semana de', dataCurta(somarDias(d.ini, (i - 1) * 7))]];
+      if (sem) linhas.push(['Realizado acumulado', dinheiroInteiro(sem[1])], ['Custo na semana', dinheiroInteiro(sem[0])]);
+      else linhas.push(['Projeção ao final', dinheiroInteiro(d.proj)]);
+      if (d.orc) linhas.push(['Planejado', dinheiroInteiro(d.orc * i / d.n)]);
+      dica.replaceChildren(...linhas.map(([k, v]) => { const p = document.createElement('p'); const b = document.createElement('b'); b.textContent = v; p.append(b, ' ' + k); return p; }));
+      dica.hidden = false;
+      const px = xi / d.W * r.width;
+      dica.style.left = Math.min(r.width - 190, Math.max(0, px + 12)) + 'px';
+    };
+    const esconder = () => { cruz.setAttribute('visibility', 'hidden'); dica.hidden = true; };
+    svg.addEventListener('pointermove', mostrar);
+    svg.addEventListener('pointerdown', mostrar);
+    svg.addEventListener('pointerleave', esconder);
+  });
+}
+
+function seletorMes(ym) {
+  const [a, m] = ym.split('-').map(Number);
+  const ant = new Date(a, m - 2, 1), prox = new Date(a, m, 1);
+  const fmt = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const nome = new Date(a, m - 1, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return '<div class="seletor-semana"><a class="btn btn-contorno btn-pequeno" href="#/crew/custos/mes/' + fmt(ant) + '">' + icone('voltar', 16) + 'Anterior</a>' +
+    '<b>' + primeiraMaiuscula(nome) + (ym === hoje().slice(0, 7) ? ' · mês atual' : '') + '</b>' +
+    (ym < hoje().slice(0, 7) ? '<a class="btn btn-contorno btn-pequeno" href="#/crew/custos/mes/' + fmt(prox) + '">Próximo' + icone('seta', 16) + '</a>' : '<span></span>') + '</div>';
+}
+
+function telaCustosPeriodo(modo, ref) {
+  let ini, fim, seletor;
+  if (modo === 'semana') { ini = ref; fim = somarDias(ref, 6); seletor = seletorSemana('#/crew/custos/semana', ref); }
+  else {
+    const [a, m] = ref.split('-').map(Number);
+    ini = ref + '-01'; fim = isoDoDia(new Date(a, m, 0)); seletor = seletorMes(ref);
+  }
+  const p = custosDoPeriodo(ini, fim);
+  const maior = Math.max(1, ...p.obras.flatMap((o) => o.etapas.map((e) => e.custo)));
+  return moldura({
+    ativo: 'custos', largo: true, titulo: 'Custo de mão de obra', subtitulo: modo === 'semana' ? 'Por obra e por etapa, na semana' : 'Por obra e por etapa, no mês',
+    conteudo: abasCustos(modo) + seletor +
+      '<div class="kpis">' +
+        '<div class="kpi kpi-azul"><span>Total ' + (modo === 'semana' ? 'da semana' : 'do mês') + '</span><b>' + dinheiroInteiro(p.custo) + '</b></div>' +
+        '<div class="kpi"><span>Salários (horas × valor hora)</span><b>' + dinheiroInteiro(p.base) + '</b></div>' +
+        '<div class="kpi' + (p.adicional ? ' kpi-alerta' : '') + '"><span>Adicional de hora extra</span><b>' + dinheiroInteiro(p.adicional) + '</b></div>' +
+        '<div class="kpi"><span>Encargos sobre a folha</span><b>' + dinheiroInteiro(p.encargos) + '</b></div>' +
+      '</div>' +
+      (p.obras.length ? p.obras.map((o) =>
+        '<section class="cartao custo-obra"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(nomeObra(o.obraId)) + '</h2><b>' + dinheiroInteiro(o.custo) + '</b></div>' +
+        '<p class="mudo pequeno">' + horas(o.min) + ' · ' + o.pessoasDia + ' pessoas-dia · salários ' + dinheiroInteiro(o.base) + ' · hora extra ' + dinheiroInteiro(o.adicional) + ' · encargos ' + dinheiroInteiro(o.encargos) + '</p>' +
+        '<ul class="barras">' + o.etapas.map((e) => '<li><span class="barra-rotulo">' + esc(e.nome) + '</span><span class="barra"><span style="width:' + Math.max(2, Math.round(e.custo / maior * 100)) + '%"' + (e.nome.startsWith('Deslocamento') ? ' class="desl"' : '') + '></span></span><span class="barra-valor">' + dinheiroInteiro(e.custo) + ' · ' + horas(e.min) + '</span></li>').join('') + '</ul></section>'
+      ).join('') : '<p class="vazio">Nenhuma hora registrada neste período.</p>') +
+      blocoEncargos() +
+      '<p class="dica">Custo = horas × valor hora vigente no dia + adicional de hora extra (0,5× acima de 40 h na semana, rateado entre as obras pelas horas daquela semana) + encargos sobre a folha. Mudou o valor hora de alguém? O custo dos dias anteriores não muda.</p>',
   });
 }
 
@@ -1056,6 +1336,7 @@ function trechoDaRota(coords, fa, fb) {
 export function aposDesenharCrew() {
   if (mapaAtual) mapaAtual.parar();
   mapaAtual = null;
+  ligarGraficos();
   montarMapa();
 }
 

@@ -157,11 +157,74 @@ await page.waitForSelector('.linha-tempo');
 verificar((await page.textContent('.linha-tempo')).includes('Ajuste de Ana Ribeiro'), 'linha do tempo mostra o ajuste e quem fez');
 
 // Custos e mapa do dia
-await page.goto(BASE + '#/crew/custos/2026-09-28');
+await page.goto(BASE + '#/crew/custos/2026-09-28'); // endereço antigo: abre a semana
 await page.waitForSelector('.custo-obra');
 verificar((await page.textContent('.pagina')).includes('Deslocamento entre obras'), 'custos: deslocamento entre obras aparece como custo');
 verificar((await page.locator('.kpi', { hasText: 'Adicional de hora extra' }).textContent()).includes('US$'), 'custos: adicional de hora extra em US$');
 await print('7-custos');
+// Custos: obra inteira (orçado × realizado × projeção), mês, valor hora com histórico, orçamento e encargos
+const kpiNum = async (rotulo) => Number((await page.locator('.kpi', { hasText: rotulo }).locator('b').textContent()).replace(/[^\d]/g, ''));
+await page.goto(BASE + '#/crew/custos');
+await page.waitForSelector('.grafico-area svg .g-realizado');
+verificar(await page.locator('.custo-obra').count() === 3, 'custos: as três obras com orçamento e realizado');
+verificar((await page.textContent('#obra-atlantico .cartao-titulo')).includes('Estouro previsto'), 'custos: Atlântico com estouro previsto');
+verificar((await page.textContent('#obra-jardim .cartao-titulo')).includes('No rumo'), 'custos: Jardim no rumo');
+verificar((await page.textContent('#obra-jardim .numeros-obra')).includes('Sobra projetada'), 'custos: sobra projetada');
+const g = page.locator('#obra-jardim .grafico-area svg');
+await g.scrollIntoViewIfNeeded();
+const caixa = await g.boundingBox();
+await page.mouse.move(caixa.x + caixa.width * 0.25, caixa.y + caixa.height / 2);
+verificar((await page.textContent('#obra-jardim .g-dica')).includes('Realizado acumulado'), 'gráfico: dica ao passar o mouse');
+await print('7b-custos-obras');
+await page.click('#obra-jardim [data-acao="crew-orcamento"]');
+await page.fill('dialog input[name="avanco"]', '25');
+await page.click('dialog button:has-text("Salvar")');
+await page.waitForFunction(() => /Estouro previsto/.test(document.querySelector('#obra-jardim .cartao-titulo').textContent));
+verificar(true, 'orçamento: avanço físico menor muda a projeção para estouro');
+await page.click('[data-acao="crew-encargos"]');
+await page.fill('dialog input[name="workersComp"]', '20');
+await page.click('dialog button:has-text("Salvar")');
+await page.waitForFunction(() => /38,05% de encargos/.test(document.body.textContent));
+verificar(true, 'encargos sobre a folha alteráveis (38,05%)');
+await page.goto(BASE + '#/crew/custos/mes/2026-09');
+await page.waitForSelector('.custo-obra');
+verificar((await page.textContent('.seletor-semana')).includes('Setembro de 2026'), 'custos por mês');
+verificar(await kpiNum('Encargos sobre a folha') > 0, 'custos do mês com encargos');
+// Valor hora com vigência: mudar na semana aberta muda o custo dela; a semana aprovada não muda
+await page.goto(BASE + '#/crew/custos/semana/2026-09-28');
+await page.waitForSelector('.kpi');
+const antesAnterior = await kpiNum('Total da semana');
+await page.goto(BASE + '#/crew/custos/semana/2026-10-05');
+await page.waitForSelector('.kpi');
+const antesAtual = await kpiNum('Total da semana');
+await page.goto(BASE + '#/crew/funcionarios');
+await page.waitForSelector('.tabela-funcionarios');
+verificar((await page.textContent('.tabela-funcionarios')).includes('US$ 38,00'), 'funcionários: valor hora atual');
+await page.click('.tabela-funcionarios a:has-text("Lucas Oliveira")');
+await page.waitForSelector('.tabela-valores');
+verificar(await page.locator('.tabela-valores tbody tr').count() === 2, 'histórico do valor hora (admissão e reajuste)');
+await page.click('[data-acao="crew-valor-hora"]');
+await page.fill('dialog input[name="valor"]', '41');
+await page.fill('dialog input[name="desde"]', '2026-09-28');
+await page.fill('dialog input[name="motivo"]', 'Teste');
+await page.click('dialog button:has-text("Salvar novo valor")');
+await page.waitForFunction(() => /já foi aprovada/.test((document.getElementById('toast') || {}).textContent || ''));
+verificar(await page.locator('.tabela-valores tbody tr').count() === 2, 'valor hora não pode começar em semana aprovada');
+await page.click('[data-acao="crew-valor-hora"]');
+await page.fill('dialog input[name="valor"]', '41');
+await page.fill('dialog input[name="desde"]', '2026-10-05');
+await page.fill('dialog input[name="motivo"]', 'Promoção a eletricista líder');
+await page.click('dialog button:has-text("Salvar novo valor")');
+await page.waitForFunction(() => document.querySelectorAll('.tabela-valores tbody tr').length === 3);
+verificar((await page.textContent('.tabela-valores')).includes('Promoção a eletricista líder') && (await page.textContent('.kpi-azul')).includes('41,00'), 'novo valor hora entra no histórico e vira o vigente');
+await print('9-funcionario');
+await page.goto(BASE + '#/crew/custos/semana/2026-10-05');
+await page.waitForSelector('.kpi');
+verificar(await kpiNum('Total da semana') > antesAtual, 'novo valor hora aumenta o custo da semana aberta');
+await page.goto(BASE + '#/crew/custos/semana/2026-09-28');
+await page.waitForSelector('.kpi');
+verificar(await kpiNum('Total da semana') === antesAnterior, 'semana anterior mantém o custo (valor vigente no dia)');
+
 // Percurso: Lucas troca de obra (Jardim → Galpão) na terça da semana anterior
 await page.goto(BASE + '#/crew/dia/f-lucas/2026-09-29');
 await page.waitForSelector('.percurso');

@@ -835,3 +835,69 @@ body.sem-rolagem { overflow: hidden; }
 .mapa-ponto { fill: #2E90FA; stroke: #fff; stroke-width: 1; }
 .zoom-longe .mapa-rotulo-hora.secundario { display: none; }
 .pessoa-rota span { display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--primario); border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(194, 65, 12, 0.25), var(--sombra-alta); }
+
+/* Funcionários e custos */
+.bloco { display: block; }
+.kpis-3 { grid-template-columns: repeat(3, 1fr); }
+.tabela-valores tr.vigente td { background: var(--verde-claro); }
+.link-botao { all: unset; color: var(--primario); font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.link-botao:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; }
+.abas-segmento { display: inline-flex; gap: 2px; padding: 3px; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: 999px; margin-bottom: 4px; }
+.abas-segmento a { padding: 6px 16px; border-radius: 999px; font-weight: 600; font-size: 14px; color: var(--texto-2); text-decoration: none; }
+.abas-segmento a.ativa { background: var(--superficie); color: var(--texto); box-shadow: var(--sombra); }
+.numeros-obra { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 12px 0; }
+.numeros-obra > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--raio); background: var(--superficie-2); border: 1px solid var(--borda); }
+.numeros-obra span { font-size: 12.5px; color: var(--mudo); font-weight: 500; }
+.numeros-obra b { font-size: 20px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.numeros-obra small { font-size: 12px; color: var(--mudo); }
+.numeros-obra .positivo { background: var(--verde-claro); border-color: var(--verde-borda); }
+.numeros-obra .positivo b { color: var(--verde); }
+.numeros-obra .negativo { background: var(--vermelho-claro); border-color: var(--vermelho-borda); }
+.numeros-obra .negativo b { color: var(--vermelho); }
+.barras-ritmo .b-prazo { background: #98A2B3; }
+.barras-ritmo .b-consumo { background: #2563EB; }
+.barras-ritmo .b-estouro { background: var(--vermelho); }
+.barras-ritmo .b-avanco { background: var(--cor-crew); }
+.grafico-obra { margin-top: 14px; }
+.legenda-grafico { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--texto-2); margin: 0 0 4px; }
+.legenda-grafico span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda-grafico i { display: inline-block; width: 18px; height: 0; border-top: 2px solid; }
+.lg-real { border-color: #C2410C !important; }
+.lg-plano { border-color: #2563EB !important; }
+.lg-proj { border-color: #C2410C !important; border-top-style: dashed !important; }
+.grafico-area { position: relative; }
+.grafico-area svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.g-grade { stroke: var(--borda); stroke-width: 1; }
+.g-eixo { font-size: 11px; fill: var(--mudo); }
+.g-rotulo { font-size: 11.5px; font-weight: 600; fill: var(--texto-2); }
+.g-rotulo-valor { font-size: 11.5px; fill: var(--mudo); }
+.g-hoje { stroke: var(--borda-forte); stroke-width: 1; stroke-dasharray: 3 3; }
+.g-orcamento { stroke: #667085; stroke-width: 1.5; stroke-dasharray: 6 4; }
+.g-planejado { fill: none; stroke: #2563EB; stroke-width: 2; }
+.g-realizado { fill: none; stroke: #C2410C; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.g-projecao { fill: none; stroke: #C2410C; stroke-width: 2; stroke-dasharray: 6 5; }
+.g-ponto-projecao { fill: #C2410C; stroke: var(--superficie); stroke-width: 2; }
+.g-cruz { stroke: var(--texto-2); stroke-width: 1; }
+.g-dica { position: absolute; top: 6px; min-width: 170px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); box-shadow: var(--sombra-alta); padding: 8px 10px; font-size: 12.5px; color: var(--mudo); pointer-events: none; }
+.g-dica p { margin: 0; }
+.g-dica b { color: var(--texto); font-variant-numeric: tabular-nums; }
+.detalhe-etapas { margin-top: 10px; border-top: 1px solid var(--borda); padding-top: 8px; }
+.detalhe-etapas summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--texto-2); }
+@media (max-width: 760px) {
+  .numeros-obra { grid-template-columns: repeat(2, 1fr); }
+  .kpis-3 { grid-template-columns: 1fr; }
+}
+.tabela { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
+.tabela th { text-align: left; font-size: 11.5px; color: var(--mudo); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--borda); white-space: nowrap; }
+.tabela td { padding: 9px 8px; border-bottom: 1px solid var(--borda); font-variant-numeric: tabular-nums; vertical-align: top; }
+.tabela .num { text-align: right; white-space: nowrap; }
+.tabela td a { color: var(--texto); }
+.tabela td a:hover { color: var(--primario); }
+.tabela .etiqueta { margin-top: 4px; display: inline-block; }
+.custo-obra .cartao-cabeca { flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .kpi b { font-size: 21px; }
+  .numeros-obra b { font-size: 16px; }
+  .grafico-area { overflow-x: auto; }
+  .grafico-area svg { min-width: 640px; touch-action: auto; }
+}

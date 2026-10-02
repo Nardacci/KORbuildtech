@@ -2,6 +2,8 @@
 
 Documento de análise de negócio, feito antes de desenhar telas. A lista de funcionalidades que veio da pesquisa rápida (clock-in, GPS, geofence, quilometragem, escalas…) serviu de ponto de partida, **não de roteiro**: cada item foi avaliado pelo valor para o cliente, pelo risco legal e pelo custo técnico.
 
+> **Documentação do módulo (telas, regras, custos, requisitos):** [`crew.md`](crew.md). Este documento é a análise de negócio que veio antes.
+
 > **Mercado-alvo: Estados Unidos.** As regras, integrações e decisões abaixo seguem os EUA. A seção 7.2 (Brasil) fica só como referência; o Brasil não é mercado-alvo neste momento.
 
 > **Tese:** o Crew não vende "ponto eletrônico". Vende **saber quanto custou cada obra, com prova**, sem que o mestre de obras perca tempo, e alimenta o Daily com a equipe do dia.
