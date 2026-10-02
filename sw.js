@@ -2,11 +2,11 @@
  * Guarda o app inteiro no aparelho na instalação, para abrir e funcionar no canteiro sem internet.
  * Arquivos do app: rede primeiro (pega a versão nova) e cópia guardada quando não há conexão.
  * O clima (Open-Meteo) nunca passa pelo cache: sem internet, o app pede para marcar à mão. */
-var CACHE = 'korbuild-v6';
+var CACHE = 'korbuild-v7';
 var APP = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/util.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',
-  'js/exemplo.js', 'js/lacre.js', 'js/relatorio.js', 'js/plataforma.js', 'js/icones.js',
+  'js/exemplo.js', 'js/lacre.js', 'js/relatorio.js', 'js/plataforma.js', 'js/icones.js', 'js/prazos.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
 ];
 
@@ -34,5 +34,17 @@ self.addEventListener('fetch', function (e) {
     return resp;
   }).catch(function () {
     return caches.match(req, { ignoreSearch: true }).then(function (r) { return r || caches.match('index.html'); });
+  }));
+});
+
+/* Tocar na notificação de lembrete abre (ou traz para a frente) a tela Hoje do Daily. */
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  var destino = new URL('./' + ((e.notification.data && e.notification.data.url) || ''), self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (janelas) {
+    for (var i = 0; i < janelas.length; i++) {
+      if ('focus' in janelas[i]) { janelas[i].navigate(destino); return janelas[i].focus(); }
+    }
+    return self.clients.openWindow(destino);
   }));
 });

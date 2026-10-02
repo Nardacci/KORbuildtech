@@ -68,6 +68,13 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 - **Ditado** pelo reconhecimento de voz do navegador (Chrome no Android; em outros, o microfone do teclado) e **Melhorar texto**, que reescreve a fala informal em linguagem técnica, mostrando o antes e o depois.
 - **Offline-first**: tudo é salvo no aparelho enquanto a pessoa preenche. Sem internet, o envio vai para uma fila e sobe sozinho, foto por foto, quando a conexão volta. O app inteiro abre sem internet depois do primeiro acesso (service worker).
 
+**Daily: RDO obrigatório** (regras em [`docs/alertas.md`](docs/alertas.md))
+- Prazo diário às **18h**, lembrete às **16h**, SMS às 18h e resumo para o escritório às **8h do dia seguinte**.
+- Tela Hoje com faixa de RDOs atrasados e do que falta hoje ("faltam 1h30"); contador de pendências na aba e no ícone do app.
+- RDO atrasado pode ser preenchido (até 3 dias de trabalho para trás) e fica marcado como "enviado com atraso" no relatório e no PDF.
+- "Sem atividade hoje / neste dia" com motivo (chuva, feriado, obra parada…): registra o dia e para os alertas.
+- "Testar no celular" mostra a régua e dispara uma notificação de verdade.
+
 **Daily: administrador (computador)**
 - **Farol das obras:** verde (RDO de hoje recebido), amarelo (1 dia de atraso) e vermelho (2 dias ou mais). Também mostra os números do dia.
 - **Fila de aprovação:** aprovar ou pedir ajustes (com o motivo, que aparece no celular do canteiro).
@@ -111,7 +118,7 @@ Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/crew`, `#/measure`; no D
 
 ## Testes
 
-`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (76 verificações): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
+`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (87 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
 ```bash
 npm install playwright   # uma vez

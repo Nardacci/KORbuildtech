@@ -2,6 +2,7 @@
 
 import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre } from './util.js';
 import { estado } from './armazem.js';
+import { enviadoComAtraso, prazoDe } from './prazos.js';
 
 export const SITUACOES = { iniciada: 'Iniciada', andamento: 'Em andamento', concluida: 'Concluída' };
 export const STATUS_EQUIP = { operando: 'Operando', parado: 'Parado', manutencao: 'Em manutenção' };
@@ -55,12 +56,21 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
       campo('Preenchido por', r.autor + ' · Mestre de obras') + campo('Etapa atual', obra.etapa) +
       campo('Prazo', decorridos + ' dias decorridos · ' + Math.max(0, restantes) + ' restantes') +
     '</section>' +
+    (enviadoComAtraso(r)
+      ? '<p class="rel-atraso">Enviado com atraso: ' + dataHora(r.primeiroEnvioEm || r.enviadoEm) + ' · prazo era ' + dataHora(prazoDe(r.data)) + '</p>'
+      : '') +
 
     '<section class="rel-bloco"><h2>Condições climáticas</h2>' +
       '<div class="rel-clima">' + turnoClima('Manhã', r.clima.manha) + turnoClima('Tarde', r.clima.tarde) + '</div>' +
       (fonteClima ? '<p class="rel-nota">' + fonteClima + '</p>' : '') +
     '</section>' +
 
+    (r.semAtividade
+      ? '<section class="rel-bloco rel-sem-atividade"><h2>Dia sem atividade</h2>' +
+          '<p><b>' + esc(r.semAtividade.motivo) + '</b></p>' +
+          (r.semAtividade.obs ? '<p class="rel-texto">' + esc(r.semAtividade.obs) + '</p>' : '') +
+          '<p class="rel-nota">Registrado no canteiro por ' + esc(r.autor) + '. Não houve execução de serviços na obra neste dia.</p></section>'
+      : '' +
     '<div class="rel-duas">' +
     '<section class="rel-bloco"><h2>Mão de obra</h2>' +
       (r.equipe.length ? '<table class="rel-tabela"><thead><tr><th>Função</th><th class="num">Presentes</th><th class="num">Faltas</th></tr></thead><tbody>' +
@@ -97,7 +107,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
         '<span>' + dataHora(f.tiradaEm) + ' · ' + (f.fonteGps === 'gps' ? 'GPS ' : 'Local da obra ') + coordenadas(f.lat, f.lon) + '</span>' +
         '<span class="hash">Impressão digital do original: ' + f.hashOriginal.slice(0, 16) + '…</span></figcaption></figure>').join('') + '</div>'
         : '<p class="mudo">Nenhuma foto anexada.</p>') +
-    '</section>' +
+    '</section>') +
 
     '<footer class="rel-rodape">' +
       (r.status === 'aprovado'

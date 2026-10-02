@@ -284,7 +284,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .item-rdo-meta { font-size: 12.5px; }
 
 .etiqueta { display: inline-flex; align-items: center; align-self: flex-start; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid transparent; white-space: nowrap; }
-.cartao-obra .etiqueta { margin-top: 6px; }
 .etiqueta-ambar { background: var(--ambar-claro); color: var(--ambar); border-color: var(--ambar-borda); }
 .etiqueta-neutro { background: var(--neutro-claro); color: var(--texto-2); border-color: var(--borda); }
 .etiqueta-azul { background: var(--azul-claro); color: var(--azul); border-color: var(--azul-borda); }
@@ -312,6 +311,31 @@ a.aviso:hover { color: var(--texto); filter: brightness(0.985); }
 .linha-info span { color: var(--mudo); flex-shrink: 0; }
 .linha-info b { text-align: right; font-weight: 600; overflow-wrap: anywhere; }
 .acoes-obra { display: flex; flex-direction: column; gap: 10px; }
+/* Prazo e alertas do RDO */
+.links-sutis { display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 12px; }
+.titulo-com-prazo { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.prazo-dia { font-size: 12.5px; font-weight: 600; color: var(--mudo); }
+.prazo-dia.perto { color: var(--ambar); }
+.prazo-dia.vencido { color: var(--vermelho); }
+.cartao.atrasado { border-color: var(--vermelho-borda); box-shadow: inset 3px 0 0 var(--vermelho), var(--sombra); display: flex; flex-direction: column; gap: 10px; }
+.cartao.atrasado .cartao-cabeca { margin: 0; }
+.etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.etiquetas .etiqueta { margin-top: 0; }
+.lista-atrasos { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.lista-atrasos a { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: center; padding: 9px 12px; border-radius: var(--raio); background: var(--superficie); border: 1px solid var(--vermelho-borda); color: var(--texto); text-decoration: none; }
+.lista-atrasos a:hover { border-color: var(--vermelho); }
+.lista-atrasos b { grid-column: 1; font-size: 14px; }
+.lista-atrasos span { grid-column: 1; font-size: 13px; color: var(--vermelho); font-weight: 600; }
+.lista-atrasos .ic { grid-column: 2; grid-row: 1 / 3; color: var(--mudo); }
+.aviso-cabeca { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.aviso-cabeca .btn { margin-top: 0; }
+.item-rdo-atraso { align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--vermelho); margin-top: -4px; }
+.regua { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+.regua li { display: flex; flex-direction: column; gap: 2px; }
+.regua span { color: var(--mudo); font-size: 14px; }
+.email { border: 1px solid var(--borda); border-radius: var(--raio); padding: 12px 14px; background: var(--superficie-2); font-size: 14px; display: flex; flex-direction: column; gap: 8px; }
+.email ul { margin: 0; padding-left: 18px; }
+.email-cabeca { font-size: 13px; color: var(--texto-2); border-bottom: 1px solid var(--borda); padding-bottom: 8px; }
 .link-sutil { align-self: center; background: none; border: 0; padding: 4px 8px; font: inherit; font-size: 13px; color: var(--mudo); cursor: pointer; text-decoration: underline; text-decoration-color: var(--borda-forte); text-underline-offset: 3px; }
 .link-sutil:hover { color: var(--texto-2); text-decoration-color: currentColor; }
 .escolha-rdo { display: flex; flex-direction: column; gap: 6px; max-height: 52vh; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
@@ -487,6 +511,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--primario); outli
 .rel-clima-turno .ok { color: var(--verde); font-weight: 700; font-size: 12px; }
 .rel-clima-turno .nao { color: var(--vermelho); font-weight: 700; font-size: 12px; }
 .rel-nota { font-size: 11.5px; color: var(--mudo); margin-top: 6px; }
+.rel-atraso { margin-top: -8px; padding: 8px 12px; border-radius: var(--raio); background: var(--vermelho-claro); border: 1px solid var(--vermelho-borda); color: var(--vermelho); font-weight: 600; font-size: 12.5px; }
+.rel-sem-atividade p + p { margin-top: 6px; }
 .rel-tabela { width: 100%; border-collapse: collapse; }
 .rel-tabela th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mudo); padding: 6px; border-bottom: 1px solid var(--borda); font-weight: 600; }
 .rel-tabela td { padding: 7px 6px; border-bottom: 1px solid var(--borda); }

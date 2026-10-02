@@ -4,7 +4,8 @@
  *  - Edifício Atlântico: RDO de hoje já enviado (verde), aguardando aprovação.
  *  - Galpão Logístico Rodovia: último RDO há 2 dias, com ajustes pedidos (vermelho). */
 
-import { hoje, somarDias, novoId, sha256 } from './util.js';
+import { hoje, somarDias, diasEntre, novoId, sha256 } from './util.js';
+import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
@@ -16,10 +17,10 @@ export const PESSOAS = {
 
 /* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
 const USUARIOS = [
-  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com.br', papel: 'campo', cargo: 'Mestre de obras' },
-  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com.br', papel: 'admin', cargo: 'Engenheira responsável' },
-  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com.br', papel: 'campo', cargo: 'Encarregado' },
-  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com.br', papel: 'admin', cargo: 'Diretora de obras' },
+  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com.br', papel: 'campo', cargo: 'Mestre de obras', telefone: '(19) 99876-5432' },
+  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com.br', papel: 'admin', cargo: 'Engenheira responsável', telefone: '(19) 99111-2233' },
+  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com.br', papel: 'campo', cargo: 'Encarregado', telefone: '(11) 99555-7788' },
+  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com.br', papel: 'admin', cargo: 'Diretora de obras', telefone: '(11) 99222-4455' },
 ];
 export const CONTAS_DEMO = ['u-carlos', 'u-ana'];
 
@@ -98,7 +99,7 @@ const ATIVIDADE_DO_DIA = {
 const OCORRENCIAS = {
   'jardim:-1': [['material', 'Entrega de cimento atrasou 3 horas; assentamento começou às 10h.']],
   'atlantico:0': [['visita', 'Visita do fiscal do cliente às 10h; sem apontamentos.']],
-  'galpao:-2': [['equipamento', 'Rolo compactador parado por vazamento hidráulico; técnico agendado para amanhã.'], ['chuva', 'Chuva forte das 14h às 16h; lançamento de concreto suspenso.']],
+  'galpao:ajustes': [['equipamento', 'Rolo compactador parado por vazamento hidráulico; técnico agendado para amanhã.'], ['chuva', 'Chuva forte das 14h às 16h; lançamento de concreto suspenso.']],
 };
 
 const CLIMA_DIAS = [
@@ -114,8 +115,23 @@ const CENA = { jardim: 'alvenaria', atlantico: 'estrutura', galpao: 'galpao' };
 const PLANO = {
   jardim: [[-6, 'aprovado'], [-5, 'aprovado'], [-4, 'aprovado'], [-3, 'aprovado'], [-2, 'aprovado'], [-1, 'enviado']],
   atlantico: [[-4, 'aprovado'], [-3, 'aprovado'], [-2, 'aprovado'], [-1, 'aprovado'], [0, 'enviado']],
-  galpao: [[-5, 'aprovado'], [-4, 'aprovado'], [-3, 'aprovado'], [-2, 'ajustes']],
+  galpao: null, // calculado: falta o RDO do último dia de trabalho (para mostrar o atraso)
 };
+
+/* Galpão: o último dia de trabalho antes de hoje fica sem RDO; os 4 dias de trabalho anteriores têm RDO,
+ * o mais recente com ajustes pedidos. Assim a demonstração sempre mostra um RDO atrasado. */
+function planoGalpao(dia0) {
+  const dias = [];
+  let d = dia0;
+  let pulouOFaltante = false;
+  while (dias.length < 4) {
+    d = somarDias(d, -1);
+    if (!ehDiaDeTrabalho({ diasTrabalho: DIAS_TRABALHO }, d)) continue;
+    if (!pulouOFaltante) { pulouOFaltante = true; continue; }
+    dias.unshift(d);
+  }
+  return dias.map((x, i) => [diasEntre(dia0, x), i === dias.length - 1 ? 'ajustes' : 'aprovado']);
+}
 
 function momento(iso, hora, minuto) {
   const [a, m, d] = iso.split('-').map(Number);
@@ -123,16 +139,17 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 2;
+export const VERSAO_DADOS = 3;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
-  const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo) }));
+  // Cada obra tem um responsável pelo RDO e um calendário de dias de trabalho (prazo diário: 18h).
+  const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo), responsavelId: 'u-carlos', diasTrabalho: DIAS_TRABALHO }));
   const rdos = [];
   let semente = 7;
 
   for (const obra of obras) {
-    const plano = PLANO[obra.id];
+    const plano = PLANO[obra.id] || planoGalpao(dia0);
     const primeiroNumero = 40 + Math.abs(obras.indexOf(obra)) * 37;
     for (let i = 0; i < plano.length; i++) {
       const [desloc, status] = plano[i];
@@ -164,6 +181,7 @@ export async function criarDemonstracao() {
         autor: PESSOAS.campo.nome,
         criadoEm: momento(data, 7, 40),
         enviadoEm,
+        primeiroEnvioEm: enviadoEm,
         clima: {
           manha: { tempo: clima.manha[0], praticavel: clima.manha[1] },
           tarde: { tempo: clima.tarde[0], praticavel: clima.tarde[1] },
@@ -174,7 +192,7 @@ export async function criarDemonstracao() {
         atividades: ATIVIDADES[obra.id].map(([descricao, local, situacao], k) => ({
           id: novoId('at'), descricao: k === 0 ? ATIVIDADE_DO_DIA[obra.id][i] : descricao, local, situacao: desloc < -2 && k === 0 ? 'andamento' : situacao,
         })),
-        ocorrencias: (OCORRENCIAS[obra.id + ':' + desloc] || []).map(([tipo, descricao]) => ({ id: novoId('oc'), tipo, descricao })),
+        ocorrencias: (OCORRENCIAS[obra.id + ':' + desloc] || (status === 'ajustes' ? OCORRENCIAS[obra.id + ':ajustes'] : null) || []).map(([tipo, descricao]) => ({ id: novoId('oc'), tipo, descricao })),
         fotos,
         observacoes: '',
         historico: [

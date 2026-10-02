@@ -18,6 +18,8 @@ export function conteudoCanonico(r, obra) {
     ocorrencias: r.ocorrencias.map((o) => [o.tipo, o.descricao]),
     fotos: r.fotos.map((f) => [f.hashOriginal, f.legenda, f.tiradaEm, f.lat, f.lon]),
     observacoes: r.observacoes,
+    semAtividade: r.semAtividade || null,
+    primeiroEnvioEm: r.primeiroEnvioEm || null,
     aprovadoPor: r.aprovadoPor,
     aprovadoEm: r.aprovadoEm,
   });

@@ -21,6 +21,8 @@ const context = await browser.newContext({
   geolocation: { latitude: -22.84571, longitude: -47.05612, accuracy: 8 }, permissions: ['geolocation'],
 });
 const page = await context.newPage();
+// Horário fixo (quarta-feira, 16h30): os alertas do prazo do RDO dependem do dia e da hora.
+await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
 const erros = [];
 page.on('pageerror', (e) => erros.push(e.message));
 page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.g|ERR_TUNNEL|Failed to load resource/.test(m.text())) erros.push(m.text()); });
@@ -97,8 +99,11 @@ verificar(await page.locator('.abas-item.ativo[href="#/daily/historico"]').count
 await page.click('.abas-item[href="#/daily/campo"]');
 await page.waitForSelector('.cartao-obra');
 verificar(await page.locator('.cartao-obra').count() === 3, 'três obras');
-verificar(await page.locator('.aviso-alerta').count() === 1, 'aviso de ajustes pedidos no Galpão');
-verificar((await page.textContent('a[href="#/daily/campo/obra/jardim"]')).includes('não iniciado'), 'Jardim das Flores sem RDO hoje');
+verificar(await page.locator('.aviso-ajustes').count() === 1, 'aviso de ajustes pedidos no Galpão');
+verificar((await page.textContent('.aviso-atraso')).includes('Galpão Logístico Rodovia'), 'prazo: RDO de ontem do Galpão aparece como atrasado');
+verificar((await page.textContent('.aviso-prazo')).includes('faltam 1h30'), 'prazo: às 16h30 avisa que faltam 1h30 para as 18h');
+verificar((await page.textContent('a[href="#/daily/campo/obra/jardim"]')).includes('Falta o RDO de hoje · prazo 18h'), 'Jardim das Flores: falta o RDO de hoje');
+verificar((await page.textContent('.abas-item[href="#/daily/campo"] .contador')).trim() === '4', 'contador de Hoje: 1 atrasado + 2 sem RDO hoje + 1 ajuste');
 await print('02-campo');
 
 await page.click('a[href="#/daily/campo/obra/jardim"]');
@@ -201,6 +206,10 @@ await page.click('#conexao');
 await page.waitForFunction(() => document.querySelectorAll('.faroes .farol-verde').length === 2, null, { timeout: 15000 });
 verificar(true, 'internet voltou: RDO subiu e o farol ficou verde');
 verificar(await page.locator('.faroes .farol-vermelho').count() === 1, 'Galpão continua vermelho');
+verificar((await page.textContent('.aviso-escalada')).includes('Galpão Logístico Rodovia'), 'escritório: na manhã seguinte vê a obra que ficou sem RDO');
+await page.click('[data-acao="ver-resumo"]');
+verificar((await page.textContent('dialog .email')).includes('Carlos Mendes'), 'escritório: prévia do e-mail do resumo com o responsável');
+await page.click('dialog button:has-text("Fechar")');
 await page.click('.abas-item[href="#/daily/aprovacoes"]');
 await page.waitForSelector('.abas-item.ativo[href="#/daily/aprovacoes"]');
 verificar(await page.locator('.cartao').first().locator('.fila li').count() === 3, 'Aprovações: três RDOs na fila');
@@ -261,7 +270,7 @@ await page.emulateMedia({ media: 'screen' });
 // Ajustes: escritório pede, canteiro corrige e reenvia
 console.log('Ajustes');
 await comoUsuario('u-carlos', '#/daily/campo');
-await page.click('.aviso-alerta');
+await page.click('.aviso-ajustes');
 await page.waitForSelector('[data-acao="enviar"]');
 verificar((await page.textContent('[data-acao="enviar"]')).includes('Reenviar'), 'RDO com ajustes abre editável com "Reenviar"');
 await page.click('[data-acao="enviar"]');
@@ -271,9 +280,11 @@ const dados2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rd
 const reenviado = dados2.rdos.find((r) => r.id === 'rdo-galpao-m2');
 verificar(reenviado.status === 'enviado' && reenviado.sync === 'enviado', 'reenviado e recebido');
 
-// Copiar um RDO mais antigo (não o de ontem): Galpão, RDO nº 115
+// RDO atrasado de ontem no Galpão, copiando um RDO mais antigo (nº 115)
 await page.goto(BASE + '#/daily/campo/obra/galpao');
-await page.click('[data-acao="copiar-rdo"]');
+await page.waitForSelector('.cartao.atrasado');
+verificar((await page.textContent('.cartao.atrasado')).includes('terça-feira, 06/10/2026'), 'obra: seção do RDO atrasado de ontem');
+await page.click('.cartao.atrasado [data-acao="copiar-rdo"]');
 await page.waitForSelector('dialog .opcao-rdo');
 await page.click('dialog .opcao-rdo >> nth=2');
 await page.click('dialog button:has-text("Copiar")');
@@ -282,6 +293,24 @@ const dados3 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rd
 const copiaAntiga = dados3.rdos.find((r) => r.obraId === 'galpao' && r.status === 'rascunho');
 verificar(copiaAntiga && copiaAntiga.historico[0].acao.includes('nº 115'), 'copiar: dá para escolher um RDO mais antigo (nº 115)');
 verificar(copiaAntiga && copiaAntiga.equipe.length === 4 && copiaAntiga.fotos.length === 0, 'copiar: traz a equipe e começa sem fotos');
+verificar(copiaAntiga && copiaAntiga.data === '2026-10-06', 'RDO atrasado fica com a data de ontem');
+verificar((await page.textContent('.aviso-ambar')).includes('Preenchimento com atraso'), 'editor avisa do preenchimento com atraso');
+await page.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2);
+await page.click('[data-acao="enviar"]');
+await page.click('dialog button:has-text("Enviar sem fotos")');
+await page.waitForSelector('.rel-atraso', { timeout: 15000 });
+verificar((await page.textContent('.rel-atraso')).includes('prazo era 06/10/2026 às 18:00'), 'relatório marcado como enviado com atraso');
+
+// Sem atividade hoje no Galpão: registra o dia e os lembretes param
+await page.goto(BASE + '#/daily/campo/obra/galpao');
+await page.click('.acoes-hoje [data-acao="sem-atividade"]');
+await page.waitForSelector('dialog .opcao-rdo');
+await page.click('dialog button:has-text("Registrar")');
+await page.waitForSelector('.acoes-hoje a:has-text("Ver o RDO de hoje")');
+await page.goto(BASE + '#/daily/campo');
+await page.waitForSelector('.cartao-obra');
+verificar((await page.textContent('a[href="#/daily/campo/obra/galpao"]')).includes('Sem atividade hoje · Chuva'), 'sem atividade: o Galpão fica em dia hoje');
+verificar(await page.locator('.aviso-atraso').count() === 0, 'sem pendências atrasadas depois de preencher e registrar');
 
 // Pedir ajustes pelo painel
 await comoUsuario('u-ana', '#/daily/painel/rdo/rdo-atlantico-hoje');
@@ -314,7 +343,8 @@ await page.evaluate(() => localStorage.setItem('kbt.sessao', 'u-carlos'));
 await context.setOffline(true);
 await page.goto(BASE + '#/daily/campo');
 await page.waitForSelector('.cartao-obra', { timeout: 15000 });
-verificar((await page.textContent('#conexao')).includes('Sem internet'), 'sem internet de verdade: o app abre e avisa');
+const avisou = await page.waitForFunction(() => /Sem internet/.test(document.getElementById('conexao').textContent), null, { timeout: 10000 }).then(() => true, () => false);
+verificar(avisou, 'sem internet de verdade: o app abre e avisa');
 await context.setOffline(false);
 
 verificar(erros.length === 0, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.join(' | ') : ''));
