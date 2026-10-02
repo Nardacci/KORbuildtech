@@ -30,6 +30,8 @@ const P = {
   cafe: '<path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v3M10 2v3M14 2v3"/>',
   troca: '<path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/>',
   relogio: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  play: '<path d="M7 4l13 8-13 8z"/>',
+  pausa: '<path d="M8 5v14M16 5v14"/>',
   entrar: '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5M15 12H3"/>',
 };
 

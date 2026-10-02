@@ -225,7 +225,8 @@ export function criarDadosCrew(obras) {
   const excursoes = [];
   const rnd = semente(11);
   const b = (f, tipo, obraId, etapa, em, extra) => {
-    const o = obra(obraId);
+    // a batida é feita onde a pessoa está: na troca, ainda na obra de origem (extra.em)
+    const o = obra((extra && extra.em) || obraId);
     const fora = extra && extra.fora;
     const lat = o.lat + (fora ? 0.008 : (rnd() - 0.5) * 0.0016);
     const lon = o.lon + (fora ? 0.004 : (rnd() - 0.5) * 0.0016);
@@ -268,7 +269,7 @@ export function criarDadosCrew(obras) {
         eventos.push(['intervalo-fim', base, etapa, quando(d, 13, min(4))]);
         // Lucas troca de obra depois do almoço em dias alternados: Jardim → Galpão (deslocamento conta como hora)
         if (f.id === 'f-lucas' && indice % 2 === 1) {
-          eventos.push(['troca', 'galpao', null, quando(d, 13, 10 + min(5))]);
+          eventos.push(['troca', 'galpao', null, quando(d, 13, 10 + min(5)), { em: base }]);
           eventos.push(['chegada', 'galpao', 'Instalações elétricas', quando(d, 13, 55 + min(5))]);
           eventos.push(['saida', 'galpao', 'Instalações elétricas', quando(d, 17, min(10))]);
         } else {

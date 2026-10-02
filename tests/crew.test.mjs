@@ -171,6 +171,26 @@ await page.waitForFunction(() => /pelas ruas/.test(document.querySelector('.pern
 verificar((await page.textContent('.perna-deslocamento')).includes('41,8 km pelas ruas'), 'percurso: deslocamento pelas ruas com a distância');
 verificar(await page.locator('#mapa-dia .pino-parada').count() === 2, 'mapa: pinos numerados das obras');
 verificar((await page.textContent('#mapa-dia')).includes('Galpão Logístico Rodovia'), 'mapa: nome e endereço da obra no pino');
+// Registros de localização: da entrada à saída, com setas, entrada/saída marcadas e reprodução
+const nPassos = await page.locator('.passos-lista .passo').count();
+verificar(nPassos >= 25, 'registros de localização da entrada à saída (' + nPassos + ')');
+verificar((await page.locator('.passos-lista .passo').first().textContent()).includes('Entrada'), 'registros: o primeiro é a entrada');
+verificar((await page.locator('.passos-lista .passo').last().textContent()).includes('Saída'), 'registros: o último é a saída');
+verificar((await page.textContent('.passos-lista')).includes('Abriu o aplicativo'), 'registros: abertura do app');
+verificar((await page.textContent('.passos-lista')).includes('Em deslocamento'), 'registros: pontos durante o deslocamento');
+verificar(!(await page.textContent('.passos-lista')).match(/1[23]:[0-5]\d(?:Localização)/), 'registros: nada durante o intervalo');
+verificar((await page.textContent('.mapa-resumo')).includes('Entrada 06:58') && (await page.textContent('.mapa-resumo')).includes('Saída 17:07'), 'mapa: resumo com entrada e saída');
+verificar(await page.locator('#mapa-dia .pino-ponto.inicio').count() === 1 && await page.locator('#mapa-dia .pino-ponto.fim').count() === 1, 'mapa: pinos de entrada e de saída');
+verificar(await page.locator('#mapa-dia .seta-rota').count() > 5, 'mapa: setas com o sentido do percurso');
+await page.locator('.passos-lista .passo').nth(10).click();
+verificar(await page.locator('.passos-lista .passo.ativo').count() === 1, 'registros: tocar mostra o ponto no mapa');
+await page.click('[data-acao="crew-reproduzir"]');
+await page.waitForFunction(() => { const r = document.querySelector('.mapa-relogio'); return r && !r.hidden && /\d\d:\d\d/.test(r.textContent); });
+verificar((await page.textContent('[data-acao="crew-reproduzir"]')).includes('Pausar'), 'reprodução do percurso (playback) em andamento');
+await page.waitForTimeout(1500);
+await print('8d-reproducao');
+await page.click('[data-acao="crew-reproduzir"]');
+verificar((await page.textContent('[data-acao="crew-reproduzir"]')).includes('Reproduzir'), 'reprodução pausa');
 await print('8c-percurso');
 await page.goto(BASE + '#/crew/dia/f-marcos/2026-10-06');
 await page.waitForFunction(() => /perto de Rua Teste/.test((document.querySelector('.parada-fora') || {}).textContent || ''));

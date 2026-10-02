@@ -122,6 +122,37 @@ A pesquisa confirma que os líderes do mercado (ClockShark, busybusy, Workyard) 
 2. **Nível 3 (trilha e mapa do dia) como opção da empresa**, ligado obra a obra ou funcionário a funcionário, com aviso aceito pelo trabalhador, **só com o ponto aberto**, retenção limitada (ex.: 90 dias) e visível também para o trabalhador. Exige app nativo: é a decisão de arquitetura mais importante do Crew.
 3. **Nível 4: a cerca lembra, nunca bate sozinha.** "Você chegou ao Galpão Logístico. Bater a entrada?" Bater automaticamente gera horas erradas (passou em frente à obra, estacionou no vizinho) e passa a responsabilidade do registro para o sistema.
 
+### 5.5 Referência: rastreamento GPS no QuickBooks Workforce (Intuit)
+
+> **Status: em estudo.** O requisito abaixo é **provisório**. Antes de virar requisito do produto, precisamos documentar exatamente como o Workforce faz, quais são as limitações dele e o que queremos fazer diferente.
+
+**O que a documentação atual da Intuit diz** (levantamento feito em out/2026; conferir na fonte antes de citar externamente):
+
+| Tema | Como o Workforce faz |
+| --- | --- |
+| Quando grava um ponto GPS | No clock-in, no clock-out, quando o funcionário abre o app, na troca de job code (obra/etapa) e periodicamente enquanto está trabalhando |
+| O que cada ponto mostra | Horário e precisão |
+| Mapa | Mostra os pontos de localização e o percurso no período em que o funcionário estava com o ponto aberto, incluindo deslocamentos |
+| Playback | Reproduz o movimento do funcionário em ordem cronológica, durante o período com o ponto aberto |
+| Quando NÃO grava | Em intervalo (break), com o ponto fechado (clocked out) e sem conexão/desconectado. A localização fica associada só ao período "no relógio" |
+
+**Requisito provisório: PONTO-GPS-01. Rastreamento GPS durante a jornada.** O sistema deve permitir visualizar os pontos de localização registrados durante o período de trabalho, associados à jornada do funcionário, incluindo deslocamentos entre obras e reprodução cronológica do percurso.
+
+**O que o protótipo já demonstra** (Crew › Timesheets › dia de um funcionário, simulado):
+- pontos na entrada, na saída, na troca de obra, na abertura do app e a cada 15 min (a cada 5 min em deslocamento);
+- nenhum ponto no intervalo nem com o ponto fechado;
+- mapa com entrada (E) e saída (S) marcadas, os pontos na ordem, setas com o sentido do percurso e deslocamento pelas ruas;
+- lista "Registros de localização" com horário, local, precisão do GPS e distância desde o ponto anterior (tocar mostra o ponto no mapa);
+- botão **Reproduzir** (playback): um marcador percorre o dia com o relógio na tela.
+
+**Perguntas em aberto (para fechar antes de virar requisito):**
+1. **Sem conexão:** o Workforce não grava. Nós podemos guardar os pontos no aparelho e enviar depois, como já fazemos com o RDO offline. Obra costuma ter sinal ruim, então isso pode ser um diferencial. Custo: app nativo e regras contra pontos "atrasados" adulterados.
+2. **Frequência:** qual intervalo o Workforce usa e se o cliente configura? Nossa proposta: 15 min parado e mais frequente em movimento, para economizar bateria.
+3. **Ponto pela equipe** (o encarregado bate para quem não tem celular): o percurso é o do celular do encarregado, não de cada trabalhador. Como mostrar isso sem enganar quem lê o mapa?
+4. **Retenção e acesso:** por quanto tempo guardar e quem vê (o próprio trabalhador também vê o seu mapa?).
+5. **Quilometragem:** usar o percurso para reembolso de km (mileage), como alguns concorrentes fazem?
+6. **Aviso e consentimento** por estado americano (ver 7.1) e o texto da notificação fixa no Android.
+
 ---
 
 ## 6. As outras funcionalidades da lista, avaliadas

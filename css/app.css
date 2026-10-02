@@ -800,3 +800,38 @@ body.sem-rolagem { overflow: hidden; }
   .rel-fotos-bloco { break-inside: auto; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Registros de localização (passos do dia) e reprodução */
+.mapa-botoes { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.mapa-resumo { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 6px 0 0; font-size: 14px; color: var(--texto-2); }
+.mapa-resumo span { display: inline-flex; align-items: center; gap: 6px; }
+.mapa-resumo i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+.lg-inicio { background: #16A34A; }
+.lg-fim { background: var(--grafite); }
+.lg-ponto { background: #2E90FA; width: 9px !important; height: 9px !important; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.5px #2E90FA; }
+.lg-seta { border-radius: 0 !important; background: #2E90FA; clip-path: polygon(50% 0, 100% 100%, 50% 72%, 0 100%); transform: rotate(90deg); }
+.pino-ponto .pino { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #fff; box-shadow: var(--sombra-alta); }
+.pino-ponto .pino b { transform: rotate(45deg); color: #fff; font-size: 12px; font-weight: 800; }
+.pino-ponto.inicio .pino { background: #16A34A; }
+.pino-ponto.fim .pino { background: var(--grafite); }
+.seta-rota span { display: block; width: 14px; height: 14px; clip-path: polygon(50% 0, 100% 100%, 50% 72%, 0 100%); filter: drop-shadow(0 0 1px #fff); }
+.mapa-rotulo-passo { font-size: 12px; font-weight: 600; }
+.mapa-relogio { position: absolute; left: 12px; bottom: 26px; z-index: 1000; background: var(--grafite); color: #fff; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 999px; box-shadow: var(--sombra-alta); font-variant-numeric: tabular-nums; max-width: calc(100% - 24px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.passos-lista { list-style: none; margin: 8px 0 0; padding: 0; max-height: 440px; overflow-y: auto; position: relative; border-top: 1px solid var(--borda); }
+.passo { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 26px 46px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 8px 6px; border-bottom: 1px solid var(--borda); cursor: pointer; font-size: 14px; }
+.passo:hover { background: var(--superficie-2); }
+.passo:focus-visible { outline: 2px solid var(--primario); outline-offset: -2px; }
+.passo.ativo { background: #FFF4EC; box-shadow: inset 3px 0 0 var(--primario); }
+.passo-n { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #2E90FA; color: #fff; font-size: 11px; font-weight: 700; }
+.passo.batida .passo-n { background: var(--cor-crew); }
+.passo.inicio .passo-n { background: #16A34A; }
+.passo.fim .passo-n { background: var(--grafite); }
+.passo.fora .passo-n { background: #F04438; }
+.passo-hora { font-weight: 700; font-variant-numeric: tabular-nums; }
+.passo-texto { display: flex; flex-direction: column; min-width: 0; }
+.passo-texto span { font-size: 12.5px; color: var(--mudo); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.passo.fora .passo-texto b { color: var(--vermelho); }
+.passo-dist { font-size: 12px; color: var(--mudo); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mapa-ponto { fill: #2E90FA; stroke: #fff; stroke-width: 1; }
+.zoom-longe .mapa-rotulo-hora.secundario { display: none; }
+.pessoa-rota span { display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--primario); border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(194, 65, 12, 0.25), var(--sombra-alta); }
