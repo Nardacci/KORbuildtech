@@ -1,6 +1,14 @@
-# KORbuild RDO
+# KORbuild
 
-Protótipo de validação do Relatório Diário de Obra (veja o README). Site estático, sem build: HTML, CSS e módulos JS em `js/`.
+Protótipo de validação da plataforma KORbuild (veja o README). Site estático, sem build: HTML, CSS e módulos JS em `js/`.
+
+## Produto
+
+- **Plataforma SaaS** com três módulos: **KORbuild Daily** (diário de obra / RDO), **KORbuild Crew** (ponto da equipe → horas → custo) e **KORbuild Measure** (plantas → medições → quantidades → orçamento). Estes são os nomes definidos; não use "DailyLog", "Workforce", "Takeoff" nem "STACK" (marca de terceiros).
+- Prioridade: Daily (em construção) → Crew → Measure.
+- Tudo é por **empresa** (o cliente da plataforma): usuários, obras, dados e módulos contratados. Nada de dado solto fora de uma empresa. A estrutura está em `docs/saas.md`.
+- Papéis: `admin` (escritório) e `campo` (canteiro); o cliente final é convidado externo, por link. Telas novas checam o papel em `desenhar()` (`js/app.js`).
+- Obras, pessoas e funções são cadastros da plataforma, compartilhados pelos módulos.
 
 ## Branch
 

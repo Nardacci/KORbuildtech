@@ -1,4 +1,4 @@
-/* KORbuild RDO — ditado e "melhorar texto".
+/* KORbuild Daily — ditado e "melhorar texto".
  * No protótipo a reescrita é SIMULADA aqui no aparelho (troca de gírias e abreviações,
  * pontuação e maiúsculas). Na versão real, o texto vai para um modelo de IA no servidor. */
 

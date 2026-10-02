@@ -1,7 +1,7 @@
 {
-  "name": "KORbuild RDO",
-  "short_name": "KORbuild RDO",
-  "description": "Relatório Diário de Obra no celular, com fotos geolocalizadas, clima automático e funcionamento sem internet. Protótipo com dados fictícios.",
+  "name": "KORbuild",
+  "short_name": "KORbuild",
+  "description": "Plataforma de gestão de obra: Daily (diário de obra), Crew (ponto da equipe) e Measure (medição de plantas). Protótipo com dados fictícios.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

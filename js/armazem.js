@@ -1,4 +1,4 @@
-/* KORbuild RDO — armazenamento no aparelho.
+/* KORbuild Daily — armazenamento no aparelho.
  * Obras e RDOs ficam em localStorage (texto pequeno); as fotos ficam no IndexedDB (arquivos).
  * No protótipo não há servidor: "enviado ao escritório" é o campo rdo.sync === 'enviado',
  * e o painel do escritório só enxerga RDOs nesse estado. */

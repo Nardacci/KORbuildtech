@@ -1,4 +1,4 @@
-/* KORbuild RDO — utilidades de texto, datas, ids, hash e interface (toast e diálogo). */
+/* KORbuild — utilidades de texto, datas, ids, hash e interface (toast e diálogo). */
 
 export function esc(valor) {
   return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

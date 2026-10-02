@@ -1,7 +1,7 @@
-/* KORbuild RDO — o relatório em si: a mesma peça serve para a tela, o PDF e o link do cliente. */
+/* KORbuild Daily — o relatório em si: a mesma peça serve para a tela, o PDF e o link do cliente. */
 
 import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre } from './util.js';
-import { CONSTRUTORA } from './exemplo.js';
+import { estado } from './armazem.js';
 
 export const SITUACOES = { iniciada: 'Iniciada', andamento: 'Em andamento', concluida: 'Concluída' };
 export const STATUS_EQUIP = { operando: 'Operando', parado: 'Parado', manutencao: 'Em manutenção' };
@@ -42,9 +42,10 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
   const restantes = diasEntre(r.data, obra.prazo);
   const fonteClima = { automatico: 'Clima automático pela localização da obra', manual: 'Clima informado no canteiro', ajustado: 'Clima automático, ajustado no canteiro' }[r.clima.fonte] || '';
 
+  const empresa = estado().empresa;
   return '<article class="relatorio">' +
     '<header class="rel-topo">' +
-      '<div class="rel-marca"><span class="rel-logo">' + esc(CONSTRUTORA.sigla) + '</span><div><b>' + esc(CONSTRUTORA.nome) + '</b><small>CNPJ ' + esc(CONSTRUTORA.cnpj) + '</small></div></div>' +
+      '<div class="rel-marca"><span class="rel-logo">' + esc(empresa.sigla) + '</span><div><b>' + esc(empresa.nome) + '</b><small>CNPJ ' + esc(empresa.cnpj) + '</small></div></div>' +
       '<div class="rel-titulo"><h1>Relatório Diário de Obra</h1><p>RDO nº ' + r.numero + ' · ' + diaDaSemana(r.data) + ', ' + dataCurta(r.data) + '</p></div>' +
       '<div class="rel-status">' + seloStatus(r) + '</div>' +
     '</header>' +
@@ -111,7 +112,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
         '<div><span class="linha"></span><b>' + esc(r.autor) + '</b><small>Responsável pelo preenchimento · enviado ' + (r.enviadoEm ? 'às ' + horaCurta(r.enviadoEm) : '—') + '</small></div>' +
         '<div><span class="linha"></span><b>' + esc(r.aprovadoPor || 'Engenheiro(a) responsável') + '</b><small>Aprovação</small></div>' +
       '</div>' +
-      '<p class="rel-gerado">Gerado pelo KORbuild RDO · protótipo com dados fictícios</p>' +
+      '<p class="rel-gerado">Gerado pelo KORbuild Daily · protótipo com dados fictícios</p>' +
     '</footer>' +
   '</article>';
 }

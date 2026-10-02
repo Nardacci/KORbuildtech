@@ -1,4 +1,4 @@
-/* KORbuild RDO — telas, navegação e fila de envio. */
+/* KORbuild — navegação da plataforma e telas do módulo Daily (diário de obra) e fila de envio. */
 
 import {
   esc, novoId, hoje, somarDias, diasEntre, dataCurta, dataLonga, dataRelativa, horaCurta, dataHora, tamanho,
@@ -8,7 +8,11 @@ import {
   estado, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
   guardarFoto, apagarFoto, hidratarFotos, apagarTudo, idMiniatura,
 } from './armazem.js';
-import { criarDemonstracao, PESSOAS, CONSTRUTORA } from './exemplo.js';
+import { criarDemonstracao, CONTAS_DEMO, VERSAO_DADOS } from './exemplo.js';
+import {
+  usuarioAtual, entrar, sair, usuarioPorEmail, ehAdmin, registrarInteresse, modulo,
+  telaLogin, telaModulos, telaEmBreve, telaConta,
+} from './plataforma.js';
 import { processarFoto } from './fotos.js';
 import { buscarClima, TEMPOS } from './clima.js';
 import { melhorarTexto, ditar, ditadoDisponivel } from './ia.js';
@@ -94,21 +98,54 @@ function rota() {
   return partes.length ? partes : [''];
 }
 
+/* Partes da rota dentro do módulo Daily (#/daily/campo/... → ['campo', ...]). */
+function rotaDaily() {
+  const p = rota();
+  return p[0] === 'daily' ? p.slice(1) : [];
+}
+
+function trocarRota(hash) {
+  location.replace(hash);
+}
+
 function desenhar() {
   const p = rota();
+  const u = usuarioAtual();
+  // O link do cliente é público; todo o resto pede login.
+  if (p[0] !== 'cliente') {
+    if (!u && p[0] !== 'entrar') return trocarRota('#/entrar');
+    if (u && (p[0] === '' || p[0] === 'entrar')) return trocarRota('#/inicio');
+  }
   const chave = location.hash;
   const focoAntes = chaveDoFoco(document.activeElement);
   let html;
-  if (p[0] === 'campo' && p[1] === 'obra') html = telaObraCampo(p[2]);
-  else if (p[0] === 'campo' && p[1] === 'rdo') html = telaRdoCampo(p[2]);
-  else if (p[0] === 'campo') html = telaCampo();
-  else if (p[0] === 'painel' && p[1] === 'rdo') html = telaRdoPainel(p[2]);
-  else if (p[0] === 'painel') html = telaPainel();
-  else if (p[0] === 'pdf') html = telaPdf(p[1]);
-  else if (p[0] === 'cliente') html = telaCliente(p[1]);
-  else html = telaInicio();
+  let modo = p[0];
+  if (p[0] === 'daily') {
+    const q = rotaDaily();
+    if (!estado().empresa.modulos.includes('daily')) return trocarRota('#/inicio');
+    if (!q.length) return trocarRota(ehAdmin(u) ? '#/daily/painel' : '#/daily/campo');
+    if (q[0] === 'painel' && !ehAdmin(u)) {
+      toast('O painel do escritório é para administradores.');
+      return trocarRota('#/daily/campo');
+    }
+    modo = q[0];
+    if (q[0] === 'campo' && q[1] === 'obra') html = telaObraCampo(q[2]);
+    else if (q[0] === 'campo' && q[1] === 'rdo') html = telaRdoCampo(q[2]);
+    else if (q[0] === 'campo') html = telaCampo();
+    else if (q[0] === 'painel' && q[1] === 'rdo') html = telaRdoPainel(q[2]);
+    else if (q[0] === 'painel') html = telaPainel();
+    else if (q[0] === 'pdf') html = telaPdf(q[1]);
+    else return trocarRota('#/daily');
+  } else if (p[0] === 'cliente') html = telaCliente(p[1]);
+  else if (p[0] === 'entrar') html = telaLogin(estado().usuarios.filter((x) => CONTAS_DEMO.includes(x.id)), !!pedidoInstalar);
+  else if (p[0] === 'conta') {
+    if (!ehAdmin(u)) return trocarRota('#/inicio');
+    html = telaConta(u);
+  } else if (modulo(p[0])) html = telaEmBreve(u, p[0]);
+  else if (p[0] === 'inicio') html = telaModulos(u, saudacao());
+  else return trocarRota('#/inicio');
   app.innerHTML = html;
-  document.body.dataset.modo = p[0] || 'inicio';
+  document.body.dataset.modo = modo;
   if (chave !== rotaAnterior) {
     window.scrollTo(0, 0);
     rotaAnterior = chave;
@@ -137,46 +174,16 @@ function moldura({ modo, titulo, subtitulo, voltar, conteudo, rodape, largo }) {
   const marca = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>';
   const esquerda = voltar
     ? '<a class="barra-voltar" href="' + voltar + '" aria-label="Voltar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'
-    : '<a class="barra-marca" href="#/" aria-label="Início da demonstração"><span class="marca-icone">' + marca + '</span></a>';
-  return '<div class="faixa-prototipo">Protótipo · dados fictícios · ' +
-      (modo === 'campo' ? 'você é ' + PESSOAS.campo.nome + ', do canteiro' : modo === 'painel' ? 'você é ' + PESSOAS.escritorio.nome + ', do escritório' : 'KORbuild RDO') +
-      ' · <a href="#/">trocar</a></div>' +
+    : '<a class="barra-marca" href="#/inicio" aria-label="Módulos"><span class="marca-icone">' + marca + '</span></a>';
+  const u = usuarioAtual();
+  return '<div class="faixa-prototipo">Protótipo · dados fictícios · KORbuild Daily · você é ' + esc(u.nome) +
+      ' · <a href="#/inicio">módulos</a> · <button type="button" class="link-faixa" data-acao="sair">sair</button></div>' +
     '<header class="barra"><div class="barra-dentro' + (largo ? ' largo' : '') + '">' + esquerda +
       '<div class="barra-titulo"><b>' + esc(titulo) + '</b>' + (subtitulo ? '<span>' + esc(subtitulo) + '</span>' : '') + '</div>' +
       '<button type="button" class="conexao" id="conexao" data-acao="alternar-internet" title="Tocar para simular a falta de internet">' + htmlConexao() + '</button>' +
     '</div></header>' +
     '<main class="conteudo' + (largo ? ' largo' : '') + '">' + conteudo + '</main>' +
     (rodape || '');
-}
-
-/* ---------- Início da demonstração ---------- */
-
-function telaInicio() {
-  return '<div class="faixa-prototipo">Protótipo de validação · todos os dados são fictícios</div>' +
-  '<main class="inicio">' +
-    '<div class="inicio-topo"><span class="marca-icone grande"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>' +
-      '<span class="marca-nome">KORbuild <span>RDO</span></span></div>' +
-    '<h1>O diário da obra, preenchido no canteiro em poucos minutos.</h1>' +
-    '<p class="inicio-sub">Fotos com data, hora e GPS, clima automático, equipe e atividades. Funciona sem internet e chega ao escritório pronto para aprovar e virar PDF.</p>' +
-    '<div class="perfis">' +
-      '<a class="perfil" href="#/campo"><span class="perfil-icone campo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18"/><path d="M5 18v-3a7 7 0 0 1 14 0v3"/><path d="M10 8V5h4v3"/></svg></span>' +
-        '<span><b>Canteiro</b><span>' + PESSOAS.campo.nome + ' · ' + PESSOAS.campo.papel + '</span><small>No celular: preencher e enviar o RDO do dia</small></span></a>' +
-      '<a class="perfil" href="#/painel"><span class="perfil-icone escritorio"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 13l3-3 2 2 4-4"/></svg></span>' +
-        '<span><b>Escritório</b><span>' + PESSOAS.escritorio.nome + ' · Engenheira responsável</span><small>No computador: acompanhar as obras, aprovar e gerar o PDF</small></span></a>' +
-    '</div>' +
-    '<details class="roteiro" open><summary>Roteiro da demonstração (5 minutos)</summary><ol>' +
-      '<li><b>Canteiro</b> → Residencial Jardim das Flores → <b>Começar copiando o RDO de ontem</b>. Equipe e equipamentos já vêm preenchidos.</li>' +
-      '<li>O clima é buscado sozinho pela localização da obra. Tire uma ou duas fotos: veja o carimbo com data, hora e GPS e quanto a foto encolheu.</li>' +
-      '<li>Em uma atividade, toque em <b>Ditar</b> (ou digite) <i>"hj a gente fecho a viga 2 mas faltou cimento pq a entrega atrasou"</i> e toque em <b>Melhorar texto</b>.</li>' +
-      '<li>Toque em <b>Online</b>, no topo, para simular a falta de internet, e envie. O RDO fica guardado no aparelho. Toque de novo e ele sobe sozinho.</li>' +
-      '<li><b>Escritório</b>: o farol da obra fica verde. Abra o RDO, aprove (ele fica lacrado), baixe o PDF e copie o link do cliente.</li>' +
-      '<li>No Galpão Logístico há um RDO com <b>ajustes pedidos</b>: corrija pelo canteiro e reenvie.</li>' +
-    '</ol></details>' +
-    '<div class="inicio-acoes">' +
-      '<button type="button" class="btn btn-claro" data-acao="instalar"' + (pedidoInstalar ? '' : ' hidden') + ' id="btn-instalar">Instalar no celular</button>' +
-      '<button type="button" class="btn btn-claro" data-acao="recomecar">Recomeçar a demonstração</button>' +
-    '</div>' +
-  '</main>';
 }
 
 /* ---------- Canteiro: minhas obras ---------- */
@@ -200,18 +207,18 @@ function telaCampo() {
   const { obras, rdos } = estado();
   const ajustes = rdos.filter((r) => r.status === 'ajustes');
   return moldura({
-    modo: 'campo', titulo: 'Minhas obras', subtitulo: CONSTRUTORA.nome,
+    modo: 'campo', titulo: 'Minhas obras', subtitulo: estado().empresa.nome,
     conteudo:
-      '<div class="ola"><h1>' + saudacao() + ', ' + PESSOAS.campo.nome.split(' ')[0] + '</h1><p>' + dataLonga(hoje()) + '</p></div>' +
+      '<div class="ola"><h1>' + saudacao() + ', ' + esc(usuarioAtual().nome.split(' ')[0]) + '</h1><p>' + dataLonga(hoje()) + '</p></div>' +
       ajustes.map((r) => {
         const o = acharObra(r.obraId);
-        return '<a class="aviso aviso-alerta" href="#/campo/rdo/' + r.id + '"><b>O escritório pediu ajustes no RDO nº ' + r.numero + '</b>' +
+        return '<a class="aviso aviso-alerta" href="#/daily/campo/rdo/' + r.id + '"><b>O escritório pediu ajustes no RDO nº ' + r.numero + '</b>' +
           '<span>' + esc(o.nome) + ' · ' + dataCurta(r.data) + '</span><span class="aviso-citacao">"' + esc(r.motivoAjuste) + '"</span><span class="aviso-link">Corrigir agora →</span></a>';
       }).join('') +
       '<h2 class="titulo-secao">Obras em andamento</h2>' +
       '<div class="lista">' + obras.map((o) => {
         const s = situacaoHoje(o);
-        return '<a class="cartao-obra" href="#/campo/obra/' + o.id + '">' +
+        return '<a class="cartao-obra" href="#/daily/campo/obra/' + o.id + '">' +
           '<div class="cartao-obra-topo"><b>' + esc(o.nome) + '</b><span class="seta">›</span></div>' +
           '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(o.etapa) + '</span>' +
           '<span class="etiqueta etiqueta-' + s.classe + '">' + s.texto + '</span></a>';
@@ -223,13 +230,13 @@ function telaCampo() {
 
 function telaObraCampo(id) {
   const o = acharObra(id);
-  if (!o) return naoEncontrado('#/campo');
+  if (!o) return naoEncontrado('#/daily/campo');
   const lista = rdosDaObra(o.id);
   const deHoje = rdoDoDia(o.id, hoje());
   const ultimo = lista.find((r) => r.data < hoje());
   let acoes;
   if (deHoje) {
-    acoes = '<a class="btn btn-primario btn-grande" href="#/campo/rdo/' + deHoje.id + '">' + (deHoje.status === 'rascunho' ? 'Continuar o RDO de hoje' : 'Ver o RDO de hoje') + '</a>';
+    acoes = '<a class="btn btn-primario btn-grande" href="#/daily/campo/rdo/' + deHoje.id + '">' + (deHoje.status === 'rascunho' ? 'Continuar o RDO de hoje' : 'Ver o RDO de hoje') + '</a>';
   } else {
     acoes = (ultimo
       ? '<button type="button" class="btn btn-primario btn-grande" data-acao="novo-rdo" data-obra="' + o.id + '" data-copiar="1">Começar copiando o RDO de ' + (diasEntre(ultimo.data, hoje()) === 1 ? 'ontem' : dataCurta(ultimo.data)) + '</button>' +
@@ -238,7 +245,7 @@ function telaObraCampo(id) {
       '<button type="button" class="btn ' + (ultimo ? 'btn-contorno' : 'btn-primario btn-grande') + '" data-acao="novo-rdo" data-obra="' + o.id + '">Começar o RDO de hoje em branco</button>';
   }
   return moldura({
-    modo: 'campo', titulo: o.nome, subtitulo: o.cidade, voltar: '#/campo',
+    modo: 'campo', titulo: o.nome, subtitulo: o.cidade, voltar: '#/daily/campo',
     conteudo:
       '<section class="cartao obra-resumo">' +
         '<div class="linha-info"><span>Cliente</span><b>' + esc(o.cliente) + '</b></div>' +
@@ -264,7 +271,7 @@ function itemRdo(r) {
   const atividade = r.atividades.find((a) => a.descricao.trim());
   const fotos = r.fotos.slice(0, 2);
   const restantes = r.fotos.length - fotos.length;
-  return '<a class="item-rdo" href="#/campo/rdo/' + r.id + '">' +
+  return '<a class="item-rdo" href="#/daily/campo/rdo/' + r.id + '">' +
     '<div class="item-rdo-topo"><b>RDO nº ' + r.numero + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
     '<p class="item-rdo-trecho' + (atividade ? '' : ' mudo') + '">' + (atividade ? esc(trecho(atividade.descricao)) : 'Nenhuma atividade descrita') + '</p>' +
     (fotos.length
@@ -281,7 +288,7 @@ function novoRdo(obraId, copiar) {
   const numero = Math.max(0, ...estado().rdos.filter((r) => r.obraId === obraId).map((r) => r.numero)) + 1;
   const r = {
     id: novoId('rdo'), obraId, data: hoje(), numero, status: 'rascunho', sync: 'local',
-    autor: PESSOAS.campo.nome, criadoEm: Date.now(),
+    autor: usuarioAtual().nome, criadoEm: Date.now(),
     clima: { manha: {}, tarde: {}, fonte: null },
     equipe: base ? base.equipe.map((e) => ({ funcao: e.funcao, presentes: e.presentes, faltas: 0 })) : [],
     equipamentos: base ? base.equipamentos.map((e) => ({ ...e })) : [],
@@ -289,10 +296,10 @@ function novoRdo(obraId, copiar) {
     ocorrencias: [], fotos: [], observacoes: '', historico: [],
   };
   if (!r.atividades.length) r.atividades.push({ id: novoId('at'), descricao: '', local: '', situacao: 'andamento' });
-  registrar(r, PESSOAS.campo.nome, base ? 'Começou o RDO copiando o RDO nº ' + base.numero : 'Começou o RDO');
+  registrar(r, usuarioAtual().nome, base ? 'Começou o RDO copiando o RDO nº ' + base.numero : 'Começou o RDO');
   estado().rdos.push(r);
   salvar();
-  ir('#/campo/rdo/' + r.id);
+  ir('#/daily/campo/rdo/' + r.id);
   climaAutomatico(r, true);
 }
 
@@ -310,7 +317,7 @@ function pendencias(r) {
 
 function telaRdoCampo(id) {
   const r = acharRdo(id);
-  if (!r) return naoEncontrado('#/campo');
+  if (!r) return naoEncontrado('#/daily/campo');
   const o = acharObra(r.obraId);
   if (!editavel(r)) return telaRdoLeitura(r, o);
 
@@ -322,7 +329,7 @@ function telaRdoCampo(id) {
     ['Fotos', r.fotos.length > 0],
   ];
   return moldura({
-    modo: 'campo', titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + dataRelativa(r.data), voltar: '#/campo/obra/' + o.id,
+    modo: 'campo', titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + dataRelativa(r.data), voltar: '#/daily/campo/obra/' + o.id,
     conteudo:
       (r.status === 'ajustes'
         ? '<div class="aviso aviso-alerta"><b>O escritório pediu ajustes</b><span class="aviso-citacao">"' + esc(r.motivoAjuste) + '"</span><span>Corrija e toque em "Reenviar".</span></div>'
@@ -472,13 +479,13 @@ function telaRdoLeitura(r, o) {
     aviso = '<div class="aviso aviso-ambar"><b>Guardado no aparelho</b><span>Sem internet agora. O RDO sobe sozinho, com as fotos, assim que a conexão voltar. Pode fechar o app.</span>' +
       '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="sincronizar">Tentar enviar agora</button></div>';
   } else if (r.status === 'enviado') {
-    aviso = '<div class="aviso aviso-azul"><b>Enviado ao escritório' + (r.enviadoEm ? ' às ' + horaCurta(r.enviadoEm) : '') + '</b><span>Aguardando a aprovação de ' + PESSOAS.escritorio.nome + '. Se ela pedir ajustes, você recebe aqui.</span></div>';
+    aviso = '<div class="aviso aviso-azul"><b>Enviado ao escritório' + (r.enviadoEm ? ' às ' + horaCurta(r.enviadoEm) : '') + '</b><span>Aguardando a aprovação do escritório. Se pedirem ajustes, você recebe aqui.</span></div>';
   } else if (r.status === 'aprovado') {
     aviso = '<div class="aviso aviso-verde"><b>Aprovado e lacrado</b><span>Depois de aprovado, o RDO não pode mais ser alterado por ninguém. Código ' + esc(r.codigo) + '.</span>' +
-      '<a class="btn btn-contorno btn-pequeno" href="#/pdf/' + r.id + '">Ver PDF</a></div>';
+      '<a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + '">Ver PDF</a></div>';
   }
   return moldura({
-    modo: 'campo', titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + dataRelativa(r.data), voltar: '#/campo/obra/' + o.id,
+    modo: 'campo', titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + dataRelativa(r.data), voltar: '#/daily/campo/obra/' + o.id,
     conteudo: aviso + '<div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>',
   });
 }
@@ -507,9 +514,9 @@ function telaPainel() {
   const atrasadas = faroes.filter((f) => f.cor !== 'verde').length;
 
   return moldura({
-    modo: 'painel', titulo: 'Painel do escritório', subtitulo: CONSTRUTORA.nome, largo: true,
+    modo: 'painel', titulo: 'Painel do escritório', subtitulo: estado().empresa.nome, largo: true,
     conteudo:
-      '<div class="ola"><h1>' + saudacao() + ', ' + PESSOAS.escritorio.nome.split(' ')[0] + '</h1><p>' + dataLonga(hoje()) + '</p></div>' +
+      '<div class="ola"><h1>' + saudacao() + ', ' + esc(usuarioAtual().nome.split(' ')[0]) + '</h1><p>' + dataLonga(hoje()) + '</p></div>' +
       '<div class="kpis">' +
         kpi('RDOs de hoje', deHoje.length + ' de ' + obras.length, deHoje.length === obras.length ? 'verde' : '') +
         kpi('Aguardando sua aprovação', aguardando.length, aguardando.length ? 'azul' : '') +
@@ -520,7 +527,7 @@ function telaPainel() {
         '<section class="cartao"><h2 class="cartao-titulo">Farol das obras</h2><p class="mudo pequeno">Verde: RDO de hoje recebido · amarelo: 1 dia de atraso · vermelho: 2 dias ou mais</p>' +
           '<ul class="faroes">' + faroes.map((f) =>
             '<li><span class="farol farol-' + f.cor + '" role="img" aria-label="' + f.cor + '"></span><div><b>' + esc(f.o.nome) + '</b><span class="mudo">' + esc(f.o.cidade) + ' · ' + f.texto + '</span></div>' +
-            (f.ultimo ? '<a class="btn btn-contorno btn-pequeno" href="#/painel/rdo/' + f.ultimo.id + '">Último RDO</a>' : '') + '</li>').join('') + '</ul>' +
+            (f.ultimo ? '<a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + f.ultimo.id + '">Último RDO</a>' : '') + '</li>').join('') + '</ul>' +
         '</section>' +
         '<section class="cartao"><h2 class="cartao-titulo">Aguardando aprovação <span class="contador">' + aguardando.length + '</span></h2>' +
           (aguardando.length ? '<ul class="fila">' + aguardando.map((r) => itemPainel(r, 'Revisar')).join('') + '</ul>' : '<p class="vazio">Nada pendente. Tudo aprovado.</p>') +
@@ -531,7 +538,7 @@ function telaPainel() {
         '<ul class="fila">' + aprovados.map((r) => {
           const o = acharObra(r.obraId);
           return '<li><div><b>RDO nº ' + r.numero + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataCurta(r.data) + ' · aprovado ' + dataHora(r.aprovadoEm) + ' · código ' + esc(r.codigo) + '</span></div>' +
-            '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/painel/rdo/' + r.id + '">Abrir</a><a class="btn btn-contorno btn-pequeno" href="#/pdf/' + r.id + '">PDF</a></div></li>';
+            '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">Abrir</a><a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + '">PDF</a></div></li>';
         }).join('') + '</ul>' +
       '</section>',
   });
@@ -546,7 +553,7 @@ function itemPainel(r, acao) {
   const pessoas = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
   return '<li><div><b>RDO nº ' + r.numero + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataRelativa(r.data) + ' · ' + esc(r.autor) + ' · ' + pessoas + ' pessoas · ' + r.fotos.length + ' fotos' +
     (r.ocorrencias.length ? ' · <span class="texto-alerta">' + r.ocorrencias.length + (r.ocorrencias.length === 1 ? ' ocorrência' : ' ocorrências') + '</span>' : '') + '</span></div>' +
-    '<a class="btn ' + (acao === 'Revisar' ? 'btn-primario' : 'btn-contorno') + ' btn-pequeno" href="#/painel/rdo/' + r.id + '">' + acao + '</a></li>';
+    '<a class="btn ' + (acao === 'Revisar' ? 'btn-primario' : 'btn-contorno') + ' btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">' + acao + '</a></li>';
 }
 
 /* ---------- Escritório: revisar um RDO ---------- */
@@ -554,7 +561,7 @@ function itemPainel(r, acao) {
 function telaRdoPainel(id) {
   const r = acharRdo(id);
   if (!r || !recebido(r)) {
-    return moldura({ modo: 'painel', titulo: 'RDO', voltar: '#/painel', largo: true,
+    return moldura({ modo: 'painel', titulo: 'RDO', voltar: '#/daily/painel', largo: true,
       conteudo: '<div class="aviso aviso-ambar"><b>Este RDO ainda não chegou ao escritório</b><span>Ele pode estar em rascunho ou guardado no celular, esperando internet.</span></div>' });
   }
   const o = acharObra(r.obraId);
@@ -568,14 +575,14 @@ function telaRdoPainel(id) {
   } else {
     painelAcoes = '<h2 class="cartao-titulo">Aprovado e lacrado</h2>' +
       '<p class="mudo pequeno">Código de verificação</p><p class="codigo grande">' + esc(r.codigo) + '</p>' +
-      '<a class="btn btn-primario btn-bloco" href="#/pdf/' + r.id + '">Baixar PDF</a>' +
+      '<a class="btn btn-primario btn-bloco" href="#/daily/pdf/' + r.id + '">Baixar PDF</a>' +
       '<button type="button" class="btn btn-contorno btn-bloco" data-acao="copiar-link">Copiar link para o cliente</button>' +
       '<a class="btn btn-contorno btn-bloco" href="#/cliente/' + r.codigo + '">Ver como o cliente vê</a>';
   }
   const historico = '<h3 class="subtitulo">Histórico</h3><ol class="historico">' + r.historico.map((h) =>
     '<li><span class="mudo">' + dataHora(h.em) + '</span><b>' + esc(h.quem) + '</b><span>' + esc(h.acao) + '</span></li>').join('') + '</ol>';
   return moldura({
-    modo: 'painel', titulo: 'RDO nº ' + r.numero + ' · ' + o.nome, subtitulo: dataLonga(r.data), voltar: '#/painel', largo: true,
+    modo: 'painel', titulo: 'RDO nº ' + r.numero + ' · ' + o.nome, subtitulo: dataLonga(r.data), voltar: '#/daily/painel', largo: true,
     conteudo: '<div class="revisao"><div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>' +
       '<aside class="revisao-lado"><div class="cartao fixo">' + painelAcoes + historico + '</div></aside></div>',
   });
@@ -585,9 +592,9 @@ function telaRdoPainel(id) {
 
 function telaPdf(id) {
   const r = acharRdo(id);
-  if (!r) return naoEncontrado('#/');
+  if (!r) return naoEncontrado('#/daily');
   const o = acharObra(r.obraId);
-  const voltar = recebido(r) ? '#/painel/rdo/' + r.id : '#/campo/rdo/' + r.id;
+  const voltar = recebido(r) ? '#/daily/painel/rdo/' + r.id : '#/daily/campo/rdo/' + r.id;
   return '<div class="pdf-barra nao-imprimir"><a class="btn btn-claro btn-pequeno" href="' + voltar + '">← Voltar</a>' +
       '<span>Pré-visualização do PDF (A4)</span>' +
       '<button type="button" class="btn btn-limao btn-pequeno" data-acao="imprimir">Baixar PDF</button></div>' +
@@ -603,8 +610,8 @@ function telaCliente(codigo) {
     return '<main class="conteudo"><div class="aviso aviso-ambar"><b>Relatório não encontrado</b><span>Confira o link. No protótipo não há servidor, então o link do cliente só abre no mesmo navegador em que o RDO foi aprovado.</span></div></main>';
   }
   const o = acharObra(r.obraId);
-  return '<div class="cliente-topo"><div><span class="mudo">Relatório compartilhado por</span><b>' + esc(CONSTRUTORA.nome) + '</b></div>' +
-      '<a class="btn btn-claro btn-pequeno" href="#/pdf/' + r.id + '">Baixar PDF</a></div>' +
+  return '<div class="cliente-topo"><div><span class="mudo">Relatório compartilhado por</span><b>' + esc(estado().empresa.nome) + '</b></div>' +
+      '<a class="btn btn-claro btn-pequeno" href="#/daily/pdf/' + r.id + '">Baixar PDF</a></div>' +
     '<main class="conteudo largo">' +
       '<div class="aviso aviso-verde" id="verificacao"><b>Verificando o lacre…</b></div>' +
       '<div class="relatorio-tela" id="cliente-relatorio">' + htmlRelatorio(r, o) + '</div>' +
@@ -636,8 +643,8 @@ function naoEncontrado(voltar) {
 /* ---------- Ações ---------- */
 
 function rdoDaTela() {
-  const p = rota();
-  return (p[1] === 'rdo' || p[0] === 'pdf') ? acharRdo(p[0] === 'pdf' ? p[1] : p[2]) : null;
+  const q = rotaDaily();
+  return (q[1] === 'rdo' || q[0] === 'pdf') ? acharRdo(q[0] === 'pdf' ? q[1] : q[2]) : null;
 }
 
 function ler(obj, caminho) {
@@ -711,8 +718,27 @@ const acoes = {
     await apagarTudo();
     app.innerHTML = carregando();
     definirEstado(await criarDemonstracao());
+    sair();
     toast('Demonstração recomeçada.');
-    ir('#/');
+    ir('#/entrar');
+  },
+  'entrar-como'(el) {
+    const u = estado().usuarios.find((x) => x.id === el.dataset.usuario);
+    if (u) fazerLogin(u);
+  },
+  sair() {
+    if (pararDitado) pararDitado();
+    sair();
+    ir('#/entrar');
+  },
+  'criar-conta'() {
+    toast('No protótipo, use uma das contas de demonstração. O cadastro da empresa com teste grátis vem na próxima etapa.');
+  },
+  'em-breve'(el) { toast(el.dataset.texto); },
+  interesse(el) {
+    registrarInteresse(el.dataset.modulo, usuarioAtual());
+    toast('Obrigado! Avisaremos quando o KORbuild ' + modulo(el.dataset.modulo).nome + ' estiver disponível.');
+    desenhar();
   },
   rolar(el, ev) {
     ev.preventDefault();
@@ -842,7 +868,7 @@ const acoes = {
     r.sync = 'pendente';
     r.enviadoEm = Date.now();
     r.motivoAjuste = null;
-    registrar(r, PESSOAS.campo.nome, reenvio ? 'Reenviou com os ajustes' : 'Enviou para aprovação');
+    registrar(r, usuarioAtual().nome, reenvio ? 'Reenviou com os ajustes' : 'Enviou para aprovação');
     if (semInternet()) {
       registrar(r, 'Aparelho de ' + r.autor, 'Sem internet: guardado no aparelho para enviar depois');
       toast('Sem internet. O RDO ficou guardado no aparelho e sobe sozinho quando a conexão voltar.');
@@ -860,9 +886,9 @@ const acoes = {
     if (!(await confirmar('Aprovar e lacrar o RDO nº ' + r.numero + '?', 'Depois de aprovado, o relatório não pode mais ser alterado por ninguém. Ele recebe um código de verificação para o cliente conferir.', 'Aprovar e lacrar'))) return;
     r.status = 'aprovado';
     r.aprovadoEm = Date.now();
-    r.aprovadoPor = PESSOAS.escritorio.nome;
+    r.aprovadoPor = usuarioAtual().nome;
     await lacrar(r, acharObra(r.obraId));
-    registrar(r, PESSOAS.escritorio.nome, 'Aprovou · código ' + r.codigo);
+    registrar(r, usuarioAtual().nome, 'Aprovou · código ' + r.codigo);
     salvar();
     desenhar();
     toast('RDO aprovado e lacrado. Código ' + r.codigo + '.');
@@ -880,7 +906,7 @@ const acoes = {
     if (!motivo) { toast('Escreva o que precisa ser corrigido.'); return; }
     r.status = 'ajustes';
     r.motivoAjuste = motivo;
-    registrar(r, PESSOAS.escritorio.nome, 'Pediu ajustes: ' + motivo);
+    registrar(r, usuarioAtual().nome, 'Pediu ajustes: ' + motivo);
     salvar();
     desenhar();
     toast(r.autor + ' vai ver o pedido no app do canteiro.');
@@ -915,6 +941,29 @@ app.addEventListener('click', (ev) => {
   if (!el || el.disabled) return;
   const fn = acoes[el.dataset.acao];
   if (fn) fn(el, ev);
+});
+
+function fazerLogin(u) {
+  u.ultimoAcesso = Date.now();
+  salvar();
+  entrar(u);
+  ir('#/inicio');
+}
+
+app.addEventListener('submit', (ev) => {
+  if (ev.target.id !== 'form-login') return;
+  ev.preventDefault();
+  const email = ev.target.email.value;
+  const erro = document.getElementById('login-erro');
+  const u = usuarioPorEmail(email);
+  if (!u) {
+    erro.textContent = email.trim()
+      ? 'Não encontramos uma conta com esse e-mail. Na demonstração, use uma das contas abaixo.'
+      : 'Digite o seu e-mail.';
+    erro.hidden = false;
+    return;
+  }
+  fazerLogin(u);
 });
 
 app.addEventListener('input', (ev) => {
@@ -983,8 +1032,11 @@ async function iniciar() {
     const b = document.getElementById('btn-instalar');
     if (b) b.hidden = false;
   });
-  if (!estado()) {
+  // Dados de uma versão antiga do protótipo são recriados no formato novo.
+  if (!estado() || estado().versao !== VERSAO_DADOS) {
     app.innerHTML = carregando();
+    await apagarTudo();
+    sair();
     definirEstado(await criarDemonstracao());
   }
   // Envio interrompido (app fechado no meio): volta para a fila.

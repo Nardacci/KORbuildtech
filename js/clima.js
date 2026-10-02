@@ -1,4 +1,4 @@
-/* KORbuild RDO — clima automático pela coordenada da obra (Open-Meteo, gratuito e sem chave).
+/* KORbuild Daily — clima automático pela coordenada da obra (Open-Meteo, gratuito e sem chave).
  * Manhã = 7h às 12h; tarde = 13h às 17h. Chuva acima de 2 mm no turno = impraticável. */
 
 export const TEMPOS = { sol: 'Sol', nublado: 'Nublado', chuva: 'Chuva' };

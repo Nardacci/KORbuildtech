@@ -1,4 +1,4 @@
-/* KORbuild RDO — fotos: GPS, carimbo de evidência e compressão no próprio aparelho. */
+/* KORbuild Daily — fotos: GPS, carimbo de evidência e compressão no próprio aparelho. */
 
 import { sha256, coordenadas, dataHora } from './util.js';
 
@@ -44,7 +44,7 @@ export function carimbar(ctx, largura, altura, { obraNome, quando, lat, lon, fon
   ctx.font = '500 ' + Math.round(base * 0.82) + 'px "Plus Jakarta Sans", system-ui, sans-serif';
   ctx.fillStyle = '#C9D1E0';
   const local = fonte === 'gps' ? 'GPS ' + coordenadas(lat, lon) : 'Local da obra ' + coordenadas(lat, lon) + ' (GPS indisponível)';
-  ctx.fillText(local + '  ·  KORbuild RDO', x, altura - faixa + Math.round(base * 2.65));
+  ctx.fillText(local + '  ·  KORbuild Daily', x, altura - faixa + Math.round(base * 2.65));
 }
 
 function canvasParaBlob(canvas, qualidade) {

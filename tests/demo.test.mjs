@@ -1,4 +1,4 @@
-/* KORbuild RDO — teste de ponta a ponta do roteiro da demonstração.
+/* KORbuild — teste de ponta a ponta do roteiro da demonstração (login, módulos e Daily).
  * Uso: suba um servidor na pasta do projeto (python3 -m http.server 8123) e rode
  *   node tests/demo.test.mjs [http://localhost:8123/]
  * Precisa do pacote "playwright" e de um Chromium. A API de clima é simulada no teste. */
@@ -38,23 +38,50 @@ await context.route('https://api.open-meteo.com/**', (route) => {
 });
 await context.route('https://fonts.**', (r) => r.abort());
 
+// Troca de usuário sem passar pela tela de login (o login em si é testado no começo).
+const comoUsuario = async (id, hash) => {
+  await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), id);
+  await page.goto(BASE + hash);
+};
+
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/' + nome + '.png', fullPage: true }); };
 
-console.log('Início');
+console.log('Login e módulos');
 await page.goto(BASE);
-await page.waitForSelector('.perfis', { timeout: 30000 });
-verificar(await page.locator('.perfil').count() === 2, 'duas jornadas na tela inicial');
-await print('01-inicio');
+await page.waitForSelector('#form-login', { timeout: 30000 });
+verificar(page.url().endsWith('#/entrar'), 'sem login, abre a tela de entrar');
+verificar(await page.locator('[data-acao="entrar-como"]').count() === 2, 'duas contas de demonstração');
+await page.fill('#login-email', 'ninguem@exemplo.com');
+await page.click('#form-login button[type="submit"]');
+verificar(await page.isVisible('#login-erro'), 'e-mail desconhecido mostra erro');
+await print('01-login');
+await page.click('[data-acao="entrar-como"][data-usuario="u-carlos"]');
+await page.waitForSelector('.modulos');
+verificar(await page.locator('.modulo').count() === 3, 'três módulos: Daily, Crew e Measure');
+verificar((await page.textContent('.modulo-daily')).includes('Incluído no seu plano'), 'Daily contratado');
+verificar((await page.textContent('.modulo-crew')).includes('Em breve') && (await page.textContent('.modulo-measure')).includes('Em breve'), 'Crew e Measure em breve');
+verificar(await page.locator('a[href="#/conta"]').count() === 0, 'usuário de campo não vê a conta da empresa');
+await print('01b-modulos');
+await page.click('.modulo-crew');
+await page.waitForSelector('[data-acao="interesse"]');
+await page.click('[data-acao="interesse"]');
+verificar(await page.isDisabled('[data-acao="interesse"]'), 'interesse no Crew registrado');
+await page.goto(BASE + '#/daily/painel');
+await page.waitForSelector('.cartao-obra');
+verificar(page.url().endsWith('#/daily/campo'), 'campo não abre o painel do escritório');
+await page.goto(BASE + '#/conta');
+await page.waitForSelector('.modulos');
+verificar(page.url().endsWith('#/inicio'), 'campo não abre a conta da empresa');
 
 console.log('Canteiro');
-await page.click('a[href="#/campo"]');
+await page.click('.modulo-daily');
 await page.waitForSelector('.cartao-obra');
 verificar(await page.locator('.cartao-obra').count() === 3, 'três obras');
 verificar(await page.locator('.aviso-alerta').count() === 1, 'aviso de ajustes pedidos no Galpão');
-verificar((await page.textContent('a[href="#/campo/obra/jardim"]')).includes('não iniciado'), 'Jardim das Flores sem RDO hoje');
+verificar((await page.textContent('a[href="#/daily/campo/obra/jardim"]')).includes('não iniciado'), 'Jardim das Flores sem RDO hoje');
 await print('02-campo');
 
-await page.click('a[href="#/campo/obra/jardim"]');
+await page.click('a[href="#/daily/campo/obra/jardim"]');
 await page.waitForSelector('.item-rdo-fotos img[src^="blob:"]');
 const item = page.locator('.item-rdo').first();
 verificar(await item.locator('.item-rdo-fotos img').count() === 2, 'lista de RDOs: duas fotos por item');
@@ -135,8 +162,9 @@ verificar((await page.textContent('#conexao')).includes('1 no aparelho'), 'conta
 await print('05-offline');
 
 // Escritório ainda não vê
-await page.goto(BASE + '#/painel');
+await comoUsuario('u-ana', '#/daily');
 await page.waitForSelector('.faroes');
+verificar(page.url().endsWith('#/daily/painel'), 'administradora entra no Daily pelo painel');
 verificar(await page.locator('.farol-amarelo').count() === 1, 'escritório: Jardim ainda amarelo (RDO não chegou)');
 
 // Internet volta → sobe sozinho
@@ -148,7 +176,7 @@ await print('06-painel');
 
 // Aprovar o novo RDO
 const id = novo.id;
-await page.goto(BASE + '#/painel/rdo/' + id);
+await page.goto(BASE + '#/daily/painel/rdo/' + id);
 await page.waitForSelector('[data-acao="aprovar"]');
 await page.click('[data-acao="aprovar"]');
 await page.click('dialog button:has-text("Aprovar e lacrar")');
@@ -159,9 +187,12 @@ verificar((await page.textContent('.historico')).includes('Recebido no escritór
 await print('07-aprovado');
 
 // Link do cliente e verificação do lacre
+verificar((await page.textContent('.historico')).includes('Ana Ribeiro'), 'aprovação registrada com o nome de quem está logado');
+await page.click('[data-acao="sair"]');
+await page.waitForSelector('#form-login');
 await page.goto(BASE + '#/cliente/' + codigo);
 await page.waitForFunction(() => /Documento autêntico/.test(document.getElementById('verificacao').textContent));
-verificar(true, 'link do cliente: documento autêntico');
+verificar(true, 'link do cliente abre sem login: documento autêntico');
 await print('08-cliente');
 // adulteração: muda um texto direto no armazenamento → a verificação acusa
 await page.evaluate((id) => {
@@ -174,7 +205,13 @@ await page.waitForFunction(() => /mudou depois da aprovação/.test(document.get
 verificar(true, 'adulteração detectada pelo lacre');
 
 // PDF
-await page.goto(BASE + '#/pdf/' + id);
+await page.goto(BASE + '#/daily/pdf/' + id);
+await page.waitForSelector('#form-login');
+verificar(true, 'PDF pede login');
+await page.fill('#login-email', 'ana@construtoraexemplo.com.br');
+await page.click('#form-login button[type="submit"]');
+await page.waitForSelector('.modulos');
+await page.goto(BASE + '#/daily/pdf/' + id);
 await page.waitForSelector('.pdf-folha img[src^="blob:"]');
 await page.emulateMedia({ media: 'print' });
 const pdf = await page.pdf({ format: 'A4', printBackground: true });
@@ -184,7 +221,7 @@ await page.emulateMedia({ media: 'screen' });
 
 // Ajustes: escritório pede, canteiro corrige e reenvia
 console.log('Ajustes');
-await page.goto(BASE + '#/campo');
+await comoUsuario('u-carlos', '#/daily/campo');
 await page.click('.aviso-alerta');
 await page.waitForSelector('[data-acao="enviar"]');
 verificar((await page.textContent('[data-acao="enviar"]')).includes('Reenviar'), 'RDO com ajustes abre editável com "Reenviar"');
@@ -196,7 +233,7 @@ const reenviado = dados2.rdos.find((r) => r.id === 'rdo-galpao-m2');
 verificar(reenviado.status === 'enviado' && reenviado.sync === 'enviado', 'reenviado e recebido');
 
 // Pedir ajustes pelo painel
-await page.goto(BASE + '#/painel/rdo/rdo-atlantico-hoje');
+await comoUsuario('u-ana', '#/daily/painel/rdo/rdo-atlantico-hoje');
 await page.click('[data-acao="pedir-ajustes"]');
 await page.fill('dialog textarea', 'Inclua a foto da armação dos pilares.');
 await page.click('dialog button:has-text("Enviar pedido")');
@@ -208,13 +245,22 @@ await page.reload();
 await page.waitForSelector('.revisao-lado');
 verificar((await page.textContent('.revisao-lado')).includes('Com o canteiro'), 'estado persiste após recarregar');
 
+// Conta da empresa (SaaS)
+await page.goto(BASE + '#/conta');
+await page.waitForSelector('.tabela-usuarios');
+verificar((await page.textContent('.plano')).includes('Profissional'), 'conta: plano da empresa');
+verificar((await page.textContent('.uso')).includes('3 de 5'), 'conta: uso de obras ativas');
+verificar(await page.locator('.tabela-usuarios tbody tr').count() === 4, 'conta: usuários da empresa');
+verificar((await page.textContent('.fila')).includes('1 interessado'), 'conta: interesse registrado no Crew');
+await print('09-conta');
+
 // Service worker instalado
 const sw = await page.evaluate(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
 verificar(sw, 'service worker ativo (app abre sem internet)');
 
 // Abre sem internet de verdade
 await context.setOffline(true);
-await page.goto(BASE + '#/campo');
+await page.goto(BASE + '#/daily/campo');
 await page.waitForSelector('.cartao-obra', { timeout: 15000 });
 verificar((await page.textContent('#conexao')).includes('Sem internet'), 'sem internet de verdade: o app abre e avisa');
 await context.setOffline(false);

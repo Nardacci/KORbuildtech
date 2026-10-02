@@ -1,4 +1,4 @@
-/* KORbuild RDO — dados fictícios da demonstração.
+/* KORbuild — dados fictícios da demonstração: a empresa (cliente da plataforma), os usuários e o Daily.
  * As datas são relativas a hoje, para o painel sempre mostrar os três faróis:
  *  - Residencial Jardim das Flores: último RDO ontem (amarelo) — o RDO de hoje é feito ao vivo.
  *  - Edifício Atlântico: RDO de hoje já enviado (verde), aguardando aprovação.
@@ -13,6 +13,15 @@ export const PESSOAS = {
   campo: { nome: 'Carlos Mendes', papel: 'Mestre de obras' },
   escritorio: { nome: 'Ana Ribeiro', papel: 'Engenheira responsável · CREA 000000/SP' },
 };
+
+/* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
+const USUARIOS = [
+  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com.br', papel: 'campo', cargo: 'Mestre de obras' },
+  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com.br', papel: 'admin', cargo: 'Engenheira responsável' },
+  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com.br', papel: 'campo', cargo: 'Encarregado' },
+  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com.br', papel: 'admin', cargo: 'Diretora de obras' },
+];
+export const CONTAS_DEMO = ['u-carlos', 'u-ana'];
 
 const OBRAS = [
   {
@@ -113,6 +122,9 @@ function momento(iso, hora, minuto) {
   return new Date(a, m - 1, d, hora, minuto).getTime();
 }
 
+/* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
+export const VERSAO_DADOS = 2;
+
 export async function criarDemonstracao() {
   const dia0 = hoje();
   const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo) }));
@@ -191,5 +203,11 @@ export async function criarDemonstracao() {
     }
   }
 
-  return { versao: 1, criadoEm: Date.now(), offlineSimulado: false, obras, rdos };
+  const empresa = {
+    id: 'construtora-exemplo', ...CONSTRUTORA, desde: somarDias(dia0, -2),
+    plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
+    modulos: ['daily'],
+  };
+  const usuarios = USUARIOS.map((u, i) => ({ ...u, ativo: true, ultimoAcesso: i < 2 ? null : momento(somarDias(dia0, -i), 17, 5) }));
+  return { versao: VERSAO_DADOS, criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, interesses: [], obras, rdos };
 }

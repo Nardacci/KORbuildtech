@@ -1,4 +1,4 @@
-/* KORbuild RDO — lacre do RDO aprovado.
+/* KORbuild Daily — lacre do RDO aprovado.
  * Na aprovação, o conteúdo do relatório (incluindo a impressão digital de cada foto) vira um
  * texto canônico e recebe um hash SHA-256. O código de verificação são os 12 primeiros
  * caracteres. Qualquer alteração posterior muda o hash, e a verificação acusa. */
