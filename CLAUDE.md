@@ -14,6 +14,7 @@ Protótipo de validação da plataforma KORbuild (veja o README). Site estático
 ## Visual e navegação
 
 - Identidade própria do KORbuild, **sem nada do Match** (nem cores, nem fonte, nem componentes): grafite e laranja de obra, fonte Inter, cantos discretos. Os tokens estão no topo de `css/app.css`; cada módulo tem uma cor (`--cor-daily`, `--cor-crew`, `--cor-measure`).
+- **Marca:** logotipo "KOR" em peso forte + "build" em peso leve, com o sobrescrito "Team operations platform" e a assinatura "Build better teams. Run better operations." (não perder essa essência). O símbolo K laranja é o ícone do app e aparece na barra superior. Tudo em `logotipo()`, `marca()`, `ASSINATURA` e `SOBRESCRITO` (`js/icones.js`).
 - Todas as telas logadas usam `casca()` (`js/plataforma.js`): barra superior (marca, módulo, atalho para os módulos, menu do usuário) e, dentro de um módulo, menu lateral no computador e abas embaixo no celular. Telas do Daily passam por `moldura()` em `js/app.js`, que monta o menu conforme o papel.
 - Login é mockup: todos caem na página dos módulos. A distinção de papel acontece dentro do módulo.
 

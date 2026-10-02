@@ -97,7 +97,7 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 | `css/app.css` | Identidade visual do KORbuild (grafite e laranja, fonte Inter, uma cor por módulo), layout com menu lateral e abas, e impressão do PDF |
 | `js/app.js` | Navegação (com login e permissões), telas do Daily, ações e fila de envio |
 | `js/plataforma.js` | Plataforma SaaS: sessão, papéis, módulos, a casca das telas (barra superior, menu do usuário, menu lateral e abas) e as telas de login, módulos, "em breve" e conta |
-| `js/icones.js` | Ícones e a marca KORbuild |
+| `js/icones.js` | Ícones, o símbolo K e o logotipo KORbuild com a assinatura "Build better teams. Run better operations." |
 | `js/armazem.js` | Dados no localStorage e fotos no IndexedDB |
 | `js/fotos.js` | GPS, carimbo, compressão e fotos de exemplo desenhadas |
 | `js/clima.js` | Clima automático (Open-Meteo) |

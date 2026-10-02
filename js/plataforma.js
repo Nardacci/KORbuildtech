@@ -6,7 +6,7 @@
 
 import { esc, dataCurta, diasEntre, hoje, dataHora } from './util.js';
 import { estado, salvar } from './armazem.js';
-import { icone, marca } from './icones.js';
+import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
 
 const CHAVE_SESSAO = 'kbt.sessao';
 
@@ -106,7 +106,7 @@ export function casca(o) {
       (it.contador ? '<span class="contador" aria-label="' + it.contador + ' pendentes">' + it.contador + '</span>' : '') + '</a>';
   }).join('');
   return '<header class="topo"><div class="topo-dentro">' +
-      '<a class="topo-marca" href="#/inicio" aria-label="KORbuild: módulos">' + marca(26) + '<span class="topo-nome">KORbuild</span></a>' +
+      '<a class="topo-marca" href="#/inicio" aria-label="KORbuild: módulos">' + marca(26) + logotipo({ classe: 'topo-nome' }) + '</a>' +
       (m ? '<span class="topo-sep" aria-hidden="true"></span><a class="topo-modulo modulo-' + m.id + '" href="#/' + m.id + '">' + icone(m.id, 18) + '<span>' + m.nome + '</span></a>' : '') +
       '<span class="selo-prototipo" title="Protótipo com dados fictícios">Protótipo</span>' +
       '<span class="topo-espaco"></span>' +
@@ -146,8 +146,12 @@ export function telaLogin(usuarios) {
   const lista = (us) => us.map((u) => '<button type="button" class="email-demo" data-acao="preencher-email" data-email="' + esc(u.email) + '">' + esc(u.email) + '</button>').join(', ');
   return '<div class="login-pagina">' +
     '<section class="login-marca">' +
-      '<div class="login-logo">' + marca(36) + '<span>KORbuild</span></div>' +
-      '<div class="login-chamada"><h1>Gestão de obra, do canteiro ao escritório.</h1>' +
+      marca(40) +
+      '<div class="login-chamada">' +
+        '<p class="login-sobrescrito">' + SOBRESCRITO + '</p>' +
+        '<h1 class="login-logotipo">' + logotipo() + '</h1>' +
+        '<span class="login-traco" aria-hidden="true"></span>' +
+        '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
         '<ul class="login-modulos">' + MODULOS.map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
       '<p class="login-rodape">Protótipo · dados fictícios</p>' +
     '</section>' +

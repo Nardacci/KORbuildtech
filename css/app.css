@@ -77,7 +77,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .topo-dentro { height: 100%; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
 .topo-marca { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--texto); }
 .marca-k { color: var(--marca); display: block; }
-.topo-nome { font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+/* Logotipo: KOR forte + build leve (a essência "Build better teams. Run better operations.") */
+.logo { display: inline-flex; align-items: center; gap: 8px; }
+.logo-texto { line-height: 1; letter-spacing: -0.04em; white-space: nowrap; }
+.logo-texto b { font-weight: 800; color: var(--logo-kor, var(--texto)); }
+.logo-texto span { font-weight: 300; color: var(--logo-build, #5D6B82); }
+.topo-nome { font-size: 19px; }
 .topo-sep { width: 1px; height: 22px; background: var(--borda-forte); transform: skewX(-18deg); margin: 0 2px; }
 .topo-modulo { display: flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 700; color: var(--cor-modulo); padding: 4px 8px; border-radius: var(--raio); }
 .topo-modulo:hover { background: var(--fundo-modulo); }
@@ -171,8 +176,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
   background-size: 32px 32px;
 }
-.login-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; letter-spacing: -0.02em; }
-.login-chamada h1 { font-size: clamp(28px, 3.4vw, 42px); line-height: 1.12; letter-spacing: -0.03em; max-width: 520px; }
+.login-marca .marca-k { width: 40px; height: 40px; }
+.login-sobrescrito { font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: #98A2B3; }
+.login-logotipo { margin-top: 10px; font-size: clamp(48px, 6vw, 76px); --logo-kor: #FFFFFF; --logo-build: #AEB7C6; }
+.login-logotipo .logo-texto b { font-weight: 800; }
+.login-logotipo .logo-texto span { font-weight: 300; }
+.login-traco { display: block; width: 48px; height: 4px; border-radius: 2px; background: var(--marca); margin: 22px 0 18px; }
+.login-assinatura { display: flex; flex-direction: column; font-size: clamp(18px, 1.8vw, 23px); line-height: 1.35; font-weight: 400; color: #D0D5DD; letter-spacing: -0.01em; }
 .login-modulos { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; max-width: 460px; }
 .login-modulos li { display: flex; align-items: center; gap: 12px; color: #C3CBD8; }
 .login-modulos .ic { width: 34px; height: 34px; padding: 7px; border-radius: var(--raio); background: rgba(255,255,255,0.06); color: var(--cor-modulo-claro); }
@@ -564,15 +574,20 @@ body[data-modo="pdf"] { background: #475467; }
   .revisao-lado .fixo { position: static; }
   .toast { bottom: 84px; }
   .login-pagina { grid-template-columns: 1fr; }
-  .login-marca { padding: 24px 20px 28px; gap: 16px; }
-  .login-chamada h1 { font-size: 24px; }
+  .login-marca { padding: 24px 20px 28px; gap: 18px; }
+  .login-marca .marca-k { width: 32px; height: 32px; }
+  .login-sobrescrito { font-size: 11px; }
+  .login-logotipo { font-size: 46px; margin-top: 6px; }
+  .login-traco { margin: 14px 0 12px; width: 36px; height: 3px; }
+  .login-assinatura { font-size: 17px; }
   .login-modulos { display: none; }
   .login-rodape { display: none; }
   .login-lado { place-items: start center; padding: 28px 20px 40px; }
 }
 @media (max-width: 640px) {
   .topo-dentro { padding: 0 10px; gap: 6px; }
-  .topo-nome, .selo-prototipo { display: none; }
+  .selo-prototipo { display: none; }
+  .topo-marca:has(~ .topo-modulo) .topo-nome { display: none; }
   .topo-modulo { padding: 4px; }
   .conexao { max-width: 44vw; }
   .modulos { grid-template-columns: 1fr; }

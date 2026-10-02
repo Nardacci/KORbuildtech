@@ -37,3 +37,15 @@ export function marca(tamanho) {
     '<path d="M4 4h18l6 6v18H4z" fill="currentColor"/>' +
     '<path d="M11 9v14M11 16.5L19 9M13.5 14.2L20 23" stroke="#fff" stroke-width="3" stroke-linecap="square" fill="none"/></svg>';
 }
+
+/* Logotipo: "KOR" em peso forte + "build" em peso leve. O símbolo K entra quando houver espaço
+ * (barra superior, ícone do app); o logotipo completo leva o sobrescrito e a assinatura. */
+export const ASSINATURA = ['Build better teams.', 'Run better operations.'];
+export const SOBRESCRITO = 'Team operations platform';
+
+export function logotipo(opcoes) {
+  const o = opcoes || {};
+  return '<span class="logo' + (o.classe ? ' ' + o.classe : '') + '">' +
+    (o.simbolo ? marca(o.simbolo) : '') +
+    '<span class="logo-texto" aria-label="KORbuild"><b>KOR</b><span>build</span></span></span>';
+}
