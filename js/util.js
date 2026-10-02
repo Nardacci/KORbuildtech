@@ -127,7 +127,11 @@ export function abrirDialogo({ titulo, corpo, acoes }) {
     dlg.querySelector('form').addEventListener('submit', (ev) => {
       const i = Number(ev.submitter && ev.submitter.value);
       const campos = {};
-      dlg.querySelectorAll('[name]').forEach((c) => { campos[c.name] = c.value; });
+      dlg.querySelectorAll('[name]').forEach((c) => {
+        // Opções de escolha (radio/checkbox) só contam quando marcadas.
+        if ((c.type === 'radio' || c.type === 'checkbox') && !c.checked) return;
+        campos[c.name] = c.value;
+      });
       resultado = { valor: acoes[i] ? acoes[i].valor : null, campos };
     });
     dlg.addEventListener('close', () => { dlg.remove(); resolve(resultado); });

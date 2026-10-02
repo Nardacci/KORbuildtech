@@ -312,6 +312,15 @@ a.aviso:hover { color: var(--texto); filter: brightness(0.985); }
 .linha-info span { color: var(--mudo); flex-shrink: 0; }
 .linha-info b { text-align: right; font-weight: 600; overflow-wrap: anywhere; }
 .acoes-obra { display: flex; flex-direction: column; gap: 10px; }
+.link-sutil { align-self: center; background: none; border: 0; padding: 4px 8px; font: inherit; font-size: 13px; color: var(--mudo); cursor: pointer; text-decoration: underline; text-decoration-color: var(--borda-forte); text-underline-offset: 3px; }
+.link-sutil:hover { color: var(--texto-2); text-decoration-color: currentColor; }
+.escolha-rdo { display: flex; flex-direction: column; gap: 6px; max-height: 52vh; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+.opcao-rdo { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--borda); border-radius: var(--raio); cursor: pointer; }
+.opcao-rdo:hover { background: var(--superficie-2); }
+.opcao-rdo:has(input:checked) { border-color: var(--primario); background: var(--primario-claro); }
+.opcao-rdo input { margin-top: 3px; accent-color: var(--primario); }
+.opcao-rdo > span { display: flex; flex-direction: column; }
+.opcao-rdo .mudo { font-size: 13px; }
 
 /* ---------- Editor do RDO ---------- */
 .passos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; position: sticky; top: var(--altura-topo); z-index: 10; background: var(--fundo); padding: 8px 0; }

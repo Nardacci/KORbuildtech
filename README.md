@@ -29,7 +29,7 @@ Para mostrar no celular, publique no GitHub Pages: **Settings → Pages → Depl
 
 ## Roteiro da demonstração (5 minutos)
 
-1. No login, toque no e-mail do **Carlos** (campo) e em **Entrar**. Abra o **Daily** → Residencial Jardim das Flores → **Começar copiando o RDO de ontem**. A equipe e os equipamentos já vêm preenchidos.
+1. No login, toque no e-mail do **Carlos** (campo) e em **Entrar**. Abra o **Daily** → Residencial Jardim das Flores → **ou copiar de um RDO anterior** (link discreto embaixo de "Adicionar nova RDO") e escolha um dia. A equipe e os equipamentos já vêm preenchidos.
 2. O clima é buscado sozinho pela localização da obra. Tire uma ou duas fotos e veja o carimbo com data, hora e GPS e quanto a foto encolheu.
 3. Em uma atividade, toque em **Ditar** (ou digite) *"hj a gente fecho a viga 2 mas faltou cimento pq a entrega atrasou"* e toque em **Melhorar texto**.
 4. Toque em **Online**, no topo, para simular a falta de internet, e envie. O RDO fica guardado no aparelho. Toque de novo e ele sobe sozinho.
@@ -61,7 +61,7 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 **Daily: campo (celular)**
 - Lista de obras com a situação do RDO de hoje e o aviso de ajustes pedidos pelo escritório.
 - Lista dos RDOs de cada obra com duas fotos em miniatura (320 px, geradas junto com a foto), "+N" quando há mais fotos e o começo da primeira atividade do dia.
-- **Copiar o RDO anterior:** traz a equipe (com as faltas zeradas), os equipamentos e só as atividades que ainda estavam em andamento.
+- **Adicionar nova RDO** (botão de destaque) começa em branco. Embaixo, discreto, **ou copiar de um RDO anterior**: a pessoa escolhe qualquer RDO da obra (ontem, 28/09…) e o novo traz a equipe (com as faltas zeradas), os equipamentos e as atividades que ainda estavam em andamento.
 - **Clima automático** pela coordenada da obra ([Open-Meteo](https://open-meteo.com/), gratuito e sem chave): manhã (7h às 12h) e tarde (13h às 17h). Com mais de 2 mm de chuva no turno, o turno fica "impraticável". Tudo pode ser corrigido à mão, e o relatório diz se o clima foi automático, ajustado ou manual.
 - **Equipe e equipamentos** com botões de + e −, chips das funções e equipamentos mais comuns e campo para "outro".
 - **Fotos**: câmera ou galeria. Cada foto recebe o carimbo de evidência *dentro da imagem* (obra, data, hora e coordenadas do GPS), é reduzida para 1600 px e cerca de 300 KB no próprio celular, e guarda o hash SHA-256 do arquivo original. Sem GPS, usa o local da obra e deixa isso escrito no carimbo.
@@ -111,7 +111,7 @@ Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/crew`, `#/measure`; no D
 
 ## Testes
 
-`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (71 verificações): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
+`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (76 verificações): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
 ```bash
 npm install playwright   # uma vez

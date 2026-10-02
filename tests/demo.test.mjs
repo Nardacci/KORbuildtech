@@ -110,7 +110,13 @@ const mini = await item.locator('.item-rdo-fotos img').first().evaluate((img) =>
 verificar(mini === 320, 'lista de RDOs: miniatura de 320 px, não a foto inteira (' + mini + ')');
 verificar((await item.locator('.item-rdo-trecho').textContent()).startsWith('Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D'), 'lista de RDOs: começo da primeira atividade');
 await print('02b-lista-rdos');
-await page.click('[data-acao="novo-rdo"][data-copiar="1"]');
+verificar((await page.textContent('.acoes-obra .btn-primario')).includes('Adicionar nova RDO'), 'botão de destaque: Adicionar nova RDO');
+await page.click('[data-acao="copiar-rdo"]');
+await page.waitForSelector('dialog .opcao-rdo');
+verificar(await page.locator('dialog .opcao-rdo').count() === 6, 'copiar: lista todos os RDOs anteriores da obra');
+verificar(await page.isChecked('dialog .opcao-rdo input >> nth=0'), 'copiar: o mais recente vem marcado');
+await page.click('dialog .opcao-rdo >> nth=0');
+await page.click('dialog button:has-text("Copiar")');
 await page.waitForSelector('#s-clima');
 verificar(await page.locator('.abas').count() === 0, 'editor do RDO sem abas (tela de foco)');
 verificar((await page.textContent('.voltar')).includes('Residencial Jardim das Flores'), 'editor volta para a obra');
@@ -264,6 +270,18 @@ await page.waitForFunction(() => !/Enviando/.test(document.getElementById('conex
 const dados2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
 const reenviado = dados2.rdos.find((r) => r.id === 'rdo-galpao-m2');
 verificar(reenviado.status === 'enviado' && reenviado.sync === 'enviado', 'reenviado e recebido');
+
+// Copiar um RDO mais antigo (não o de ontem): Galpão, RDO nº 115
+await page.goto(BASE + '#/daily/campo/obra/galpao');
+await page.click('[data-acao="copiar-rdo"]');
+await page.waitForSelector('dialog .opcao-rdo');
+await page.click('dialog .opcao-rdo >> nth=2');
+await page.click('dialog button:has-text("Copiar")');
+await page.waitForSelector('#s-clima');
+const dados3 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
+const copiaAntiga = dados3.rdos.find((r) => r.obraId === 'galpao' && r.status === 'rascunho');
+verificar(copiaAntiga && copiaAntiga.historico[0].acao.includes('nº 115'), 'copiar: dá para escolher um RDO mais antigo (nº 115)');
+verificar(copiaAntiga && copiaAntiga.equipe.length === 4 && copiaAntiga.fotos.length === 0, 'copiar: traz a equipe e começa sem fotos');
 
 // Pedir ajustes pelo painel
 await comoUsuario('u-ana', '#/daily/painel/rdo/rdo-atlantico-hoje');

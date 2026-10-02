@@ -269,11 +269,8 @@ function telaObraCampo(id) {
   if (deHoje) {
     acoes = '<a class="btn btn-primario btn-grande" href="#/daily/campo/rdo/' + deHoje.id + '">' + (deHoje.status === 'rascunho' ? 'Continuar o RDO de hoje' : 'Ver o RDO de hoje') + '</a>';
   } else {
-    acoes = (ultimo
-      ? '<button type="button" class="btn btn-primario btn-grande" data-acao="novo-rdo" data-obra="' + o.id + '" data-copiar="1">Começar copiando o RDO de ' + (diasEntre(ultimo.data, hoje()) === 1 ? 'ontem' : dataCurta(ultimo.data)) + '</button>' +
-        '<p class="dica">Traz a equipe, os equipamentos e as atividades que ainda estavam em andamento. Você só ajusta o que mudou.</p>'
-      : '') +
-      '<button type="button" class="btn ' + (ultimo ? 'btn-contorno' : 'btn-primario btn-grande') + '" data-acao="novo-rdo" data-obra="' + o.id + '">Começar o RDO de hoje em branco</button>';
+    acoes = '<button type="button" class="btn btn-primario btn-grande" data-acao="novo-rdo" data-obra="' + o.id + '">' + icone('mais', 20) + 'Adicionar nova RDO</button>' +
+      (ultimo ? '<button type="button" class="link-sutil" data-acao="copiar-rdo" data-obra="' + o.id + '">ou copiar de um RDO anterior</button>' : '');
   }
   return moldura({
     ativo: 'hoje', titulo: o.nome, subtitulo: o.cidade, voltar: { href: '#/daily/campo', rotulo: 'Hoje' },
@@ -322,9 +319,9 @@ function itemRdo(r, opcoes) {
     '<span class="mudo item-rdo-meta">' + pessoas + ' pessoas · ' + r.atividades.length + ' atividades · ' + r.fotos.length + ' fotos</span></a>';
 }
 
-function novoRdo(obraId, copiar) {
-  const lista = rdosDaObra(obraId);
-  const base = copiar ? lista.find((r) => r.data < hoje()) : null;
+/* Cria o RDO de hoje, em branco ou copiando um RDO anterior escolhido (baseId). */
+function novoRdo(obraId, baseId) {
+  const base = baseId ? acharRdo(baseId) : null;
   const numero = Math.max(0, ...estado().rdos.filter((r) => r.obraId === obraId).map((r) => r.numero)) + 1;
   const r = {
     id: novoId('rdo'), obraId, data: hoje(), numero, status: 'rascunho', sync: 'local',
@@ -843,7 +840,23 @@ const acoes = {
     const alvo = document.getElementById(el.dataset.alvo);
     if (alvo) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
   },
-  'novo-rdo'(el) { novoRdo(el.dataset.obra, el.dataset.copiar === '1'); },
+  'novo-rdo'(el) { novoRdo(el.dataset.obra, null); },
+  async 'copiar-rdo'(el) {
+    const anteriores = rdosDaObra(el.dataset.obra).filter((r) => r.data < hoje());
+    const res = await abrirDialogo({
+      titulo: 'Copiar de um RDO anterior',
+      corpo: '<p class="mudo pequeno">Vêm a equipe, os equipamentos e as atividades que ainda estavam em andamento. Clima, fotos e ocorrências começam em branco.</p>' +
+        '<div class="escolha-rdo" role="radiogroup" aria-label="RDO para copiar">' + anteriores.map((r, i) => {
+          const pessoas = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
+          const emAndamento = r.atividades.filter((a) => a.situacao !== 'concluida').length;
+          return '<label class="opcao-rdo"><input type="radio" name="base" value="' + esc(r.id) + '"' + (i === 0 ? ' checked' : '') + '>' +
+            '<span><b>' + dataRelativa(r.data) + (dataRelativa(r.data) === dataCurta(r.data) ? '' : ' · ' + dataCurta(r.data)) + '</b>' +
+            '<span class="mudo">RDO nº ' + r.numero + ' · ' + pessoas + ' pessoas · ' + r.equipamentos.length + ' equipamentos · ' + emAndamento + ' em andamento</span></span></label>';
+        }).join('') + '</div>',
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Copiar', valor: true, classe: 'btn-primario' }],
+    });
+    if (res && res.valor && res.campos.base) novoRdo(el.dataset.obra, res.campos.base);
+  },
   'clima-auto'() { const r = rdoDaTela(); if (r) climaAutomatico(r, false); },
   'clima-tempo'(el) {
     mudar((r) => {
