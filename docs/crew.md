@@ -41,7 +41,7 @@ O ponto alimenta o RDO do Daily (equipe do dia) e o custo da obra. **Nenhum conc
 | Perfil | Quem é | O que faz no Crew | Onde |
 | --- | --- | --- | --- |
 | **Encarregado** (campo) | Mestre de obras ou encarregado da equipe (Carlos, Roberto) | Bate o ponto da equipe toda (entrada, intervalo, troca de obra, chegada, saída) e acompanha as horas da equipe | Celular, abas **Ponto** e **Horas** |
-| **Escritório** (admin) | Gestor, RH ou financeiro (Ana, Márcia) | Vê quem está trabalhando agora, confere batidas fora da obra, aprova timesheets, ajusta com motivo, exporta para a folha, cuida do valor hora, dos orçamentos e dos custos | Computador, abas **Agora**, **Timesheets**, **Custos** e **Funcionários** |
+| **Escritório** (admin) | Gestor, RH ou financeiro (Ana, Márcia) | Vê quem está trabalhando agora, confere batidas fora da obra, aprova timesheets, ajusta com motivo, exporta para a folha, cuida do valor hora, dos orçamentos e dos custos | Computador, abas **Agora**, **Timesheets** e **Custos**, mais o **Settings** (funcionários, encargos, regras) |
 | **Trabalhador** | Quem bate o ponto ou tem o ponto batido pelo encarregado | Na versão real: vê as próprias horas e o próprio mapa (transparência) | App nativo (fase 2) |
 
 Regras de acesso:
@@ -69,8 +69,8 @@ Regras de acesso:
 | **Custos · Obras** | `#/crew/custos` | Orçado × realizado × projeção de cada obra, com gráfico acumulado e detalhe por etapa (seção 8) |
 | **Custos · Mês** | `#/crew/custos/mes/<AAAA-MM>` | Custo do mês por obra e etapa: salários, hora extra e encargos |
 | **Custos · Semana** | `#/crew/custos/semana/<segunda>` | O mesmo, na semana |
-| **Funcionários** | `#/crew/funcionarios` | Valor hora atual, custo carregado e vigência de cada pessoa |
-| **Funcionário** | `#/crew/funcionario/<id>` | Valor hora atual, hora extra, custo carregado e **histórico do valor hora**, com o botão **Alterar valor hora** |
+
+O **cadastro de funcionários** (com o valor hora e o histórico), os **encargos** e as **regras de jornada** ficam no **KORbuild Settings** ([`settings.md`](settings.md)), porque valem para todos os módulos. O Crew só lê de lá.
 
 No celular, as telas do módulo aparecem em abas embaixo. No computador, ficam no menu lateral.
 
@@ -104,16 +104,17 @@ Tipos de batida: `entrada · intervalo-inicio · intervalo-fim · troca (sai rum
 | **RN-01** | **Batida é imutável.** Correção é uma batida nova marcada como *ajuste*, com quem fez, quando e o motivo. A original continua visível. |
 | **RN-02** | **Toda hora pertence a uma obra e a uma etapa.** É o que permite o custo por obra. |
 | **RN-03** | **Sem arredondamento.** Paga-se o minuto. A "regra dos 7 minutos" não é usada. |
-| **RN-04** | **Hora extra semanal (FLSA):** o que passar de **40 h na semana** (segunda a domingo) paga **1,5×**. |
+| **RN-04** | **Hora extra pela regra de jornada vigente (Settings).** Padrão da empresa: New Hampshire / FLSA federal, acima de **40 h na semana** (segunda a domingo) paga **1,5×**. Se a regra tiver hora extra diária (ex.: acima de 8 h → 1,5×; acima de 12 h → 2×), a hora que já virou extra no dia não conta de novo na semanal. A regra vale por semana inteira, a partir da segunda-feira. |
 | **RN-05** | **Regular rate ponderada:** se o valor hora mudou no meio da semana, o adicional de hora extra (0,5×) é calculado sobre a média ponderada da semana (salário base ÷ horas). |
 | **RN-06** | **Deslocamento entre obras durante a jornada é hora paga** (29 CFR 785.38). O trajeto casa → obra não é. |
-| **RN-07** | **Intervalo não é pago.** Jornada acima de 5 h sem intervalo de 30 min gera alerta (as regras estaduais variam; a Califórnia é a mais rígida). |
+| **RN-07** | **Intervalo não é pago.** O mínimo e depois de quantas horas vêm da regra de jornada (padrão de New Hampshire: 30 min depois de 5 h, RSA 275:30-a). Faltou, gera alerta. |
 | **RN-08** | **Sem saída:** dia passado com a jornada aberta não conta horas até alguém ajustar. Gera alerta e aviso no sininho do encarregado. |
 | **RN-09** | **Cerca sinaliza, não bloqueia.** Batida fora da cerca (150 m) é aceita, marcada "fora da obra" e vai para o escritório conferir. O GPS erra dentro de estrutura de concreto. |
 | **RN-10** | **Ponto pela equipe:** o encarregado pode bater para várias pessoas de uma vez. A batida guarda quem registrou. |
 | **RN-11** | **Aprovação semanal:** o escritório aprova ou devolve a semana (com motivo). Só semana aprovada vai para o CSV da folha. |
 | **RN-12** | **Valor hora com vigência:** mudar o valor cria um registro "a partir de" com motivo. O passado nunca é reescrito: cada dia usa o valor vigente naquele dia. |
 | **RN-13** | **Semana aprovada é fechada:** um novo valor hora não pode começar dentro de uma semana já aprovada, porque ela já foi para a folha. |
+| **RN-13b** | **Autônomo (1099) e isento (exempt)** não recebem hora extra. Autônomo também não tem encargos. |
 | **RN-14** | **Custo da obra** = horas × valor vigente no dia + adicional de hora extra **rateado entre as obras** pelas horas da semana + **encargos** sobre a folha. |
 | **RN-15** | **Projeção:** com avanço físico informado, projeção = realizado ÷ avanço. Sem avanço, projeção = realizado + média das últimas 4 semanas completas × semanas que faltam até o prazo. |
 | **RN-16** | **Situação da obra:** **No rumo** (projeção ≤ orçamento), **Atenção** (até 5% acima), **Estouro previsto** (mais de 5% acima). |
@@ -135,7 +136,7 @@ Tipos de batida: `entrada · intervalo-inicio · intervalo-fim · troca (sai rum
 
 **Aprovar e exportar.** Em **Timesheets**, o escritório seleciona as pessoas e aprova a semana (ou devolve com motivo). Depois exporta o **CSV** com uma linha por segmento (data, obra, etapa, início, fim, horas), pronto para QuickBooks, Gusto ou ADP.
 
-**Alterar o valor hora.** Em **Funcionários › pessoa**, o escritório usa **Alterar valor hora** e informa:
+**Alterar o valor hora.** Em **Settings › Funcionários › pessoa**, o escritório usa **Alterar valor hora** e informa:
 - novo valor;
 - **a partir de** (o padrão é a próxima segunda);
 - **motivo** (obrigatório).
@@ -144,7 +145,7 @@ O sistema recusa uma data dentro de uma semana aprovada (RN-13). O histórico mo
 
 **Orçamento e avanço da obra.** Em **Custos › Obras**, o botão **Editar orçamento** define o orçamento total de mão de obra e o **avanço físico (%)** medido na obra. A projeção e a situação são recalculadas na hora.
 
-**Encargos.** Em **Custos**, o link **Alterar encargos** ajusta os % de FICA, seguro-desemprego, workers' comp e benefícios.
+**Encargos e regras de jornada.** Ficam em **Settings**, com **vigência**: cada mudança é uma nova versão "a partir de" (nunca no passado) e não muda o custo das semanas anteriores. A tela de Custos mostra os encargos em uso e leva até o Settings.
 
 ---
 
@@ -185,12 +186,13 @@ O rastreamento durante a jornada é o requisito **PONTO-GPS-01**, ainda **provis
 - Exemplo (Lucas): US$ 35,00 desde a admissão e US$ 38,00 desde a licença de eletricista (+8,6%). As horas de cada dia usam o valor daquele dia.
 
 ### 8.2 Encargos sobre a folha (labor burden)
-Valores padrão do protótipo, editáveis em **Custos › Alterar encargos**:
+Valores padrão do protótipo, editáveis em **Settings › Encargos** (nova versão com data de início e motivo):
 
 | Parte | % | O que é |
 | --- | --- | --- |
 | FICA | 7,65 | Social Security + Medicare (parte do empregador) |
-| Seguro-desemprego | 3,40 | FUTA + SUTA (média; varia por estado) |
+| FUTA | 0,60 | Desemprego federal (na prática, só até US$ 7.000 por pessoa/ano) |
+| SUTA | 2,80 | Desemprego estadual (taxa da empresa; conferir com o contador) |
 | Workers' comp | 14,00 | Seguro de acidente de trabalho. Na construção é alto e varia por função |
 | Benefícios | 7,00 | Saúde, férias, feriados |
 | **Total** | **32,05** | |
@@ -334,7 +336,7 @@ Sem SMS e sem e-mail: só o sininho e os alertas do sistema (ver [`alertas.md`](
 
    Isso pode ficar numa visão "Resultado da obra" da plataforma, alimentada pelo Crew (mão de obra), pelo Measure (quantidades e orçamento) e por integração com a contabilidade (QuickBooks).
 2. **Avanço físico:** vem do RDO (por etapa), de medição ou dos dois? Quem informa e com que frequência?
-3. **Encargos por função e por estado:** o workers' comp varia muito por classe (eletricista × servente). Vale ter encargos por função?
+3. **Encargos por função:** (os encargos já são da empresa, com vigência, no Settings) o workers' comp varia muito por classe (eletricista × servente). Vale ter encargos por função?
 4. **Prevailing wage (Davis-Bacon):** em obra pública o valor hora depende da obra e da função. Para isso será preciso valor hora **por obra** além do valor da pessoa.
 5. **Rateio da hora extra:** proporcional às horas (atual) ou para a obra que causou a extra? Configurável por empresa?
 6. **Alertas de custo no sininho:** avisar quando uma obra mudar para "Atenção" ou "Estouro previsto"?

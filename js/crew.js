@@ -4,7 +4,8 @@
  *  - Batida nunca é editada nem apagada. Correção é uma batida nova marcada como ajuste (quem, quando, por quê).
  *  - Toda hora pertence a uma obra e a uma etapa (é o que dá o custo por obra).
  *  - Deslocamento entre obras durante o dia conta como hora trabalhada (FLSA, 29 CFR 785.38).
- *  - Hora extra: acima de 40 h na semana, 1,5× (FLSA). Sem arredondamento: paga-se o minuto.
+ *  - Hora extra e intervalo seguem a regra de jornada vigente do Settings (padrão: FLSA, acima de 40 h na semana, 1,5×).
+ *    Sem arredondamento: paga-se o minuto.
  *  - Valor hora tem vigência: mudar o valor cria um registro novo "a partir de", nunca reescreve o passado.
  *  - Custo da obra = horas × valor hora vigente no dia + adicional de hora extra (rateado pelas horas da semana)
  *    + encargos sobre a folha (labor burden).
@@ -13,9 +14,9 @@
 
 import { hoje, somarDias, diasEntre, novoId, isoDoDia } from './util.js';
 import { estado, salvar } from './armazem.js';
+import { regraEm, encargosEm, extrasDaSemana, funcionarios as listaFuncionarios, ativos, auditar, ENCARGOS_INICIAIS, segundaDe } from './settings.js';
 
 export const ETAPAS = ['Fundação', 'Estrutura', 'Alvenaria', 'Instalações elétricas', 'Instalações hidráulicas', 'Acabamento', 'Piso', 'Limpeza e apoio'];
-export const REGRAS = { horasSemana: 40, fatorExtra: 1.5, intervaloMinimo: 30, jornadaExigeIntervalo: 5 * 60 };
 export const RAIO_CERCA = 150; // metros
 
 /* ---------- Utilidades ---------- */
@@ -33,11 +34,7 @@ export function dentroDaCerca(obra, lat, lon) {
   return distanciaM(c.lat, c.lon, lat, lon) <= c.raio;
 }
 
-export function inicioDaSemana(iso) {
-  const [a, m, d] = iso.split('-').map(Number);
-  const dia = new Date(a, m - 1, d).getDay(); // 0 = domingo
-  return somarDias(iso, -((dia + 6) % 7)); // semana de segunda a domingo
-}
+export function inicioDaSemana(iso) { return segundaDe(iso); } // semana de segunda a domingo
 
 export function diasDaSemana(segunda) {
   return Array.from({ length: 7 }, (_, i) => somarDias(segunda, i));
@@ -53,10 +50,10 @@ export function dinheiro(valor) {
 }
 
 function crew() { return estado().crew; }
-export function funcionario(id) { return crew().funcionarios.find((f) => f.id === id); }
+export function funcionario(id) { return listaFuncionarios().find((f) => f.id === id); }
 export function equipe(id) { return crew().equipes.find((e) => e.id === id); }
 export function equipeDoEncarregado(usuarioId) { return crew().equipes.find((e) => e.encarregadoUsuarioId === usuarioId); }
-export function membros(equipeId) { return crew().funcionarios.filter((f) => f.equipeId === equipeId); }
+export function membros(equipeId) { return ativos().filter((f) => f.equipeId === equipeId); }
 
 export function batidasDoDia(funcId, iso) {
   return crew().batidas.filter((b) => b.funcionarioId === funcId && isoDoDia(new Date(b.em)) === iso).sort((a, b) => a.em - b.em);
@@ -95,7 +92,8 @@ export function jornada(funcId, iso, agora) {
   if (semSaida) alertas.push({ tipo: 'sem-saida', texto: 'Sem saída' });
   const fora = lista.filter((b) => b.dentroCerca === false && !b.conferida);
   if (fora.length) alertas.push({ tipo: 'fora', texto: fora.length === 1 ? '1 batida fora da obra' : fora.length + ' batidas fora da obra' });
-  if (!ehHoje && pago > REGRAS.jornadaExigeIntervalo && maiorIntervalo < REGRAS.intervaloMinimo) alertas.push({ tipo: 'intervalo', texto: 'Sem intervalo de 30 min' });
+  const regra = regraEm(iso);
+  if (!ehHoje && pago > regra.intervalo.apos * 60 && maiorIntervalo < regra.intervalo.minimo) alertas.push({ tipo: 'intervalo', texto: 'Sem intervalo de ' + regra.intervalo.minimo + ' min' });
   return {
     batidas: lista, segmentos: segs, trabalho, deslocamento, intervalo, pago, alertas,
     estado: !atual ? (lista.length ? 'saiu' : 'fora') : (atual.aberto ? atual.tipo : 'sem-saida'),
@@ -107,18 +105,17 @@ export function jornada(funcId, iso, agora) {
 
 export function semana(funcId, segunda, agora) {
   const dias = diasDaSemana(segunda).map((iso) => ({ iso, ...jornada(funcId, iso, agora) }));
-  const total = dias.reduce((t, d) => t + d.pago, 0);
-  const regular = Math.min(total, REGRAS.horasSemana * 60);
-  const extra = Math.max(0, total - REGRAS.horasSemana * 60);
   const f = funcionario(funcId);
   const alertas = dias.flatMap((d) => d.alertas.map((a) => ({ ...a, iso: d.iso })));
-  // Salário base: cada dia pelo valor hora vigente naquele dia. Hora extra: 0,5× a mais sobre a
-  // "regular rate" da semana (média ponderada quando o valor mudou no meio da semana, como manda a FLSA).
+  // Horas extras pela regra de jornada vigente (Settings): semanal e, se ligada, diária e dobrada.
+  const { total, regular, extra, dobra, regra } = extrasDaSemana(f, segunda, Object.fromEntries(dias.map((d) => [d.iso, d.pago])));
+  // Salário base: cada dia pelo valor hora vigente naquele dia. Adicional sobre a "regular rate" da semana
+  // (média ponderada quando o valor mudou no meio da semana, como manda a FLSA).
   const base = dias.reduce((t, d) => t + (d.pago / 60) * valorHoraEm(f, d.iso), 0);
   const taxaRegular = total ? base / (total / 60) : valorHoraEm(f, segunda);
-  const adicional = (extra / 60) * taxaRegular * (REGRAS.fatorExtra - 1);
+  const adicional = adicionalDeExtras(extra, dobra, taxaRegular, regra);
   return {
-    dias, total, regular, extra, alertas, base, taxaRegular, adicional,
+    dias, total, regular, extra, dobra, alertas, base, taxaRegular, adicional, regra,
     custo: base + adicional,
     status: statusSemana(funcId, segunda),
   };
@@ -155,23 +152,22 @@ export function alterarValorHora(funcId, valor, desde, motivo, por) {
   if (statusSemana(funcId, segunda) === 'aprovado') return { erro: 'A semana de ' + segunda.split('-').reverse().join('/') + ' já foi aprovada e enviada para a folha. Escolha uma data a partir da próxima semana aberta.' };
   if ((f.valores || []).some((x) => x.desde === desde)) return { erro: 'Já existe um valor a partir dessa data.' };
   f.valores = f.valores || [];
+  const antes = valorHoraEm(f, desde);
   f.valores.push({ desde, valor: Math.round(valor * 100) / 100, motivo: motivo.trim(), por, em: Date.now() });
+  const us = (v) => 'US$ ' + v.toFixed(2).replace('.', ',') + '/h';
+  auditar('Funcionários', 'Valor hora de ' + f.nome + ' a partir de ' + desde.split('-').reverse().join('/'), us(antes), us(Math.round(valor * 100) / 100), motivo.trim(), por);
   salvar();
   return { ok: true };
 }
 
-/* Encargos sobre a folha (labor burden): impostos do empregador, workers' comp, seguro e benefícios. */
-export const ENCARGOS_PADRAO = { fica: 7.65, desemprego: 3.4, workersComp: 14, beneficios: 7 }; // % sobre o salário
-export function encargos() {
-  const e = (crew().config && crew().config.encargos) || ENCARGOS_PADRAO;
-  return Object.values(e).reduce((t, v) => t + v, 0) / 100;
+/* Adicional de hora extra (a parte acima do valor normal): extra × (fator − 1) + dobra × (fator da dobra − 1). */
+function adicionalDeExtras(extra, dobra, taxa, regra) {
+  return (extra / 60) * taxa * (regra.semanal.fator - 1) + (dobra / 60) * taxa * ((regra.diaria.fatorDobra || 2) - 1);
 }
-export function definirEncargos(partes) {
-  const c = crew();
-  c.config = c.config || {};
-  c.config.encargos = partes;
-  salvar();
-}
+
+/* Encargos sobre a folha (labor burden), vigentes hoje. Autônomo (1099) não tem encargos. */
+export function encargos() { return encargosEm(hoje()); }
+function encargosDe(f, iso) { return f.classificacao === '1099' ? 0 : encargosEm(iso); }
 
 export function orcamento(obraId) { return (crew().orcamentos || {})[obraId] || null; }
 export function definirOrcamento(obraId, dados, por) {
@@ -219,20 +215,22 @@ function horasDaSemana(funcId, segunda, agora) {
 const cacheLancamentos = new Map();
 export function lancamentosDaSemana(segunda, agora) {
   const fechada = somarDias(segunda, 6) < hoje();
-  const chave = segunda + '|' + encargos() + '|' + JSON.stringify(crew().funcionarios.map((f) => f.valores));
+  const st = estado().settings;
+  const chave = segunda + '|' + JSON.stringify([st.regras, st.encargos]) + '|' + JSON.stringify(listaFuncionarios().map((f) => [f.valores, f.classificacao, f.flsa]));
   if (fechada && cacheLancamentos.has(chave)) return cacheLancamentos.get(chave);
-  const enc = encargos();
   const out = [];
-  for (const f of crew().funcionarios) {
+  for (const f of listaFuncionarios()) {
     const linhas = horasDaSemana(f.id, segunda, agora);
-    const total = linhas.reduce((t, l) => t + l.min, 0);
+    const porDia = {};
+    for (const l of linhas) porDia[l.iso] = (porDia[l.iso] || 0) + l.min;
+    const { total, extra, dobra, regra } = extrasDaSemana(f, segunda, porDia);
     if (!total) continue;
     const base = linhas.reduce((t, l) => t + (l.min / 60) * valorHoraEm(f, l.iso), 0);
-    const extra = Math.max(0, total - REGRAS.horasSemana * 60);
-    const adicional = (extra / 60) * (base / (total / 60)) * (REGRAS.fatorExtra - 1);
+    const adicional = adicionalDeExtras(extra, dobra, base / (total / 60), regra);
     for (const l of linhas) {
       const b = (l.min / 60) * valorHoraEm(f, l.iso);
       const ad = adicional * l.min / total;
+      const enc = encargosDe(f, l.iso);
       out.push({ ...l, funcionarioId: f.id, base: b, adicional: ad, encargos: (b + ad) * enc, custo: (b + ad) * (1 + enc) });
     }
   }
@@ -308,8 +306,8 @@ export function resumoDaObra(obraId, agora) {
 
 /* Quem está na obra num dia (para preencher a equipe do RDO do Daily). */
 export function presencaNaObra(obraId, iso) {
-  const presentes = crew().funcionarios.filter((f) => jornada(f.id, iso).segmentos.some((s) => s.tipo === 'trabalho' && s.obraId === obraId));
-  const daEquipeBase = crew().funcionarios.filter((f) => (equipe(f.equipeId) || {}).obraBaseId === obraId);
+  const presentes = listaFuncionarios().filter((f) => jornada(f.id, iso).segmentos.some((s) => s.tipo === 'trabalho' && s.obraId === obraId));
+  const daEquipeBase = ativos().filter((f) => (equipe(f.equipeId) || {}).obraBaseId === obraId);
   const faltaram = daEquipeBase.filter((f) => !batidasDoDia(f.id, iso).length);
   const porFuncao = {};
   for (const f of presentes) (porFuncao[f.funcao] = porFuncao[f.funcao] || { presentes: 0, faltas: 0 }).presentes++;
@@ -368,6 +366,15 @@ const REAJUSTES = {
   'f-antonio': [-119, 2, 'Reajuste anual'],
 };
 
+// Certificações de exemplo: [nome, validade em dias a partir de hoje] (a do Carlos vence logo: aparece o aviso)
+const CERTIFICACOES = {
+  'f-carlos': [['OSHA 30 (construção)', 18], ['Primeiros socorros / CPR', 240]],
+  'f-roberto': [['OSHA 30 (construção)', 400]],
+  'f-lucas': [['Licença de eletricista (journeyman)', 610], ['OSHA 10', 300]],
+  'f-bruno': [['OSHA 10', 150]],
+  'f-thiago': [['OSHA 10', -12]],
+};
+
 // Etapas da obra ao longo do tempo (fração do prazo decorrida → etapa), para o histórico de horas
 const FASES = {
   jardim: [[0, 'Fundação'], [0.12, 'Estrutura'], [0.24, 'Alvenaria']],
@@ -402,7 +409,12 @@ export function criarDadosCrew(obras) {
       ? [{ desde: admissao, valor: valorHora - r[1], motivo: 'Admissão', por: 'Ana Ribeiro', em: quando(admissao, 9, 0) },
         { desde: somarDias(inicioDaSemana(dia0), r[0]), valor: valorHora, motivo: r[2], por: 'Ana Ribeiro', em: quando(somarDias(inicioDaSemana(dia0), r[0] - 3), 10, 0) }]
       : [{ desde: admissao, valor: valorHora, motivo: 'Admissão', por: 'Ana Ribeiro', em: quando(admissao, 9, 0) }];
-    return { id, nome, funcao, equipeId, admissao, valores, usuarioId: id === 'f-carlos' ? 'u-carlos' : id === 'f-roberto' ? 'u-roberto' : null };
+    const n = PESSOAS.findIndex((p) => p[0] === id);
+    return {
+      id, nome, funcao, equipeId, admissao, valores, usuarioId: id === 'f-carlos' ? 'u-carlos' : id === 'f-roberto' ? 'u-roberto' : null,
+      codigo: 'E-' + String(101 + n), telefone: '(603) 555-01' + String(10 + n), emergencia: '', classificacao: 'w2', flsa: 'nao-isento', situacao: 'ativo',
+      desligamento: '', avisoGps: admissao, certificacoes: (CERTIFICACOES[id] || []).map(([c, dias]) => ({ nome: c, validade: somarDias(dia0, dias) })),
+    };
   });
   const equipes = [
     { id: 'eq-a', nome: 'Equipe do Carlos', encarregadoUsuarioId: 'u-carlos', obraBaseId: 'jardim' },
@@ -495,7 +507,7 @@ export function criarDadosCrew(obras) {
   }
 
   // Orçamento de mão de obra: custo semanal esperado da equipe × semanas do prazo, ajustado pelo cenário
-  const enc = Object.values(ENCARGOS_PADRAO).reduce((t, v) => t + v, 0) / 100;
+  const enc = ENCARGOS_INICIAIS.reduce((t, i) => t + i.pct, 0) / 100;
   const orcamentos = {};
   for (const id of ['jardim', 'atlantico', 'galpao']) {
     const o = obra(id);
@@ -519,5 +531,5 @@ export function criarDadosCrew(obras) {
   // A semana anterior da equipe A já foi aprovada; a da equipe B espera aprovação.
   const aprovacoes = funcionarios.filter((f) => f.equipeId === 'eq-a').map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: 'Ana Ribeiro', motivo: '', em: quando(segundaAtual, 9, 10) }));
 
-  return { funcionarios, equipes, batidas, excursoes, aprovacoes, historico, orcamentos, config: { encargos: { ...ENCARGOS_PADRAO } } };
+  return { funcionarios, equipes, batidas, excursoes, aprovacoes, historico, orcamentos };
 }

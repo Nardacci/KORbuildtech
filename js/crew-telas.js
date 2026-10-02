@@ -9,11 +9,12 @@ import { casca, usuarioAtual, ehAdmin } from './plataforma.js';
 import { icone } from './icones.js';
 import { obterPosicao } from './fotos.js';
 import {
-  ETAPAS, REGRAS, distanciaM, dentroDaCerca, inicioDaSemana, diasDaSemana, horas, dinheiro, funcionario, equipe,
+  ETAPAS, distanciaM, dentroDaCerca, inicioDaSemana, diasDaSemana, horas, dinheiro, funcionario, equipe,
   equipeDoEncarregado, membros, jornada, semana, aprovacaoDaSemana, registrarBatidas, decidirSemana,
-  valorHoraEm, valorAtual, historicoDeValores, alterarValorHora, encargos, ENCARGOS_PADRAO, definirEncargos, orcamento, definirOrcamento,
+  valorHoraEm, valorAtual, historicoDeValores, alterarValorHora, encargos, orcamento, definirOrcamento,
   custosDoPeriodo, resumoDaObra, statusSemana,
 } from './crew.js';
+import { ativos, funcionarios as todosFuncionarios, regraEm, resumoRegra, encargosVersao } from './settings.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarCrew(funcoes) { app = { ...app, ...funcoes }; }
@@ -39,12 +40,11 @@ function nomeCurto(id) { return nomeObra(id).split(' ').slice(0, 2).join(' '); }
 function navCrew() {
   const u = usuarioAtual();
   if (ehAdmin(u)) {
-    const pendentes = estado().crew.funcionarios.filter((f) => semana(f.id, somarDias(inicioDaSemana(hoje()), -7)).status === 'pendente').length;
+    const pendentes = todosFuncionarios().filter((f) => semana(f.id, somarDias(inicioDaSemana(hoje()), -7)).status === 'pendente').length;
     return [
       { id: 'agora', href: '#/crew/agora', rotulo: 'Agora', icone: 'pino' },
       { id: 'timesheets', href: '#/crew/timesheets', rotulo: 'Timesheets', icone: 'tabela', contador: pendentes },
       { id: 'custos', href: '#/crew/custos', rotulo: 'Custos', icone: 'dinheiro' },
-      { id: 'funcionarios', href: '#/crew/funcionarios', rotulo: 'Funcionários', icone: 'crew' },
     ];
   }
   return [
@@ -61,7 +61,7 @@ function moldura(o) {
 export function telaCrew(q) {
   const u = usuarioAtual();
   pararRelogio();
-  const doAdmin = ['agora', 'timesheets', 'custos', 'semana', 'funcionarios', 'funcionario'];
+  const doAdmin = ['agora', 'timesheets', 'custos', 'semana'];
   const doCampo = ['equipe', 'horas'];
   const inicio = ehAdmin(u) ? '#/crew/agora' : '#/crew/equipe';
   if (!q.length) return { trocar: inicio };
@@ -72,8 +72,9 @@ export function telaCrew(q) {
   if (q[0] === 'timesheets') return telaTimesheets(q[1]);
   if (q[0] === 'semana') return telaSemanaFuncionario(q[1], q[2]);
   if (q[0] === 'custos') return telaCustos(q[1], q[2]);
-  if (q[0] === 'funcionarios') return telaFuncionarios();
-  if (q[0] === 'funcionario') return telaFuncionario(q[1]);
+  // o cadastro de funcionários mudou para o Settings
+  if (q[0] === 'funcionarios') return { trocar: '#/settings/funcionarios' };
+  if (q[0] === 'funcionario') return { trocar: '#/settings/funcionario/' + q[1] };
   if (q[0] === 'dia') return telaDia(q[1], q[2]);
   return { trocar: inicio };
 }
@@ -267,26 +268,6 @@ export const acoesCrew = {
     toast('Orçamento de ' + nomeObra(id) + ' atualizado.');
     app.desenhar();
   },
-  async 'crew-encargos'() {
-    const e = (estado().crew.config && estado().crew.config.encargos) || ENCARGOS_PADRAO;
-    const campo = (k, rot) => '<label class="rotulo-pequeno" for="enc-' + k + '">' + rot + ' (%)</label><input type="number" id="enc-' + k + '" name="' + k + '" min="0" max="100" step="0.01" value="' + e[k] + '" inputmode="decimal">';
-    const res = await abrirDialogo({
-      titulo: 'Encargos sobre a folha',
-      corpo: '<p class="mudo pequeno">Somados ao salário para chegar ao custo real da hora. Variam por estado e por função (o workers\' comp da construção é alto).</p>' +
-        campo('fica', 'FICA (Social Security + Medicare)') + campo('desemprego', 'Seguro-desemprego (FUTA + SUTA)') + campo('workersComp', 'Workers\' comp') + campo('beneficios', 'Benefícios (saúde, férias, etc.)'),
-      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Salvar', valor: true, classe: 'btn-primario' }],
-    });
-    if (!res || !res.valor) return;
-    const partes = {};
-    for (const k of ['fica', 'desemprego', 'workersComp', 'beneficios']) {
-      const v = Number(String(res.campos[k]).replace(',', '.'));
-      if (!(v >= 0 && v <= 100)) { toast('Cada encargo deve ficar entre 0 e 100%.'); return; }
-      partes[k] = v;
-    }
-    definirEncargos(partes);
-    toast('Encargos atualizados: ' + pct(encargos(), 2) + ' sobre a folha.');
-    app.desenhar();
-  },
   'crew-reproduzir'() { if (mapaAtual) mapaAtual.reproduzir(); },
   'crew-passo'(el) { if (mapaAtual) mapaAtual.selecionarPasso(Number(el.dataset.n), 'lista'); },
   'crew-marcar'(el) {
@@ -417,7 +398,7 @@ export const acoesCrew = {
   'crew-csv'(el) {
     const segunda = el.dataset.semana;
     const linhas = [['Semana', 'Funcionário', 'Função', 'Data', 'Obra', 'Etapa', 'Tipo', 'Início', 'Fim', 'Horas', 'Status']];
-    for (const f of estado().crew.funcionarios) {
+    for (const f of todosFuncionarios()) {
       const s = semana(f.id, segunda);
       if (s.status !== 'aprovado') continue;
       for (const d of s.dias) for (const seg of d.segmentos) {
@@ -482,7 +463,7 @@ function tabelaSemana(funcs, segunda, opcoes) {
       return '<tr>' + (op.selecao ? '<td>' + (pendente ? '<input type="checkbox" data-acao="crew-sel-ts" data-id="' + f.id + '"' + (selecionados.has(f.id) ? ' checked' : '') + ' aria-label="Selecionar ' + esc(f.nome) + '">' : '') + '</td>' : '') +
         '<td><a href="' + (op.link ? op.link(f) : '#/crew/dia/' + f.id + '/' + hoje()) + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno usuario-detalhe">' + esc(f.funcao) + '</span></td>' +
         s.dias.map((d) => '<td class="num' + (d.alertas.length ? ' com-alerta' : '') + '" title="' + esc(d.alertas.map((a) => a.texto).join(', ')) + '">' + (d.pago ? horas(d.pago) : (d.batidas.length ? '0h00' : '–')) + (d.alertas.length ? ' !' : '') + '</td>').join('') +
-        '<td class="num"><b>' + horas(s.total) + '</b></td><td class="num' + (s.extra ? ' extra' : '') + '">' + (s.extra ? horas(s.extra) : '–') + '</td>' +
+        '<td class="num"><b>' + horas(s.total) + '</b></td><td class="num' + ((s.extra + s.dobra) ? ' extra' : '') + '">' + ((s.extra + s.dobra) ? horas(s.extra + s.dobra) : '–') + '</td>' +
         (op.custo ? '<td class="num">' + dinheiro(s.custo) + '</td>' : '') +
         '<td><span class="etiqueta ' + cls + '">' + txt + '</span></td></tr>';
     }).join('') + '</tbody></table></div>';
@@ -502,7 +483,7 @@ function telaHorasEquipe(param) {
 /* ---------- Administrador: quem está trabalhando agora ---------- */
 
 function telaAgora() {
-  const { obras, funcionarios, batidas } = { obras: estado().obras, ...estado().crew };
+  const { obras, funcionarios, batidas } = { obras: estado().obras, batidas: estado().crew.batidas, funcionarios: ativos() };
   const hojeIso = hoje();
   const js = funcionarios.map((f) => ({ f, j: jornada(f.id, hojeIso) }));
   const conta = (e) => js.filter((x) => x.j.estado === e).length;
@@ -543,20 +524,20 @@ function telaAgora() {
 
 function telaTimesheets(param) {
   const segunda = param || somarDias(inicioDaSemana(hoje()), -7);
-  const funcs = estado().crew.funcionarios;
+  const funcs = todosFuncionarios();
   const pendentes = funcs.filter((f) => ['pendente', 'devolvido'].includes(semana(f.id, segunda).status));
   for (const id of Array.from(selecionados)) if (!pendentes.some((f) => f.id === id)) selecionados.delete(id);
   const totais = funcs.map((f) => semana(f.id, segunda));
   const soma = (k) => totais.reduce((t, s) => t + s[k], 0);
   return moldura({
-    ativo: 'timesheets', largo: true, titulo: 'Timesheets', subtitulo: 'Horas por funcionário · regras: hora extra acima de ' + REGRAS.horasSemana + ' h na semana (1,5×), sem arredondamento',
+    ativo: 'timesheets', largo: true, titulo: 'Timesheets', subtitulo: 'Horas por funcionário · ' + regraEm(segunda).nome + ' (configurável em Settings), sem arredondamento',
     acoes: '<div class="btn-linha">' +
       '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-csv" data-semana="' + segunda + '">' + icone('baixar', 16) + 'Exportar CSV (aprovados)</button>' +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-aprovar" data-semana="' + segunda + '"' + (selecionados.size ? '' : ' disabled') + '>Aprovar selecionados' + (selecionados.size ? ' (' + selecionados.size + ')' : '') + '</button></div>',
     conteudo: seletorSemana('#/crew/timesheets', segunda) +
       '<div class="kpis">' +
         '<div class="kpi"><span>Horas na semana</span><b>' + horas(soma('total')) + '</b></div>' +
-        '<div class="kpi' + (soma('extra') ? ' kpi-alerta' : '') + '"><span>Horas extras</span><b>' + horas(soma('extra')) + '</b></div>' +
+        '<div class="kpi' + ((soma('extra') + soma('dobra')) ? ' kpi-alerta' : '') + '"><span>Horas extras</span><b>' + horas(soma('extra') + soma('dobra')) + '</b></div>' +
         '<div class="kpi"><span>Custo de mão de obra</span><b>' + dinheiro(soma('custo')) + '</b></div>' +
         '<div class="kpi' + (pendentes.length ? ' kpi-azul' : ' kpi-verde') + '"><span>Aguardando aprovação</span><b>' + pendentes.length + '</b></div>' +
       '</div>' +
@@ -582,7 +563,7 @@ function telaSemanaFuncionario(funcId, segunda) {
       '<div class="kpis">' +
         '<div class="kpi"><span>Total na semana</span><b>' + horas(s.total) + '</b></div>' +
         '<div class="kpi"><span>Regulares</span><b>' + horas(s.regular) + '</b></div>' +
-        '<div class="kpi' + (s.extra ? ' kpi-alerta' : '') + '"><span>Extras (1,5×)</span><b>' + horas(s.extra) + '</b></div>' +
+        '<div class="kpi' + ((s.extra + s.dobra) ? ' kpi-alerta' : '') + '"><span>Horas extras</span><b>' + horas(s.extra + s.dobra) + '</b></div>' +
         '<div class="kpi"><span>Custo</span><b>' + dinheiro(s.custo) + '</b></div>' +
       '</div>' +
       '<p><span class="etiqueta ' + cls + '">' + txt + '</span>' + (ap ? ' <span class="mudo pequeno">por ' + esc(ap.por) + ' em ' + dataHora(ap.em) + (ap.motivo ? ' · "' + esc(ap.motivo) + '"' : '') + '</span>' : '') + '</p>' +
@@ -596,7 +577,7 @@ function telaSemanaFuncionario(funcId, segunda) {
   });
 }
 
-/* ---------- Administrador: funcionários, valor hora e histórico ---------- */
+/* ---------- Formatação de valores ---------- */
 
 function pct(v, casas) { return (v * 100).toFixed(casas || 0).replace('.', ',') + '%'; }
 function dinheiroInteiro(v) { return 'US$ ' + Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
@@ -604,63 +585,6 @@ function dinheiroCurto(v) {
   if (Math.abs(v) < 10000) return dinheiroInteiro(v);
   if (Math.abs(v) < 100000) return 'US$ ' + (v / 1000).toFixed(1).replace('.', ',').replace(',0', '') + ' mil';
   return 'US$ ' + (v / 1000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' mil';
-}
-
-function telaFuncionarios() {
-  const c = estado().crew;
-  const enc = encargos();
-  const linhas = c.funcionarios.slice().sort((a, b) => (a.equipeId + a.nome).localeCompare(b.equipeId + b.nome)).map((f) => {
-    const hist = historicoDeValores(f);
-    const atual = hist.find((x) => x.desde <= hoje()) || hist[hist.length - 1];
-    const futuro = hist.find((x) => x.desde > hoje());
-    const anterior = hist[hist.indexOf(atual) + 1];
-    return '<tr><td><a href="#/crew/funcionario/' + f.id + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(f.funcao) + '</span></td>' +
-      '<td>' + esc((equipe(f.equipeId) || {}).nome || '—') + '</td>' +
-      '<td class="num"><b>' + dinheiro(valorAtual(f)) + '</b></td>' +
-      '<td class="num">' + dinheiro(valorAtual(f) * (1 + enc)) + '</td>' +
-      '<td>' + dataCurta(atual.desde) + (anterior ? '<span class="mudo pequeno bloco">antes ' + dinheiro(anterior.valor) + '</span>' : '<span class="mudo pequeno bloco">admissão</span>') +
-        (futuro ? '<span class="etiqueta etiqueta-neutro">' + dinheiro(futuro.valor) + ' a partir de ' + dataCurta(futuro.desde) + '</span>' : '') + '</td></tr>';
-  }).join('');
-  return moldura({
-    ativo: 'funcionarios', largo: true, titulo: 'Funcionários', subtitulo: 'Valor hora de cada pessoa, com o histórico de mudanças',
-    conteudo: '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-funcionarios"><thead><tr><th>Nome</th><th>Equipe</th><th class="num">Valor hora</th><th class="num">Custo carregado</th><th>Vigente desde</th></tr></thead><tbody>' + linhas + '</tbody></table></div></section>' +
-      '<p class="dica">Custo carregado = valor hora + ' + pct(enc, 2).replace(',00', '') + ' de encargos sobre a folha (impostos do empregador, workers\' comp e benefícios). É o valor usado no custo das obras. ' +
-      '<a href="#/crew/custos" >Ver custos</a>.</p>',
-  });
-}
-
-function telaFuncionario(id) {
-  const f = funcionario(id);
-  if (!f) return { trocar: '#/crew/funcionarios' };
-  const hist = historicoDeValores(f);
-  const enc = encargos();
-  const atual = valorAtual(f);
-  const linhas = hist.map((x, i) => {
-    const ate = i > 0 ? somarDias(hist[i - 1].desde, -1) : null;
-    const ant = hist[i + 1];
-    const variacao = ant ? (x.valor - ant.valor) / ant.valor : null;
-    const vigente = x.desde <= hoje() && (!ate || ate >= hoje());
-    return '<tr' + (vigente ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + ' → ' + (ate ? dataCurta(ate) : (x.desde > hoje() ? '…' : 'hoje')) +
-      (vigente ? ' <span class="etiqueta etiqueta-verde">vigente</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">futuro</span>' : '') + '</td>' +
-      '<td class="num"><b>' + dinheiro(x.valor) + '</b></td>' +
-      '<td class="num">' + (variacao == null ? '—' : (variacao >= 0 ? '+' : '') + pct(variacao, 1)) + '</td>' +
-      '<td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>';
-  }).join('');
-  return moldura({
-    ativo: 'funcionarios', largo: true, titulo: f.nome, subtitulo: f.funcao + ' · ' + ((equipe(f.equipeId) || {}).nome || '') + ' · admissão em ' + dataCurta(f.admissao),
-    voltar: { href: '#/crew/funcionarios', rotulo: 'Funcionários' },
-    conteudo:
-      '<div class="kpis kpis-3">' +
-        '<div class="kpi kpi-azul"><span>Valor hora atual</span><b>' + dinheiro(atual) + '</b></div>' +
-        '<div class="kpi"><span>Hora extra (1,5×)</span><b>' + dinheiro(atual * REGRAS.fatorExtra) + '</b></div>' +
-        '<div class="kpi"><span>Custo carregado (+' + pct(enc, 2).replace(',00', '') + ' encargos)</span><b>' + dinheiro(atual * (1 + enc)) + '</b></div>' +
-      '</div>' +
-      '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Histórico do valor hora</h2>' +
-        '<button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-valor-hora" data-id="' + f.id + '">' + icone('dinheiro', 16) + '<span>Alterar valor hora</span></button></div>' +
-        '<p class="mudo pequeno">Cada mudança vale a partir de uma data e nunca apaga a anterior: as horas de cada dia são pagas e custeadas pelo valor vigente naquele dia.</p>' +
-        '<div class="tabela-rolagem"><table class="tabela tabela-valores"><thead><tr><th>Vigência</th><th class="num">Valor hora</th><th class="num">Variação</th><th>Motivo</th><th>Registrado por</th></tr></thead><tbody>' + linhas + '</tbody></table></div></section>' +
-      '<p class="dica"><a href="#/crew/semana/' + f.id + '/' + inicioDaSemana(hoje()) + '">Ver as horas desta semana</a></p>',
-  });
 }
 
 /* ---------- Administrador: custos ---------- */
@@ -675,9 +599,9 @@ function abasCustos(ativa) {
 }
 
 function blocoEncargos() {
-  const e = (estado().crew.config && estado().crew.config.encargos) || ENCARGOS_PADRAO;
-  return '<p class="dica">Custos com <b>' + pct(encargos(), 2).replace(',00', '') + ' de encargos sobre a folha</b> (FICA ' + String(e.fica).replace('.', ',') + '% · desemprego ' + String(e.desemprego).replace('.', ',') + '% · workers\' comp ' + String(e.workersComp).replace('.', ',') + '% · benefícios ' + String(e.beneficios).replace('.', ',') + '%). ' +
-    '<button type="button" class="link-botao" data-acao="crew-encargos">Alterar encargos</button></p>';
+  const v = encargosVersao(hoje());
+  return '<p class="dica">Custos com <b>' + pct(encargos(), 2).replace(',00', '') + ' de encargos sobre a folha</b> (' + v.itens.map((i) => esc(i.nome.split(' (')[0]) + ' ' + String(i.pct).replace('.', ',') + '%').join(' · ') + '), vigentes desde ' + dataCurta(v.desde) + '. ' +
+    '<a href="#/settings/encargos">Configurar em Settings</a></p>';
 }
 
 function telaCustos(modo, ref) {
@@ -839,7 +763,7 @@ function telaCustosPeriodo(modo, ref) {
         '<ul class="barras">' + o.etapas.map((e) => '<li><span class="barra-rotulo">' + esc(e.nome) + '</span><span class="barra"><span style="width:' + Math.max(2, Math.round(e.custo / maior * 100)) + '%"' + (e.nome.startsWith('Deslocamento') ? ' class="desl"' : '') + '></span></span><span class="barra-valor">' + dinheiroInteiro(e.custo) + ' · ' + horas(e.min) + '</span></li>').join('') + '</ul></section>'
       ).join('') : '<p class="vazio">Nenhuma hora registrada neste período.</p>') +
       blocoEncargos() +
-      '<p class="dica">Custo = horas × valor hora vigente no dia + adicional de hora extra (0,5× acima de 40 h na semana, rateado entre as obras pelas horas daquela semana) + encargos sobre a folha. Mudou o valor hora de alguém? O custo dos dias anteriores não muda.</p>',
+      '<p class="dica">Custo = horas × valor hora vigente no dia + adicional de hora extra (pela regra de jornada vigente: ' + esc(resumoRegra(regraEm(ini))) + '; rateado entre as obras pelas horas daquela semana) + encargos sobre a folha. Mudou o valor hora, a regra ou os encargos? O custo dos dias anteriores não muda.</p>',
   });
 }
 
@@ -1402,7 +1326,7 @@ export function notificacoesCrew(u) {
   const hojeIso = hoje();
   if (ehAdmin(u)) {
     const anterior = somarDias(inicioDaSemana(hojeIso), -7);
-    const pend = c.funcionarios.filter((f) => semana(f.id, anterior).status === 'pendente').length;
+    const pend = todosFuncionarios().filter((f) => semana(f.id, anterior).status === 'pendente').length;
     if (pend) lista.push({ id: 'crew-ts-' + anterior, em: new Date(inicioDaSemana(hojeIso) + 'T08:00:00').getTime(), modulo: 'crew', titulo: pend + ' timesheets da semana passada aguardando aprovação', href: '#/crew/timesheets/' + anterior });
     for (const b of c.batidas.filter((x) => x.dentroCerca === false && !x.conferida && x.em > Date.now() - 2 * 86400000)) {
       lista.push({ id: 'crew-fora-' + b.id, em: b.em, modulo: 'crew', titulo: funcionario(b.funcionarioId).nome + ': ' + ROTULO_BATIDA[b.tipo].toLowerCase() + ' fora da obra', href: '#/crew/agora' });

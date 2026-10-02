@@ -33,6 +33,10 @@ export const MODULOS = [
     ligacao: 'Quem bateu ponto na obra entra sozinho na equipe do relatório do Daily. Ninguém digita "6 pedreiros" de novo.',
   },
   {
+    id: 'settings', nome: 'Settings', status: 'disponivel', incluso: true, soAdmin: true,
+    resumo: 'Configuração da empresa: funcionários, encargos, regras de jornada e auditoria. Vale para todos os módulos.',
+  },
+  {
     id: 'measure', nome: 'Measure', status: 'em-breve',
     resumo: 'Medição de plantas: quantidades tiradas do projeto em PDF e o orçamento da obra.',
     oQueFaz: [
@@ -196,7 +200,7 @@ export function telaLogin(usuarios) {
         '<h1 class="login-logotipo">' + logotipo() + '</h1>' +
         '<span class="login-traco" aria-hidden="true"></span>' +
         '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
-        '<ul class="login-modulos">' + MODULOS.map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
+        '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
       '<p class="login-rodape">Protótipo · dados fictícios</p>' +
     '</section>' +
     '<section class="login-lado">' +
@@ -219,11 +223,12 @@ export function telaLogin(usuarios) {
 
 export function telaModulos(u, saudacao) {
   const d = estado();
-  const cartoes = MODULOS.map((m) => {
-    const contratado = d.empresa.modulos.includes(m.id);
+  // Settings vem em todo plano, mas só aparece para quem pode configurar (escritório)
+  const cartoes = MODULOS.filter((m) => !m.soAdmin || ehAdmin(u)).map((m) => {
+    const contratado = m.incluso || d.empresa.modulos.includes(m.id);
     const disponivel = m.status === 'disponivel';
     const etiqueta = disponivel
-      ? (contratado ? '<span class="etiqueta etiqueta-verde">Contratado</span>' : '<span class="etiqueta etiqueta-neutro">Não contratado</span>')
+      ? (m.incluso ? '<span class="etiqueta etiqueta-neutro">Incluído no plano</span>' : contratado ? '<span class="etiqueta etiqueta-verde">Contratado</span>' : '<span class="etiqueta etiqueta-neutro">Não contratado</span>')
       : '<span class="etiqueta etiqueta-neutro">Em breve</span>';
     return '<a class="modulo modulo-' + m.id + (disponivel ? '' : ' em-breve') + '" href="#/' + m.id + '">' +
       '<div class="modulo-topo"><span class="modulo-icone">' + icone(m.id, 26) + '</span>' + etiqueta + '</div>' +
@@ -285,12 +290,12 @@ export function telaConta(u) {
         '</section>' +
       '</div>' +
       '<section class="cartao"><h2 class="cartao-titulo">Módulos</h2><ul class="fila fila-modulos">' + MODULOS.map((m) => {
-        const contratado = d.empresa.modulos.includes(m.id);
+        const contratado = m.incluso || d.empresa.modulos.includes(m.id);
         const qtd = interesses.filter((i) => i.modulo === m.id).length;
         return '<li><span class="modulo-icone pequeno modulo-' + m.id + '">' + icone(m.id, 20) + '</span><div class="fila-texto"><b>KORbuild ' + m.nome + '</b><span class="mudo">' + esc(m.resumo) + '</span></div>' +
           (m.status === 'em-breve'
             ? '<span class="etiqueta etiqueta-neutro">Em breve' + (qtd ? ' · ' + qtd + (qtd === 1 ? ' interessado' : ' interessados') : '') + '</span>'
-            : '<span class="etiqueta ' + (contratado ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + (contratado ? 'Contratado' : 'Não contratado') + '</span>') + '</li>';
+            : '<span class="etiqueta ' + (contratado ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + (m.incluso ? 'Incluído no plano' : contratado ? 'Contratado' : 'Não contratado') + '</span>') + '</li>';
       }).join('') + '</ul></section>' +
       '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Usuários</h2>' +
         '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="em-breve" data-texto="Convidar usuários ainda não faz parte do protótipo.">' + icone('mais', 16) + 'Convidar usuário</button></div>' +

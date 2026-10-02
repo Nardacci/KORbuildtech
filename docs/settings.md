@@ -1,6 +1,6 @@
-# KORbuild Global — configuração e parametrização da plataforma
+# KORbuild Settings — configuração e parametrização da plataforma
 
-> **Status: proposta para validação.** É a análise de negócio, escrita antes de construir. Nome provisório: **Global**.
+> **Status:** análise de negócio aprovada (seção 8). **Primeira etapa construída no protótipo:** funcionários, encargos e regras de jornada, com auditoria (seção 7). Nome definido: **Settings**.
 >
 > **Mercado-alvo:** Estados Unidos. **Relacionados:** [`saas.md`](saas.md) (empresa, papéis, cobrança), [`crew.md`](crew.md) (módulo Crew).
 
@@ -23,12 +23,12 @@ Um lugar único, com acesso controlado, onde a empresa define **seus dados, suas
 1. **Parametrizar o que varia, não tudo.** Um valor vira parâmetro quando muda **entre clientes**, **entre estados ou obras** ou **com o tempo**. Princípios do produto **não** viram parâmetro. Exemplo: "batida nunca é apagada" é garantia legal e de confiança. Se fosse opção, o produto perderia o valor como prova.
 2. **Padrões prontos.** Toda configuração nasce preenchida com um padrão sensato (modelo "EUA – federal", modelo "Califórnia"…). O cliente só mexe no que é diferente.
 3. **Parâmetro que afeta dinheiro tem vigência.** Mudar os encargos, a regra de hora extra ou um valor hora vale **a partir de uma data** e não reescreve o passado. É o mesmo princípio que já usamos no valor hora.
-   > ⚠ **Achado:** no protótipo atual, mudar os encargos em Custos **recalcula o custo de semanas passadas**. Com o Global, os encargos passam a ter vigência e esse problema acaba.
+   > ⚠ **Achado (corrigido):** antes do Settings, mudar os encargos em Custos recalculava o custo de semanas passadas. Agora os encargos têm vigência e as semanas fechadas não mudam.
 4. **Toda mudança fica auditada:** quem mudou, quando, valor antes e depois, e motivo. Configuração errada em ponto e folha vira processo trabalhista.
 5. **Mostrar o impacto antes de salvar.** Por exemplo: "esta mudança altera o custo de 3 obras a partir de 13/10".
 6. **Herança com exceções.** Há padrão da plataforma, a empresa ajusta, e a obra ou a pessoa sobrepõe quando precisa (seção 4).
 
-## 3. O que entra no Global
+## 3. O que entra no Settings
 
 | Seção | O que tem | Quem usa |
 | --- | --- | --- |
@@ -60,9 +60,11 @@ Um lugar único, com acesso controlado, onde a empresa define **seus dados, suas
 | Privacidade | Aceite do aviso de localização (data e versão do texto) | Leis estaduais de monitoramento |
 | Documentos | **Não guardar SSN nem documentos de imigração.** Isso fica no sistema de folha; aqui fica só o ID para o cruzamento | Menos risco de vazamento de dado sensível |
 
-### 3.2 Regras de jornada por estado (o "não é hardcode" mais importante)
+### 3.2 Regras de jornada (o "não é hardcode" mais importante)
 
-Nos EUA, a regra que vale é a **do estado onde o trabalho foi feito**. Por isso a regra fica ligada à **obra**, não à empresa.
+**Decisão: a regra não fica amarrada a um estado.** A empresa tem uma **regra de jornada** com nome e números (hora extra semanal, hora extra diária opcional, hora dobrada, intervalo), com **vigência**. Os modelos só servem para preencher o formulário. Padrão do protótipo: **New Hampshire**, que segue a FLSA federal (acima de 40 h na semana: 1,5×; sem hora extra diária) e exige 30 min de intervalo depois de 5 h seguidas (RSA 275:30-a).
+
+Nos EUA, vale a regra **do estado onde o trabalho foi feito**. Por isso, a próxima etapa é permitir uma regra diferente **por obra**, para quem trabalha em mais de um estado. Referência de como as regras variam:
 
 | Parâmetro | EUA – federal (FLSA) | Califórnia (exemplo) |
 | --- | --- | --- |
@@ -72,7 +74,7 @@ Nos EUA, a regra que vale é a **do estado onde o trabalho foi feito**. Por isso
 | Intervalo de refeição | Não exigido | 30 min antes do fim da 5ª hora |
 | Arredondamento | Permitido se neutro | Restrito |
 
-O produto traz **modelos prontos** ("Federal", "Califórnia" e outros estados conforme a demanda). A empresa escolhe o modelo da obra e só ajusta exceções, como um acordo sindical. Os modelos são mantidos pelo KORbuild, porque o cliente não deveria precisar saber de lei para configurar.
+Modelos no protótipo: **"New Hampshire (FLSA federal)"** e **"Com hora extra diária (ex.: Califórnia)"**. A empresa escolhe um modelo, ajusta o que precisar (acordo sindical, política interna) e salva com data e motivo. Os modelos não substituem o contador ou o advogado trabalhista.
 
 ## 4. Níveis de configuração (herança)
 
@@ -92,7 +94,7 @@ A tela sempre mostra **de onde vem o valor** ("padrão da empresa" ou "definido 
 
 ## 5. Permissões
 
-O Global só abre para quem tem permissão. Proposta: papéis prontos, cada um com permissões que podem ser ajustadas.
+O Settings só abre para quem tem permissão (hoje: o administrador). Proposta: papéis prontos, cada um com permissões que podem ser ajustadas.
 
 | Permissão | Admin da conta | Gestor de obras | RH / Financeiro | Encarregado | Campo |
 | --- | :-: | :-: | :-: | :-: | :-: |
@@ -113,41 +115,53 @@ O Global só abre para quem tem permissão. Proposta: papéis prontos, cada um c
 
 | Hoje (arquivo) | Valor fixo | Vai para |
 | --- | --- | --- |
-| `crew.js` `REGRAS` | 40 h/semana, 1,5×, intervalo de 30 min após 5 h | Global › Regras de jornada (por modelo de estado, ligado à obra) |
-| `crew.js` `RAIO_CERCA` | 150 m | Global › Ponto e GPS (padrão) + exceção na obra |
-| `crew.js` `ETAPAS` | Fundação… Limpeza e apoio | Global › Cadastros › Etapas / cost codes |
-| `crew.js` `ENCARGOS_PADRAO` | FICA 7,65; desemprego 3,4; WC 14; benefícios 7 | Global › Encargos (com vigência) |
-| `crew.js` `resumoDaObra` | Atenção até 5%; ritmo de 4 semanas | Global › Custos e projeção |
-| `crew-telas.js` `REGISTRO_GPS_MIN` | 15 min (5 min em deslocamento) | Global › Ponto e GPS |
-| `prazos.js` | RDO até 18h, lembrete 16h, escalada 8h, 3 dias para trás, seg–sáb | Global › Diário de obra (padrão) + calendário da obra |
-| `app.js` `FUNCOES`, `EQUIPAMENTOS` | Listas do RDO | Global › Cadastros (as mesmas do Crew) |
-| `relatorio.js` `TIPOS_OCORRENCIA`, `SITUACOES` | Listas do RDO | Global › Cadastros |
-| `plataforma.js` `PAPEIS` | Administrador e Campo | Global › Usuários e permissões |
-| `exemplo.js` `CONSTRUTORA` | Nome, sigla | Global › Empresa |
-| `util.js` formatação | US$, data dd/mm | Global › Empresa (moeda, idioma, formato) |
+| `crew.js` `REGRAS` | 40 h/semana, 1,5×, intervalo de 30 min após 5 h | Settings › Regras de jornada (por modelo de estado, ligado à obra) |
+| `crew.js` `RAIO_CERCA` | 150 m | Settings › Ponto e GPS (padrão) + exceção na obra |
+| `crew.js` `ETAPAS` | Fundação… Limpeza e apoio | Settings › Cadastros › Etapas / cost codes |
+| `crew.js` `ENCARGOS_PADRAO` | FICA 7,65; desemprego 3,4; WC 14; benefícios 7 | Settings › Encargos (com vigência) |
+| `crew.js` `resumoDaObra` | Atenção até 5%; ritmo de 4 semanas | Settings › Custos e projeção |
+| `crew-telas.js` `REGISTRO_GPS_MIN` | 15 min (5 min em deslocamento) | Settings › Ponto e GPS |
+| `prazos.js` | RDO até 18h, lembrete 16h, escalada 8h, 3 dias para trás, seg–sáb | Settings › Diário de obra (padrão) + calendário da obra |
+| `app.js` `FUNCOES`, `EQUIPAMENTOS` | Listas do RDO | Settings › Cadastros (as mesmas do Crew) |
+| `relatorio.js` `TIPOS_OCORRENCIA`, `SITUACOES` | Listas do RDO | Settings › Cadastros |
+| `plataforma.js` `PAPEIS` | Administrador e Campo | Settings › Usuários e permissões |
+| `exemplo.js` `CONSTRUTORA` | Nome, sigla | Settings › Empresa |
+| `util.js` formatação | US$, data dd/mm | Settings › Empresa (moeda, idioma, formato) |
 
 **Ficam no código, por decisão de produto:** batida imutável, ajuste como nova batida, auditoria obrigatória, isolamento entre empresas e o princípio "a cerca sinaliza, não bloqueia".
 
-## 7. Proposta de construção, em fases
+## 7. Construção, em fases
 
-**Fase A: protótipo (próximo passo)**
-1. Bloco **Global** na tela de módulos (incluído em todo plano, sem cobrança), visível só para quem tem permissão.
+**Já construído no protótipo (etapa 1):** itens 1, 3, 4, 5 (sem regra por obra) e 10 abaixo.
+- **Settings** na tela de módulos, só para o escritório (administrador); o campo não vê nem abre.
+- **Funcionários:**
+  - cadastro completo: código, contato, W-2/1099, FLSA, função, equipe, admissão e desligamento, situação, aviso de localização;
+  - certificações com aviso 30 dias antes de vencer, no menu e no sininho;
+  - valor hora com histórico.
+- **Encargos com vigência:** nova versão "a partir de", nunca no passado. A semana passada não muda.
+- **Regras de jornada com vigência:** hora extra semanal, diária opcional e dobrada, e intervalo, lidas pelo ponto, pelos timesheets e pelos custos.
+- **Auditoria:** cada mudança com antes, depois, quem, quando e motivo.
+
+**Fase A: o que falta**
+1. Bloco **Settings** na tela de módulos (incluído em todo plano, sem cobrança), visível só para quem tem permissão.
 2. **Empresa:** dados, estado, fuso, semana de pagamento, moeda e formato.
-3. **Pessoas:** cadastro completo de funcionário (3.1). A aba "Funcionários" do Crew passa a ler daqui, e o valor hora continua com histórico.
-4. **Encargos com vigência**, para todos os funcionários (corrige o achado do item 2.3).
-5. **Regras de jornada:** modelo "EUA – federal" editável, mais a Califórnia como exemplo, ligado à obra.
+3. **Pessoas:** cadastro completo de funcionário (3.1). ✓
+4. **Encargos com vigência**, para todos os funcionários (corrige o achado do item 2.3). ✓
+5. **Regras de jornada** editáveis, com modelos. ✓ Falta: regra por obra.
 6. **Ponto e GPS**, **Diário de obra** e **Custos e projeção**: os parâmetros do inventário, lidos pelos módulos em vez das constantes.
 7. **Cadastros:** funções, etapas, equipes, equipamentos e feriados.
 8. **Obras:** cadastro e edição (hoje elas só existem nos dados de exemplo).
 9. **Usuários e permissões:** papéis prontos e a matriz da seção 5, com "ver valores em dinheiro".
-10. **Auditoria:** lista das mudanças com antes e depois.
+10. **Auditoria:** lista das mudanças com antes e depois. ✓
 
 **Fase B:** exceções por obra (prevailing wage, raio, calendário), workers' comp por classe de função, mais estados, integrações com a folha e configuração de notificações por usuário.
 
-## 8. Decisões para validar
+## 8. Decisões tomadas
 
-1. **Nome:** "Global", "Configurações" ou "Administração"? (Para o cliente americano, *Settings* ou *Admin* são os nomes usuais.)
-2. **Pessoas no Global:** confirmar que o cadastro de funcionário sai do Crew e vai para o Global, e que o Crew só usa esse cadastro.
-3. **Quem acessa:** começar com Admin da conta e RH/Financeiro, como na matriz da seção 5?
-4. **Modelos de estado:** começar só com "Federal" e "Califórnia"? Em quais estados estão os primeiros clientes?
-5. **Prioridade:** construir a Fase A inteira de uma vez, ou começar por Pessoas + Encargos + Regras de jornada, que são o que o Crew precisa agora?
+| # | Pergunta | Decisão |
+| --- | --- | --- |
+| 1 | Nome | **Settings** |
+| 2 | Cadastro de funcionário | Sai do Crew e vai para o Settings; o Crew só usa esse cadastro |
+| 3 | Quem acessa | Por enquanto, só o **escritório (administrador)**. O campo (encarregado) não vê o Settings. Os papéis mais finos da seção 5 (RH/Financeiro, Gestor, "ver valores em dinheiro") ficam para a etapa de Usuários e permissões |
+| 4 | Estados | **Não amarrar a um estado.** Regra configurável, com modelos só para preencher. A empresa está em **New Hampshire** (padrão do protótipo) |
+| 5 | Prioridade | Começar por Funcionários + Encargos + Regras de jornada (feito) |

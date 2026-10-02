@@ -33,7 +33,7 @@ Documento de análise de negócio. Descreve como a plataforma se organiza como S
 | **Campo** | Canteiro | Preencher e enviar os relatórios das obras em que atua; não vê o painel nem a conta |
 | **Cliente (convidado)** | Fora da empresa | Abrir os relatórios aprovados que recebeu por link |
 
-Permissões detalhadas e a configuração da plataforma estão na proposta do Global ([`global.md`](global.md)). Papéis a avaliar depois: *Gestor* (aprova, mas não mexe no plano), *Financeiro* (só assinatura e custos do Crew) e *Fiscal do cliente* com login (para dar "ciente" no RDO).
+Permissões detalhadas e a configuração da plataforma estão no KORbuild Settings ([`settings.md`](settings.md)). Papéis a avaliar depois: *Gestor* (aprova, mas não mexe no plano), *Financeiro* (só assinatura e custos do Crew) e *Fiscal do cliente* com login (para dar "ciente" no RDO).
 
 ## Modelo de cobrança (hipóteses a validar)
 

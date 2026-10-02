@@ -14,6 +14,7 @@ import {
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
 } from './plataforma.js';
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
+import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
@@ -201,6 +202,11 @@ function desenhar() {
     if (r && r.trocar) return trocarRota(r.trocar);
     html = r;
     modo = 'crew';
+  } else if (p[0] === 'settings') {
+    const r = telaSettings(p.slice(1));
+    if (r && r.trocar) return trocarRota(r.trocar);
+    html = r;
+    modo = 'settings';
   } else if (modulo(p[0])) html = telaEmBreve(u, p[0]);
   else if (p[0] === 'inicio') html = telaModulos(u, saudacao());
   else return trocarRota('#/inicio');
@@ -1399,11 +1405,12 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew);
+  Object.assign(acoes, acoesCrew, acoesSettings);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
+  ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
-    return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []);
+    return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
   });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
