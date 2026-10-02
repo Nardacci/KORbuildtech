@@ -9,6 +9,13 @@ Protótipo de validação da plataforma KORbuild (veja o README). Site estático
 - Tudo é por **empresa** (o cliente da plataforma): usuários, obras, dados e módulos contratados. Nada de dado solto fora de uma empresa. A estrutura está em `docs/saas.md`.
 - Papéis: `admin` (escritório) e `campo` (canteiro); o cliente final é convidado externo, por link. Telas novas checam o papel em `desenhar()` (`js/app.js`).
 - Obras, pessoas e funções são cadastros da plataforma, compartilhados pelos módulos.
+- O KORbuild Match **não** faz parte deste pacote (por enquanto, só os três módulos acima).
+
+## Visual e navegação
+
+- Identidade própria do KORbuild, **sem nada do Match** (nem cores, nem fonte, nem componentes): grafite e laranja de obra, fonte Inter, cantos discretos. Os tokens estão no topo de `css/app.css`; cada módulo tem uma cor (`--cor-daily`, `--cor-crew`, `--cor-measure`).
+- Todas as telas logadas usam `casca()` (`js/plataforma.js`): barra superior (marca, módulo, atalho para os módulos, menu do usuário) e, dentro de um módulo, menu lateral no computador e abas embaixo no celular. Telas do Daily passam por `moldura()` em `js/app.js`, que monta o menu conforme o papel.
+- Login é mockup: todos caem na página dos módulos. A distinção de papel acontece dentro do módulo.
 
 ## Branch
 

@@ -46,7 +46,7 @@ Perguntas para a validação: a obra é mesmo a melhor unidade de cobrança? Qua
 
 | Item | Situação |
 | --- | --- |
-| Login, tela de módulos, papéis e permissões | Funcionando (sem senha de verdade) |
+| Login, tela de módulos, papéis e permissões | Funcionando (login é mockup, sem senha de verdade; todos entram na página dos módulos e o papel vale dentro do Daily) |
 | Uma empresa com plano em teste, uso de obras e usuários | Funcionando, com dados fictícios |
 | Registro de interesse nos módulos em breve | Funcionando; aparece na conta da empresa |
 | Várias empresas isoladas | Ainda não: há uma empresa só, no navegador |

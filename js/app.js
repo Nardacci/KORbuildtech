@@ -10,9 +10,10 @@ import {
 } from './armazem.js';
 import { criarDemonstracao, CONTAS_DEMO, VERSAO_DADOS } from './exemplo.js';
 import {
-  usuarioAtual, entrar, sair, usuarioPorEmail, ehAdmin, registrarInteresse, modulo,
-  telaLogin, telaModulos, telaEmBreve, telaConta,
+  usuarioAtual, entrar, sair, usuarioPorEmail, ehAdmin, registrarInteresse, modulo, definirPodeInstalar,
+  casca, telaLogin, telaModulos, telaEmBreve, telaConta,
 } from './plataforma.js';
+import { icone, marca } from './icones.js';
 import { processarFoto } from './fotos.js';
 import { buscarClima, TEMPOS } from './clima.js';
 import { melhorarTexto, ditar, ditadoDisponivel } from './ia.js';
@@ -123,21 +124,26 @@ function desenhar() {
   if (p[0] === 'daily') {
     const q = rotaDaily();
     if (!estado().empresa.modulos.includes('daily')) return trocarRota('#/inicio');
-    if (!q.length) return trocarRota(ehAdmin(u) ? '#/daily/painel' : '#/daily/campo');
-    if (q[0] === 'painel' && !ehAdmin(u)) {
-      toast('O painel do escritório é para administradores.');
-      return trocarRota('#/daily/campo');
-    }
+    // Dentro do Daily, cada papel tem a sua área: escritório (painel, aprovações, obras) e campo (hoje, histórico).
+    const inicioDoPapel = ehAdmin(u) ? '#/daily/painel' : '#/daily/campo';
+    if (!q.length) return trocarRota(inicioDoPapel);
+    const doEscritorio = ['painel', 'aprovacoes', 'obras'].includes(q[0]);
+    const doCampo = ['campo', 'historico'].includes(q[0]);
+    if ((doEscritorio && !ehAdmin(u)) || (doCampo && ehAdmin(u))) return trocarRota(inicioDoPapel);
     modo = q[0];
     if (q[0] === 'campo' && q[1] === 'obra') html = telaObraCampo(q[2]);
     else if (q[0] === 'campo' && q[1] === 'rdo') html = telaRdoCampo(q[2]);
     else if (q[0] === 'campo') html = telaCampo();
+    else if (q[0] === 'historico') html = telaHistorico();
     else if (q[0] === 'painel' && q[1] === 'rdo') html = telaRdoPainel(q[2]);
     else if (q[0] === 'painel') html = telaPainel();
+    else if (q[0] === 'aprovacoes') html = telaAprovacoes();
+    else if (q[0] === 'obras' && q[1]) html = telaObraAdmin(q[1]);
+    else if (q[0] === 'obras') html = telaObrasAdmin();
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
-    else return trocarRota('#/daily');
+    else return trocarRota(inicioDoPapel);
   } else if (p[0] === 'cliente') html = telaCliente(p[1]);
-  else if (p[0] === 'entrar') html = telaLogin(estado().usuarios.filter((x) => CONTAS_DEMO.includes(x.id)), !!pedidoInstalar);
+  else if (p[0] === 'entrar') html = telaLogin(estado().usuarios.filter((x) => CONTAS_DEMO.includes(x.id)));
   else if (p[0] === 'conta') {
     if (!ehAdmin(u)) return trocarRota('#/inicio');
     html = telaConta(u);
@@ -168,30 +174,48 @@ function ir(hash) {
   else location.hash = hash;
 }
 
-/* ---------- Moldura ---------- */
+/* ---------- Moldura do Daily ---------- */
 
-function moldura({ modo, titulo, subtitulo, voltar, conteudo, rodape, largo }) {
-  const marca = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>';
-  const esquerda = voltar
-    ? '<a class="barra-voltar" href="' + voltar + '" aria-label="Voltar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'
-    : '<a class="barra-marca" href="#/inicio" aria-label="Módulos"><span class="marca-icone">' + marca + '</span></a>';
+/* Navegação do Daily conforme o papel: o escritório acompanha e aprova; o campo preenche. */
+function navDaily() {
   const u = usuarioAtual();
-  return '<div class="faixa-prototipo">Protótipo · dados fictícios · KORbuild Daily · você é ' + esc(u.nome) +
-      ' · <a href="#/inicio">módulos</a> · <button type="button" class="link-faixa" data-acao="sair">sair</button></div>' +
-    '<header class="barra"><div class="barra-dentro' + (largo ? ' largo' : '') + '">' + esquerda +
-      '<div class="barra-titulo"><b>' + esc(titulo) + '</b>' + (subtitulo ? '<span>' + esc(subtitulo) + '</span>' : '') + '</div>' +
-      '<button type="button" class="conexao" id="conexao" data-acao="alternar-internet" title="Tocar para simular a falta de internet">' + htmlConexao() + '</button>' +
-    '</div></header>' +
-    '<main class="conteudo' + (largo ? ' largo' : '') + '">' + conteudo + '</main>' +
-    (rodape || '');
+  const { rdos } = estado();
+  if (ehAdmin(u)) {
+    const pendentes = rdos.filter((r) => recebido(r) && r.status === 'enviado').length;
+    return [
+      { id: 'painel', href: '#/daily/painel', rotulo: 'Painel', icone: 'painel' },
+      { id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: 'Aprovações', icone: 'aprovacoes', contador: pendentes },
+      { id: 'obras', href: '#/daily/obras', rotulo: 'Obras', icone: 'obras' },
+    ];
+  }
+  const ajustes = rdos.filter((r) => r.status === 'ajustes').length;
+  return [
+    { id: 'hoje', href: '#/daily/campo', rotulo: 'Hoje', icone: 'hoje', contador: ajustes },
+    { id: 'historico', href: '#/daily/historico', rotulo: 'Histórico', icone: 'historico' },
+  ];
 }
 
-/* ---------- Canteiro: minhas obras ---------- */
+function botaoConexao() {
+  return '<button type="button" class="conexao" id="conexao" data-acao="alternar-internet" title="Tocar para simular a falta de internet">' + htmlConexao() + '</button>';
+}
+
+function moldura({ ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, largo, semAbas }) {
+  return casca({
+    modulo: 'daily', nav: navDaily(), ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, semAbas,
+    largura: largo ? 'larga' : 'estreita', topoExtra: botaoConexao(),
+  });
+}
 
 function saudacao() {
   const h = new Date().getHours();
   return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
 }
+
+function primeiraMaiuscula(texto) {
+  return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+/* ---------- Campo: hoje ---------- */
 
 function situacaoHoje(o) {
   const r = rdoDoDia(o.id, hoje());
@@ -207,26 +231,33 @@ function telaCampo() {
   const { obras, rdos } = estado();
   const ajustes = rdos.filter((r) => r.status === 'ajustes');
   return moldura({
-    modo: 'campo', titulo: 'Minhas obras', subtitulo: estado().empresa.nome,
+    ativo: 'hoje', titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
-      '<div class="ola"><h1>' + saudacao() + ', ' + esc(usuarioAtual().nome.split(' ')[0]) + '</h1><p>' + dataLonga(hoje()) + '</p></div>' +
       ajustes.map((r) => {
         const o = acharObra(r.obraId);
         return '<a class="aviso aviso-alerta" href="#/daily/campo/rdo/' + r.id + '"><b>O escritório pediu ajustes no RDO nº ' + r.numero + '</b>' +
           '<span>' + esc(o.nome) + ' · ' + dataCurta(r.data) + '</span><span class="aviso-citacao">"' + esc(r.motivoAjuste) + '"</span><span class="aviso-link">Corrigir agora →</span></a>';
       }).join('') +
-      '<h2 class="titulo-secao">Obras em andamento</h2>' +
+      '<h2 class="titulo-secao">Suas obras</h2>' +
       '<div class="lista">' + obras.map((o) => {
         const s = situacaoHoje(o);
         return '<a class="cartao-obra" href="#/daily/campo/obra/' + o.id + '">' +
-          '<div class="cartao-obra-topo"><b>' + esc(o.nome) + '</b><span class="seta">›</span></div>' +
+          '<div class="cartao-obra-topo"><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
           '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(o.etapa) + '</span>' +
           '<span class="etiqueta etiqueta-' + s.classe + '">' + s.texto + '</span></a>';
       }).join('') + '</div>',
   });
 }
 
-/* ---------- Canteiro: uma obra ---------- */
+/* ---------- Uma obra (campo: fazer o RDO; escritório: acompanhar) ---------- */
+
+function resumoObra(o) {
+  return '<section class="cartao obra-resumo">' +
+    '<div class="linha-info"><span>Cliente</span><b>' + esc(o.cliente) + '</b></div>' +
+    '<div class="linha-info"><span>Etapa atual</span><b>' + esc(o.etapa) + '</b></div>' +
+    '<div class="linha-info"><span>Endereço</span><b>' + esc(o.endereco) + ' · ' + esc(o.cidade) + '</b></div>' +
+  '</section>';
+}
 
 function telaObraCampo(id) {
   const o = acharObra(id);
@@ -245,16 +276,22 @@ function telaObraCampo(id) {
       '<button type="button" class="btn ' + (ultimo ? 'btn-contorno' : 'btn-primario btn-grande') + '" data-acao="novo-rdo" data-obra="' + o.id + '">Começar o RDO de hoje em branco</button>';
   }
   return moldura({
-    modo: 'campo', titulo: o.nome, subtitulo: o.cidade, voltar: '#/daily/campo',
+    ativo: 'hoje', titulo: o.nome, subtitulo: o.cidade, voltar: { href: '#/daily/campo', rotulo: 'Hoje' },
     conteudo:
-      '<section class="cartao obra-resumo">' +
-        '<div class="linha-info"><span>Cliente</span><b>' + esc(o.cliente) + '</b></div>' +
-        '<div class="linha-info"><span>Etapa atual</span><b>' + esc(o.etapa) + '</b></div>' +
-        '<div class="linha-info"><span>Endereço</span><b>' + esc(o.endereco) + '</b></div>' +
-      '</section>' +
-      '<section class="acoes-obra"><h2 class="titulo-secao">Hoje · ' + dataLonga(hoje()) + '</h2>' + acoes + '</section>' +
+      resumoObra(o) +
+      '<section class="acoes-obra"><h2 class="titulo-secao">' + primeiraMaiuscula(dataLonga(hoje())) + '</h2>' + acoes + '</section>' +
       '<h2 class="titulo-secao">RDOs anteriores</h2>' +
-      '<div class="lista">' + lista.filter((r) => r !== deHoje).map(itemRdo).join('') + '</div>',
+      '<div class="lista">' + lista.filter((r) => r !== deHoje).map((r) => itemRdo(r)).join('') + '</div>',
+  });
+}
+
+/* ---------- Campo: histórico ---------- */
+
+function telaHistorico() {
+  const lista = estado().rdos.slice().sort((a, b) => (a.data === b.data ? b.numero - a.numero : a.data < b.data ? 1 : -1));
+  return moldura({
+    ativo: 'historico', titulo: 'Histórico', subtitulo: lista.length + ' relatórios de todas as obras',
+    conteudo: '<div class="lista">' + lista.map((r) => itemRdo(r, { comObra: true })).join('') + '</div>',
   });
 }
 
@@ -265,14 +302,17 @@ function trecho(texto) {
   return t.length > TRECHO_MAXIMO ? t.slice(0, TRECHO_MAXIMO).replace(/\s+\S*$/, '') + '…' : t;
 }
 
-/* Item da lista de RDOs: duas primeiras fotos em miniatura e o começo da primeira atividade. */
-function itemRdo(r) {
+/* Item da lista de RDOs: duas primeiras fotos em miniatura e o começo da primeira atividade.
+ * opcoes.href troca o destino (o escritório abre a revisão); opcoes.comObra mostra o nome da obra. */
+function itemRdo(r, opcoes) {
+  const op = opcoes || {};
   const pessoas = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
   const atividade = r.atividades.find((a) => a.descricao.trim());
   const fotos = r.fotos.slice(0, 2);
   const restantes = r.fotos.length - fotos.length;
-  return '<a class="item-rdo" href="#/daily/campo/rdo/' + r.id + '">' +
+  return '<a class="item-rdo" href="' + (op.href || '#/daily/campo/rdo/' + r.id) + '">' +
     '<div class="item-rdo-topo"><b>RDO nº ' + r.numero + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
+    (op.comObra ? '<span class="item-rdo-obra">' + esc(acharObra(r.obraId).nome) + '</span>' : '') +
     '<p class="item-rdo-trecho' + (atividade ? '' : ' mudo') + '">' + (atividade ? esc(trecho(atividade.descricao)) : 'Nenhuma atividade descrita') + '</p>' +
     (fotos.length
       ? '<div class="item-rdo-fotos">' + fotos.map((f, i) =>
@@ -329,7 +369,8 @@ function telaRdoCampo(id) {
     ['Fotos', r.fotos.length > 0],
   ];
   return moldura({
-    modo: 'campo', titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + dataRelativa(r.data), voltar: '#/daily/campo/obra/' + o.id,
+    ativo: 'hoje', semAbas: true, titulo: 'RDO nº ' + r.numero, subtitulo: dataRelativa(r.data) + ' · ' + o.nome,
+    voltar: { href: '#/daily/campo/obra/' + o.id, rotulo: o.nome },
     conteudo:
       (r.status === 'ajustes'
         ? '<div class="aviso aviso-alerta"><b>O escritório pediu ajustes</b><span class="aviso-citacao">"' + esc(r.motivoAjuste) + '"</span><span>Corrija e toque em "Reenviar".</span></div>'
@@ -485,7 +526,8 @@ function telaRdoLeitura(r, o) {
       '<a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + '">Ver PDF</a></div>';
   }
   return moldura({
-    modo: 'campo', titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + dataRelativa(r.data), voltar: '#/daily/campo/obra/' + o.id,
+    ativo: r.data === hoje() ? 'hoje' : 'historico', titulo: 'RDO nº ' + r.numero, subtitulo: dataRelativa(r.data) + ' · ' + o.nome,
+    voltar: { href: '#/daily/campo/obra/' + o.id, rotulo: o.nome },
     conteudo: aviso + '<div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>',
   });
 }
@@ -502,45 +544,42 @@ function farol(o) {
   return { cor: 'vermelho', texto: 'Último RDO há ' + dias + ' dias', ultimo };
 }
 
+const NOME_FAROL = { verde: 'em dia', amarelo: '1 dia de atraso', vermelho: '2 dias ou mais de atraso' };
+
+function aguardandoAprovacao() {
+  return estado().rdos.filter((r) => recebido(r) && r.status === 'enviado').sort((a, b) => (a.data < b.data ? -1 : 1));
+}
+
 function telaPainel() {
   const { obras, rdos } = estado();
   const recebidos = rdos.filter(recebido);
-  const aguardando = recebidos.filter((r) => r.status === 'enviado').sort((a, b) => (a.data < b.data ? -1 : 1));
-  const ajustes = recebidos.filter((r) => r.status === 'ajustes');
-  const aprovados = recebidos.filter((r) => r.status === 'aprovado').sort((a, b) => b.aprovadoEm - a.aprovadoEm).slice(0, 6);
+  const aguardando = aguardandoAprovacao();
   const faroes = obras.map((o) => ({ o, ...farol(o) }));
   const deHoje = recebidos.filter((r) => r.data === hoje());
   const fotosHoje = deHoje.reduce((s, r) => s + r.fotos.length, 0);
   const atrasadas = faroes.filter((f) => f.cor !== 'verde').length;
 
   return moldura({
-    modo: 'painel', titulo: 'Painel do escritório', subtitulo: estado().empresa.nome, largo: true,
+    ativo: 'painel', largo: true, titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
-      '<div class="ola"><h1>' + saudacao() + ', ' + esc(usuarioAtual().nome.split(' ')[0]) + '</h1><p>' + dataLonga(hoje()) + '</p></div>' +
       '<div class="kpis">' +
         kpi('RDOs de hoje', deHoje.length + ' de ' + obras.length, deHoje.length === obras.length ? 'verde' : '') +
-        kpi('Aguardando sua aprovação', aguardando.length, aguardando.length ? 'azul' : '') +
+        kpi('Aguardando aprovação', aguardando.length, aguardando.length ? 'azul' : '') +
         kpi('Obras com RDO atrasado', atrasadas, atrasadas ? 'alerta' : 'verde') +
         kpi('Fotos recebidas hoje', fotosHoje, '') +
       '</div>' +
       '<div class="painel-grade">' +
-        '<section class="cartao"><h2 class="cartao-titulo">Farol das obras</h2><p class="mudo pequeno">Verde: RDO de hoje recebido · amarelo: 1 dia de atraso · vermelho: 2 dias ou mais</p>' +
+        '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Farol das obras</h2><a class="link" href="#/daily/obras">Ver obras</a></div>' +
           '<ul class="faroes">' + faroes.map((f) =>
-            '<li><span class="farol farol-' + f.cor + '" role="img" aria-label="' + f.cor + '"></span><div><b>' + esc(f.o.nome) + '</b><span class="mudo">' + esc(f.o.cidade) + ' · ' + f.texto + '</span></div>' +
-            (f.ultimo ? '<a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + f.ultimo.id + '">Último RDO</a>' : '') + '</li>').join('') + '</ul>' +
+            '<li><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><div><b>' + esc(f.o.nome) + '</b><span class="mudo">' + esc(f.o.cidade) + ' · ' + f.texto + '</span></div>' +
+            '<a class="btn btn-contorno btn-pequeno" href="#/daily/obras/' + f.o.id + '">Abrir</a></li>').join('') + '</ul>' +
+          '<p class="legenda-farol"><span><i class="farol farol-verde"></i>em dia</span><span><i class="farol farol-amarelo"></i>1 dia de atraso</span><span><i class="farol farol-vermelho"></i>2 dias ou mais</span></p>' +
         '</section>' +
-        '<section class="cartao"><h2 class="cartao-titulo">Aguardando aprovação <span class="contador">' + aguardando.length + '</span></h2>' +
-          (aguardando.length ? '<ul class="fila">' + aguardando.map((r) => itemPainel(r, 'Revisar')).join('') + '</ul>' : '<p class="vazio">Nada pendente. Tudo aprovado.</p>') +
-          (ajustes.length ? '<h3 class="subtitulo">Com o canteiro para ajustes</h3><ul class="fila">' + ajustes.map((r) => itemPainel(r, 'Ver')).join('') + '</ul>' : '') +
+        '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Aguardando aprovação <span class="contador">' + aguardando.length + '</span></h2>' +
+          (aguardando.length > 3 ? '<a class="link" href="#/daily/aprovacoes">Ver todas</a>' : '') + '</div>' +
+          (aguardando.length ? '<ul class="fila">' + aguardando.slice(0, 3).map((r) => itemPainel(r, 'Revisar')).join('') + '</ul>' : '<p class="vazio">Nada pendente. Tudo aprovado.</p>') +
         '</section>' +
-      '</div>' +
-      '<section class="cartao"><h2 class="cartao-titulo">Aprovados recentemente</h2>' +
-        '<ul class="fila">' + aprovados.map((r) => {
-          const o = acharObra(r.obraId);
-          return '<li><div><b>RDO nº ' + r.numero + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataCurta(r.data) + ' · aprovado ' + dataHora(r.aprovadoEm) + ' · código ' + esc(r.codigo) + '</span></div>' +
-            '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">Abrir</a><a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + '">PDF</a></div></li>';
-        }).join('') + '</ul>' +
-      '</section>',
+      '</div>',
   });
 }
 
@@ -556,12 +595,67 @@ function itemPainel(r, acao) {
     '<a class="btn ' + (acao === 'Revisar' ? 'btn-primario' : 'btn-contorno') + ' btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">' + acao + '</a></li>';
 }
 
+/* ---------- Escritório: aprovações ---------- */
+
+function telaAprovacoes() {
+  const recebidos = estado().rdos.filter(recebido);
+  const aguardando = aguardandoAprovacao();
+  const ajustes = recebidos.filter((r) => r.status === 'ajustes');
+  const aprovados = recebidos.filter((r) => r.status === 'aprovado').sort((a, b) => b.aprovadoEm - a.aprovadoEm).slice(0, 8);
+  return moldura({
+    ativo: 'aprovacoes', largo: true, titulo: 'Aprovações', subtitulo: aguardando.length ? aguardando.length + ' relatórios esperando a sua revisão' : 'Nenhum relatório esperando revisão',
+    conteudo:
+      '<section class="cartao"><h2 class="cartao-titulo">Aguardando aprovação <span class="contador">' + aguardando.length + '</span></h2>' +
+        (aguardando.length ? '<ul class="fila">' + aguardando.map((r) => itemPainel(r, 'Revisar')).join('') + '</ul>' : '<p class="vazio">Nada pendente. Tudo aprovado.</p>') +
+      '</section>' +
+      (ajustes.length ? '<section class="cartao"><h2 class="cartao-titulo">Com o canteiro para ajustes</h2><ul class="fila">' + ajustes.map((r) => itemPainel(r, 'Ver')).join('') + '</ul></section>' : '') +
+      '<section class="cartao"><h2 class="cartao-titulo">Aprovados recentemente</h2>' +
+        '<ul class="fila">' + aprovados.map((r) => {
+          const o = acharObra(r.obraId);
+          return '<li><div><b>RDO nº ' + r.numero + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataCurta(r.data) + ' · aprovado ' + dataHora(r.aprovadoEm) + ' · código ' + esc(r.codigo) + '</span></div>' +
+            '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">Abrir</a><a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + '">PDF</a></div></li>';
+        }).join('') + '</ul>' +
+      '</section>',
+  });
+}
+
+/* ---------- Escritório: obras ---------- */
+
+function telaObrasAdmin() {
+  const { obras } = estado();
+  return moldura({
+    ativo: 'obras', largo: true, titulo: 'Obras', subtitulo: obras.length + ' obras ativas',
+    conteudo: '<div class="lista grade-obras">' + obras.map((o) => {
+      const f = farol(o);
+      const qtd = rdosDaObra(o.id).filter(recebido).length;
+      return '<a class="cartao-obra" href="#/daily/obras/' + o.id + '">' +
+        '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
+        '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(o.cliente) + '</span>' +
+        '<span class="mudo">' + esc(o.etapa) + '</span>' +
+        '<span class="cartao-obra-rodape">' + f.texto + ' · ' + qtd + ' RDOs recebidos</span></a>';
+    }).join('') + '</div>',
+  });
+}
+
+function telaObraAdmin(id) {
+  const o = acharObra(id);
+  if (!o) return naoEncontrado('#/daily/obras');
+  const f = farol(o);
+  const lista = rdosDaObra(o.id).filter(recebido);
+  return moldura({
+    ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: 'Obras' },
+    conteudo: resumoObra(o) +
+      '<h2 class="titulo-secao">Relatórios recebidos</h2>' +
+      (lista.length ? '<div class="lista grade-rdos">' + lista.map((r) => itemRdo(r, { href: '#/daily/painel/rdo/' + r.id })).join('') + '</div>' : '<p class="vazio">Nenhum relatório recebido desta obra.</p>'),
+  });
+}
+
 /* ---------- Escritório: revisar um RDO ---------- */
 
 function telaRdoPainel(id) {
   const r = acharRdo(id);
   if (!r || !recebido(r)) {
-    return moldura({ modo: 'painel', titulo: 'RDO', voltar: '#/daily/painel', largo: true,
+    return moldura({ ativo: 'aprovacoes', largo: true, titulo: 'RDO', voltar: { href: '#/daily/aprovacoes', rotulo: 'Aprovações' },
       conteudo: '<div class="aviso aviso-ambar"><b>Este RDO ainda não chegou ao escritório</b><span>Ele pode estar em rascunho ou guardado no celular, esperando internet.</span></div>' });
   }
   const o = acharObra(r.obraId);
@@ -575,14 +669,17 @@ function telaRdoPainel(id) {
   } else {
     painelAcoes = '<h2 class="cartao-titulo">Aprovado e lacrado</h2>' +
       '<p class="mudo pequeno">Código de verificação</p><p class="codigo grande">' + esc(r.codigo) + '</p>' +
-      '<a class="btn btn-primario btn-bloco" href="#/daily/pdf/' + r.id + '">Baixar PDF</a>' +
-      '<button type="button" class="btn btn-contorno btn-bloco" data-acao="copiar-link">Copiar link para o cliente</button>' +
-      '<a class="btn btn-contorno btn-bloco" href="#/cliente/' + r.codigo + '">Ver como o cliente vê</a>';
+      '<a class="btn btn-primario btn-bloco" href="#/daily/pdf/' + r.id + '">' + icone('baixar', 18) + 'Baixar PDF</a>' +
+      '<button type="button" class="btn btn-contorno btn-bloco" data-acao="copiar-link">' + icone('link', 18) + 'Copiar link para o cliente</button>' +
+      '<a class="btn btn-contorno btn-bloco" href="#/cliente/' + r.codigo + '">' + icone('olho', 18) + 'Ver como o cliente vê</a>';
   }
   const historico = '<h3 class="subtitulo">Histórico</h3><ol class="historico">' + r.historico.map((h) =>
     '<li><span class="mudo">' + dataHora(h.em) + '</span><b>' + esc(h.quem) + '</b><span>' + esc(h.acao) + '</span></li>').join('') + '</ol>';
+  // Voltar para onde a pessoa estava: a fila (se ainda pendente) ou a obra.
+  const voltar = r.status === 'enviado' ? { href: '#/daily/aprovacoes', rotulo: 'Aprovações' } : { href: '#/daily/obras/' + o.id, rotulo: o.nome };
   return moldura({
-    modo: 'painel', titulo: 'RDO nº ' + r.numero + ' · ' + o.nome, subtitulo: dataLonga(r.data), voltar: '#/daily/painel', largo: true,
+    ativo: r.status === 'enviado' ? 'aprovacoes' : 'obras', largo: true,
+    titulo: 'RDO nº ' + r.numero, subtitulo: o.nome + ' · ' + primeiraMaiuscula(dataLonga(r.data)), voltar,
     conteudo: '<div class="revisao"><div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>' +
       '<aside class="revisao-lado"><div class="cartao fixo">' + painelAcoes + historico + '</div></aside></div>',
   });
@@ -594,10 +691,10 @@ function telaPdf(id) {
   const r = acharRdo(id);
   if (!r) return naoEncontrado('#/daily');
   const o = acharObra(r.obraId);
-  const voltar = recebido(r) ? '#/daily/painel/rdo/' + r.id : '#/daily/campo/rdo/' + r.id;
-  return '<div class="pdf-barra nao-imprimir"><a class="btn btn-claro btn-pequeno" href="' + voltar + '">← Voltar</a>' +
+  const voltar = ehAdmin(usuarioAtual()) ? '#/daily/painel/rdo/' + r.id : '#/daily/campo/rdo/' + r.id;
+  return '<div class="pdf-barra nao-imprimir"><a class="btn btn-escuro btn-pequeno" href="' + voltar + '">' + icone('voltar', 16) + 'Voltar</a>' +
       '<span>Pré-visualização do PDF (A4)</span>' +
-      '<button type="button" class="btn btn-limao btn-pequeno" data-acao="imprimir">Baixar PDF</button></div>' +
+      '<button type="button" class="btn btn-primario btn-pequeno" data-acao="imprimir">' + icone('baixar', 16) + 'Baixar PDF</button></div>' +
     '<div class="pdf-folha">' + htmlRelatorio(r, o) + '</div>' +
     '<p class="pdf-dica nao-imprimir">Na janela que abrir, escolha "Salvar como PDF". Na versão final, o PDF é gerado no servidor e chega pronto.</p>';
 }
@@ -607,12 +704,12 @@ function telaPdf(id) {
 function telaCliente(codigo) {
   const r = estado().rdos.find((x) => x.codigo === codigo && x.status === 'aprovado');
   if (!r) {
-    return '<main class="conteudo"><div class="aviso aviso-ambar"><b>Relatório não encontrado</b><span>Confira o link. No protótipo não há servidor, então o link do cliente só abre no mesmo navegador em que o RDO foi aprovado.</span></div></main>';
+    return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>Relatório não encontrado</b><span>Confira o link. No protótipo não há servidor, então o link do cliente só abre no mesmo navegador em que o RDO foi aprovado.</span></div></main>';
   }
   const o = acharObra(r.obraId);
-  return '<div class="cliente-topo"><div><span class="mudo">Relatório compartilhado por</span><b>' + esc(estado().empresa.nome) + '</b></div>' +
-      '<a class="btn btn-claro btn-pequeno" href="#/daily/pdf/' + r.id + '">Baixar PDF</a></div>' +
-    '<main class="conteudo largo">' +
+  return '<header class="cliente-topo"><div class="cliente-empresa"><span class="rel-logo">' + esc(estado().empresa.sigla) + '</span><div><span class="mudo">Relatório compartilhado por</span><b>' + esc(estado().empresa.nome) + '</b></div></div>' +
+      '<span class="cliente-via">via ' + marca(18) + 'KORbuild Daily</span></header>' +
+    '<main class="pagina pagina-larga">' +
       '<div class="aviso aviso-verde" id="verificacao"><b>Verificando o lacre…</b></div>' +
       '<div class="relatorio-tela" id="cliente-relatorio">' + htmlRelatorio(r, o) + '</div>' +
     '</main>';
@@ -637,7 +734,7 @@ async function verificarLacreNaTela(codigo) {
 }
 
 function naoEncontrado(voltar) {
-  return '<main class="conteudo"><div class="aviso aviso-ambar"><b>Não encontrado</b><span>Esse item não existe neste aparelho.</span><a class="btn btn-contorno btn-pequeno" href="' + voltar + '">Voltar</a></div></main>';
+  return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>Não encontrado</b><span>Esse item não existe neste aparelho.</span><a class="btn btn-contorno btn-pequeno" href="' + voltar + '">Voltar</a></div></main>';
 }
 
 /* ---------- Ações ---------- */
@@ -710,8 +807,8 @@ const acoes = {
     if (!pedidoInstalar) return;
     pedidoInstalar.prompt();
     pedidoInstalar = null;
-    const b = document.getElementById('btn-instalar');
-    if (b) b.hidden = true;
+    definirPodeInstalar(false);
+    desenhar();
   },
   async recomecar() {
     if (!(await confirmar('Recomeçar a demonstração?', 'Tudo o que foi feito neste aparelho é apagado e os dados de exemplo voltam ao início.', 'Recomeçar'))) return;
@@ -722,17 +819,18 @@ const acoes = {
     toast('Demonstração recomeçada.');
     ir('#/entrar');
   },
-  'entrar-como'(el) {
-    const u = estado().usuarios.find((x) => x.id === el.dataset.usuario);
-    if (u) fazerLogin(u);
+  'preencher-email'(el) {
+    document.getElementById('login-email').value = el.dataset.email;
+    document.getElementById('login-erro').hidden = true;
+    document.getElementById('login-senha').focus();
+  },
+  'esqueci-senha'() {
+    toast('No protótipo, a senha não é conferida. A recuperação por e-mail vem na versão final.');
   },
   sair() {
     if (pararDitado) pararDitado();
     sair();
     ir('#/entrar');
-  },
-  'criar-conta'() {
-    toast('No protótipo, use uma das contas de demonstração. O cadastro da empresa com teste grátis vem na próxima etapa.');
   },
   'em-breve'(el) { toast(el.dataset.texto); },
   interesse(el) {
@@ -936,6 +1034,10 @@ const acoes = {
   },
 };
 
+document.addEventListener('click', (ev) => {
+  document.querySelectorAll('details.menu-usuario[open]').forEach((m) => { if (!m.contains(ev.target)) m.open = false; });
+});
+
 app.addEventListener('click', (ev) => {
   const el = ev.target.closest('[data-acao]');
   if (!el || el.disabled) return;
@@ -958,7 +1060,7 @@ app.addEventListener('submit', (ev) => {
   const u = usuarioPorEmail(email);
   if (!u) {
     erro.textContent = email.trim()
-      ? 'Não encontramos uma conta com esse e-mail. Na demonstração, use uma das contas abaixo.'
+      ? 'Não encontramos uma conta com esse e-mail. No protótipo, use um dos usuários do Daily listados abaixo.'
       : 'Digite o seu e-mail.';
     erro.hidden = false;
     return;
@@ -1029,8 +1131,7 @@ async function iniciar() {
   window.addEventListener('beforeinstallprompt', (ev) => {
     ev.preventDefault();
     pedidoInstalar = ev;
-    const b = document.getElementById('btn-instalar');
-    if (b) b.hidden = false;
+    definirPodeInstalar(true);
   });
   // Dados de uma versão antiga do protótipo são recriados no formato novo.
   if (!estado() || estado().versao !== VERSAO_DADOS) {

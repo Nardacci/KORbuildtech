@@ -44,25 +44,37 @@ const comoUsuario = async (id, hash) => {
   await page.goto(BASE + hash);
 };
 
+const sairPeloMenu = async () => {
+  await page.click('.menu-usuario summary');
+  await page.click('.menu [data-acao="sair"]');
+};
+
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/' + nome + '.png', fullPage: true }); };
 
 console.log('Login e módulos');
 await page.goto(BASE);
 await page.waitForSelector('#form-login', { timeout: 30000 });
 verificar(page.url().endsWith('#/entrar'), 'sem login, abre a tela de entrar');
-verificar(await page.locator('[data-acao="entrar-como"]').count() === 2, 'duas contas de demonstração');
+verificar((await page.inputValue('#login-email')).length > 0, 'login já vem preenchido (mockup)');
+verificar(await page.locator('.usuarios-demo .email-demo').count() === 2, 'só a linha com os usuários de campo e administrador do Daily');
 await page.fill('#login-email', 'ninguem@exemplo.com');
 await page.click('#form-login button[type="submit"]');
 verificar(await page.isVisible('#login-erro'), 'e-mail desconhecido mostra erro');
 await print('01-login');
-await page.click('[data-acao="entrar-como"][data-usuario="u-carlos"]');
+await page.click('.email-demo[data-email^="carlos"]');
+await page.click('#form-login button[type="submit"]');
 await page.waitForSelector('.modulos');
-verificar(await page.locator('.modulo').count() === 3, 'três módulos: Daily, Crew e Measure');
-verificar((await page.textContent('.modulo-daily')).includes('Incluído no seu plano'), 'Daily contratado');
-verificar((await page.textContent('.modulo-crew')).includes('Em breve') && (await page.textContent('.modulo-measure')).includes('Em breve'), 'Crew e Measure em breve');
-verificar(await page.locator('a[href="#/conta"]').count() === 0, 'usuário de campo não vê a conta da empresa');
+verificar(page.url().endsWith('#/inicio'), 'depois do login, todos vão para a página dos módulos');
+verificar(await page.locator('.modulos .modulo').count() === 3, 'três módulos: Daily, Crew e Measure');
+verificar((await page.textContent('.modulos .modulo-daily')).includes('Contratado'), 'Daily contratado');
+verificar((await page.textContent('.modulos .modulo-crew')).includes('Em breve') && (await page.textContent('.modulos .modulo-measure')).includes('Em breve'), 'Crew e Measure em breve');
+await page.click('.menu-usuario summary');
+verificar(await page.isVisible('.menu [data-acao="sair"]'), 'menu do usuário abre com "Sair"');
+verificar(await page.locator('.menu a[href="#/conta"]').count() === 0, 'usuário de campo não vê a conta da empresa');
+await page.mouse.click(160, 28);
+verificar(!(await page.isVisible('.menu')), 'menu do usuário fecha ao clicar fora');
 await print('01b-modulos');
-await page.click('.modulo-crew');
+await page.click('.modulos .modulo-crew');
 await page.waitForSelector('[data-acao="interesse"]');
 await page.click('[data-acao="interesse"]');
 verificar(await page.isDisabled('[data-acao="interesse"]'), 'interesse no Crew registrado');
@@ -74,7 +86,15 @@ await page.waitForSelector('.modulos');
 verificar(page.url().endsWith('#/inicio'), 'campo não abre a conta da empresa');
 
 console.log('Canteiro');
-await page.click('.modulo-daily');
+await page.click('.modulos .modulo-daily');
+await page.waitForSelector('.cartao-obra');
+verificar(page.url().endsWith('#/daily/campo'), 'campo entra no Daily pela tela Hoje');
+verificar(await page.locator('.abas .abas-item').count() === 2, 'abas do campo: Hoje e Histórico');
+verificar((await page.textContent('.topo-modulo')).includes('Daily'), 'barra superior mostra o módulo');
+await page.click('.abas-item[href="#/daily/historico"]');
+await page.waitForSelector('.item-rdo-obra');
+verificar(await page.locator('.abas-item.ativo[href="#/daily/historico"]').count() === 1, 'aba Histórico ativa');
+await page.click('.abas-item[href="#/daily/campo"]');
 await page.waitForSelector('.cartao-obra');
 verificar(await page.locator('.cartao-obra').count() === 3, 'três obras');
 verificar(await page.locator('.aviso-alerta').count() === 1, 'aviso de ajustes pedidos no Galpão');
@@ -92,6 +112,8 @@ verificar((await item.locator('.item-rdo-trecho').textContent()).startsWith('Ass
 await print('02b-lista-rdos');
 await page.click('[data-acao="novo-rdo"][data-copiar="1"]');
 await page.waitForSelector('#s-clima');
+verificar(await page.locator('.abas').count() === 0, 'editor do RDO sem abas (tela de foco)');
+verificar((await page.textContent('.voltar')).includes('Residencial Jardim das Flores'), 'editor volta para a obra');
 await page.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2);
 verificar(await page.locator('[data-turno="manha"][data-valor="sol"][aria-pressed="true"]').count() === 1, 'clima automático: manhã de sol');
 verificar(await page.locator('[data-turno="tarde"][data-valor="chuva"][aria-pressed="true"]').count() === 1, 'clima automático: tarde de chuva');
@@ -165,13 +187,24 @@ await print('05-offline');
 await comoUsuario('u-ana', '#/daily');
 await page.waitForSelector('.faroes');
 verificar(page.url().endsWith('#/daily/painel'), 'administradora entra no Daily pelo painel');
-verificar(await page.locator('.farol-amarelo').count() === 1, 'escritório: Jardim ainda amarelo (RDO não chegou)');
+verificar(await page.locator('.faroes .farol-amarelo').count() === 1, 'escritório: Jardim ainda amarelo (RDO não chegou)');
+verificar(await page.locator('.abas .abas-item').count() === 3, 'abas do escritório: Painel, Aprovações e Obras');
 
 // Internet volta → sobe sozinho
 await page.click('#conexao');
-await page.waitForFunction(() => document.querySelectorAll('.farol-verde').length === 2, null, { timeout: 15000 });
+await page.waitForFunction(() => document.querySelectorAll('.faroes .farol-verde').length === 2, null, { timeout: 15000 });
 verificar(true, 'internet voltou: RDO subiu e o farol ficou verde');
-verificar(await page.locator('.farol-vermelho').count() === 1, 'Galpão continua vermelho');
+verificar(await page.locator('.faroes .farol-vermelho').count() === 1, 'Galpão continua vermelho');
+await page.click('.abas-item[href="#/daily/aprovacoes"]');
+await page.waitForSelector('.abas-item.ativo[href="#/daily/aprovacoes"]');
+verificar(await page.locator('.cartao').first().locator('.fila li').count() === 3, 'Aprovações: três RDOs na fila');
+await page.click('.abas-item[href="#/daily/obras"]');
+await page.click('a[href="#/daily/obras/galpao"]');
+await page.waitForSelector('.item-rdo');
+verificar((await page.getAttribute('.item-rdo', 'href')).startsWith('#/daily/painel/rdo/'), 'obra no escritório abre a revisão dos RDOs');
+await page.goto(BASE + '#/daily/campo');
+await page.waitForSelector('.kpis');
+verificar(page.url().endsWith('#/daily/painel'), 'administrador não entra na área do campo');
 await print('06-painel');
 
 // Aprovar o novo RDO
@@ -188,7 +221,7 @@ await print('07-aprovado');
 
 // Link do cliente e verificação do lacre
 verificar((await page.textContent('.historico')).includes('Ana Ribeiro'), 'aprovação registrada com o nome de quem está logado');
-await page.click('[data-acao="sair"]');
+await sairPeloMenu();
 await page.waitForSelector('#form-login');
 await page.goto(BASE + '#/cliente/' + codigo);
 await page.waitForFunction(() => /Documento autêntico/.test(document.getElementById('verificacao').textContent));
@@ -259,6 +292,7 @@ const sw = await page.evaluate(async () => { const r = await navigator.serviceWo
 verificar(sw, 'service worker ativo (app abre sem internet)');
 
 // Abre sem internet de verdade
+await page.evaluate(() => localStorage.setItem('kbt.sessao', 'u-carlos'));
 await context.setOffline(true);
 await page.goto(BASE + '#/daily/campo');
 await page.waitForSelector('.cartao-obra', { timeout: 15000 });

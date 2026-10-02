@@ -32,16 +32,16 @@ export function obterPosicao(obra) {
 export function carimbar(ctx, largura, altura, { obraNome, quando, lat, lon, fonte }) {
   const base = Math.max(14, Math.round(largura / 52));
   const faixa = Math.round(base * 3.4);
-  ctx.fillStyle = 'rgba(10, 22, 40, 0.72)';
+  ctx.fillStyle = 'rgba(20, 27, 38, 0.74)';
   ctx.fillRect(0, altura - faixa, largura, faixa);
-  ctx.fillStyle = '#C6F432';
+  ctx.fillStyle = '#F26A1B';
   ctx.fillRect(0, altura - faixa, Math.round(base * 0.35), faixa);
   const x = Math.round(base * 1.1);
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '700 ' + base + 'px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.font = '700 ' + base + 'px Inter, system-ui, sans-serif';
   ctx.fillText(obraNome + '  ·  ' + dataHora(quando), x, altura - faixa + Math.round(base * 1.45));
-  ctx.font = '500 ' + Math.round(base * 0.82) + 'px "Plus Jakarta Sans", system-ui, sans-serif';
+  ctx.font = '500 ' + Math.round(base * 0.82) + 'px Inter, system-ui, sans-serif';
   ctx.fillStyle = '#C9D1E0';
   const local = fonte === 'gps' ? 'GPS ' + coordenadas(lat, lon) : 'Local da obra ' + coordenadas(lat, lon) + ' (GPS indisponível)';
   ctx.fillText(local + '  ·  KORbuild Daily', x, altura - faixa + Math.round(base * 2.65));
