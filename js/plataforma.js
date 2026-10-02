@@ -23,7 +23,7 @@ export const MODULOS = [
     resumo: 'Diário de obra: fotos com GPS, equipe, clima e atividades, aprovado pelo escritório e em PDF.',
   },
   {
-    id: 'crew', nome: 'Crew', status: 'em-breve',
+    id: 'crew', nome: 'Crew', status: 'disponivel',
     resumo: 'Ponto da equipe: quem trabalhou, quantas horas, em qual obra e quanto custou.',
     oQueFaz: [
       'Ponto no celular do encarregado, com foto e localização, mesmo sem internet.',
@@ -83,6 +83,49 @@ export function temInteresse(moduloId, u) {
   return (estado().interesses || []).some((i) => i.modulo === moduloId && i.usuario === u.id);
 }
 
+/* ---------- Notificações (sininho) ----------
+ * Cada módulo informa as suas notificações por uma função (u) => [{ id, em, modulo, titulo, href }].
+ * As lidas ficam guardadas por usuário. */
+let fonteNotificacoes = () => [];
+export function definirFonteNotificacoes(fn) { fonteNotificacoes = fn; }
+
+export function notificacoesDe(u) {
+  const agora = Date.now();
+  const lidas = new Set(((estado().lidas || {})[u.id]) || []);
+  return fonteNotificacoes(u).filter((n) => n.em <= agora).sort((a, b) => b.em - a.em).slice(0, 30)
+    .map((n) => ({ ...n, lida: lidas.has(n.id) }));
+}
+
+export function marcarLidas(u, ids) {
+  const d = estado();
+  d.lidas = d.lidas || {};
+  d.lidas[u.id] = Array.from(new Set((d.lidas[u.id] || []).concat(ids)));
+  salvar();
+}
+
+function quandoFoi(ts) {
+  const d = new Date(ts);
+  const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const dias = diasEntre(iso, hoje());
+  return (dias === 0 ? 'hoje' : dias === 1 ? 'ontem' : dataCurta(iso)) + ' às ' + hh;
+}
+
+function sino(u) {
+  const lista = notificacoesDe(u);
+  const naoLidas = lista.filter((n) => !n.lida).length;
+  return '<details class="menu-usuario sino"><summary aria-label="Notificações' + (naoLidas ? ': ' + naoLidas + ' não lidas' : '') + '"><span class="topo-botao">' + icone('sino') +
+      (naoLidas ? '<span class="sino-contador">' + (naoLidas > 9 ? '9+' : naoLidas) + '</span>' : '') + '</span></summary>' +
+    '<div class="menu painel-notificacoes"><div class="notif-cabeca"><b>Notificações</b>' +
+      (naoLidas ? '<button type="button" class="link" data-acao="ler-todas">Marcar todas como lidas</button>' : '') + '</div>' +
+      (lista.length ? '<ul class="notif-lista">' + lista.map((n) =>
+        '<li class="' + (n.lida ? 'lida' : '') + '"><a href="' + n.href + '" data-acao="ler-notificacao" data-id="' + esc(n.id) + '">' +
+          '<span class="notif-modulo modulo-' + n.modulo + '">' + icone(n.modulo, 16) + '</span>' +
+          '<span class="notif-texto"><b>' + esc(n.titulo) + '</b><span class="mudo">' + (modulo(n.modulo) || {}).nome + ' · ' + quandoFoi(n.em) + '</span></span></a></li>').join('') + '</ul>'
+        : '<p class="vazio">Nenhuma notificação por enquanto.</p>') +
+    '</div></details>';
+}
+
 let podeInstalar = false;
 export function definirPodeInstalar(valor) { podeInstalar = valor; }
 
@@ -111,6 +154,7 @@ export function casca(o) {
       '<span class="selo-prototipo" title="Protótipo com dados fictícios">Protótipo</span>' +
       '<span class="topo-espaco"></span>' +
       (o.topoExtra || '') +
+      sino(u) +
       '<a class="topo-botao" href="#/inicio" aria-label="Módulos" title="Módulos">' + icone('modulos') + '</a>' +
       menuUsuario(u) +
     '</div></header>' +

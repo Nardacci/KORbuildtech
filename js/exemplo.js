@@ -6,6 +6,7 @@
 
 import { hoje, somarDias, diasEntre, novoId, sha256 } from './util.js';
 import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
+import { criarDadosCrew, RAIO_CERCA } from './crew.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
@@ -139,12 +140,12 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 3;
+export const VERSAO_DADOS = 4;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
   // Cada obra tem um responsável pelo RDO e um calendário de dias de trabalho (prazo diário: 18h).
-  const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo), responsavelId: 'u-carlos', diasTrabalho: DIAS_TRABALHO }));
+  const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo), responsavelId: 'u-carlos', diasTrabalho: DIAS_TRABALHO, cerca: { lat: o.lat, lon: o.lon, raio: RAIO_CERCA } }));
   const rdos = [];
   let semente = 7;
 
@@ -224,8 +225,8 @@ export async function criarDemonstracao() {
   const empresa = {
     id: 'construtora-exemplo', ...CONSTRUTORA, desde: somarDias(dia0, -2),
     plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
-    modulos: ['daily'],
+    modulos: ['daily', 'crew'],
   };
   const usuarios = USUARIOS.map((u, i) => ({ ...u, ativo: true, ultimoAcesso: i < 2 ? null : momento(somarDias(dia0, -i), 17, 5) }));
-  return { versao: VERSAO_DADOS, criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, interesses: [], obras, rdos };
+  return { versao: VERSAO_DADOS, criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, interesses: [], obras, rdos, crew: criarDadosCrew(obras) };
 }

@@ -47,7 +47,7 @@ const comoUsuario = async (id, hash) => {
 };
 
 const sairPeloMenu = async () => {
-  await page.click('.menu-usuario summary');
+  await page.click('.menu-usuario:not(.sino) summary');
   await page.click('.menu [data-acao="sair"]');
 };
 
@@ -69,17 +69,17 @@ await page.waitForSelector('.modulos');
 verificar(page.url().endsWith('#/inicio'), 'depois do login, todos vão para a página dos módulos');
 verificar(await page.locator('.modulos .modulo').count() === 3, 'três módulos: Daily, Crew e Measure');
 verificar((await page.textContent('.modulos .modulo-daily')).includes('Contratado'), 'Daily contratado');
-verificar((await page.textContent('.modulos .modulo-crew')).includes('Em breve') && (await page.textContent('.modulos .modulo-measure')).includes('Em breve'), 'Crew e Measure em breve');
-await page.click('.menu-usuario summary');
+verificar((await page.textContent('.modulos .modulo-crew')).includes('Contratado') && (await page.textContent('.modulos .modulo-measure')).includes('Em breve'), 'Crew contratado e Measure em breve');
+await page.click('.menu-usuario:not(.sino) summary');
 verificar(await page.isVisible('.menu [data-acao="sair"]'), 'menu do usuário abre com "Sair"');
 verificar(await page.locator('.menu a[href="#/conta"]').count() === 0, 'usuário de campo não vê a conta da empresa');
 await page.mouse.click(160, 28);
 verificar(!(await page.isVisible('.menu')), 'menu do usuário fecha ao clicar fora');
 await print('01b-modulos');
-await page.click('.modulos .modulo-crew');
+await page.click('.modulos .modulo-measure');
 await page.waitForSelector('[data-acao="interesse"]');
 await page.click('[data-acao="interesse"]');
-verificar(await page.isDisabled('[data-acao="interesse"]'), 'interesse no Crew registrado');
+verificar(await page.isDisabled('[data-acao="interesse"]'), 'interesse no Measure registrado');
 await page.goto(BASE + '#/daily/painel');
 await page.waitForSelector('.cartao-obra');
 verificar(page.url().endsWith('#/daily/campo'), 'campo não abre o painel do escritório');
@@ -102,11 +102,11 @@ verificar(await page.locator('.cartao-obra').count() === 3, 'três obras');
 verificar(await page.locator('.aviso-ajustes').count() === 1, 'aviso de ajustes pedidos no Galpão');
 verificar((await page.textContent('.aviso-atraso')).includes('Galpão Logístico Rodovia'), 'prazo: RDO de ontem do Galpão aparece como atrasado');
 verificar((await page.textContent('.aviso-prazo')).includes('faltam 1h30'), 'prazo: às 16h30 avisa que faltam 1h30 para as 18h');
-verificar((await page.textContent('a[href="#/daily/campo/obra/jardim"]')).includes('Falta o RDO de hoje · prazo 18h'), 'Jardim das Flores: falta o RDO de hoje');
+verificar((await page.textContent('.pagina a[href="#/daily/campo/obra/jardim"]')).includes('Falta o RDO de hoje · prazo 18h'), 'Jardim das Flores: falta o RDO de hoje');
 verificar((await page.textContent('.abas-item[href="#/daily/campo"] .contador')).trim() === '4', 'contador de Hoje: 1 atrasado + 2 sem RDO hoje + 1 ajuste');
 await print('02-campo');
 
-await page.click('a[href="#/daily/campo/obra/jardim"]');
+await page.click('.pagina a[href="#/daily/campo/obra/jardim"]');
 await page.waitForSelector('.item-rdo-fotos img[src^="blob:"]');
 const item = page.locator('.item-rdo').first();
 verificar(await item.locator('.item-rdo-fotos img').count() === 2, 'lista de RDOs: duas fotos por item');
@@ -207,14 +207,12 @@ await page.waitForFunction(() => document.querySelectorAll('.faroes .farol-verde
 verificar(true, 'internet voltou: RDO subiu e o farol ficou verde');
 verificar(await page.locator('.faroes .farol-vermelho').count() === 1, 'Galpão continua vermelho');
 verificar((await page.textContent('.aviso-escalada')).includes('Galpão Logístico Rodovia'), 'escritório: na manhã seguinte vê a obra que ficou sem RDO');
-await page.click('[data-acao="ver-resumo"]');
-verificar((await page.textContent('dialog .email')).includes('Carlos Mendes'), 'escritório: prévia do e-mail do resumo com o responsável');
-await page.click('dialog button:has-text("Fechar")');
+verificar((await page.textContent('.aviso-escalada')).includes('Carlos Mendes'), 'escritório: aviso mostra o responsável');
 await page.click('.abas-item[href="#/daily/aprovacoes"]');
 await page.waitForSelector('.abas-item.ativo[href="#/daily/aprovacoes"]');
 verificar(await page.locator('.cartao').first().locator('.fila li').count() === 3, 'Aprovações: três RDOs na fila');
 await page.click('.abas-item[href="#/daily/obras"]');
-await page.click('a[href="#/daily/obras/galpao"]');
+await page.click('.pagina a[href="#/daily/obras/galpao"]');
 await page.waitForSelector('.item-rdo');
 verificar((await page.getAttribute('.item-rdo', 'href')).startsWith('#/daily/painel/rdo/'), 'obra no escritório abre a revisão dos RDOs');
 await page.goto(BASE + '#/daily/campo');
@@ -309,7 +307,7 @@ await page.click('dialog button:has-text("Registrar")');
 await page.waitForSelector('.acoes-hoje a:has-text("Ver o RDO de hoje")');
 await page.goto(BASE + '#/daily/campo');
 await page.waitForSelector('.cartao-obra');
-verificar((await page.textContent('a[href="#/daily/campo/obra/galpao"]')).includes('Sem atividade hoje · Chuva'), 'sem atividade: o Galpão fica em dia hoje');
+verificar((await page.textContent('.pagina a[href="#/daily/campo/obra/galpao"]')).includes('Sem atividade hoje · Chuva'), 'sem atividade: o Galpão fica em dia hoje');
 verificar(await page.locator('.aviso-atraso').count() === 0, 'sem pendências atrasadas depois de preencher e registrar');
 
 // Pedir ajustes pelo painel
@@ -331,7 +329,7 @@ await page.waitForSelector('.tabela-usuarios');
 verificar((await page.textContent('.plano')).includes('Profissional'), 'conta: plano da empresa');
 verificar((await page.textContent('.uso')).includes('3 de 5'), 'conta: uso de obras ativas');
 verificar(await page.locator('.tabela-usuarios tbody tr').count() === 4, 'conta: usuários da empresa');
-verificar((await page.textContent('.fila')).includes('1 interessado'), 'conta: interesse registrado no Crew');
+verificar((await page.textContent('.fila')).includes('1 interessado'), 'conta: interesse registrado no Measure');
 await print('09-conta');
 
 // Service worker instalado

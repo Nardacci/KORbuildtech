@@ -5,7 +5,7 @@ Plataforma SaaS de gestão de obra, com três módulos que compartilham os mesmo
 | Módulo | O que faz | Situação |
 | --- | --- | --- |
 | **KORbuild Daily** | Diário de obra (RDO): o que aconteceu na obra, documentado, aprovado e em PDF | Em construção (este protótipo) |
-| **KORbuild Crew** | Ponto da equipe: funcionário → horas → obra → custo | Em breve |
+| **KORbuild Crew** | Ponto da equipe: funcionário → horas → obra → custo | Protótipo pronto |
 | **KORbuild Measure** | Medição de plantas: planta → medições → quantidades → orçamento | Em breve |
 
 Todos entram pelo mesmo login e caem na página dos módulos. Os papéis (campo e administrador) valem dentro de cada módulo: no Daily, o campo preenche e o escritório acompanha e aprova. A estrutura SaaS (empresa, plano, módulos contratados, usuários e papéis) está descrita em [`docs/saas.md`](docs/saas.md). A análise do controle de ponto do Crew (funcionalidades, GPS, regras legais nos EUA e no Brasil, concorrência e MVP) está em [`docs/crew-analise.md`](docs/crew-analise.md).
@@ -36,7 +36,10 @@ Para mostrar no celular, publique no GitHub Pages: **Settings → Pages → Depl
 3. Em uma atividade, toque em **Ditar** (ou digite) *"hj a gente fecho a viga 2 mas faltou cimento pq a entrega atrasou"* e toque em **Melhorar texto**.
 4. Toque em **Online**, no topo, para simular a falta de internet, e envie. O RDO fica guardado no aparelho. Toque de novo e ele sobe sozinho.
 5. No menu do usuário (as iniciais, no canto superior direito), toque em **Sair** e entre como **Ana** (administradora). No Daily, o farol da obra está verde: em **Aprovações**, abra o RDO, aprove (ele fica lacrado), baixe o PDF e copie o link do cliente.
-6. Volte aos módulos (ícone de quadradinhos no topo): mostre **Crew** e **Measure** (em breve, com o botão "Tenho interesse") e, no menu do usuário, a **Conta da empresa** (plano, uso, módulos e usuários).
+6. Volte aos módulos (ícone de quadradinhos no topo): mostre o **Measure** (em breve, com o botão "Tenho interesse") e, no menu do usuário, a **Conta da empresa** (plano, uso, módulos e usuários).
+8. **Crew** como Carlos: em **Ponto**, selecione todos e bata a **entrada** (o GPS diz se está dentro da cerca da obra). Mande o Lucas para outra obra (**Trocar obra** → **Chegou**) e o Marcos para o **intervalo**. Volte ao Daily e comece um RDO: a equipe vem preenchida pelo ponto.
+9. **Crew** como Ana: **Agora** (quem está trabalhando em cada obra e a batida fora da obra para conferir), **Timesheets** (semana anterior: aprove a equipe do Roberto, que fez hora extra, e exporte o CSV), o **mapa do dia** do Diego na terça da semana anterior (saiu da obra com o ponto aberto) e **Custos** por obra e etapa.
+10. O **sininho**, no topo, reúne os alertas do Daily e do Crew.
 7. No Galpão Logístico há um RDO com **ajustes pedidos**: entre como Carlos, corrija e reenvie.
 
 Usuários do Daily: `carlos@construtoraexemplo.com.br` (campo) e `ana@construtoraexemplo.com.br` (administradora). Eles aparecem numa linha embaixo do login; tocar no e-mail preenche o campo. A senha não é conferida.
@@ -70,8 +73,16 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 - **Ditado** pelo reconhecimento de voz do navegador (Chrome no Android; em outros, o microfone do teclado) e **Melhorar texto**, que reescreve a fala informal em linguagem técnica, mostrando o antes e o depois.
 - **Offline-first**: tudo é salvo no aparelho enquanto a pessoa preenche. Sem internet, o envio vai para uma fila e sobe sozinho, foto por foto, quando a conexão volta. O app inteiro abre sem internet depois do primeiro acesso (service worker).
 
+**Notificações:** o **sininho** na barra superior reúne os alertas de todos os módulos, com contador de não lidas e "marcar todas como lidas". O Daily também usa a notificação do sistema no celular. Sem SMS nem e-mail por enquanto.
+
+**Crew: ponto da equipe** (análise em [`docs/crew-analise.md`](docs/crew-analise.md))
+- **Encarregado (celular):** bate o ponto da equipe inteira num aparelho: entrada, intervalo e volta, troca de obra (com o deslocamento, que conta como hora), chegada e saída. Cada batida guarda a hora, a obra, a etapa (cost code), o GPS com a precisão, se estava dentro da **cerca** da obra (150 m), quem registrou e se teve foto. Fora da cerca, a batida não é bloqueada: fica marcada para conferência. Vê as horas da equipe na semana, com alertas (sem saída, fora da obra, sem intervalo).
+- **Escritório:** **Agora** (quem está trabalhando em cada obra, em intervalo ou em deslocamento, e as batidas fora da obra para conferir); **Timesheets** por semana (horas por dia, total, extra acima de 40 h com 1,5×, custo, aprovar ou devolver, ajustar com motivo e exportar CSV para a folha); **Custos** de mão de obra por obra e etapa, com o deslocamento e o adicional de hora extra; **mapa do dia** de cada pessoa (trilha simulada, só com o ponto aberto) e linha do tempo.
+- **Regras:** batida nunca é editada nem apagada (ajuste é uma batida nova com quem, quando e por quê); sem arredondamento de minutos; hora extra semanal (FLSA); deslocamento entre obras é hora paga.
+- **Ligação com o Daily:** ao começar um RDO, a equipe vem de quem bateu entrada na obra no dia (botão para atualizar).
+
 **Daily: RDO obrigatório** (regras em [`docs/alertas.md`](docs/alertas.md))
-- Prazo diário às **18h**, lembrete às **16h**, SMS às 18h e resumo para o escritório às **8h do dia seguinte**.
+- Prazo diário às **18h**, lembrete às **16h**, alerta de atraso às 18h e aviso ao escritório às **8h do dia seguinte**, tudo pelo **sininho** e pela notificação do celular (sem SMS).
 - Tela Hoje com faixa de RDOs atrasados e do que falta hoje ("faltam 1h30"); contador de pendências na aba e no ícone do app.
 - RDO atrasado pode ser preenchido (até 3 dias de trabalho para trás) e fica marcado como "enviado com atraso" no relatório e no PDF.
 - "Sem atividade hoje / neste dia" com motivo (chuva, feriado, obra parada…): registra o dia e para os alertas.
@@ -114,16 +125,22 @@ Cada papel só abre a própria área: o campo não abre o painel, e o administra
 | `js/lacre.js` | Hash do RDO aprovado e conferência do lacre |
 | `js/relatorio.js` | O relatório usado na tela, no PDF e no link do cliente |
 | `js/exemplo.js` | Empresa, plano, usuários, obras e RDOs fictícios |
+| `js/crew.js` | Crew: modelo do ponto (batidas, jornada, semana, hora extra, custos) e os dados de exemplo de duas semanas |
+| `js/crew-telas.js` | Crew: telas do encarregado e do escritório, mapa do dia e notificações |
+| `js/prazos.js` | Daily: prazo do RDO e régua de alertas |
 | `sw.js` | Service worker: o app abre sem internet |
 
-Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/crew`, `#/measure`; no Daily, `#/daily` (abre a área do papel), campo em `#/daily/campo`, `#/daily/campo/obra/ID`, `#/daily/campo/rdo/ID` e `#/daily/historico`, administrador em `#/daily/painel`, `#/daily/aprovacoes`, `#/daily/obras`, `#/daily/obras/ID` e `#/daily/painel/rdo/ID`, e o PDF em `#/daily/pdf/ID`; e o link público `#/cliente/CÓDIGO`.
+Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/measure`; no Crew, `#/crew` (abre a área do papel), encarregado em `#/crew/equipe` e `#/crew/horas`, escritório em `#/crew/agora`, `#/crew/timesheets/SEMANA`, `#/crew/semana/FUNCIONÁRIO/SEMANA` e `#/crew/custos/SEMANA`, e o dia em `#/crew/dia/FUNCIONÁRIO/DATA`; no Daily, `#/daily` (abre a área do papel), campo em `#/daily/campo`, `#/daily/campo/obra/ID`, `#/daily/campo/rdo/ID` e `#/daily/historico`, administrador em `#/daily/painel`, `#/daily/aprovacoes`, `#/daily/obras`, `#/daily/obras/ID` e `#/daily/painel/rdo/ID`, e o PDF em `#/daily/pdf/ID`; e o link público `#/cliente/CÓDIGO`.
 
 ## Testes
 
 `tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (87 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
+`tests/crew.test.mjs` cobre o Crew (37 verificações, quarta-feira às 16h30): ponto da equipe com GPS e cerca, troca de obra e chegada, intervalo, horas, permissões, equipe do RDO vinda do ponto, "Agora", batida para conferir, sininho, aprovação, CSV, ajuste de saída esquecida, custos e mapa do dia.
+
 ```bash
 npm install playwright   # uma vez
 python3 -m http.server 8123 &
 node tests/demo.test.mjs http://localhost:8123/
+node tests/crew.test.mjs http://localhost:8123/
 ```

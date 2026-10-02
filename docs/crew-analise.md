@@ -248,7 +248,7 @@ Nenhum dos concorrentes pesquisados fecha esse ciclo **ponto → RDO → orçame
 
 **Fora do MVP** (fase 2 em diante): trilha contínua e mapa do dia, cerca que lembra de bater ponto, integrações diretas com a folha, escalas, folha certificada, quilometragem.
 
-**No protótipo** (antes do MVP real), dá para demonstrar: ponto pela equipe, troca de obra, intervalo, cerca com sinalização, "quem está trabalhando", timesheet com aprovação, equipe do RDO preenchida e um **mapa do dia simulado**, com dados fictícios, para validar a reação dos clientes ao recurso.
+**No protótipo (feito):** ponto pela equipe com GPS e cerca, troca de obra com deslocamento, intervalo, "Agora", timesheets com aprovação, devolução, ajustes e CSV, custos por obra e etapa, equipe do RDO preenchida pelo ponto, mapa do dia simulado e notificações no sininho. Ficaram para depois: ponto pessoal, quiosque com PIN, foto real na batida, espanhol e perfil de regras por estado.
 
 ---
 

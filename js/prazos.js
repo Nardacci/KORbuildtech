@@ -1,8 +1,8 @@
 /* KORbuild Daily — prazo do RDO e régua de alertas.
  * O responsável pela obra deve enviar o RDO de cada dia de trabalho até o prazo (18h).
- *   16h  lembrete no celular ("falta o RDO de hoje")
- *   18h  prazo vencido: notificação + SMS
- *   8h do dia seguinte: o escritório recebe o resumo das obras sem RDO
+ *   16h  lembrete no sininho e no celular ("falta o RDO de hoje")
+ *   18h  prazo vencido: sininho e notificação no celular
+ *   8h do dia seguinte: o escritório vê no sininho e no painel as obras sem RDO
  * Dia sem trabalho (calendário da obra) ou registrado como "sem atividade" não gera alerta. */
 
 import { hoje, somarDias, diaDaSemana } from './util.js';

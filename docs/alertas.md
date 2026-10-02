@@ -8,7 +8,7 @@ O responsável pelo canteiro é obrigado a enviar o RDO de cada dia de trabalho.
 | --- | --- |
 | Prazo diário | **18h** do próprio dia |
 | Lembrete | **16h** (2h antes do prazo) |
-| Canal extra | **SMS** às 18h, quando o prazo vence |
+| Canais | **Sininho** (central de notificações do app) e **notificação do sistema** no celular. Sem SMS e sem e-mail por enquanto: dispensam cadastro e permissão de terceiros |
 | Escalada para o escritório | **Na manhã seguinte, às 8h** |
 | Dias cobrados | Os dias de trabalho do calendário da obra (padrão: segunda a sábado) |
 
@@ -16,10 +16,10 @@ O responsável pelo canteiro é obrigado a enviar o RDO de cada dia de trabalho.
 
 | Quando | Para quem | Canal | Mensagem |
 | --- | --- | --- | --- |
-| 16h | Responsável pela obra | Notificação no celular | "Falta o RDO de hoje do {obra}. Prazo: 18h." |
-| 18h | Responsável pela obra | Notificação + SMS | "KORbuild: o RDO de hoje do {obra} está atrasado. Preencha pelo app." |
+| 16h | Responsável pela obra | Sininho + notificação no celular | "Falta o RDO de hoje do {obra}. Prazo: 18h." |
+| 18h | Responsável pela obra | Sininho + notificação no celular | "O RDO de hoje do {obra} está atrasado. Toque para preencher." |
 | Ao abrir o app | Responsável pela obra | Tela Hoje | Faixa vermelha com os RDOs atrasados e faixa âmbar com o que falta hoje (e quanto tempo falta) |
-| 8h do dia seguinte | Escritório (administradores) | E-mail + painel | Lista das obras sem RDO no último dia de trabalho, com o responsável |
+| 8h do dia seguinte | Escritório (administradores) | Sininho + painel | Lista das obras sem RDO no último dia de trabalho, com o responsável |
 
 ## Regras
 
@@ -32,9 +32,9 @@ O responsável pelo canteiro é obrigado a enviar o RDO de cada dia de trabalho.
 
 ## Canais: o que esperar
 
-- **Notificação no celular:** sem custo. Android: funciona com o app instalado ou aberto no navegador. iPhone: só com o app instalado na tela inicial (iOS 16.4+).
-- **SMS (mercado-alvo: EUA):** pago por mensagem (provedores como Twilio). Exige o registro **A2P 10DLC** (marca e campanha, pelo provedor), que leva de dias a semanas, e consentimento do usuário para receber mensagens (TCPA), com saída por "STOP". Começar esse registro com antecedência. Prazo e horários seguem o fuso de cada obra.
-- **E-mail:** para o resumo diário do escritório.
+- **Sininho:** central de notificações dentro do app, na barra superior de todos os módulos, com contador de não lidas. Sem custo e sem cadastro.
+- **Notificação do sistema (celular):** sem custo. Android: funciona com o app instalado ou aberto no navegador. iPhone: só com o app instalado na tela inicial (iOS 16.4+). Na versão final, o servidor envia mesmo com o app fechado.
+- **SMS e e-mail: fora por enquanto.** SMS nos EUA exige o registro A2P 10DLC e consentimento (TCPA). Podem voltar depois, se as entrevistas mostrarem necessidade.
 
 ## No protótipo
 
@@ -44,6 +44,6 @@ O responsável pelo canteiro é obrigado a enviar o RDO de cada dia de trabalho.
 | Faixas de atraso e do prazo de hoje, contador nas abas e no ícone do app | Funcionando |
 | Preencher RDO atrasado (inclusive copiando de um RDO anterior) e marca de atraso no relatório | Funcionando |
 | "Sem atividade" com motivo | Funcionando |
-| Escalada no painel do escritório e prévia do e-mail das 8h | Funcionando |
+| Escalada no painel do escritório e no sininho | Funcionando |
 | Notificação real no celular ("Testar no celular") e lembretes às 16h/18h | Funcionam **com o app aberto** |
-| Envio agendado com o app fechado, SMS e e-mail de verdade | Precisam de servidor (versão final) |
+| Notificação com o app fechado | Precisa de servidor (versão final) |

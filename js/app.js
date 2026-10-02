@@ -11,8 +11,10 @@ import {
 import { criarDemonstracao, CONTAS_DEMO, VERSAO_DADOS } from './exemplo.js';
 import {
   usuarioAtual, entrar, sair, usuarioPorEmail, ehAdmin, registrarInteresse, modulo, definirPodeInstalar,
-  casca, telaLogin, telaModulos, telaEmBreve, telaConta,
+  casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
 } from './plataforma.js';
+import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew } from './crew-telas.js';
+import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
   PRAZO_HORA, ESCALADA_HORA, prazoDe, situacaoDeHoje, diasAtrasados, pendenciasDoCampo, semRdoOntem, enviadoComAtraso, descreverDias,
@@ -115,7 +117,7 @@ async function notificar(titulo, corpo, tag) {
 }
 
 /* Com o app aberto, confere a cada minuto: às 16h lembra, às 18h avisa do atraso (uma vez por obra e dia).
- * Na versão final, quem dispara é o servidor (notificação e SMS), mesmo com o app fechado. */
+ * Na versão final, quem dispara é o servidor (notificação no celular e no sininho), mesmo com o app fechado. */
 function conferirLembretes() {
   const u = usuarioAtual();
   if (!u || ehAdmin(u)) { atualizarBadge(0); return; }
@@ -194,6 +196,11 @@ function desenhar() {
   else if (p[0] === 'conta') {
     if (!ehAdmin(u)) return trocarRota('#/inicio');
     html = telaConta(u);
+  } else if (p[0] === 'crew' && estado().empresa.modulos.includes('crew')) {
+    const r = telaCrew(p.slice(1));
+    if (r && r.trocar) return trocarRota(r.trocar);
+    html = r;
+    modo = 'crew';
   } else if (modulo(p[0])) html = telaEmBreve(u, p[0]);
   else if (p[0] === 'inicio') html = telaModulos(u, saudacao());
   else return trocarRota('#/inicio');
@@ -450,11 +457,22 @@ function novoRdo(obraId, baseId, data) {
     ocorrencias: [], fotos: [], observacoes: '', historico: [],
   };
   if (!r.atividades.length) r.atividades.push({ id: novoId('at'), descricao: '', local: '', situacao: 'andamento' });
+  equipeDoPonto(r);
   registrar(r, usuarioAtual().nome, (base ? 'Começou o RDO copiando o RDO nº ' + base.numero : 'Começou o RDO') + (data < hoje() ? ' (preenchimento atrasado de ' + dataCurta(data) + ')' : ''));
   estado().rdos.push(r);
   salvar();
   ir('#/daily/campo/rdo/' + r.id);
   climaAutomatico(r, true);
+}
+
+/* Com o KORbuild Crew contratado, a equipe do RDO vem do ponto: quem bateu entrada na obra no dia. */
+function equipeDoPonto(r) {
+  if (!estado().empresa.modulos.includes('crew') || !estado().crew) return false;
+  const p = presencaNaObra(r.obraId, r.data);
+  if (!p.total) return false;
+  r.equipe = Object.entries(p.porFuncao).map(([funcao, v]) => ({ funcao, presentes: v.presentes, faltas: v.faltas }));
+  r.equipeFonte = 'crew';
+  return true;
 }
 
 /* ---------- Canteiro: preencher o RDO ---------- */
@@ -538,7 +556,10 @@ function secaoEquipe(r) {
   const total = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
   const faltas = r.equipe.reduce((s, e) => s + Number(e.faltas || 0), 0);
   const usadas = new Set(r.equipe.map((e) => e.funcao));
+  const temCrew = estado().empresa.modulos.includes('crew');
   return '<section class="secao" id="s-equipe">' + cabecalhoSecao('equipe', 'Equipe', total > 0, '<span class="secao-total">' + total + ' presentes' + (faltas ? ' · ' + faltas + (faltas === 1 ? ' falta' : ' faltas') : '') + '</span>') +
+    (r.equipeFonte === 'crew' ? '<p class="fonte-crew">' + icone('crew', 16) + 'Preenchida pelo ponto do KORbuild Crew: quem bateu entrada nesta obra. Ajuste se precisar.</p>' : '') +
+    (temCrew ? '<button type="button" class="link-sutil alinhado-esquerda" data-acao="equipe-do-ponto">Atualizar pela equipe que bateu ponto</button>' : '') +
     (r.equipe.length ? '<div class="tabela-edicao"><div class="tabela-cab"><span>Função</span><span>Presentes</span><span>Faltas</span><span></span></div>' +
       r.equipe.map((e, i) => '<div class="tabela-linha"><b>' + esc(e.funcao) + '</b>' +
         stepper('equipe-mudar', i, 'presentes', e.presentes, 'presentes de ' + esc(e.funcao)) +
@@ -707,7 +728,7 @@ function blocoSemRdoOntem() {
   if (!lista.length) return '';
   return '<section class="aviso aviso-alerta aviso-escalada"><div class="aviso-cabeca"><b>' +
       (lista.length === 1 ? '1 obra ficou sem RDO' : lista.length + ' obras ficaram sem RDO') + ' no último dia de trabalho</b>' +
-      '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="ver-resumo">Ver e-mail do resumo</button></div>' +
+      '</div>' +
     '<ul class="lista-atrasos">' + lista.map(({ obra, data }) => {
       const resp = estado().usuarios.find((u) => u.id === obra.responsavelId);
       return '<li><a href="#/daily/obras/' + obra.id + '"><b>' + esc(obra.nome) + '</b><span>' + primeiraMaiuscula(diaDaSemana(data)) + ', ' + dataCurta(data) + ' · responsável: ' + esc(resp ? resp.nome : '—') + '</span>' + icone('seta', 18) + '</a></li>';
@@ -779,7 +800,7 @@ function telaObraAdmin(id) {
       '<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">RDO obrigatório</h2>' +
         '<button type="button" class="link" data-acao="em-breve" data-texto="Editar responsável, prazo e calendário vem na próxima etapa.">Editar</button></div>' +
         '<div class="linha-info"><span>Responsável</span><b>' + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
-        '<div class="linha-info"><span>Prazo diário</span><b>' + PRAZO_HORA + 'h · lembrete às 16h e SMS às 18h</b></div>' +
+        '<div class="linha-info"><span>Prazo diário</span><b>' + PRAZO_HORA + 'h · lembrete às 16h e alerta às 18h (sininho e celular)</b></div>' +
         '<div class="linha-info"><span>Dias de trabalho</span><b>' + primeiraMaiuscula(descreverDias(o)) + '</b></div>' +
         '<div class="linha-info"><span>Escritório é avisado</span><b>No dia seguinte, às ' + ESCALADA_HORA + 'h</b></div>' +
       '</section>' +
@@ -1030,30 +1051,24 @@ const acoes = {
     desenhar();
     sincronizar();
   },
-  async 'ver-resumo'() {
-    const lista = semRdoOntem();
+  'ler-notificacao'(el) {
+    marcarLidas(usuarioAtual(), [el.dataset.id]);
+    // a navegação segue pelo href do link
+  },
+  'ler-todas'(el, ev) {
+    ev.preventDefault();
     const u = usuarioAtual();
-    await abrirDialogo({
-      titulo: 'Resumo enviado às ' + ESCALADA_HORA + 'h',
-      corpo: '<div class="email"><p class="email-cabeca"><b>Para:</b> ' + esc(u.email) + '<br><b>Assunto:</b> ' + lista.length + (lista.length === 1 ? ' obra ficou' : ' obras ficaram') + ' sem RDO ontem</p>' +
-        '<p>Bom dia, ' + esc(u.nome.split(' ')[0]) + '. Estas obras não enviaram o RDO no último dia de trabalho:</p><ul>' +
-        lista.map(({ obra, data }) => {
-          const resp = estado().usuarios.find((x) => x.id === obra.responsavelId);
-          return '<li><b>' + esc(obra.nome) + '</b> · ' + dataCurta(data) + ' · ' + esc(resp ? resp.nome + ' ' + (resp.telefone || '') : '—') + '</li>';
-        }).join('') + '</ul><p class="mudo pequeno">O responsável já recebeu o lembrete às 16h e o SMS às 18h.</p></div>' +
-        '<p class="mudo pequeno">No protótipo, o e-mail é só esta prévia. Na versão final, o servidor envia todo dia às ' + ESCALADA_HORA + 'h.</p>',
-      acoes: [{ rotulo: 'Fechar', valor: true, classe: 'btn-primario' }],
-    });
+    marcarLidas(u, notificacoesDe(u).map((n) => n.id));
+    desenhar();
   },
   async 'testar-lembrete'() {
-    const u = usuarioAtual();
     const exemplo = pendenciasDoCampo().hojeSemRdo[0] || { obra: estado().obras[0] };
     const res = await abrirDialogo({
       titulo: 'Lembretes do RDO',
       corpo: '<ol class="regua">' +
-          '<li><b>16h · notificação no celular</b><span>"Falta o RDO de hoje do ' + esc(exemplo.obra.nome) + '. Prazo: 18h."</span></li>' +
-          '<li><b>18h · notificação + SMS</b><span>SMS para ' + esc(u.telefone || 'o seu celular') + ': "KORbuild: o RDO de hoje do ' + esc(exemplo.obra.nome) + ' está atrasado. Preencha pelo app."</span></li>' +
-          '<li><b>8h do dia seguinte · escritório</b><span>O escritório recebe por e-mail a lista das obras que ficaram sem RDO.</span></li>' +
+          '<li><b>16h · sininho + notificação no celular</b><span>"Falta o RDO de hoje do ' + esc(exemplo.obra.nome) + '. Prazo: 18h."</span></li>' +
+          '<li><b>18h · sininho + notificação no celular</b><span>"O RDO de hoje do ' + esc(exemplo.obra.nome) + ' está atrasado. Toque para preencher."</span></li>' +
+          '<li><b>8h do dia seguinte · escritório</b><span>O escritório vê no sininho e no painel as obras que ficaram sem RDO.</span></li>' +
         '</ol>' +
         '<p class="mudo pequeno">Dias sem trabalho no calendário da obra, ou registrados como "sem atividade", não geram lembrete. No protótipo, os lembretes saem só com o app aberto; na versão final, o servidor envia mesmo com o app fechado.</p>',
       acoes: [{ rotulo: 'Fechar', valor: false }, { rotulo: 'Enviar notificação de teste', valor: true, classe: 'btn-primario' }],
@@ -1076,6 +1091,12 @@ const acoes = {
       r.clima[el.dataset.turno].praticavel = el.dataset.valor === '1';
       r.clima.fonte = r.clima.fonte === 'automatico' || r.clima.fonte === 'ajustado' ? 'ajustado' : 'manual';
     });
+  },
+  'equipe-do-ponto'() {
+    const r = rdoDaTela();
+    if (!r || !editavel(r)) return;
+    if (equipeDoPonto(r)) { salvarComAviso(); desenhar(); toast('Equipe atualizada pelo ponto do Crew.'); }
+    else toast('Ninguém bateu entrada nesta obra neste dia ainda.');
   },
   'equipe-add'(el) { mudar((r) => r.equipe.push({ funcao: el.dataset.valor, presentes: 1, faltas: 0 })); },
   'equipe-outra'() {
@@ -1344,7 +1365,45 @@ function carregando() {
   return '<div class="carregando"><span class="girando grande"></span><p>Preparando a demonstração…</p></div>';
 }
 
+/* ---------- Notificações do Daily (para o sininho) ---------- */
+
+function notificacoesDaily(u) {
+  const lista = [];
+  const { rdos } = estado();
+  if (ehAdmin(u)) {
+    for (const { obra, data } of semRdoOntem()) {
+      const resp = estado().usuarios.find((x) => x.id === obra.responsavelId);
+      lista.push({ id: 'd-semrdo-' + obra.id + data, em: new Date(hoje() + 'T08:00:00').getTime(), modulo: 'daily', titulo: obra.nome + ' ficou sem RDO em ' + dataCurta(data).slice(0, 5) + (resp ? ' (' + resp.nome + ')' : ''), href: '#/daily/obras/' + obra.id });
+    }
+    for (const r of rdos.filter((x) => recebido(x) && x.status === 'enviado')) {
+      lista.push({ id: 'd-recebido-' + r.id, em: r.enviadoEm, modulo: 'daily', titulo: 'RDO nº ' + r.numero + ' de ' + acharObra(r.obraId).nome + ' aguardando aprovação', href: '#/daily/painel/rdo/' + r.id });
+    }
+  } else {
+    const p = pendenciasDoCampo();
+    for (const { obra, situacao } of p.hojeSemRdo) if (situacao === 'lembrete') {
+      lista.push({ id: 'd-lembrete-' + obra.id + hoje(), em: new Date(hoje() + 'T16:00:00').getTime(), modulo: 'daily', titulo: 'Falta o RDO de hoje de ' + obra.nome + ' · prazo ' + PRAZO_HORA + 'h', href: '#/daily/campo/obra/' + obra.id });
+    }
+    for (const { obra, data } of p.atrasados) {
+      lista.push({ id: 'd-atraso-' + obra.id + data, em: prazoDe(data), modulo: 'daily', titulo: 'RDO de ' + dataCurta(data).slice(0, 5) + ' atrasado: ' + obra.nome, href: '#/daily/campo/obra/' + obra.id });
+    }
+    for (const r of p.ajustes) {
+      const h = r.historico.filter((x) => x.acao.startsWith('Pediu ajustes')).slice(-1)[0];
+      lista.push({ id: 'd-ajuste-' + r.id + (h ? h.em : ''), em: h ? h.em : r.enviadoEm, modulo: 'daily', titulo: 'O escritório pediu ajustes no RDO nº ' + r.numero, href: '#/daily/campo/rdo/' + r.id });
+    }
+    for (const r of rdos.filter((x) => x.status === 'aprovado' && x.aprovadoEm > Date.now() - 3 * 86400000)) {
+      lista.push({ id: 'd-aprovado-' + r.id, em: r.aprovadoEm, modulo: 'daily', titulo: 'RDO nº ' + r.numero + ' de ' + acharObra(r.obraId).nome + ' aprovado', href: '#/daily/campo/rdo/' + r.id });
+    }
+  }
+  return lista;
+}
+
 async function iniciar() {
+  Object.assign(acoes, acoesCrew);
+  ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
+  definirFonteNotificacoes((u) => {
+    const mods = estado().empresa.modulos;
+    return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []);
+  });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
