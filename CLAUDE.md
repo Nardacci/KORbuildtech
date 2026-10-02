@@ -9,7 +9,7 @@ Protótipo de validação do Relatório Diário de Obra (veja o README). Site es
   - texto que a pessoa vê fica perto do topo de cada módulo ou em constantes nomeadas (ex.: `SITUACOES`, `TIPOS_OCORRENCIA`, `STATUS_RDO` em `js/relatorio.js`), não espalhado em lógica;
   - datas, números e unidades passam por funções de `js/util.js` (`dataCurta`, `tamanho`…), para trocar o formato num lugar só;
   - termos e campos só do Brasil (RDO, CREA, CNPJ, "praticável/impraticável", m² e °C) ficam isolados em dados (`js/exemplo.js`) ou rótulos, nunca em regra de negócio.
-- A tradução (textos, termos do setor como *Daily Report / Daily Log*, unidades e formatos dos EUA) é uma etapa própria, combinada antes.
+- **Não traduzir agora.** A tradução (textos, termos do setor como *Daily Report / Daily Log*, unidades e formatos dos EUA) acontece só quando o projeto estiver finalizado, como uma etapa própria. Até lá, tudo novo é escrito em português.
 
 ## Testes
 

@@ -6,7 +6,7 @@ Relatório Diário de Obra (RDO) no celular: fotos com data, hora e GPS, clima a
 
 ## Idioma
 
-O protótipo é em português para a validação. **A versão final do produto será toda em inglês.** As regras para não amarrar o código ao português estão em `CLAUDE.md`.
+O protótipo é em português para a validação. **A versão final do produto será toda em inglês.** A tradução fica para quando o projeto estiver finalizado; até lá, tudo segue em português. As regras para não amarrar o código ao português estão em `CLAUDE.md`.
 
 ## Como abrir
 
