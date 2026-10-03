@@ -5,7 +5,7 @@
  *  - Condição (ex.: "Paredes externas") ≠ medições (os desenhos, em uma ou mais folhas).
  *  - Guardado: polegadas, polegadas², polegadas³. Na tela: ft-in, lin ft, sq ft, cu yd (js/imperial.js). */
 
-import { novoId } from './util.js';
+import { novoId, hoje, somarDias } from './util.js';
 import { estado, salvar } from './armazem.js';
 import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2_POR_PE2 } from './imperial.js';
 import { calcularLinha, validar } from './formulas.js';
@@ -25,6 +25,61 @@ export const TIPOS = {
 };
 // Cores das condições, na ordem (bem distintas entre si e da planta em preto e branco)
 export const CORES = ['#2563EB', '#C2410C', '#0F766E', '#7C3AED', '#B45309', '#DB2777', '#0891B2', '#4D7C0F'];
+// Paleta sugerida para os assemblies (a pessoa também pode escolher qualquer outra cor)
+export const PALETA = CORES.concat(['#DC2626', '#16A34A', '#9333EA', '#EA580C', '#1E3A8A', '#525252']);
+const COR_VALIDA = /^#[0-9a-f]{6}$/i;
+
+/* ---------- Projetos ---------- */
+
+export const TIPOS_PROJETO = {
+  'residencial-uni': 'Residencial unifamiliar', 'residencial-multi': 'Residencial multifamiliar',
+  comercial: 'Comercial', industrial: 'Industrial', reforma: 'Reforma / ampliação', outro: 'Outro',
+};
+export const SITUACOES = {
+  orcamento: { nome: 'Em orçamento', classe: 'etiqueta-azul' },
+  enviada: { nome: 'Proposta enviada', classe: 'etiqueta-ambar' },
+  ganha: { nome: 'Ganha', classe: 'etiqueta-verde' },
+  perdida: { nome: 'Perdida', classe: 'etiqueta-neutro' },
+};
+export function enderecoDoProjeto(p) {
+  return [p.endereco, p.cidade, [p.estado, p.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+}
+
+export function salvarProjeto(id, dados) {
+  const t = (k) => String(dados[k] || '').trim();
+  const d = {
+    nome: t('nome'), cliente: t('cliente'), endereco: t('endereco'), cidade: t('cidade'), estado: t('estado').toUpperCase(), zip: t('zip'),
+    tipo: dados.tipo, situacao: dados.situacao, descricao: t('descricao'), obraId: t('obraId') || null, estimadorId: t('estimadorId') || null, prazoProposta: t('prazoProposta') || null,
+  };
+  if (!d.nome) return { erro: 'Dê um nome ao projeto.' };
+  if (!d.cliente) return { erro: 'Informe o cliente (quem pediu o orçamento).' };
+  if (!d.cidade || !d.estado) return { erro: 'Informe a cidade e o estado da obra.' };
+  if (!/^[A-Z]{2}$/.test(d.estado)) return { erro: 'Estado com 2 letras (ex.: NH).' };
+  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: 'ZIP code com 5 dígitos (ex.: 03104).' };
+  if (!TIPOS_PROJETO[d.tipo]) return { erro: 'Escolha o tipo de obra.' };
+  if (!SITUACOES[d.situacao]) return { erro: 'Escolha a situação.' };
+  if (d.prazoProposta && !/^\d{4}-\d{2}-\d{2}$/.test(d.prazoProposta)) return { erro: 'Prazo da proposta inválido.' };
+  if (id) { Object.assign(projeto(id), d, { alteradoEm: Date.now() }); salvar(); return { ok: true, id }; }
+  const novo = { id: novoId('pj'), ...d, criadoEm: Date.now() };
+  mz().projetos.push(novo);
+  salvar();
+  return { ok: true, id: novo.id };
+}
+
+/* Excluir o projeto apaga as folhas e as condições (com as medições) dele. */
+export function excluirProjeto(id) {
+  mz().projetos = projetos().filter((p) => p.id !== id);
+  mz().folhas = mz().folhas.filter((f) => f.projetoId !== id);
+  mz().condicoes = mz().condicoes.filter((c) => c.projetoId !== id);
+  salvar();
+}
+
+/* Cor da marcação no desenho: a do primeiro assembly visível da condição; sem assembly, a da condição. */
+export function corDaCondicao(c, visivel) {
+  const as = (c.assemblies || []).map(assembly).filter(Boolean);
+  const a = (visivel ? as.find((x) => visivel(x.id)) : null) || as[0];
+  return a && a.cor ? a.cor : c.cor;
+}
 
 /* ---------- Escala ---------- */
 
@@ -116,9 +171,9 @@ export function totaisDaCondicao(c) {
 }
 
 /* Ponto mais próximo entre os vértices já desenhados na folha (para "grudar" o clique). */
-export function verticeProximo(folhaId, ponto, raioPts) {
+export function verticeProximo(folhaId, ponto, raioPts, filtro) {
   let melhor = null, d0 = raioPts;
-  for (const c of mz().condicoes) for (const m of c.medicoes) if (m.folhaId === folhaId) for (const p of m.pontos) {
+  for (const c of mz().condicoes) if (!filtro || filtro(c)) for (const m of c.medicoes) if (m.folhaId === folhaId) for (const p of m.pontos) {
     const d = distancia(p, ponto);
     if (d < d0) { d0 = d; melhor = p; }
   }
@@ -223,7 +278,10 @@ export function salvarAssembly(id, dados) {
     linhas.push({ id: l.id || novoId('ln'), itemId: l.itemId, formula: String(l.formula).trim(), perda, passo: Number(l.passo) || 0 });
   }
   if (!linhas.length) return { erro: 'O assembly precisa de pelo menos uma linha.' };
-  const dadosOk = { nome, tipo, descricao: (dados.descricao || '').trim(), linhas };
+  let cor = String(dados.cor || '').trim();
+  if (cor && !COR_VALIDA.test(cor)) return { erro: 'Cor inválida.' };
+  if (!cor) cor = id && assembly(id).cor ? assembly(id).cor : PALETA.find((x) => !assemblies().some((a) => a.cor === x)) || PALETA[0];
+  const dadosOk = { nome, tipo, descricao: (dados.descricao || '').trim(), cor: cor.toUpperCase(), linhas };
   if (id) { Object.assign(assembly(id), dadosOk); salvar(); return { ok: true, id }; }
   const novo = { id: novoId('as'), ...dadosOk };
   mz().assemblies.push(novo);
@@ -338,7 +396,7 @@ const linhasJanela = (unidade) => [
   ln('l5', 'it-mo-janela', 'MeasuredCount * 2.5', 0, 0),
 ];
 const ASSEMBLIES_EXEMPLO = [
-  { id: 'as-parede', nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.', linhas: [
+  { id: 'as-parede', cor: CORES[0], nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.', linhas: [
     ln('l1', 'it-stud', 'MeasuredLinear * 12 / 16', 15, 1),
     ln('l2', 'it-plate', 'MeasuredLinear * 3 / 16', 10, 1),
     ln('l3', 'it-osb', 'NetSurfaceArea / 32', 10, 1),
@@ -348,31 +406,31 @@ const ASSEMBLIES_EXEMPLO = [
     ln('l7', 'it-mo-estrutura', 'MeasuredLinear * 0.35', 0, 0),
     ln('l8', 'it-mo-drywall', 'SurfaceArea * 0.02', 0, 0),
   ] },
-  { id: 'as-lvp', nome: 'Piso LVP com manta', tipo: 'area', descricao: 'Piso vinílico flutuante sobre manta.', linhas: [
+  { id: 'as-lvp', cor: CORES[1], nome: 'Piso LVP com manta', tipo: 'area', descricao: 'Piso vinílico flutuante sobre manta.', linhas: [
     ln('l1', 'it-lvp', 'MeasuredArea / 20', 8, 1),
     ln('l2', 'it-manta', 'MeasuredArea / 100', 5, 1),
     ln('l3', 'it-mo-piso', 'MeasuredArea * 0.03', 0, 0),
   ] },
-  { id: 'as-laje', nome: 'Laje de concreto com tela (com espessura)', tipo: 'area', descricao: 'Concreto usinado pedido de meia em meia jarda. Precisa da espessura na condição.', linhas: [
+  { id: 'as-laje', cor: CORES[7], nome: 'Laje de concreto com tela (com espessura)', tipo: 'area', descricao: 'Concreto usinado pedido de meia em meia jarda. Precisa da espessura na condição.', linhas: [
     ln('l1', 'it-conc', 'VolumeCY', 5, 0.5),
     ln('l2', 'it-tela', 'MeasuredArea / 750', 10, 1),
     ln('l3', 'it-mo-concreto', 'MeasuredArea * 0.02', 0, 0),
   ] },
-  { id: 'as-porta', nome: 'Porta interna 30" pré-montada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição dos dois lados.', linhas: [
+  { id: 'as-porta', cor: CORES[2], nome: 'Porta interna 30" pré-montada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição dos dois lados.', linhas: [
     ln('l1', 'it-porta', 'MeasuredCount', 0, 1),
     ln('l2', 'it-fechadura', 'MeasuredCount', 0, 1),
     ln('l3', 'it-guarnicao', 'MeasuredCount * 2 * (2 * OpeningHeight + OpeningWidth) / 7', 10, 1),
     ln('l4', 'it-mo-porta', 'MeasuredCount * 1.5', 0, 0),
   ] },
-  { id: 'as-jan-w1', nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: 'Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.', linhas: linhasJanela('it-jan-w1') },
-  { id: 'as-jan-w2', nome: 'Janela W2 4\'×4\' instalada', tipo: 'contagem', descricao: 'Igual à W1, com a janela 4\'×4\'.', linhas: linhasJanela('it-jan-w2') },
-  { id: 'as-porta-ext', nome: 'Porta de entrada instalada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).', linhas: [
+  { id: 'as-jan-w1', cor: CORES[3], nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: 'Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.', linhas: linhasJanela('it-jan-w1') },
+  { id: 'as-jan-w2', cor: CORES[4], nome: 'Janela W2 4\'×4\' instalada', tipo: 'contagem', descricao: 'Igual à W1, com a janela 4\'×4\'.', linhas: linhasJanela('it-jan-w2') },
+  { id: 'as-porta-ext', cor: CORES[5], nome: 'Porta de entrada instalada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).', linhas: [
     ln('l1', 'it-porta-ext', 'MeasuredCount', 0, 1),
     ln('l2', 'it-fech-ext', 'MeasuredCount', 0, 1),
     ln('l3', 'it-trim-ext', 'MeasuredCount * (2 * OpeningHeight + OpeningWidth) / 12', 15, 1),
     ln('l4', 'it-mo-porta', 'MeasuredCount * 3', 0, 0),
   ] },
-  { id: 'as-siding', nome: 'Siding vinil com J-channel', tipo: 'area', descricao: 'Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.', linhas: [
+  { id: 'as-siding', cor: CORES[6], nome: 'Siding vinil com J-channel', tipo: 'area', descricao: 'Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.', linhas: [
     ln('l1', 'it-siding', 'NetArea / 100', 10, 1),
     ln('l2', 'it-jchannel', 'OpeningPerimeter / 12.5', 10, 1),
     ln('l3', 'it-mo-siding', 'NetArea * 0.025', 0, 0),
@@ -382,7 +440,14 @@ const ASSEMBLIES_EXEMPLO = [
 export function criarDadosMeasure() {
   const projetoId = 'pj-casa';
   return {
-    projetos: [{ id: projetoId, nome: 'Casa modelo', endereco: '1450 Elm St, Manchester, NH', descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing' }],
+    projetos: [
+      { id: projetoId, nome: 'Casa modelo', cliente: 'Thompson Family', endereco: '88 Bridge St', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
+        descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing, siding vinil', obraId: null, estimadorId: 'u-marcia', prazoProposta: somarDias(hoje(), 6), criadoEm: Date.now() },
+      { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', cliente: 'LogSul Armazéns', endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
+        descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: 'galpao', estimadorId: 'u-ana', prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
+      { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', cliente: 'Sarah Mitchell', endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
+        descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: 'u-marcia', prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
+    ],
     folhas: [
       ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
     ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null })),

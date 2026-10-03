@@ -49,7 +49,7 @@ def cota(x1, y1, x2, y2, t, lado=1):  # cota com linha, marcas a 45° e texto (p
 def carimbo(titulo, escala, folha, extras=()):
     c.append('1 w 24 24 %d %d re S' % (W - 48, H - 48))
     c.append('1 w 940 24 260 %d re S' % (H - 48))
-    for (y, t, tam, f) in ((730, 'KORbuild', 16, 'F2'), (712, 'Planta de exemplo', 9, 'F1'), (640, 'CASA MODELO', 14, 'F2'), (622, '1450 Elm St, Manchester, NH', 9, 'F1'),
+    for (y, t, tam, f) in ((730, 'KORbuild', 16, 'F2'), (712, 'Planta de exemplo', 9, 'F1'), (640, 'CASA MODELO', 14, 'F2'), (622, '88 Bridge St, Manchester, NH', 9, 'F1'),
                            (560, titulo, 13, 'F2'), (540, 'SCALE: ' + escala, 10, 'F1'), (120, 'SHEET', 8, 'F1'), (90, folha, 28, 'F2'), (50, 'Prototipo - planta ficticia', 8, 'F1')):
         texto(956, y, t, tam, f)
     for (y, t, tam, f) in extras: texto(956, y, t, tam, f)

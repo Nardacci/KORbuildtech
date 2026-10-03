@@ -977,20 +977,26 @@ body.sem-rolagem { overflow: hidden; }
 
 /* ---------- Measure ---------- */
 :root { --cor-measure-claro: #EEF0FF; }
-.pagina-total { max-width: none; }
+.pagina-total { max-width: none; padding: 10px 16px 12px; gap: 8px; height: calc(100vh - var(--altura-topo)); }
+.mz-barra-titulo { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mz-barra-titulo .voltar { margin: 0; white-space: nowrap; }
+.mz-titulo { font-size: 16px; margin: 0; white-space: nowrap; }
 .mz-cor { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; flex-shrink: 0; }
-.mz-visor { display: flex; flex-direction: column; gap: 10px; }
+.mz-visor { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+.mz-visor:fullscreen { background: var(--fundo, #F4F5F7); padding: 10px; }
 .mz-barra { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 12px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: var(--sombra); }
 .mz-barra .btn-linha { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .mz-zoom { min-width: 48px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
-.mz-corpo { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; }
-.mz-area { position: relative; height: calc(100vh - 250px); min-height: 420px; overflow: auto; background: #E9ECF1; border: 1px solid var(--borda); border-radius: var(--raio-grande); }
+.mz-barra-fim { margin-left: auto; }
+.mz-trocar-folha { max-width: 260px; font-weight: 600; padding: 6px 8px; border: 1px solid var(--borda-forte); border-radius: var(--raio); background: var(--superficie); font: inherit; font-size: 13px; }
+.mz-corpo { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 10px; flex: 1; min-height: 0; }
+.mz-area { position: relative; height: 100%; min-height: 420px; overflow: auto; background: #E9ECF1; border: 1px solid var(--borda); border-radius: var(--raio-grande); }
 .mz-area:focus-visible { outline: 2px solid var(--primario); }
 .mz-folha { position: relative; margin: 8px; box-shadow: 0 1px 6px rgba(16, 24, 40, 0.18); background: #fff; }
 .mz-folha canvas { position: absolute; left: 0; top: 0; }
 #mz-desenho { cursor: crosshair; touch-action: none; }
 .mz-carregando { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--mudo); font-weight: 600; }
-.mz-painel { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 250px); min-height: 420px; overflow-y: auto; }
+.mz-painel { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow-y: auto; padding-right: 2px; }
 .mz-painel-cabeca { display: flex; justify-content: space-between; align-items: center; }
 .mz-painel-cabeca h2 { margin: 0; font-size: 16px; }
 .mz-cond { background: var(--superficie); border: 1px solid var(--borda); border-left: 4px solid var(--cor); border-radius: var(--raio); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
@@ -1005,9 +1011,41 @@ body.sem-rolagem { overflow: hidden; }
 .mz-dica { margin: 0; font-size: 13px; color: var(--texto-2); background: var(--superficie-2); border: 1px dashed var(--borda-forte); border-radius: var(--raio); padding: 8px 12px; }
 .tabela-quantidades .etiqueta { margin-left: 6px; }
 @media (max-width: 900px) {
-  .mz-corpo { grid-template-columns: 1fr; }
-  .mz-painel { max-height: none; min-height: 0; }
+  .pagina-total { height: auto; }
+  .mz-corpo { grid-template-columns: 1fr; grid-template-rows: none; }
+  .mz-area { height: 70vh; }
+  .mz-painel { order: 2; }
 }
+.mz-cond.oculta { opacity: 0.6; }
+.mz-cond.oculta .mz-cor { background: transparent !important; box-shadow: inset 0 0 0 2px var(--cor); }
+.mz-camadas { background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); padding: 8px 12px; }
+.mz-camadas summary { cursor: pointer; font-size: 14px; }
+.mz-camadas-lista { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; }
+.mz-camada { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+.mz-camada .mz-cor { margin-right: 0; }
+.mz-camada-nome { min-width: 0; }
+.mz-chip .mz-cor { width: 9px; height: 9px; margin-right: 2px; }
+/* Projetos */
+.mz-filtros { display: flex; flex-wrap: wrap; gap: 6px; }
+.mz-contagem { font-variant-numeric: tabular-nums; opacity: 0.75; margin-left: 2px; }
+.tabela-projetos td { vertical-align: top; }
+.mz-projeto-nome { color: var(--texto); }
+.mz-dados { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px 20px; margin: 0; }
+.mz-dados dt { font-size: 12px; color: var(--mudo); text-transform: uppercase; letter-spacing: 0.03em; }
+.mz-dados dd { margin: 2px 0 0; }
+.mz-grade-local { grid-template-columns: minmax(0, 2fr) 90px 130px; }
+.form-settings textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid var(--borda-forte); border-radius: var(--raio); }
+/* Cor do assembly */
+.mz-escolha-cor { border: 0; padding: 0; margin: 0; }
+.mz-cores { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.mz-amostra { position: relative; cursor: pointer; }
+.mz-amostra input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.mz-amostra span { display: block; width: 26px; height: 26px; border-radius: 6px; border: 2px solid var(--superficie); box-shadow: 0 0 0 1px var(--borda-forte); }
+.mz-amostra input:checked + span { box-shadow: 0 0 0 2px var(--texto); }
+.mz-amostra input:focus-visible + span { outline: 2px solid var(--primario); outline-offset: 2px; }
+.mz-outra-cor { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; margin-left: 6px; }
+.mz-outra-cor input { width: 40px; height: 30px; padding: 0; border: 1px solid var(--borda-forte); border-radius: 6px; background: none; cursor: pointer; }
+.mz-assembly { border-top: 4px solid var(--cor); }
 .mz-carregando[hidden] { display: none; }
 
 /* Measure: itens, assemblies e quantidades */
