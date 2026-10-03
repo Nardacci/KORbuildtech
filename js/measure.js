@@ -65,6 +65,8 @@ export function salvarCondicao(id, dados) {
 
 export function excluirCondicao(id) {
   mz().condicoes = mz().condicoes.filter((c) => c.id !== id);
+  // a contagem excluída deixa de ser vão descontado nas paredes e no siding
+  for (const c of mz().condicoes) if (c.props && c.props.vaos) c.props.vaos = c.props.vaos.filter((x) => x !== id);
   salvar();
 }
 
@@ -139,8 +141,38 @@ export function variaveisDaCondicao(c) {
     v.MeasuredArea = t.base / POL2_POR_PE2;
     if (p.profundidadePol) { v.Thickness = p.profundidadePol; v.VolumeCF = v.MeasuredArea * p.profundidadePol / POL_POR_PE; v.VolumeCY = v.VolumeCF / 27; }
     if (fator) v.PitchedArea = v.MeasuredArea * fator;
-  } else v.MeasuredCount = t.base;
+  } else {
+    v.MeasuredCount = t.base;
+    // vão (janela/porta): largura × altura de cada unidade contada
+    if (p.larguraPol) v.OpeningWidth = p.larguraPol / POL_POR_PE;
+    if (p.alturaPol) v.OpeningHeight = p.alturaPol / POL_POR_PE;
+    if (p.larguraPol && p.alturaPol) {
+      v.OpeningArea = t.base * v.OpeningWidth * v.OpeningHeight;
+      v.OpeningPerimeter = t.base * 2 * (v.OpeningWidth + v.OpeningHeight);
+    }
+  }
+  // parede e siding: descontar os vãos das condições de contagem ligadas (props.vaos)
+  if (c.tipo !== 'contagem') {
+    const vaos = vaosLigados(c);
+    v.OpeningCount = vaos.count; v.OpeningArea = vaos.area; v.OpeningPerimeter = vaos.perimetro;
+    if (v.SurfaceArea != null) v.NetSurfaceArea = Math.max(0, v.SurfaceArea - vaos.area);
+    if (v.MeasuredArea != null) v.NetArea = Math.max(0, v.MeasuredArea - vaos.area);
+  }
   return v;
+}
+
+/* Soma dos vãos (janelas, portas) das condições de contagem ligadas a uma parede ou ao siding. */
+export function vaosLigados(c) {
+  const r = { count: 0, area: 0, perimetro: 0, semTamanho: [] };
+  for (const id of (c.props && c.props.vaos) || []) {
+    const o = condicao(id);
+    if (!o || o.tipo !== 'contagem') continue;
+    const n = totaisDaCondicao(o).base;
+    const w = (o.props || {}).larguraPol / POL_POR_PE, h = (o.props || {}).alturaPol / POL_POR_PE;
+    r.count += n;
+    if (w && h) { r.area += n * w * h; r.perimetro += n * 2 * (w + h); } else if (n) r.semTamanho.push(o.nome);
+  }
+  return r;
 }
 
 /* ---------- Catálogo de itens ---------- */
@@ -285,16 +317,34 @@ const ITENS_EXEMPLO = [
   ['it-mo-piso', 'MO-FLOOR', 'Instalação de piso', 'mao-de-obra', 'hora', '09 65 00 · Resilient flooring'],
   ['it-mo-concreto', 'MO-CONC', 'Concretagem', 'mao-de-obra', 'hora', '03 30 00 · Cast-in-place concrete'],
   ['it-mo-porta', 'MO-DOOR', 'Instalação de porta', 'mao-de-obra', 'hora', '08 14 00 · Wood doors'],
+  ['it-jan-w1', 'WN-5040', 'Janela vinil 5\'-0" × 4\'-0" (W1)', 'material', 'each', '08 53 00 · Plastic windows'],
+  ['it-jan-w2', 'WN-4040', 'Janela vinil 4\'-0" × 4\'-0" (W2)', 'material', 'each', '08 53 00 · Plastic windows'],
+  ['it-flash', 'WN-FLASH', 'Fita de flashing 4" × 75\'', 'material', 'rolo', '07 65 00 · Flexible flashing', 'cobre 75 lin ft'],
+  ['it-trim-ext', 'TR-PVC-1X4', 'Guarnição externa PVC 1x4 × 12\'', 'material', 'peça', '06 22 00 · Millwork'],
+  ['it-porta-ext', 'DR-36-EXT', 'Porta de entrada 36" × 80" pré-montada', 'material', 'each', '08 14 00 · Wood doors'],
+  ['it-fech-ext', 'DR-HW-KEY', 'Fechadura com chave (entrada)', 'material', 'each', '08 71 00 · Door hardware'],
+  ['it-siding', 'SD-VINYL', 'Siding vinil (square)', 'material', 'square', '07 46 33 · Plastic siding', '1 square = 100 sq ft'],
+  ['it-jchannel', 'SD-JCH', 'J-channel 12\'6"', 'material', 'peça', '07 46 33 · Plastic siding', 'contorna janelas e portas'],
+  ['it-mo-janela', 'MO-WIN', 'Instalação de janela', 'mao-de-obra', 'hora', '08 53 00 · Plastic windows'],
+  ['it-mo-siding', 'MO-SID', 'Instalação de siding', 'mao-de-obra', 'hora', '07 46 33 · Plastic siding'],
 ];
+const VAOS_EXTERNOS = ['cd-w1', 'cd-w2', 'cd-d1'];
 const ln = (id, itemId, formula, perda, passo) => ({ id, itemId, formula, perda, passo });
+const linhasJanela = (unidade) => [
+  ln('l1', unidade, 'MeasuredCount', 0, 1),
+  ln('l2', 'it-flash', 'OpeningPerimeter / 75', 10, 1),
+  ln('l3', 'it-trim-ext', 'OpeningPerimeter / 12', 15, 1),
+  ln('l4', 'it-guarnicao', 'OpeningPerimeter / 7', 10, 1),
+  ln('l5', 'it-mo-janela', 'MeasuredCount * 2.5', 0, 0),
+];
 const ASSEMBLIES_EXEMPLO = [
-  { id: 'as-parede', nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno. Precisa da altura na condição.', linhas: [
+  { id: 'as-parede', nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.', linhas: [
     ln('l1', 'it-stud', 'MeasuredLinear * 12 / 16', 15, 1),
     ln('l2', 'it-plate', 'MeasuredLinear * 3 / 16', 10, 1),
-    ln('l3', 'it-osb', 'SurfaceArea / 32', 10, 1),
-    ln('l4', 'it-wrap', 'SurfaceArea / 1350', 10, 1),
-    ln('l5', 'it-r21', 'SurfaceArea / 40', 5, 1),
-    ln('l6', 'it-dw', 'SurfaceArea / 32', 12, 1),
+    ln('l3', 'it-osb', 'NetSurfaceArea / 32', 10, 1),
+    ln('l4', 'it-wrap', 'NetSurfaceArea / 1350', 10, 1),
+    ln('l5', 'it-r21', 'NetSurfaceArea / 40', 5, 1),
+    ln('l6', 'it-dw', 'NetSurfaceArea / 32', 12, 1),
     ln('l7', 'it-mo-estrutura', 'MeasuredLinear * 0.35', 0, 0),
     ln('l8', 'it-mo-drywall', 'SurfaceArea * 0.02', 0, 0),
   ] },
@@ -311,8 +361,21 @@ const ASSEMBLIES_EXEMPLO = [
   { id: 'as-porta', nome: 'Porta interna 30" pré-montada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição dos dois lados.', linhas: [
     ln('l1', 'it-porta', 'MeasuredCount', 0, 1),
     ln('l2', 'it-fechadura', 'MeasuredCount', 0, 1),
-    ln('l3', 'it-guarnicao', 'MeasuredCount * 5', 10, 1),
+    ln('l3', 'it-guarnicao', 'MeasuredCount * 2 * (2 * OpeningHeight + OpeningWidth) / 7', 10, 1),
     ln('l4', 'it-mo-porta', 'MeasuredCount * 1.5', 0, 0),
+  ] },
+  { id: 'as-jan-w1', nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: 'Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.', linhas: linhasJanela('it-jan-w1') },
+  { id: 'as-jan-w2', nome: 'Janela W2 4\'×4\' instalada', tipo: 'contagem', descricao: 'Igual à W1, com a janela 4\'×4\'.', linhas: linhasJanela('it-jan-w2') },
+  { id: 'as-porta-ext', nome: 'Porta de entrada instalada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).', linhas: [
+    ln('l1', 'it-porta-ext', 'MeasuredCount', 0, 1),
+    ln('l2', 'it-fech-ext', 'MeasuredCount', 0, 1),
+    ln('l3', 'it-trim-ext', 'MeasuredCount * (2 * OpeningHeight + OpeningWidth) / 12', 15, 1),
+    ln('l4', 'it-mo-porta', 'MeasuredCount * 3', 0, 0),
+  ] },
+  { id: 'as-siding', nome: 'Siding vinil com J-channel', tipo: 'area', descricao: 'Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.', linhas: [
+    ln('l1', 'it-siding', 'NetArea / 100', 10, 1),
+    ln('l2', 'it-jchannel', 'OpeningPerimeter / 12.5', 10, 1),
+    ln('l3', 'it-mo-siding', 'NetArea * 0.025', 0, 0),
   ] },
 ];
 
@@ -320,11 +383,17 @@ export function criarDadosMeasure() {
   const projetoId = 'pj-casa';
   return {
     projetos: [{ id: projetoId, nome: 'Casa modelo', endereco: '1450 Elm St, Manchester, NH', descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing' }],
-    folhas: [{ id: 'fl-a101', projetoId, nome: 'A-101 · First Floor Plan', arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo-a101.pdf', nome: 'casa-modelo-a101.pdf' }, pagina: 1, escala: null }],
+    folhas: [
+      ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
+    ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null })),
     condicoes: [
-      { id: 'cd-paredes', projetoId, nome: 'Paredes externas', tipo: 'linear', cor: CORES[0], props: { alturaPol: 108 }, medicoes: [], assemblies: ['as-parede'] },
+      { id: 'cd-paredes', projetoId, nome: 'Paredes externas', tipo: 'linear', cor: CORES[0], props: { alturaPol: 108, vaos: VAOS_EXTERNOS }, medicoes: [], assemblies: ['as-parede'] },
       { id: 'cd-piso', projetoId, nome: 'Piso (LVP)', tipo: 'area', cor: CORES[1], props: {}, medicoes: [], assemblies: ['as-lvp'] },
-      { id: 'cd-portas', projetoId, nome: 'Portas internas', tipo: 'contagem', cor: CORES[2], props: {}, medicoes: [], assemblies: ['as-porta'] },
+      { id: 'cd-portas', projetoId, nome: 'Portas internas', tipo: 'contagem', cor: CORES[2], props: { larguraPol: 30, alturaPol: 80 }, medicoes: [], assemblies: ['as-porta'] },
+      { id: 'cd-w1', projetoId, nome: 'Janelas W1 (5\'-0" × 4\'-0")', tipo: 'contagem', cor: CORES[3], props: { larguraPol: 60, alturaPol: 48 }, medicoes: [], assemblies: ['as-jan-w1'] },
+      { id: 'cd-w2', projetoId, nome: 'Janelas W2 (4\'-0" × 4\'-0")', tipo: 'contagem', cor: CORES[4], props: { larguraPol: 48, alturaPol: 48 }, medicoes: [], assemblies: ['as-jan-w2'] },
+      { id: 'cd-d1', projetoId, nome: 'Porta de entrada D1 (3\'-0" × 6\'-8")', tipo: 'contagem', cor: CORES[5], props: { larguraPol: 36, alturaPol: 80 }, medicoes: [], assemblies: ['as-porta-ext'] },
+      { id: 'cd-siding', projetoId, nome: 'Siding (fachadas)', tipo: 'area', cor: CORES[6], props: { vaos: VAOS_EXTERNOS }, medicoes: [], assemblies: ['as-siding'] },
     ],
     itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({ id, codigo, nome, categoria, unidade, etapa, nota: nota || '' })),
     assemblies: ASSEMBLIES_EXEMPLO,

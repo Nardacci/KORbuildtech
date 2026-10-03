@@ -132,7 +132,7 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 | `vendor/mathjs/` | mathjs 14.9 (Apache 2.0), carregada só no Measure |
 | `js/measure-telas.js` | Measure: projeto, visor com PDF.js e canvas (calibrar, conferir, medir), envio de PDF |
 | `vendor/pdfjs/` | PDF.js 4.10 (Mozilla, Apache 2.0), carregado só no Measure |
-| `assets/plantas/`, `tools/gerar-planta.py` | Planta de exemplo (PDF vetorial) e o script que a gera |
+| `assets/plantas/`, `tools/gerar-planta.py` | Jogo de plantas de exemplo (PDF vetorial de 3 folhas: planta, fachadas e corte) e o script que o gera |
 | `js/settings.js` | Settings: funcionários, regras de jornada e encargos com vigência, cálculo das horas extras pela regra, auditoria |
 | `js/settings-telas.js` | Settings: telas (funcionários, encargos, regras, auditoria) e avisos de certificação no sininho |
 | `js/crew-telas.js` | Crew: telas do encarregado e do escritório, mapa do dia e notificações |
@@ -146,7 +146,7 @@ Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/measure`; no Crew, `#/cr
 
 `tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (87 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, módulos por perfil, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
-`tests/measure.test.mjs` cobre o Measure (33 verificações, tela de computador): escala da lista e conferência, perímetro, área com desconto, contagem, zoom sem mudar a medida, volume por espessura, assemblies aplicados, materiais e horas com o rastro do cálculo, CSV, novo item e assembly com teste ao vivo, fórmula insegura recusada, envio de PDF com calibração e permissões. `tests/imperial.test.mjs` (50) e `tests/formulas.test.mjs` (31), sem navegador, cobrem o tradutor de pés e polegadas e o motor de fórmulas.
+`tests/measure.test.mjs` cobre o Measure (45 verificações, com fachadas, vãos e corte em outra escala, tela de computador): escala da lista e conferência, perímetro, área com desconto, contagem, zoom sem mudar a medida, volume por espessura, assemblies aplicados, materiais e horas com o rastro do cálculo, CSV, novo item e assembly com teste ao vivo, fórmula insegura recusada, envio de PDF com calibração e permissões. `tests/imperial.test.mjs` (50) e `tests/formulas.test.mjs` (31), sem navegador, cobrem o tradutor de pés e polegadas e o motor de fórmulas.
 
 `tests/crew.test.mjs` cobre o Crew (103 verificações, quarta-feira às 16h30): ponto da equipe com GPS e cerca, troca de obra e chegada, intervalo, horas, permissões, equipe do RDO vinda do ponto, "Agora", batida para conferir, sininho, aprovação, CSV, ajuste de saída esquecida, custos por obra/mês/semana com projeção, orçamento e encargos, valor hora com histórico (inclusive a trava de semana aprovada), mapa do dia, percurso com endereços, registros de localização e reprodução, e o Settings (só o escritório entra; encargos e regra com vigência sem mexer no passado; hora extra diária; autônomo 1099; desligamento; certificações a vencer; auditoria) e as permissões (trabalhador direto no Meu ponto e barrado nas outras telas, gestor sem Settings, Administrador fixo, perfil novo, usuário ligado ao funcionário).
 

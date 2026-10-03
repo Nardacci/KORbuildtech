@@ -58,12 +58,24 @@ condição medida ──► variáveis (lin ft, sq ft, cu yd…) ──► assem
 | MZ-16 | **Falta de propriedade não quebra:** se a condição não tem altura e o assembly usa `SurfaceArea`, a linha vira **pendência** ("Falta na condição: SurfaceArea (altura)") | `quantidadesDoProjeto` |
 | MZ-17 | **Arredondamento por linha** (como a compra de cada serviço); o total do item soma as linhas | `porItem` |
 | MZ-18 | **Rastro completo:** condição · assembly → fórmula = bruta → +perda = com perda → arredondado, com os valores das variáveis | tela e CSV |
+| MZ-19 | **Vãos:** uma contagem (janela, porta) pode ter **largura e altura do vão**. Ela gera `OpeningWidth`, `OpeningHeight`, `OpeningArea` (quantidade × largura × altura) e `OpeningPerimeter` (2 × (largura + altura) × quantidade), usados em guarnição, flashing e J-channel | `variaveisDaCondicao` |
+| MZ-20 | **Desconto de vãos ligado:** a parede (linear) e o siding (área) escolhem quais contagens descontar ("Descontar os vãos de"). Isso gera `OpeningCount`, `OpeningArea`, `OpeningPerimeter`, `NetSurfaceArea` (parede) e `NetArea` (área). Contar mais uma janela já muda o OSB, o drywall e o siding | `vaosLigados` |
+| MZ-21 | **Cada desenho é medido onde ele aparece:** paredes e piso na planta; siding (inclusive a empena) e janelas/portas na fachada; alturas, frost wall e inclinação no corte. Cada folha tem a sua escala | folhas |
 
 **Exemplo** (Paredes externas medidas com 135,87 lin ft, altura 9'):
 - SurfaceArea = 1.222,83 sq ft;
 - OSB: `SurfaceArea / 32` = 38,21 → +10% = 42,03 → para cima: **43 chapas**.
 
-**Dados de exemplo:** 18 itens (wood framing residencial) e 4 assemblies: parede externa 2x6 @ 16", piso LVP com manta, laje de concreto com tela e porta interna 30". **Coberturas, produtividades e perdas são exemplos para a demonstração, não referência de mercado.**
+**Dados de exemplo:** 28 itens (wood framing residencial) e 8 assemblies:
+- parede externa 2x6 @ 16" (descontando vãos);
+- piso LVP com manta;
+- laje de concreto com tela;
+- porta interna 30";
+- janelas W1 e W2 instaladas;
+- porta de entrada instalada;
+- siding vinil com J-channel.
+
+As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Siding (fachadas). **Coberturas, produtividades e perdas são exemplos para a demonstração, não referência de mercado.**
 
 ## 3. Telas
 
@@ -95,6 +107,24 @@ condição medida ──► variáveis (lin ft, sq ft, cu yd…) ──► assem
   - na condição de área, a opção "desenhar como desconto".
 - **Dica:** uma linha embaixo explica o próximo passo da ferramenta atual.
 
+### Jogo de plantas de exemplo (`assets/plantas/casa-modelo.pdf`, 3 folhas)
+| Folha | Escala | O que tem |
+| --- | --- | --- |
+| A-101 · First Floor Plan | 1/4" = 1'-0" | Planta baixa 40' × 28', paredes, portas, janelas marcadas W1/W2/D1, cotas, linha do corte A |
+| A-201 · Elevations | 1/4" = 1'-0" | Fachadas sul e leste: siding, empena, telhado 6/12, janelas W1/W2 e porta D1, quadro de vãos (W1 5'×4', W2 4'×4', D1 3'×6'-8") |
+| A-301 · Section A | **3/8" = 1'-0"** | Corte: laje de 4", frost wall de 4'-0" abaixo do terreno (New England), parede 2x6, forro, telhado 6/12 |
+
+**Exemplo de siding:**
+- **Medido na fachada:** sul 40' × 9' e leste 28' × 9' + empena ≈ 709 sq ft.
+- **Vãos:** 2 W1 + 1 W2 + 1 D1 = 76 sq ft.
+- **NetArea:** ≈ 633 sq ft → ÷ 100 + 10% → **7 squares**.
+
+**Exemplo de guarnição de janela:**
+- **W1:** 2 × 2 × (5 + 4) = 36 lin ft → ÷ 12' + 15% → 4 peças.
+- **W2:** 16 lin ft → 2 peças.
+- **Porta (3 lados):** 2 peças.
+- **Total:** 8 peças.
+
 ### Projeto de exemplo
 - **Casa modelo**, 1450 Elm St, Manchester (NH).
 - **Folha A-101 · First Floor Plan:** PDF vetorial gerado por `tools/gerar-planta.py`, casa de 40'-0" × 28'-0" em 1/4" = 1'-0", com cotas para calibrar e conferir.
@@ -121,7 +151,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **33 verificações.** Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **45 verificações.** Inclui siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;

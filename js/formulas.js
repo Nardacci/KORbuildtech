@@ -58,15 +58,22 @@ export const VARIAVEIS = [
   { nome: 'PitchedArea', unidade: 'sq ft', tipos: ['area'], descricao: 'Área real na água do telhado', requer: 'inclinação' },
   { nome: 'PitchedLinear', unidade: 'lin ft', tipos: ['linear'], descricao: 'Comprimento real na inclinação', requer: 'inclinação' },
   { nome: 'MeasuredCount', unidade: 'each', tipos: ['contagem'], descricao: 'Quantidade contada' },
+  { nome: 'OpeningWidth', unidade: 'ft', tipos: ['contagem'], descricao: 'Largura do vão (janela, porta)', requer: 'largura do vão' },
+  { nome: 'OpeningHeight', unidade: 'ft', tipos: ['contagem'], descricao: 'Altura do vão', requer: 'altura do vão' },
+  { nome: 'OpeningArea', unidade: 'sq ft', tipos: ['contagem', 'linear', 'area'], descricao: 'Área dos vãos: quantidade × largura × altura (na parede e no siding: soma dos vãos ligados)', requer: 'largura e altura do vão' },
+  { nome: 'OpeningPerimeter', unidade: 'lin ft', tipos: ['contagem', 'linear', 'area'], descricao: 'Perímetro dos vãos: 2 × (largura + altura) × quantidade (guarnição, flashing, J-channel)', requer: 'largura e altura do vão' },
+  { nome: 'OpeningCount', unidade: 'each', tipos: ['linear', 'area'], descricao: 'Quantidade de vãos ligados à condição' },
+  { nome: 'NetSurfaceArea', unidade: 'sq ft', tipos: ['linear'], descricao: 'Superfície menos os vãos ligados', requer: 'altura' },
+  { nome: 'NetArea', unidade: 'sq ft', tipos: ['area'], descricao: 'Área menos os vãos ligados (siding, pintura)' },
 ];
 export const FUNCOES = ['ceil', 'floor', 'round', 'min', 'max', 'sqrt', 'abs'];
 export function variaveisDoTipo(tipo) { return VARIAVEIS.filter((v) => v.tipos.includes(tipo)); }
 
 /* Valores de exemplo para testar a fórmula na tela de assemblies. */
 export const VALORES_DE_TESTE = {
-  linear: { MeasuredLinear: 100, WallHeight: 9, SurfaceArea: 900, RoofPitch: 6, PitchFactor: Math.sqrt(1.25), PitchedLinear: 100 * Math.sqrt(1.25) },
-  area: { MeasuredArea: 1000, Thickness: 4, VolumeCF: 1000 * 4 / 12, VolumeCY: 1000 * 4 / 12 / 27, RoofPitch: 6, PitchFactor: Math.sqrt(1.25), PitchedArea: 1000 * Math.sqrt(1.25) },
-  contagem: { MeasuredCount: 10 },
+  linear: { MeasuredLinear: 100, WallHeight: 9, SurfaceArea: 900, RoofPitch: 6, PitchFactor: Math.sqrt(1.25), PitchedLinear: 100 * Math.sqrt(1.25), OpeningCount: 4, OpeningArea: 80, OpeningPerimeter: 72, NetSurfaceArea: 820 },
+  area: { MeasuredArea: 1000, Thickness: 4, VolumeCF: 1000 * 4 / 12, VolumeCY: 1000 * 4 / 12 / 27, RoofPitch: 6, PitchFactor: Math.sqrt(1.25), PitchedArea: 1000 * Math.sqrt(1.25), OpeningCount: 4, OpeningArea: 80, OpeningPerimeter: 72, NetArea: 920 },
+  contagem: { MeasuredCount: 10, OpeningWidth: 5, OpeningHeight: 4, OpeningArea: 200, OpeningPerimeter: 180 },
 };
 
 /* ---------- Análise (lista branca) e cálculo ---------- */

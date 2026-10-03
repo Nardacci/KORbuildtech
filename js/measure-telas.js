@@ -76,7 +76,9 @@ function textoDerivado(d) {
 }
 function textoProps(c) {
   const p = c.props || {};
-  return [p.alturaPol ? 'altura ' + formatarPesPolegadas(p.alturaPol) : '', p.inclinacao ? 'inclinação ' + formatarInclinacao(p.inclinacao) : '', p.profundidadePol ? 'espessura ' + formatarPesPolegadas(p.profundidadePol) : ''].filter(Boolean).join(' · ');
+  const vao = c.tipo === 'contagem' && p.larguraPol && p.alturaPol ? 'vão ' + formatarPesPolegadas(p.larguraPol) + ' × ' + formatarPesPolegadas(p.alturaPol) : '';
+  const vaos = (p.vaos || []).length ? 'desconta ' + p.vaos.map((id) => (condicao(id) || {}).nome).filter(Boolean).map((n) => n.split(' (')[0]).join(', ') : '';
+  return [vao, c.tipo !== 'contagem' && p.alturaPol ? 'altura ' + formatarPesPolegadas(p.alturaPol) : '', p.inclinacao ? 'inclinação ' + formatarInclinacao(p.inclinacao) : '', p.profundidadePol ? 'espessura ' + formatarPesPolegadas(p.profundidadePol) : '', vaos].filter(Boolean).join(' · ');
 }
 
 /* ---------- Projeto: folhas e quantidades ---------- */
@@ -594,22 +596,52 @@ async function enviarPdf(input) {
 async function dialogoCondicao(c) {
   const tipoInicial = c ? c.tipo : 'linear';
   const p = (c && c.props) || {};
-  const res = await abrirDialogo({
+  const projetoId = folha(visor.folhaId).projetoId;
+  const vaosPossiveis = condicoesDo(projetoId).filter((x) => x.tipo === 'contagem' && (!c || x.id !== c.id));
+  const ft = (pol) => (pol ? esc(formatarPesPolegadas(pol)) : '');
+  // cada grupo de campos aparece só para os tipos em que faz sentido
+  const grupo = (tipos, html) => '<div class="mz-campos" data-tipos="' + tipos + '"' + (tipos.split(' ').includes(tipoInicial) ? '' : ' hidden') + '>' + html + '</div>';
+  const promessa = abrirDialogo({
     titulo: c ? 'Editar condição' : 'Nova condição',
-    corpo: '<label class="rotulo-pequeno" for="mz-nome">Nome</label><input type="text" id="mz-nome" name="nome" value="' + esc(c ? c.nome : '') + '" placeholder="Ex.: Paredes internas, Forro, Tomadas">' +
+    corpo: '<label class="rotulo-pequeno" for="mz-nome">Nome</label><input type="text" id="mz-nome" name="nome" value="' + esc(c ? c.nome : '') + '" placeholder="Ex.: Paredes internas, Siding, Janelas W3">' +
       '<label class="rotulo-pequeno" for="mz-tipo">Tipo</label><select id="mz-tipo" name="tipo"' + (c ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([id, t]) => '<option value="' + id + '"' + (id === tipoInicial ? ' selected' : '') + '>' + t.nome + ' (' + t.unidade + ')</option>').join('') + '</select>' +
-      '<p class="mudo pequeno">Propriedades opcionais (geram as medidas derivadas):</p>' +
-      '<label class="rotulo-pequeno" for="mz-altura">Altura (linear → superfície). Ex.: 9\'-0"</label><input type="text" id="mz-altura" name="altura" value="' + (p.alturaPol ? esc(formatarPesPolegadas(p.alturaPol)) : '') + '">' +
-      '<label class="rotulo-pequeno" for="mz-inclinacao">Inclinação (telhado). Ex.: 6/12</label><input type="text" id="mz-inclinacao" name="inclinacao" value="' + (p.inclinacao ? formatarInclinacao(p.inclinacao) : '') + '">' +
-      '<label class="rotulo-pequeno" for="mz-espessura">Espessura (área → volume). Ex.: 4"</label><input type="text" id="mz-espessura" name="espessura" value="' + (p.profundidadePol ? esc(formatarPesPolegadas(p.profundidadePol)) : '') + '">',
+      '<p class="mudo pequeno">Propriedades (geram as medidas derivadas e as variáveis das fórmulas):</p>' +
+      grupo('linear', '<label class="rotulo-pequeno" for="mz-altura">Altura da parede. Ex.: 9\'-0"</label><input type="text" id="mz-altura" name="altura" value="' + (c && c.tipo === 'linear' ? ft(p.alturaPol) : '') + '">') +
+      grupo('contagem', '<div class="grade-campos"><div class="campo"><label class="rotulo-pequeno" for="mz-vlarg">Largura do vão. Ex.: 3\'-0"</label><input type="text" id="mz-vlarg" name="vaoLargura" value="' + ft(p.larguraPol) + '"></div>' +
+        '<div class="campo"><label class="rotulo-pequeno" for="mz-valt">Altura do vão. Ex.: 6\'-8"</label><input type="text" id="mz-valt" name="vaoAltura" value="' + (c && c.tipo === 'contagem' ? ft(p.alturaPol) : '') + '"></div></div>' +
+        '<p class="mudo pequeno">Janela ou porta: com largura e altura, a contagem gera a área e o perímetro dos vãos (guarnição, flashing) e pode ser descontada da parede e do siding.</p>') +
+      grupo('linear area', '<label class="rotulo-pequeno" for="mz-inclinacao">Inclinação (telhado). Ex.: 6/12</label><input type="text" id="mz-inclinacao" name="inclinacao" value="' + (p.inclinacao ? formatarInclinacao(p.inclinacao) : '') + '">') +
+      grupo('area', '<label class="rotulo-pequeno" for="mz-espessura">Espessura (área → volume). Ex.: 4"</label><input type="text" id="mz-espessura" name="espessura" value="' + ft(p.profundidadePol) + '">') +
+      grupo('linear area', '<fieldset class="mz-vaos"><legend class="rotulo-pequeno">Descontar os vãos de</legend>' +
+        (vaosPossiveis.length ? vaosPossiveis.map((x) => '<label class="check pequeno"><input type="checkbox" name="vao-' + x.id + '" value="1"' + ((p.vaos || []).includes(x.id) ? ' checked' : '') + '> ' + esc(x.nome) +
+          (x.props && x.props.larguraPol && x.props.alturaPol ? '' : ' <span class="mudo">(sem tamanho)</span>') + '</label>').join('') : '<p class="mudo pequeno">Crie as contagens de janelas e portas com largura e altura.</p>') + '</fieldset>'),
     acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: c ? 'Salvar' : 'Criar condição', valor: true, classe: 'btn-primario' }],
   });
+  const sel = document.querySelector('dialog #mz-tipo');
+  if (sel) sel.addEventListener('change', () => document.querySelectorAll('dialog .mz-campos').forEach((g) => { g.hidden = !g.dataset.tipos.split(' ').includes(sel.value); }));
+  const res = await promessa;
   if (!res || !res.valor) return;
+  const tipo = c ? c.tipo : res.campos.tipo;
   const props = {};
-  if (res.campos.altura.trim()) { const r = interpretarComprimento(res.campos.altura); if (r.erro) { toast('Altura: ' + r.erro); return; } props.alturaPol = r.pol; }
-  if (res.campos.inclinacao.trim()) { const r = interpretarInclinacao(res.campos.inclinacao); if (r.erro) { toast(r.erro); return; } props.inclinacao = r.razao; }
-  if (res.campos.espessura.trim()) { const r = interpretarComprimento(res.campos.espessura, 'pol'); if (r.erro) { toast('Espessura: ' + r.erro); return; } props.profundidadePol = r.pol; }
-  const r = salvarCondicao(c ? c.id : null, { projetoId: folha(visor.folhaId).projetoId, nome: res.campos.nome, tipo: c ? c.tipo : res.campos.tipo, props });
+  const ler = (campo, rotulo, semUnidade) => {
+    const t = (res.campos[campo] || '').trim();
+    if (!t) return null;
+    const r = interpretarComprimento(t, semUnidade);
+    if (r.erro || !(r.pol > 0)) throw new Error(rotulo + ': ' + (r.erro || 'informe um valor maior que zero'));
+    return r.pol;
+  };
+  try {
+    if (tipo === 'linear') { const v = ler('altura', 'Altura'); if (v) props.alturaPol = v; }
+    if (tipo === 'contagem') {
+      const w = ler('vaoLargura', 'Largura do vão'), h = ler('vaoAltura', 'Altura do vão');
+      if (w) props.larguraPol = w;
+      if (h) props.alturaPol = h;
+    }
+    if (tipo === 'area') { const v = ler('espessura', 'Espessura', 'pol'); if (v) props.profundidadePol = v; }
+  } catch (e) { toast(e.message); return; }
+  if (tipo !== 'contagem' && (res.campos.inclinacao || '').trim()) { const r = interpretarInclinacao(res.campos.inclinacao); if (r.erro) { toast(r.erro); return; } props.inclinacao = r.razao; }
+  if (tipo !== 'contagem') props.vaos = Object.keys(res.campos).filter((k) => k.startsWith('vao-')).map((k) => k.slice(4));
+  const r = salvarCondicao(c ? c.id : null, { projetoId, nome: res.campos.nome, tipo, props });
   if (r.erro) { toast(r.erro); return; }
   visor.condicaoId = r.id;
   visor.pontos = [];

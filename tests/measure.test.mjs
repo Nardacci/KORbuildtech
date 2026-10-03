@@ -24,14 +24,15 @@ await context.route('https://fonts.**', (r) => r.abort());
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/measure-' + nome + '.png' }); };
 const como = async (id, hash) => { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), id); await page.goto(BASE + hash); await page.reload(); };
 
-// Coordenadas da planta (em pés, a partir do canto da casa) → ponto na tela.
-// A casa começa em (110, 190) points na página; 1 pé = 18 points (1/4" = 1'-0"); o PDF tem 792 points de altura.
-async function naTela(pes) {
+// Coordenadas dos desenhos (em pés) → ponto na tela. Cada desenho tem a sua origem na página (points) e a sua escala
+// (tools/gerar-planta.py): planta e fachadas em 1/4" = 1'-0" (18 points por pé), corte em 3/8" = 1'-0" (27 points por pé).
+const PLANTA = { x0: 110, y0: 190, k: 18 }, SUL = { x0: 110, y0: 470, k: 18 }, LESTE = { x0: 110, y0: 90, k: 18 }, CORTE = { x0: 150, y0: 240, k: 27 };
+async function naTela(pes, o = PLANTA) {
   const box = await page.locator('#mz-desenho').boundingBox();
   const zoom = box.width / 1224;
-  return { x: box.x + (110 + pes[0] * 18) * zoom, y: box.y + (792 - (190 + pes[1] * 18)) * zoom };
+  return { x: box.x + (o.x0 + pes[0] * o.k) * zoom, y: box.y + (792 - (o.y0 + pes[1] * o.k)) * zoom };
 }
-async function clicar(pes, opcoes) { const p = await naTela(pes); await page.mouse.click(p.x, p.y, opcoes); }
+async function clicar(pes, opcoes, o) { const p = await naTela(pes, o); await page.mouse.click(p.x, p.y, opcoes); }
 const textoDe = (sel) => page.locator(sel).first().textContent();
 const toast = () => page.waitForFunction(() => (document.getElementById('toast') || {}).textContent, null).then(() => page.textContent('#toast'));
 // botão de diálogo: espera o diálogo fechar antes de seguir (os cliques na planta não passam por cima dele)
@@ -40,7 +41,7 @@ const noDialogo = async (texto) => { await page.click('dialog button:has-text("'
 // As medidas são conferidas com tolerância (como o estimador confere: zoom maior = mais precisão).
 const numeroDe = (txt, unidade) => { const m = new RegExp('([\\d.]+(?:,\\d+)?) ' + unidade).exec(txt); return m ? Number(m[1].replace(/\./g, '').replace(',', '.')) : NaN; };
 const perto = (v, alvo, tol) => Math.abs(v - alvo) <= alvo * tol;
-const painel = (nome) => page.locator('.mz-cond', { hasText: nome });
+const painel = (nome) => page.locator('.mz-cond').filter({ has: page.locator('.mz-cond-topo b', { hasText: nome }) });
 
 await page.goto(BASE);
 await page.waitForSelector('#form-login', { timeout: 30000 });
@@ -129,7 +130,7 @@ const osb = await qtdDe('OSB 7/16');
 const osbEsperado = Math.ceil(perimetro * 9 / 32 * 1.1 - 1e-9);
 verificar(Math.abs(osb - osbEsperado) <= 1, 'OSB = superfície ÷ 32 + 10%, para cima: ' + osb + ' chapas (esperado ≈ ' + osbEsperado + ')');
 verificar(Math.abs(await qtdDe('Montante 2x6') - Math.ceil(perimetro * 12 / 16 * 1.15)) <= 1, 'montantes 2x6 a cada 16" + 15%');
-verificar(await qtdDe('Porta interna 30') === 3 && await qtdDe('Fechadura') === 3 && await qtdDe('Guarnição') === 17, 'portas: 3 portas, 3 fechaduras e 17 guarnições (3 × 5 + 10%, para cima)');
+verificar(await qtdDe('Porta interna 30') === 3 && await qtdDe('Fechadura de passagem') === 3 && await qtdDe('Guarnição 7') === 15, 'portas: 3 portas, 3 fechaduras e 15 guarnições (3 × 2 lados × (2 × 6\'-8" + 2\'-6") ÷ 7\' + 10%, para cima)');
 const conc = await qtdDe('Concreto usinado');
 verificar(conc * 2 === Math.round(conc * 2) && conc >= areaLaje * 4 / 12 / 27 * 1.05 && conc < areaLaje * 4 / 12 / 27 * 1.05 + 0.5, 'concreto: volume + 5%, pedido de meia em meia jarda (' + conc + ' cu yd)');
 verificar((await mat.textContent()).includes('Mão de obra estimada'), 'total de horas de mão de obra');
@@ -140,6 +141,59 @@ const [download] = await Promise.all([page.waitForEvent('download'), page.click(
 verificar(download.suggestedFilename() === 'korbuild-measure-quantidades.csv', 'exporta as quantidades com o cálculo em CSV');
 await print('2-projeto');
 await page.locator('#mz-materiais').screenshot({ path: (SAIDA || '/tmp') + '/measure-2b-materiais.png' }).catch(() => {});
+
+console.log('Fachadas: siding e vãos (janelas e porta)');
+await page.click('a:has-text("A-201 · Elevations")');
+await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
+await page.click('[data-acao="mz-escala"]');
+await page.selectOption('dialog select[name="razao"]', '48');
+await noDialogo('Usar esta escala');
+await clicar([0, -2.5], {}, SUL); await clicar([40, -2.5], {}, SUL); // cota de 40'-0" da fachada sul
+await page.fill('dialog input[name="real"]', '40\'');
+await noDialogo('Conferir');
+verificar((await toast()).includes('Escala conferida'), 'fachada A-201: escala 1/4" conferida na cota de 40\'-0"');
+await painel('Siding (fachadas)').locator('.mz-cond-topo').click();
+for (const p of [[0, 0], [40, 0], [40, 9], [0, 9]]) await clicar(p, {}, SUL);
+await clicar([0, 0], {}, SUL);
+for (const p of [[0, 0], [28, 0], [28, 9], [14, 16], [0, 9]]) await clicar(p, {}, LESTE); // a empena entra no siding
+await clicar([0, 0], {}, LESTE);
+const sidingBruto = numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft');
+verificar(perto(sidingBruto, 710, 0.01), 'siding medido na fachada: sul 40\' × 9\' + leste 28\' × 9\' com empena (+98) ≈ 710 sq ft (' + sidingBruto + ')');
+await painel('Janelas W1').locator('.mz-cond-topo').click();
+await clicar([16.5, 5], {}, SUL); await clicar([32.5, 5], {}, SUL);
+await painel('Janelas W2').locator('.mz-cond-topo').click();
+await clicar([6, 5], {}, LESTE);
+await painel('Porta de entrada D1').locator('.mz-cond-topo').click();
+await clicar([9.5, 3], {}, SUL);
+verificar((await painel('Janelas W1').textContent()).includes('2 each') && (await painel('Porta de entrada D1').textContent()).includes('vão 3\'-0" × 6\'-8"'), 'janelas e porta contadas na fachada, com o tamanho do vão');
+await print('5-fachadas');
+await page.click('a.voltar');
+await page.waitForSelector('#mz-materiais');
+// vãos: W1 2 × 5' × 4' = 40, W2 1 × 4' × 4' = 16, D1 1 × 3' × 6'-8" = 20 → 76 sq ft; perímetros 36 + 16 + 19,33 = 71,33 lin ft
+const vaosArea = 76, vaosPerim = 36 + 16 + 2 * (3 + 80 / 12);
+verificar(Math.abs(await qtdDe('Siding vinil') - Math.ceil((sidingBruto - vaosArea) / 100 * 1.1)) <= 1, 'siding: (área − vãos) ÷ 100 + 10% = ' + await qtdDe('Siding vinil') + ' squares');
+verificar(await qtdDe('J-channel') === Math.ceil(vaosPerim / 12.5 * 1.1 - 1e-9), 'J-channel pelo perímetro dos vãos: ' + await qtdDe('J-channel') + ' peças');
+verificar(await qtdDe('Guarnição externa PVC') === 4 + 2 + 2, 'guarnição externa: W1 4 + W2 2 + porta (3 lados) 2 = 8 peças');
+verificar(await qtdDe('Fita de flashing') === 2 && await qtdDe('Janela vinil 5') === 2 && await qtdDe('Janela vinil 4') === 1, 'janelas: 2 W1, 1 W2 e 2 rolos de flashing');
+verificar(Math.abs(await qtdDe('OSB 7/16') - Math.ceil((perimetro * 9 - vaosArea) / 32 * 1.1 - 1e-9)) <= 1, 'parede: o OSB já desconta os vãos (NetSurfaceArea)');
+await itemDe('Siding vinil').locator('summary').click();
+const rastroSiding = await itemDe('Siding vinil').locator('.mz-rastro').textContent();
+verificar(rastroSiding.includes('NetArea / 100') && rastroSiding.includes('OpeningArea = 76'), 'rastro do siding mostra a área líquida e os vãos descontados');
+await print('6-materiais-vaos');
+
+console.log('Corte em outra escala');
+await page.click('a:has-text("A-301 · Section A")');
+await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
+await page.click('[data-acao="mz-escala"]');
+await page.selectOption('dialog select[name="razao"]', '32');
+await noDialogo('Usar esta escala');
+await clicar([0, -6], {}, CORTE); await clicar([28, -6], {}, CORTE);
+await page.fill('dialog input[name="real"]', '28\'');
+await noDialogo('Conferir');
+verificar((await toast()).includes('Escala conferida'), 'corte A-301 em 3/8" = 1\'-0" (escala diferente na mesma planta), conferido na cota de 28\'-0"');
+await page.click('a.voltar');
+await page.waitForSelector('.tabela-quantidades');
+verificar((await textoDe('.pagina')).includes('3/8" = 1\'-0"'), 'cada folha guarda a sua escala');
 
 console.log('Itens e assemblies');
 await page.click('.lateral-item:has-text("Itens")');
@@ -187,9 +241,10 @@ await como('u-ana', '#/measure');
 await page.waitForSelector('.tabela-quantidades');
 
 console.log('Enviar PDF e calibrar por uma cota');
-await page.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo-a101.pdf');
-await page.waitForFunction(() => /Folha adicionada/.test((document.getElementById('toast') || {}).textContent || ''));
-await page.click('a:has-text("casa-modelo-a101")');
+await page.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
+await page.waitForFunction(() => /3 folhas adicionadas/.test((document.getElementById('toast') || {}).textContent || ''));
+verificar(true, 'PDF de 3 páginas vira 3 folhas');
+await page.click('a:has-text("casa-modelo · página 1")');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
 await page.click('[data-acao="mz-escala"]');
 await noDialogo('Calibrar por uma cota');
