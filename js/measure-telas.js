@@ -12,21 +12,54 @@ import {
 import {
   projetos, projeto, folha, folhasDo, condicao, condicoesDo, TIPOS, definirEscala, registrarConferencia,
   salvarCondicao, excluirCondicao, adicionarMedicao, excluirMedicao, totaisDaCondicao, valorDaMedicao, verticeProximo, criarFolhas,
+  CATEGORIAS, itens, item, salvarItem, excluirItem, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
+  quantidadesDoProjeto, variaveisDaCondicao,
 } from './measure.js';
+import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; }
 
-function moldura(o) {
-  return casca({ modulo: 'measure', nav: [], topoExtra: app.topoExtra(), ...o });
+function navMeasure() {
+  return [
+    { id: 'projeto', href: '#/measure/projeto/' + projetos()[0].id, rotulo: 'Projeto', icone: 'obras' },
+    { id: 'assemblies', href: '#/measure/assemblies', rotulo: 'Assemblies', icone: 'tabela' },
+    { id: 'itens', href: '#/measure/itens', rotulo: 'Itens', icone: 'measure' },
+  ];
 }
+// o visor da planta usa a tela inteira, sem o menu lateral
+function moldura(o) {
+  return casca({ modulo: 'measure', nav: o.semMenu ? [] : navMeasure(), topoExtra: app.topoExtra(), ...o });
+}
+const podeCatalogo = () => pode(usuarioAtual(), 'measure.catalogo');
 
 export function telaMeasure(q) {
   if (!pode(usuarioAtual(), 'measure.medir')) return { trocar: '#/inicio' };
+  // o motor de fórmulas (mathjs) só carrega no Measure; enquanto carrega, uma tela de espera
+  if (!motorPronto()) {
+    carregarMotor().then(() => app.desenhar()).catch(() => toast('Não foi possível carregar o motor de fórmulas.'));
+    return moldura({ titulo: 'Measure', conteudo: '<p class="vazio">Carregando o motor de fórmulas…</p>' });
+  }
   if (!q.length) return { trocar: '#/measure/projeto/' + projetos()[0].id };
   if (q[0] === 'projeto' && projeto(q[1])) return telaProjeto(q[1]);
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
+  if (q[0] === 'itens') return telaItens();
+  if (q[0] === 'assemblies') return telaAssemblies();
+  if (q[0] === 'assembly' && (q[1] === 'novo' || assembly(q[1]))) return telaAssembly(q[1] === 'novo' ? null : q[1]);
   return { trocar: '#/measure' };
+}
+
+/* Quantidade com até 2 casas (inteiro sem casas). */
+function qtd(v) { const r = Math.round(v * 100) / 100; return numero(r, Number.isInteger(r) ? 0 : 2); }
+const ARREDONDAMENTOS = [[0, 'Não arredondar'], [1, 'Para cima, inteiro'], [0.5, 'Para cima, de 0,5 em 0,5'], [0.25, 'Para cima, de 0,25 em 0,25']];
+const nomeArred = (passo) => (ARREDONDAMENTOS.find(([p]) => p === passo) || [0, 'Não arredondar'])[1];
+/* O cálculo inteiro de uma linha, em texto (RB-004: fórmula transparente). */
+function rastro(x, unidade) {
+  return esc(x.linha.formula) + ' = ' + qtd(x.bruta) + (x.linha.perda ? ' → +' + numero(x.linha.perda, x.linha.perda % 1 ? 1 : 0) + '% = ' + qtd(x.comPerda) : '') +
+    (x.linha.passo ? ' → ' + nomeArred(x.linha.passo).toLowerCase() + ': ' + qtd(x.final) : '') + ' ' + esc(unidade);
+}
+function textoVariaveis(vars, usadas) {
+  return Object.entries(vars).filter(([k]) => !usadas || usadas.includes(k)).map(([k, v]) => k + ' = ' + qtd(v) + ' ' + ((VARIAVEIS.find((x) => x.nome === k) || {}).unidade || '')).join(' · ');
 }
 
 /* ---------- Formatação das quantidades ---------- */
@@ -55,7 +88,7 @@ function telaProjeto(id) {
   const escalaTxt = (f) => !f.escala ? '<span class="etiqueta etiqueta-ambar">sem escala</span>'
     : esc(f.escala.nome) + (f.escala.conferencia ? (f.escala.conferencia.ok ? ' <span class="etiqueta etiqueta-verde">conferida</span>' : ' <span class="etiqueta etiqueta-alerta">conferência com diferença</span>') : ' <span class="etiqueta etiqueta-neutro">não conferida</span>');
   return moldura({
-    largura: 'larga', titulo: p.nome, subtitulo: p.endereco + ' · ' + p.descricao,
+    ativo: 'projeto', largura: 'larga', titulo: p.nome, subtitulo: p.endereco + ' · ' + p.descricao,
     acoes: '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + 'Enviar PDF<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label>',
     conteudo:
       '<p class="aviso-info">' + icone('measure', 16) + 'Protótipo do Measure: abrir a planta, definir e conferir a escala, e medir comprimentos, áreas e contagens em pés e polegadas. Assemblies, fórmulas e estimativa vêm na próxima etapa.</p>' +
@@ -73,7 +106,116 @@ function telaProjeto(id) {
             '<td>' + (t.medicoes ? t.derivados.map((d) => '<span class="bloco">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</td>' +
             '<td class="num">' + t.medicoes + '</td></tr>';
         }).join('') + '</tbody></table></div></section>' +
+      htmlMateriais(id) +
       '<p class="dica">Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.</p>',
+  });
+}
+
+/* Materiais e mão de obra: o que os assemblies calculam a partir das medições. */
+function htmlMateriais(projetoId) {
+  const q = quantidadesDoProjeto(projetoId);
+  const pend = q.linhas.filter((x) => x.erro);
+  const grupos = Object.keys(CATEGORIAS).map((cat) => [cat, q.porItem.filter((g) => g.item.categoria === cat)]).filter(([, gs]) => gs.length);
+  const horas = q.porItem.filter((g) => g.item.categoria === 'mao-de-obra').reduce((t, g) => t + g.total, 0);
+  return '<section class="cartao" id="mz-materiais"><div class="cartao-cabeca"><h2 class="cartao-titulo">Materiais e mão de obra</h2>' +
+      (q.porItem.length ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-csv" data-projeto="' + projetoId + '">' + icone('baixar', 16) + 'Exportar CSV</button>' : '') + '</div>' +
+    '<p class="mudo pequeno">Calculado pelos assemblies aplicados em cada condição. Toque num item para ver o cálculo: condição → variáveis → fórmula → perda → arredondamento.</p>' +
+    (horas ? '<p class="mz-horas">' + icone('relogio', 16) + 'Mão de obra estimada: <b>' + qtd(horas) + ' h</b> <span class="mudo pequeno">(por etapa, vira o orçamento de horas do Crew na próxima etapa)</span></p>' : '') +
+    (grupos.length ? grupos.map(([cat, gs]) => '<h3 class="mz-grupo">' + CATEGORIAS[cat] + '</h3><div class="mz-itens">' + gs.map((g) =>
+      '<details class="mz-item"><summary><span class="mz-item-nome"><b>' + esc(g.item.nome) + '</b><span class="mudo pequeno">' + esc(g.item.codigo) + ' · ' + esc(g.item.etapa) + '</span></span>' +
+        '<span class="mz-item-qtd"><b>' + qtd(g.total) + '</b> ' + esc(g.item.unidade) + '</span></summary>' +
+        '<ul class="mz-rastro">' + g.linhas.map((x) => '<li><span><b>' + esc(x.condicao.nome) + '</b> · ' + esc(x.assembly.nome) + '</span><span class="mz-conta">' + rastro(x, g.item.unidade) + '</span>' +
+          '<span class="mudo pequeno">' + esc(textoVariaveis(x.vars)) + '</span></li>').join('') + '</ul></details>').join('') + '</div>').join('')
+      : '<p class="vazio">Meça as condições que têm assemblies para ver os materiais.</p>') +
+    (pend.length ? '<div class="mz-pendencias"><b>Pendências</b><ul>' + Array.from(new Set(pend.map((x) => esc(x.condicao.nome) + ' · ' + esc(x.assembly.nome) + ': ' + esc(x.erro)))).map((t) => '<li>' + t + '</li>').join('') + '</ul></div>' : '') +
+    '</section>';
+}
+
+/* ---------- Itens (catálogo) ---------- */
+
+function telaItens() {
+  const pc = podeCatalogo();
+  return moldura({
+    ativo: 'itens', largura: 'larga', titulo: 'Itens', subtitulo: 'Catálogo de materiais, mão de obra, equipamentos e subempreiteiros, na unidade de compra',
+    acoes: pc ? '<button type="button" class="btn btn-primario btn-pequeno" data-acao="mz-item" data-id="">' + icone('mais', 16) + 'Novo item</button>' : '',
+    conteudo: Object.entries(CATEGORIAS).map(([cat, nome]) => {
+      const lista = itens().filter((i) => i.categoria === cat);
+      if (!lista.length) return '';
+      return '<section class="cartao"><h2 class="cartao-titulo">' + nome + '</h2><div class="tabela-rolagem"><table class="tabela tabela-itens"><thead><tr><th>Código</th><th>Item</th><th>Unidade de compra</th><th>Etapa (cost code)</th><th></th></tr></thead><tbody>' +
+        lista.map((i) => '<tr><td class="mudo">' + esc(i.codigo) + '</td><td><b>' + esc(i.nome) + '</b>' + (i.nota ? '<span class="mudo pequeno bloco">' + esc(i.nota) + '</span>' : '') + '</td><td>' + esc(i.unidade) + '</td><td>' + esc(i.etapa) + '</td>' +
+          '<td class="num">' + (pc ? '<button type="button" class="link-botao pequeno" data-acao="mz-item" data-id="' + i.id + '">Editar</button> <button type="button" class="link-botao pequeno" data-acao="mz-excluir-item" data-id="' + i.id + '">Excluir</button>' : '') + '</td></tr>').join('') +
+        '</tbody></table></div></section>';
+    }).join('') +
+      '<p class="dica">Preço não fica aqui: ele terá vigência (data de início) e entra na próxima etapa, a estimativa. As coberturas nas notas são exemplos.</p>',
+  });
+}
+
+/* ---------- Assemblies ---------- */
+
+function telaAssemblies() {
+  const usos = (a) => projetos().flatMap((p) => condicoesDo(p.id)).filter((c) => (c.assemblies || []).includes(a.id));
+  return moldura({
+    ativo: 'assemblies', largura: 'larga', titulo: 'Assemblies', subtitulo: 'Um conjunto de itens com fórmulas: uma medição alimenta vários materiais e a mão de obra',
+    acoes: podeCatalogo() ? '<a class="btn btn-primario btn-pequeno" href="#/measure/assembly/novo">' + icone('mais', 16) + 'Novo assembly</a>' : '',
+    conteudo: '<div class="mz-assemblies">' + assemblies().map((a) => '<a class="cartao mz-assembly" href="#/measure/assembly/' + a.id + '"><span class="etiqueta etiqueta-neutro">' + TIPOS[a.tipo].nome + '</span>' +
+      '<h2 class="cartao-titulo">' + esc(a.nome) + '</h2><p class="mudo pequeno">' + esc(a.descricao) + '</p>' +
+      '<p class="pequeno">' + a.linhas.length + ' linhas · ' + a.linhas.map((l) => esc((item(l.itemId) || {}).nome || '?')).slice(0, 4).join(', ') + (a.linhas.length > 4 ? '…' : '') + '</p>' +
+      '<p class="mudo pequeno">' + (usos(a).length ? 'Aplicado em: ' + usos(a).map((c) => esc(c.nome)).join(', ') : 'Ainda não aplicado') + '</p></a>').join('') + '</div>',
+  });
+}
+
+function htmlLinhaAssembly(l, tipo, i, editavel) {
+  const dis = editavel ? '' : ' disabled';
+  return '<tr class="mz-linha" data-i="' + i + '"><td><select name="item"' + dis + '><option value="">Escolha o item</option>' +
+      Object.entries(CATEGORIAS).map(([cat, nome]) => '<optgroup label="' + nome + '">' + itens().filter((x) => x.categoria === cat).map((x) => '<option value="' + x.id + '"' + (x.id === l.itemId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + esc(x.unidade) + ')</option>').join('') + '</optgroup>').join('') + '</select></td>' +
+    '<td><input type="text" name="formula" class="mz-formula" value="' + esc(l.formula || '') + '" placeholder="Ex.: MeasuredArea / 32" spellcheck="false" autocomplete="off"' + dis + '></td>' +
+    '<td><span class="campo-pct"><input type="number" name="perda" min="0" max="100" step="0.5" value="' + (l.perda != null ? l.perda : 0) + '"' + dis + '>%</span></td>' +
+    '<td><select name="passo"' + dis + '>' + ARREDONDAMENTOS.map(([p, n]) => '<option value="' + p + '"' + (p === (l.passo || 0) ? ' selected' : '') + '>' + n + '</option>').join('') + '</select></td>' +
+    '<td class="mz-teste" aria-live="polite"></td>' +
+    '<td>' + (editavel ? '<button type="button" class="link-botao" data-acao="mz-tirar-linha" aria-label="Tirar a linha">✕</button>' : '') + '</td></tr>';
+}
+
+function htmlAjudaVariaveis(tipo) {
+  const teste = VALORES_DE_TESTE[tipo];
+  return '<b>Variáveis desta condição</b><ul>' + variaveisDoTipo(tipo).map((v) => '<li><code>' + v.nome + '</code> <span class="mudo">' + esc(v.unidade) + ' · ' + esc(v.descricao) + (v.requer ? ' (precisa de ' + v.requer + ')' : '') + '</span></li>').join('') + '</ul>' +
+    '<p class="pequeno">Funções: ' + FUNCOES.map((f) => '<code>' + f + '()</code>').join(' ') + '. Perda e arredondamento ficam nas colunas, fora da fórmula.</p>' +
+    '<p class="pequeno mudo">A coluna "Teste" usa: ' + esc(textoVariaveis(teste)) + '.</p>';
+}
+
+function telaAssembly(id) {
+  const a = id ? assembly(id) : { nome: '', tipo: 'area', descricao: '', linhas: [] };
+  const ed = podeCatalogo();
+  const linhas = a.linhas.length ? a.linhas : [{ perda: 0, passo: 1 }];
+  return moldura({
+    ativo: 'assemblies', largura: 'larga', titulo: id ? a.nome : 'Novo assembly', voltar: { href: '#/measure/assemblies', rotulo: 'Assemblies' },
+    conteudo: '<form id="form-assembly" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+      '<section class="cartao"><div class="grade-campos">' +
+        '<div class="campo"><label class="rotulo-pequeno" for="as-nome">Nome</label><input type="text" id="as-nome" name="nome" value="' + esc(a.nome) + '"' + (ed ? '' : ' disabled') + '></div>' +
+        '<div class="campo"><label class="rotulo-pequeno" for="as-tipo">Para condições do tipo</label><select id="as-tipo" name="tipo"' + (id || !ed ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([t, x]) => '<option value="' + t + '"' + (t === a.tipo ? ' selected' : '') + '>' + x.nome + ' (' + x.unidade + ')</option>').join('') + '</select></div>' +
+      '</div><div class="campo"><label class="rotulo-pequeno" for="as-desc">Descrição</label><input type="text" id="as-desc" name="descricao" value="' + esc(a.descricao) + '"' + (ed ? '' : ' disabled') + '></div></section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">Linhas</h2><div class="tabela-rolagem"><table class="tabela mz-tabela-linhas"><thead><tr><th>Item</th><th>Fórmula (quantidade bruta)</th><th>Perda</th><th>Arredondamento</th><th>Teste</th><th></th></tr></thead><tbody id="as-linhas">' +
+        linhas.map((l, i) => htmlLinhaAssembly(l, a.tipo, i, ed)).join('') + '</tbody></table></div>' +
+        (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-nova-linha">' + icone('mais', 14) + 'Linha</button>' : '') +
+        '<div class="mz-ajuda" id="as-ajuda">' + htmlAjudaVariaveis(a.tipo) + '</div></section>' +
+      (ed ? '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="mz-excluir-assembly" data-id="' + id + '">Excluir</button>' : '') +
+        '<a class="btn btn-contorno" href="#/measure/assemblies">Cancelar</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-assembly">Salvar assembly</button></div>' : '<p class="dica">Só quem tem a permissão "Itens e assemblies" edita.</p>') +
+    '</form>',
+  });
+}
+
+/* Teste ao vivo de cada linha, com os valores de exemplo do tipo. */
+function testarLinhas() {
+  const form = document.getElementById('form-assembly');
+  if (!form) return;
+  const tipo = form.querySelector('[name="tipo"]').value;
+  form.querySelectorAll('.mz-linha').forEach((tr) => {
+    const alvo = tr.querySelector('.mz-teste');
+    const formula = tr.querySelector('[name="formula"]').value;
+    const it = item(tr.querySelector('[name="item"]').value);
+    if (!formula.trim()) { alvo.textContent = ''; alvo.className = 'mz-teste'; return; }
+    const r = calcularLinha({ formula, perda: Number(tr.querySelector('[name="perda"]').value) || 0, passo: Number(tr.querySelector('[name="passo"]').value) || 0 }, tipo, VALORES_DE_TESTE[tipo]);
+    alvo.className = 'mz-teste' + (r.erro ? ' erro' : '');
+    alvo.textContent = r.erro ? r.erro : qtd(r.bruta) + (r.comPerda !== r.bruta ? ' → ' + qtd(r.comPerda) : '') + (r.final !== r.comPerda ? ' → ' + qtd(r.final) : '') + ' ' + (it ? it.unidade : '');
   });
 }
 
@@ -93,7 +235,7 @@ function telaFolha(id) {
     visor.ferramenta = f.escala ? 'medir' : 'mover';
   }
   return moldura({
-    largura: 'total', titulo: f.nome, voltar: { href: '#/measure/projeto/' + f.projetoId, rotulo: projeto(f.projetoId).nome },
+    largura: 'total', semMenu: true, titulo: f.nome, voltar: { href: '#/measure/projeto/' + f.projetoId, rotulo: projeto(f.projetoId).nome },
     conteudo: '<div class="mz-visor">' +
       '<div class="mz-barra" id="mz-barra">' + htmlBarra() + '</div>' +
       '<div class="mz-corpo"><div class="mz-area" id="mz-area" tabindex="0" aria-label="Planta: use o mouse para medir"><div class="mz-folha" id="mz-folha"><canvas id="mz-pdf"></canvas><canvas id="mz-desenho"></canvas></div>' +
@@ -129,6 +271,9 @@ function htmlPainel() {
         '<div class="mz-total">' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">nada medido</span>') + '</div>' +
         (t.medicoes ? t.derivados.map((d) => '<div class="mz-derivado">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></div>').join('') : '') +
         (ativa && c.tipo === 'area' ? '<label class="check pequeno"><input type="checkbox" data-acao="mz-desconto"' + (visor.desconto ? ' checked' : '') + '> Desenhar como desconto (vão, recorte)</label>' : '') +
+        (ativa ? '<div class="mz-cond-assemblies"><span class="mudo pequeno">Assemblies</span>' + ((c.assemblies || []).map((aid) => assembly(aid)).filter(Boolean).map((a) =>
+            '<span class="mz-chip">' + esc(a.nome) + '<button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '">✕</button></span>').join('') || '<span class="mudo pequeno">nenhum</span>') +
+            '<button type="button" class="link-botao pequeno" data-acao="mz-aplicar-assembly" data-cond="' + c.id + '">+ Aplicar assembly</button></div>' : '') +
         (ativa ? '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-editar-condicao" data-id="' + c.id + '">Editar</button>' +
           '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
           (aqui.length ? '<ol class="mz-medicoes">' + aqui.map((m, i) => {
@@ -396,6 +541,15 @@ document.addEventListener('keyup', (ev) => { if (ev.key === ' ') visor.espaco = 
 
 /* Chamado depois de desenhar uma tela do Measure. */
 export async function aposDesenharMeasure() {
+  const fa = document.getElementById('form-assembly');
+  if (fa) {
+    fa.addEventListener('input', testarLinhas);
+    fa.addEventListener('change', (ev) => {
+      if (ev.target.name === 'tipo') document.getElementById('as-ajuda').innerHTML = htmlAjudaVariaveis(ev.target.value);
+      testarLinhas();
+    });
+    testarLinhas();
+  }
   const envio = document.getElementById('mz-enviar');
   if (envio) envio.addEventListener('change', () => enviarPdf(envio));
   const cv = document.getElementById('mz-desenho');
@@ -463,7 +617,89 @@ async function dialogoCondicao(c) {
   atualizarInterface();
 }
 
+async function dialogoItem(it) {
+  const v = it || { categoria: 'material' };
+  const res = await abrirDialogo({
+    titulo: it ? 'Editar item' : 'Novo item',
+    corpo: '<label class="rotulo-pequeno" for="it-nome">Nome</label><input type="text" id="it-nome" name="nome" value="' + esc(v.nome || '') + '" placeholder="Ex.: Drywall 5/8&quot; tipo X 4\'×8\'">' +
+      '<label class="rotulo-pequeno" for="it-codigo">Código</label><input type="text" id="it-codigo" name="codigo" value="' + esc(v.codigo || '') + '">' +
+      '<label class="rotulo-pequeno" for="it-cat">Categoria</label><select id="it-cat" name="categoria">' + Object.entries(CATEGORIAS).map(([c, n]) => '<option value="' + c + '"' + (c === v.categoria ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
+      '<label class="rotulo-pequeno" for="it-un">Unidade de compra</label><input type="text" id="it-un" name="unidade" value="' + esc(v.unidade || '') + '" placeholder="chapa, caixa, rolo, peça, cu yd, hora…">' +
+      '<label class="rotulo-pequeno" for="it-etapa">Etapa (cost code)</label><input type="text" id="it-etapa" name="etapa" value="' + esc(v.etapa || '') + '" placeholder="Ex.: 09 29 00 · Gypsum board">' +
+      '<label class="rotulo-pequeno" for="it-nota">Nota</label><input type="text" id="it-nota" name="nota" value="' + esc(v.nota || '') + '" placeholder="Ex.: cobre 32 sq ft">',
+    acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: it ? 'Salvar' : 'Criar item', valor: true, classe: 'btn-primario' }],
+  });
+  if (!res || !res.valor) return;
+  const r = salvarItem(it ? it.id : null, res.campos);
+  if (r.erro) { toast(r.erro); return; }
+  toast(it ? 'Item atualizado.' : 'Item criado.');
+  app.desenhar();
+}
+
 export const acoesMeasure = {
+  async 'mz-item'(el) { await dialogoItem(el.dataset.id ? item(el.dataset.id) : null); },
+  async 'mz-excluir-item'(el) {
+    const it = item(el.dataset.id);
+    if (!(await confirmar('Excluir "' + it.nome + '"?', 'O item sai do catálogo.', 'Excluir'))) return;
+    const r = excluirItem(it.id);
+    toast(r.erro || 'Item excluído.');
+    app.desenhar();
+  },
+  'mz-nova-linha'() {
+    const corpo = document.getElementById('as-linhas');
+    const tipo = document.querySelector('#form-assembly [name="tipo"]').value;
+    corpo.insertAdjacentHTML('beforeend', htmlLinhaAssembly({ perda: 0, passo: 1 }, tipo, corpo.children.length, true));
+    corpo.lastElementChild.querySelector('select').focus();
+  },
+  'mz-tirar-linha'(el) { el.closest('tr').remove(); testarLinhas(); },
+  'mz-salvar-assembly'() {
+    const form = document.getElementById('form-assembly');
+    const linhas = Array.from(form.querySelectorAll('.mz-linha')).map((tr) => ({
+      itemId: tr.querySelector('[name="item"]').value, formula: tr.querySelector('[name="formula"]').value,
+      perda: tr.querySelector('[name="perda"]').value, passo: tr.querySelector('[name="passo"]').value,
+    }));
+    const id = form.dataset.id || null;
+    const r = salvarAssembly(id, { nome: form.querySelector('[name="nome"]').value, tipo: form.querySelector('[name="tipo"]').value, descricao: form.querySelector('[name="descricao"]').value, linhas });
+    if (r.erro) { toast(r.erro); return; }
+    toast('Assembly salvo.');
+    app.ir('#/measure/assemblies');
+  },
+  async 'mz-excluir-assembly'(el) {
+    const a = assembly(el.dataset.id);
+    if (!(await confirmar('Excluir "' + a.nome + '"?', 'Ele sai das condições em que foi aplicado.', 'Excluir'))) return;
+    excluirAssembly(a.id);
+    toast('Assembly excluído.');
+    app.ir('#/measure/assemblies');
+  },
+  async 'mz-aplicar-assembly'(el) {
+    const c = condicao(el.dataset.cond);
+    const opcoes = assemblies().filter((a) => a.tipo === c.tipo && !(c.assemblies || []).includes(a.id));
+    if (!opcoes.length) { toast('Não há outro assembly para condições do tipo ' + TIPOS[c.tipo].nome.toLowerCase() + '. Crie em Measure › Assemblies.'); return; }
+    const res = await abrirDialogo({
+      titulo: 'Aplicar assembly em "' + c.nome + '"',
+      corpo: '<label class="rotulo-pequeno" for="mz-as">Assembly</label><select id="mz-as" name="assembly">' + opcoes.map((a) => '<option value="' + a.id + '">' + esc(a.nome) + '</option>').join('') + '</select>',
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Aplicar', valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = aplicarAssembly(c.id, res.campos.assembly);
+    toast(r.erro || 'Assembly aplicado. Os materiais aparecem nas quantidades do projeto.');
+    atualizarInterface();
+  },
+  'mz-remover-assembly'(el) { removerAssembly(el.dataset.cond, el.dataset.id); atualizarInterface(); },
+  'mz-csv'(el) {
+    const q = quantidadesDoProjeto(el.dataset.projeto);
+    const linhas = [['Categoria', 'Código', 'Item', 'Etapa', 'Unidade', 'Quantidade', 'Condição', 'Assembly', 'Fórmula', 'Bruta', 'Perda %', 'Com perda', 'Arredondamento', 'Final']];
+    for (const g of q.porItem) for (const x of g.linhas) {
+      linhas.push([CATEGORIAS[g.item.categoria], g.item.codigo, g.item.nome, g.item.etapa, g.item.unidade, Math.round(g.total * 100) / 100, x.condicao.nome, x.assembly.nome, x.linha.formula,
+        Math.round(x.bruta * 1000) / 1000, x.linha.perda, Math.round(x.comPerda * 1000) / 1000, nomeArred(x.linha.passo), Math.round(x.final * 1000) / 1000]);
+    }
+    const csv = linhas.map((l) => l.map((c) => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' }));
+    a.download = 'korbuild-measure-quantidades.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('CSV com ' + (linhas.length - 1) + ' linhas de cálculo.');
+  },
   'mz-ferramenta'(el) { visor.ferramenta = el.dataset.ferramenta; visor.pontos = []; visor.cal = []; atualizarInterface(); },
   'mz-condicao'(el) {
     visor.condicaoId = el.dataset.id; visor.pontos = []; visor.desconto = false;

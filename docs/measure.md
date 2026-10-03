@@ -1,4 +1,4 @@
-# KORbuild Measure — documentação do módulo (protótipo, fatia 1)
+# KORbuild Measure — documentação do módulo (protótipo, fatias 1 e 2)
 
 > **O que é:** o módulo de medição de plantas (*takeoff*) e, depois, de estimativa da plataforma KORbuild.
 >
@@ -16,8 +16,8 @@ O desenvolvimento é em fatias finas: o canvas e o motor de cálculo andam junto
 | Fatia | Conteúdo | Situação |
 | --- | --- | --- |
 | **1** | Tradutor imperial; abrir o PDF no navegador; escala da lista ou por calibração, mais a conferência; condições (linear, área, contagem) com propriedades; medição no canvas; quantidades | **Feita** |
-| 2 | Catálogo de itens, assemblies e fórmulas (mathjs restrito), perda e arredondamento como campos | Próxima |
-| 3 | Preços com vigência, estimativa (material, mão de obra, equipamento, subempreiteiro, overhead, lucro com markup **e** margem), snapshot | — |
+| **2** | Catálogo de itens, assemblies e fórmulas (mathjs restrito), perda e arredondamento como campos, quantidades de material e mão de obra com o cálculo à vista, CSV | **Feita** |
+| 3 | Preços com vigência, estimativa (material, mão de obra, equipamento, subempreiteiro, overhead, lucro com markup **e** margem), snapshot | Próxima |
 | 4 | Ligações: horas estimadas por etapa → orçamento de mão de obra do Crew; quantidades → avanço físico no Daily | — |
 
 ## 2. Regras de unidade e geometria (implementadas)
@@ -40,12 +40,41 @@ O desenvolvimento é em fatias finas: o canvas e o motor de cálculo andam junto
 
 **Inclinação:** `6/12`, `6:12` ou `6`. O fator é √(1 + (6/12)²) = 1,118.
 
+## 2b. Itens, assemblies e fórmulas (fatia 2)
+
+```
+condição medida ──► variáveis (lin ft, sq ft, cu yd…) ──► assembly: uma linha por item
+                                                           fórmula → bruta → + perda % → arredondamento → quantidade
+```
+
+| # | Regra | Onde |
+| --- | --- | --- |
+| MZ-10 | **Item** é o que se compra ou se paga, na **unidade de compra** (chapa, caixa, rolo, peça, cu yd, hora), com categoria (material, mão de obra, equipamento, subempreiteiro) e etapa/cost code (CSI MasterFormat) | `itens` |
+| MZ-11 | **Assembly** é um conjunto de linhas para um tipo de condição. Uma medição alimenta vários itens: a parede gera montantes, guias, OSB, house wrap, isolamento, drywall e horas | `assemblies` |
+| MZ-12 | **Fórmula** só calcula a quantidade **bruta**. **Perda (%)** e **arredondamento** (não arredondar, ou para cima de 1, 0,5 ou 0,25) são colunas próprias, nunca números escondidos na fórmula (RB-004) | `calcularLinha` |
+| MZ-13 | **Variáveis em unidades do ofício**, com nomes em inglês (o vocabulário do estimador americano): `MeasuredLinear`, `MeasuredArea`, `MeasuredCount`, `WallHeight`, `SurfaceArea`, `Thickness`, `VolumeCF`, `VolumeCY`, `RoofPitch`, `PitchFactor`, `PitchedArea`, `PitchedLinear` | `VARIAVEIS` |
+| MZ-14 | **Motor seguro:** mathjs com as funções perigosas desligadas e uma **lista branca**: números, + − × ÷ ^, parênteses, as variáveis do tipo e `ceil floor round min max sqrt abs`. Recusa atribuição, função nova, unidade ("5 ft"), texto, matriz, condicional e variável de outro tipo. Nunca `eval()` | `js/formulas.js` |
+| MZ-15 | **Validação ao salvar:** a fórmula é testada com valores de exemplo do tipo; divisão por zero e resultado negativo são recusados, e o erro diz a linha | `validar` |
+| MZ-16 | **Falta de propriedade não quebra:** se a condição não tem altura e o assembly usa `SurfaceArea`, a linha vira **pendência** ("Falta na condição: SurfaceArea (altura)") | `quantidadesDoProjeto` |
+| MZ-17 | **Arredondamento por linha** (como a compra de cada serviço); o total do item soma as linhas | `porItem` |
+| MZ-18 | **Rastro completo:** condição · assembly → fórmula = bruta → +perda = com perda → arredondado, com os valores das variáveis | tela e CSV |
+
+**Exemplo** (Paredes externas medidas com 135,87 lin ft, altura 9'):
+- SurfaceArea = 1.222,83 sq ft;
+- OSB: `SurfaceArea / 32` = 38,21 → +10% = 42,03 → para cima: **43 chapas**.
+
+**Dados de exemplo:** 18 itens (wood framing residencial) e 4 assemblies: parede externa 2x6 @ 16", piso LVP com manta, laje de concreto com tela e porta interna 30". **Coberturas, produtividades e perdas são exemplos para a demonstração, não referência de mercado.**
+
 ## 3. Telas
 
 | Tela | Rota | O que faz |
 | --- | --- | --- |
 | **Projeto** | `#/measure/projeto/<id>` | Folhas (escala e situação da conferência), **Enviar PDF** (cada página vira uma folha) e a tabela de **quantidades** por condição, com as derivadas |
-| **Folha (visor)** | `#/measure/folha/<id>` | A planta desenhada pelo PDF.js, com as medições por cima, e o painel de condições |
+| **Folha (visor)** | `#/measure/folha/<id>` | A planta desenhada pelo PDF.js, com as medições por cima, e o painel de condições (com os assemblies aplicados: "+ Aplicar assembly" e ✕ para tirar) |
+| **Projeto › Materiais e mão de obra** | (na tela do projeto) | Itens por categoria com a quantidade na unidade de compra; tocar abre o cálculo de cada linha; total de horas de mão de obra; pendências; **Exportar CSV** com o cálculo |
+| **Itens** | `#/measure/itens` | Catálogo por categoria: código, nome, unidade de compra, etapa, nota; novo, editar e excluir (o item usado em assembly não sai) |
+| **Assemblies** | `#/measure/assemblies` | Os conjuntos, com o tipo, as linhas e onde estão aplicados |
+| **Assembly** | `#/measure/assembly/<id>` (ou `/novo`) | Editor: item, fórmula, perda, arredondamento e a coluna **Teste**, ao vivo, com valores de exemplo; a ajuda lista as variáveis do tipo |
 
 ### Visor de medição
 - **Barra:**
@@ -75,12 +104,14 @@ O desenvolvimento é em fatias finas: o canvas e o motor de cálculo andam junto
 
 | Permissão | O que libera | Perfis prontos |
 | --- | --- | --- |
-| `measure.medir` (Medir plantas) | Abrir o Measure, enviar PDF, definir escala, medir e ver quantidades | Administrador, Gestor de obras |
+| `measure.medir` (Medir plantas) | Abrir o Measure, enviar PDF, definir escala, medir, aplicar assemblies e ver quantidades | Administrador, Gestor de obras |
+| `measure.catalogo` (Itens e assemblies) | Criar e editar itens e assemblies (sem ela, as fórmulas aparecem só para consulta) | Administrador |
 
 Encarregado e Trabalhador não veem o Measure (configurável em Settings › Perfis).
 
 ## 5. Técnica
 
+- **mathjs 14.9** (Apache 2.0) guardada em `vendor/mathjs/`, carregada só no Measure. Enquanto carrega, a tela mostra "Carregando o motor de fórmulas…".
 - **PDF.js 4.10** (Mozilla, Apache 2.0) guardado em `vendor/pdfjs/`, carregado só no Measure. O PDF é aberto **no navegador**, sem conversão para imagem e sem servidor.
 - **Canvas em duas camadas:** a planta (PDF.js) e as medições (desenhadas de novo a cada mudança, com a densidade de pixels da tela).
 - **PDF enviado:** fica no armazenamento do navegador (IndexedDB), como as fotos do Daily. Na versão real, vai para o armazenamento da empresa.
@@ -89,7 +120,14 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 ## 6. Testes
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **18 verificações.**
+- `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
+- `tests/measure.test.mjs` (Chromium, tela de computador): **33 verificações.** Além do que está abaixo, cobre:
+  - aplicar um assembly pelo visor;
+  - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
+  - o rastro do cálculo e o CSV;
+  - novo item e novo assembly com teste ao vivo;
+  - fórmula insegura recusada na digitação e ao salvar;
+  - gestor sem permissão de catálogo.
   - escala da lista e conferência;
   - perímetro com superfície, área com desconto e contagem;
   - zoom que não muda a medida;

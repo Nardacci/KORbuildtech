@@ -219,7 +219,8 @@ export const PERMISSOES = [
     { id: 'daily.aprovar', nome: 'Aprovar RDO e enviar ao cliente', descricao: 'Aprovar, pedir ajuste, PDF e link do cliente', requer: ['daily.acompanhar'] },
   ] },
   { grupo: 'Measure', modulo: 'measure', itens: [
-    { id: 'measure.medir', nome: 'Medir plantas (takeoff)', descricao: 'Abrir plantas, definir a escala e medir quantidades' },
+    { id: 'measure.medir', nome: 'Medir plantas (takeoff)', descricao: 'Abrir plantas, definir a escala, medir e aplicar assemblies' },
+    { id: 'measure.catalogo', nome: 'Itens e assemblies', descricao: 'Cadastrar itens e montar assemblies com fórmulas', requer: ['measure.medir'] },
   ] },
   { grupo: 'Settings', modulo: 'settings', itens: [
     { id: 'settings.funcionarios', nome: 'Cadastro de funcionários', descricao: 'Dados, certificações e valor hora' },

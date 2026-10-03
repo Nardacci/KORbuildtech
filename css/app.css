@@ -1009,3 +1009,35 @@ body.sem-rolagem { overflow: hidden; }
   .mz-painel { max-height: none; min-height: 0; }
 }
 .mz-carregando[hidden] { display: none; }
+
+/* Measure: itens, assemblies e quantidades */
+.mz-horas { display: flex; align-items: center; gap: 8px; margin: 4px 0 0; padding: 8px 12px; background: var(--superficie-2); border-radius: var(--raio); }
+.mz-grupo { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--mudo); margin: 14px 0 6px; }
+.mz-itens { display: flex; flex-direction: column; }
+.mz-item { border-top: 1px solid var(--borda); }
+.mz-item summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 4px; cursor: pointer; list-style: none; }
+.mz-item summary::-webkit-details-marker { display: none; }
+.mz-item summary::before { content: '▸'; color: var(--mudo); margin-right: 4px; }
+.mz-item[open] summary::before { content: '▾'; }
+.mz-item-nome { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.mz-item-qtd { white-space: nowrap; font-variant-numeric: tabular-nums; font-size: 15px; }
+.mz-rastro { list-style: none; margin: 0 0 10px 18px; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+.mz-rastro li { display: flex; flex-direction: column; gap: 2px; padding-left: 10px; border-left: 3px solid var(--borda-forte); }
+.mz-conta { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--texto); }
+.mz-pendencias { margin-top: 12px; padding: 10px 12px; border-radius: var(--raio); background: var(--ambar-claro); color: var(--ambar); font-size: 13px; }
+.mz-pendencias ul { margin: 4px 0 0; padding-left: 18px; }
+.mz-cond-assemblies { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
+.mz-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda); }
+.mz-assemblies { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.mz-assembly { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--texto); }
+.mz-assembly:hover { border-color: var(--cor-measure); }
+.mz-assembly .etiqueta { align-self: flex-start; }
+.mz-tabela-linhas td { vertical-align: middle; }
+.mz-tabela-linhas select { min-width: 210px; }
+.mz-formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; min-width: 220px; }
+.mz-tabela-linhas .campo-pct input { width: 72px; }
+.mz-teste { font-size: 12.5px; font-variant-numeric: tabular-nums; min-width: 150px; color: var(--verde); font-weight: 600; }
+.mz-teste.erro { color: var(--vermelho); font-weight: 500; }
+.mz-ajuda { margin-top: 12px; padding: 10px 12px; background: var(--superficie-2); border-radius: var(--raio); font-size: 13px; }
+.mz-ajuda ul { margin: 6px 0; padding-left: 18px; }
+.mz-ajuda code, .mz-conta code { font-size: 12.5px; }

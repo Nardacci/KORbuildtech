@@ -2,11 +2,11 @@
  * Guarda o app inteiro no aparelho na instalação, para abrir e funcionar no canteiro sem internet.
  * Arquivos do app: rede primeiro (pega a versão nova) e cópia guardada quando não há conexão.
  * O clima (Open-Meteo) nunca passa pelo cache: sem internet, o app pede para marcar à mão. */
-var CACHE = 'korbuild-v16';
+var CACHE = 'korbuild-v17';
 var APP = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/util.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',
-  'js/exemplo.js', 'js/lacre.js', 'js/relatorio.js', 'js/plataforma.js', 'js/icones.js', 'js/prazos.js', 'js/crew.js', 'js/crew-telas.js', 'js/settings.js', 'js/settings-telas.js', 'js/imperial.js', 'js/measure.js', 'js/measure-telas.js', 'vendor/leaflet/leaflet.js', 'vendor/leaflet/leaflet.css',
+  'js/exemplo.js', 'js/lacre.js', 'js/relatorio.js', 'js/plataforma.js', 'js/icones.js', 'js/prazos.js', 'js/crew.js', 'js/crew-telas.js', 'js/settings.js', 'js/settings-telas.js', 'js/imperial.js', 'js/measure.js', 'js/measure-telas.js', 'js/formulas.js', 'vendor/leaflet/leaflet.js', 'vendor/leaflet/leaflet.css',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
 ];
 
