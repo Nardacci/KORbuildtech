@@ -8,6 +8,7 @@ import { hoje, somarDias, diasEntre, novoId, sha256 } from './util.js';
 import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
 import { criarDadosCrew, RAIO_CERCA } from './crew.js';
 import { criarSettings } from './settings.js';
+import { criarDadosMeasure } from './measure.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
@@ -144,7 +145,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 9;
+export const VERSAO_DADOS = 10;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -229,12 +230,12 @@ export async function criarDemonstracao() {
   const empresa = {
     id: 'construtora-exemplo', ...CONSTRUTORA, desde: somarDias(dia0, -2),
     plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
-    modulos: ['daily', 'crew'],
+    modulos: ['daily', 'crew', 'measure'],
   };
   const usuarios = USUARIOS.map((u, i) => ({ ...u, ativo: true, ultimoAcesso: i < 2 ? null : momento(somarDias(dia0, -i), 17, 5) }));
   // Settings: regra de jornada e encargos da empresa desde antes da primeira admissão
   const inicioEmpresa = somarDias(dia0, -400);
   const settings = criarSettings(inicioEmpresa, new Date(inicioEmpresa + 'T09:00:00').getTime());
   const { funcionarios, ...crew } = criarDadosCrew(obras);
-  return { versao: VERSAO_DADOS, criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, interesses: [], obras, rdos, funcionarios, settings, crew };
+  return { versao: VERSAO_DADOS, criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, interesses: [], obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure() };
 }

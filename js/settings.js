@@ -218,6 +218,9 @@ export const PERMISSOES = [
     { id: 'daily.acompanhar', nome: 'Acompanhar todas as obras', descricao: 'Painel, obras e relatórios enviados' },
     { id: 'daily.aprovar', nome: 'Aprovar RDO e enviar ao cliente', descricao: 'Aprovar, pedir ajuste, PDF e link do cliente', requer: ['daily.acompanhar'] },
   ] },
+  { grupo: 'Measure', modulo: 'measure', itens: [
+    { id: 'measure.medir', nome: 'Medir plantas (takeoff)', descricao: 'Abrir plantas, definir a escala e medir quantidades' },
+  ] },
   { grupo: 'Settings', modulo: 'settings', itens: [
     { id: 'settings.funcionarios', nome: 'Cadastro de funcionários', descricao: 'Dados, certificações e valor hora' },
     { id: 'settings.regras', nome: 'Encargos e regras de jornada', descricao: 'Mudanças com vigência, sem mexer no passado' },
@@ -230,7 +233,7 @@ export function permissao(id) { return PERMISSOES.flatMap((g) => g.itens).find((
 
 export const PERFIS_INICIAIS = [
   { id: 'administrador', nome: 'Administrador', descricao: 'Escritório: tudo, inclusive o Settings', sistema: true, permissoes: TODAS_PERMISSOES.filter((p) => p !== 'crew.ponto.proprio' && p !== 'crew.ponto.equipe' && p !== 'daily.preencher') },
-  { id: 'gestor', nome: 'Gestor de obras', descricao: 'Vê tudo dos módulos e aprova, sem mexer nas configurações', permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar'] },
+  { id: 'gestor', nome: 'Gestor de obras', descricao: 'Vê tudo dos módulos e aprova, sem mexer nas configurações', permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'measure.medir'] },
   { id: 'encarregado', nome: 'Encarregado', descricao: 'Campo: ponto da equipe e diário de obra', permissoes: ['crew.ponto.proprio', 'crew.ponto.equipe', 'daily.preencher'] },
   { id: 'trabalhador', nome: 'Trabalhador', descricao: 'Só bate o próprio ponto: entra direto no ponto, sem a tela de módulos', permissoes: ['crew.ponto.proprio'] },
 ];
@@ -245,6 +248,7 @@ export function modulosDe(u) {
   const out = [];
   if (podeAlgum(u, 'daily.')) out.push('daily');
   if (podeAlgum(u, 'crew.')) out.push('crew');
+  if (podeAlgum(u, 'measure.')) out.push('measure');
   if (podeAlgum(u, 'settings.')) out.push('settings');
   return out;
 }

@@ -31,18 +31,18 @@ export const MODULOS = [
     ligacao: 'Quem bateu ponto na obra entra sozinho na equipe do relatório do Daily. Ninguém digita "6 pedreiros" de novo.',
   },
   {
-    id: 'settings', nome: 'Settings', status: 'disponivel', incluso: true, soAdmin: true,
-    resumo: 'Configuração da empresa: funcionários, encargos, regras de jornada e auditoria. Vale para todos os módulos.',
+    id: 'measure', nome: 'Measure', status: 'disponivel', prototipo: true,
+    resumo: 'Medição de plantas (takeoff): abre o PDF, calibra a escala e mede em pés e polegadas: lin ft, sq ft, cu yd e unidades.',
+    oQueFaz: [
+      'Abre a planta em PDF e mede na tela: comprimentos, áreas e contagens.',
+      'Monta as quantidades por condição (paredes, piso, portas…), com altura, inclinação e profundidade.',
+      'Depois: assemblies, fórmulas, preços e a estimativa da obra.',
+    ],
+    ligacao: 'As quantidades viram a meta da obra. O relatório do Daily passa a mostrar o avanço: "45 de 180 cu yd de concreto".',
   },
   {
-    id: 'measure', nome: 'Measure', status: 'em-breve',
-    resumo: 'Medição de plantas: quantidades tiradas do projeto em PDF e o orçamento da obra.',
-    oQueFaz: [
-      'Abre a planta em PDF e mede na tela: áreas, comprimentos e contagens.',
-      'Monta a lista de quantidades por etapa (m² de alvenaria, m³ de concreto…).',
-      'Gera o orçamento a partir das quantidades e dos preços da empresa.',
-    ],
-    ligacao: 'As quantidades viram a meta da obra. O relatório do Daily passa a mostrar o avanço: "laje do 2º pavimento: 45 de 180 m³".',
+    id: 'settings', nome: 'Settings', status: 'disponivel', incluso: true, soAdmin: true,
+    resumo: 'Configuração da empresa: funcionários, encargos, regras de jornada e auditoria. Vale para todos os módulos.',
   },
 ];
 
@@ -236,7 +236,7 @@ export function telaModulos(u, saudacao) {
     const contratado = m.incluso || d.empresa.modulos.includes(m.id);
     const disponivel = m.status === 'disponivel';
     const etiqueta = disponivel
-      ? (m.incluso ? '<span class="etiqueta etiqueta-neutro">Incluído no plano</span>' : contratado ? '<span class="etiqueta etiqueta-verde">Contratado</span>' : '<span class="etiqueta etiqueta-neutro">Não contratado</span>')
+      ? (m.incluso ? '<span class="etiqueta etiqueta-neutro">Incluído no plano</span>' : m.prototipo && contratado ? '<span class="etiqueta etiqueta-ambar">Protótipo</span>' : contratado ? '<span class="etiqueta etiqueta-verde">Contratado</span>' : '<span class="etiqueta etiqueta-neutro">Não contratado</span>')
       : '<span class="etiqueta etiqueta-neutro">Em breve</span>';
     return '<a class="modulo modulo-' + m.id + (disponivel ? '' : ' em-breve') + '" href="#/' + m.id + '">' +
       '<div class="modulo-topo"><span class="modulo-icone">' + icone(m.id, 26) + '</span>' + etiqueta + '</div>' +

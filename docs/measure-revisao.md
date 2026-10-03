@@ -214,7 +214,14 @@ por etapa (cost code)        (ponto, custo carregado)       (RDO)
 
 ---
 
-## 7. Decisões para validar (antes da versão 0.2)
+## 7. Decisões
+
+**Tomadas:**
+- **Canvas e motor juntos**, em fatias finas (2.1);
+- **PDF aberto no navegador**, com PDF.js (2.2);
+- **primeira fatia construída**: tradutor imperial, escala com conferência e medição. Ver [`measure.md`](measure.md). Ela já segue 1.1 (coordenadas do PDF), 1.3 (unidade base), 1.4 (condição separada das medições) e 1.5 (geometrias e propriedades).
+
+**Ainda para validar (antes da versão 0.2):**
 
 1. **Unidade base:** polegadas (comprimento), polegadas² e polegadas³ guardadas; sq ft, lin ft e cu yd nas fórmulas e na tela (1.3). De acordo?
 2. **Geometria em coordenadas do PDF** (1.1) e **escala por folha com viewports** (1.2)?

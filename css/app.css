@@ -974,3 +974,38 @@ body.sem-rolagem { overflow: hidden; }
 @media (max-width: 760px) {
   .matriz-perfis { min-width: 680px; }
 }
+
+/* ---------- Measure ---------- */
+:root { --cor-measure-claro: #EEF0FF; }
+.pagina-total { max-width: none; }
+.mz-cor { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; flex-shrink: 0; }
+.mz-visor { display: flex; flex-direction: column; gap: 10px; }
+.mz-barra { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 12px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: var(--sombra); }
+.mz-barra .btn-linha { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mz-zoom { min-width: 48px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mz-corpo { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; }
+.mz-area { position: relative; height: calc(100vh - 250px); min-height: 420px; overflow: auto; background: #E9ECF1; border: 1px solid var(--borda); border-radius: var(--raio-grande); }
+.mz-area:focus-visible { outline: 2px solid var(--primario); }
+.mz-folha { position: relative; margin: 8px; box-shadow: 0 1px 6px rgba(16, 24, 40, 0.18); background: #fff; }
+.mz-folha canvas { position: absolute; left: 0; top: 0; }
+#mz-desenho { cursor: crosshair; touch-action: none; }
+.mz-carregando { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--mudo); font-weight: 600; }
+.mz-painel { display: flex; flex-direction: column; gap: 8px; max-height: calc(100vh - 250px); min-height: 420px; overflow-y: auto; }
+.mz-painel-cabeca { display: flex; justify-content: space-between; align-items: center; }
+.mz-painel-cabeca h2 { margin: 0; font-size: 16px; }
+.mz-cond { background: var(--superficie); border: 1px solid var(--borda); border-left: 4px solid var(--cor); border-radius: var(--raio); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.mz-cond.ativa { box-shadow: 0 0 0 2px var(--cor), var(--sombra); }
+.mz-cond-topo { all: unset; display: flex; align-items: flex-start; cursor: pointer; }
+.mz-cond-topo:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; }
+.mz-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+.mz-derivado { font-size: 13px; color: var(--texto-2); }
+.mz-cond-acoes { display: flex; gap: 12px; }
+.mz-medicoes { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; max-height: 160px; overflow-y: auto; }
+.mz-medicoes li { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px solid var(--borda); font-variant-numeric: tabular-nums; }
+.mz-dica { margin: 0; font-size: 13px; color: var(--texto-2); background: var(--superficie-2); border: 1px dashed var(--borda-forte); border-radius: var(--raio); padding: 8px 12px; }
+.tabela-quantidades .etiqueta { margin-left: 6px; }
+@media (max-width: 900px) {
+  .mz-corpo { grid-template-columns: 1fr; }
+  .mz-painel { max-height: none; min-height: 0; }
+}
+.mz-carregando[hidden] { display: none; }

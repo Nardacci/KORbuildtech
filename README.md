@@ -8,7 +8,7 @@ Plataforma SaaS de gestão de obra, com três módulos que compartilham os mesmo
 | **KORbuild Crew** | Ponto da equipe: funcionário → horas → obra → custo | Protótipo pronto |
 | **KORbuild Measure** | Medição de plantas: planta → medições → quantidades → orçamento | Em breve |
 
-Todos entram pelo mesmo login. O que cada um vê vem do **perfil de acesso** (Settings › Perfis, configurável): o **trabalhador** que só bate ponto entra direto no **Meu ponto**, sem a tela de módulos; o **encarregado** vê Daily e Crew (preenche o RDO e bate o ponto da equipe); o **gestor** acompanha e aprova; o **administrador** também configura o Settings. A estrutura SaaS (empresa, plano, módulos contratados, usuários e papéis) está descrita em [`docs/saas.md`](docs/saas.md). O **Settings** (configuração da empresa, só para o escritório: funcionários, encargos e regras de jornada com vigência, auditoria; análise e próximas etapas) está em [`docs/settings.md`](docs/settings.md). O **Measure** (takeoff e estimativa) está em análise: [`docs/measure-especificacao-0.1.md`](docs/measure-especificacao-0.1.md) (conceito) e [`docs/measure-revisao.md`](docs/measure-revisao.md) (revisão técnica e MVP proposto). A documentação completa do Crew (telas, regras de negócio, fluxos, custos, requisitos e glossário) está em [`docs/crew.md`](docs/crew.md); a análise de negócio (funcionalidades, GPS, regras legais nos EUA e no Brasil, concorrência e MVP), em [`docs/crew-analise.md`](docs/crew-analise.md).
+Todos entram pelo mesmo login. O que cada um vê vem do **perfil de acesso** (Settings › Perfis, configurável): o **trabalhador** que só bate ponto entra direto no **Meu ponto**, sem a tela de módulos; o **encarregado** vê Daily e Crew (preenche o RDO e bate o ponto da equipe); o **gestor** acompanha e aprova; o **administrador** também configura o Settings. A estrutura SaaS (empresa, plano, módulos contratados, usuários e papéis) está descrita em [`docs/saas.md`](docs/saas.md). O **Settings** (configuração da empresa, só para o escritório: funcionários, encargos e regras de jornada com vigência, auditoria; análise e próximas etapas) está em [`docs/settings.md`](docs/settings.md). O **Measure** (takeoff: medição de plantas em pés e polegadas) tem a primeira fatia pronta: [`docs/measure.md`](docs/measure.md) (o que existe), [`docs/measure-especificacao-0.1.md`](docs/measure-especificacao-0.1.md) (conceito) e [`docs/measure-revisao.md`](docs/measure-revisao.md) (revisão técnica e MVP). A documentação completa do Crew (telas, regras de negócio, fluxos, custos, requisitos e glossário) está em [`docs/crew.md`](docs/crew.md); a análise de negócio (funcionalidades, GPS, regras legais nos EUA e no Brasil, concorrência e MVP), em [`docs/crew-analise.md`](docs/crew-analise.md).
 
 **Mercado-alvo: Estados Unidos.** O protótipo está em português só para a conversa interna; termos, unidades, formatos e dados de exemplo americanos entram na localização.
 
@@ -126,6 +126,11 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 | `js/relatorio.js` | O relatório usado na tela, no PDF e no link do cliente |
 | `js/exemplo.js` | Empresa, plano, usuários, obras e RDOs fictícios |
 | `js/crew.js` | Crew: modelo do ponto (batidas, jornada, semana, hora extra), valor hora com vigência, encargos, orçamentos, motor de custo e projeção, e os dados de exemplo (duas semanas detalhadas + histórico consolidado desde o início das obras) |
+| `js/imperial.js` | Measure: unidades imperiais (ft-in com frações ↔ polegadas), escalas de planta, inclinação, Shoelace |
+| `js/measure.js` | Measure: projetos, folhas com escala, condições e medições (pontos na página do PDF), totais e derivadas |
+| `js/measure-telas.js` | Measure: projeto, visor com PDF.js e canvas (calibrar, conferir, medir), envio de PDF |
+| `vendor/pdfjs/` | PDF.js 4.10 (Mozilla, Apache 2.0), carregado só no Measure |
+| `assets/plantas/`, `tools/gerar-planta.py` | Planta de exemplo (PDF vetorial) e o script que a gera |
 | `js/settings.js` | Settings: funcionários, regras de jornada e encargos com vigência, cálculo das horas extras pela regra, auditoria |
 | `js/settings-telas.js` | Settings: telas (funcionários, encargos, regras, auditoria) e avisos de certificação no sininho |
 | `js/crew-telas.js` | Crew: telas do encarregado e do escritório, mapa do dia e notificações |
@@ -137,7 +142,9 @@ Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/measure`; no Crew, `#/cr
 
 ## Testes
 
-`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (103 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, interesse nos módulos futuros, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
+`tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (87 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, módulos por perfil, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
+
+`tests/measure.test.mjs` cobre o Measure (18 verificações, tela de computador): escala da lista e conferência, perímetro, área com desconto, contagem, zoom sem mudar a medida, volume por espessura, envio de PDF com calibração e permissões. `tests/imperial.test.mjs` (50 verificações, sem navegador) cobre o tradutor de pés e polegadas.
 
 `tests/crew.test.mjs` cobre o Crew (103 verificações, quarta-feira às 16h30): ponto da equipe com GPS e cerca, troca de obra e chegada, intervalo, horas, permissões, equipe do RDO vinda do ponto, "Agora", batida para conferir, sininho, aprovação, CSV, ajuste de saída esquecida, custos por obra/mês/semana com projeção, orçamento e encargos, valor hora com histórico (inclusive a trava de semana aprovada), mapa do dia, percurso com endereços, registros de localização e reprodução, e o Settings (só o escritório entra; encargos e regra com vigência sem mexer no passado; hora extra diária; autônomo 1099; desligamento; certificações a vencer; auditoria) e as permissões (trabalhador direto no Meu ponto e barrado nas outras telas, gestor sem Settings, Administrador fixo, perfil novo, usuário ligado ao funcionário).
 
@@ -146,4 +153,6 @@ npm install playwright   # uma vez
 python3 -m http.server 8123 &
 node tests/demo.test.mjs http://localhost:8123/
 node tests/crew.test.mjs http://localhost:8123/
+node tests/measure.test.mjs http://localhost:8123/
+node tests/imperial.test.mjs          # sem navegador
 ```

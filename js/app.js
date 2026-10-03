@@ -15,6 +15,7 @@ import {
 } from './plataforma.js';
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
+import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure } from './measure-telas.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
@@ -201,6 +202,12 @@ function desenhar() {
     if (r && r.trocar) return trocarRota(r.trocar);
     html = r;
     modo = 'crew';
+  } else if (p[0] === 'measure') {
+    if (!modulosLiberados(u).includes('measure')) return trocarRota(inicioDoUsuario(u));
+    const r = telaMeasure(p.slice(1));
+    if (r && r.trocar) return trocarRota(r.trocar);
+    html = r;
+    modo = 'measure';
   } else if (p[0] === 'settings') {
     const r = telaSettings(p.slice(1));
     if (r && r.trocar) return trocarRota(r.trocar);
@@ -226,6 +233,7 @@ function desenhar() {
   hidratarFotos(app);
   if (p[0] === 'cliente') verificarLacreNaTela(p[1]);
   if (p[0] === 'crew') aposDesenharCrew();
+  if (p[0] === 'measure') aposDesenharMeasure();
 }
 
 function chaveDoFoco(el) {
@@ -1407,9 +1415,10 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
+  ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
     return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
