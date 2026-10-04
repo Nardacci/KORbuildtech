@@ -306,6 +306,7 @@ function testarLinhas() {
 const visor = {
   folhaId: null, condicaoId: null, ferramenta: 'medir', zoom: 1,
   pontos: [], cursor: null, cal: [], viewport: null, page: null, arrastando: null, espaco: false,
+  abertas: new Set(), fechadas: new Set(), gruposFechados: new Set(), // estado da árvore do painel
 };
 const condicaoVisivel = (c) => !c.oculta;
 // ferramentas que desenham pontos (as outras: mover, calibrar, conferir)
@@ -340,61 +341,100 @@ function telaFolha(id) {
 
 function htmlBarra() {
   const f = folha(visor.folhaId);
-  const b = (ferr, rot, ic, extra) => '<button type="button" class="btn btn-pequeno ' + (visor.ferramenta === ferr ? 'btn-primario' : 'btn-contorno') + '" data-acao="mz-ferramenta" data-ferramenta="' + ferr + '"' + (extra || '') + '>' + icone(ic, 16) + rot + '</button>';
   const semEscala = !f.escala;
   const ativa = condicao(visor.condicaoId);
   const semArea = !ativa || ativa.tipo !== 'area';
+  // botão de um grupo (segmentado): ícone + rótulo; o ativo fica em destaque
+  const ferr = (id, rot, ic, motivo, dica) => '<button type="button" class="mz-seg' + (visor.ferramenta === id ? ' ativo' : '') + '" data-acao="mz-ferramenta" data-ferramenta="' + id + '" aria-pressed="' + (visor.ferramenta === id) + '"' +
+    (motivo ? ' disabled title="' + motivo + '"' : ' title="' + dica + '"') + '>' + icone(ic, 16) + '<span>' + rot + '</span></button>';
+  const precisaEscala = semEscala ? 'Defina a escala primeiro' : '';
+  const conf = f.escala && f.escala.conferencia;
+  const estado = !f.escala ? '' : !conf ? 'pendente' : conf.ok ? 'ok' : 'erro';
   // a planta ocupa a tela: o caminho de volta e o nome da folha ficam na própria barra
   const fs = folhasDo(f.projetoId);
-  return '<div class="mz-barra-titulo"><a class="voltar" href="#/measure/projeto/' + f.projetoId + '" title="Voltar para o projeto">' + icone('voltar', 18) + esc(projeto(f.projetoId).nome) + '</a>' +
+  return '<div class="mz-barra-titulo"><a class="voltar mz-voltar" href="#/measure/projeto/' + f.projetoId + '" title="Voltar para o projeto">' + icone('voltar', 18) + '<span>' + esc(projeto(f.projetoId).nome) + '</span></a>' +
       (fs.length > 1 ? '<select class="mz-trocar-folha" aria-label="Folha">' + fs.map((x) => '<option value="' + x.id + '"' + (x.id === f.id ? ' selected' : '') + '>' + esc(x.nome) + '</option>').join('') + '</select>' : '<h1 class="mz-titulo">' + esc(f.nome) + '</h1>') + '</div>' +
-    '<div class="btn-linha">' + b('mover', 'Mover', 'seta') + b('medir', 'Medir', 'measure', semEscala ? ' disabled title="Defina a escala primeiro"' : '') +
-      b('recortar', 'Recortar', 'borracha', semEscala ? ' disabled title="Defina a escala primeiro"' : semArea ? ' disabled title="Escolha uma condição de área (siding, piso…) para recortar"' : ' title="Borracha: desenha uma área que sai do total"') +
-      b('vao', 'Vão', 'janela', semEscala ? ' disabled title="Defina a escala primeiro"' : ' title="Desenhe a janela ou porta: conta o vão e recorta o siding"') + '</div>' +
-    '<div class="btn-linha"><button type="button" class="btn btn-pequeno ' + (semEscala ? 'btn-primario' : 'btn-contorno') + '" data-acao="mz-escala">' + icone('measure', 16) + (f.escala ? 'Escala: ' + esc(f.escala.nome) : 'Definir escala') + '</button>' +
-      (f.escala ? b('conferir', 'Conferir', 'aprovacoes') : '') +
-      (f.escala && f.escala.conferencia ? '<span class="etiqueta ' + (f.escala.conferencia.ok ? 'etiqueta-verde' : 'etiqueta-alerta') + '">' + (f.escala.conferencia.ok ? 'conferida' : 'diferença') + ' ' + numero(f.escala.conferencia.diferenca * 100, 1) + '%</span>' : f.escala ? '<span class="etiqueta etiqueta-ambar">não conferida</span>' : '') + '</div>' +
-    '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-zoom" data-passo="-1" aria-label="Diminuir o zoom">−</button><span class="mz-zoom" id="mz-zoom">' + Math.round(visor.zoom * 100) + '%</span>' +
-      '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-zoom" data-passo="1" aria-label="Aumentar o zoom">+</button><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-zoom" data-passo="0">Ajustar</button></div>' +
-    '<div class="btn-linha mz-barra-fim"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-tela-cheia" aria-pressed="' + !!document.fullscreenElement + '">' + (document.fullscreenElement ? 'Sair da tela cheia' : 'Tela cheia') + '</button></div>';
+    '<div class="mz-grupo-barra" role="toolbar" aria-label="Ferramentas">' +
+      ferr('mover', 'Mover', 'seta', '', 'Arrastar a planta (ou segure a barra de espaço)') +
+      ferr('medir', 'Medir', 'measure', precisaEscala, 'Medir na condição escolhida') +
+      ferr('recortar', 'Recortar', 'borracha', precisaEscala || (semArea ? 'Escolha uma condição de área (siding, piso…) para recortar' : ''), 'Borracha: desenha uma área que sai do total') +
+      ferr('vao', 'Vão', 'janela', precisaEscala, 'Desenhe a janela ou porta: conta o vão e recorta o siding') + '</div>' +
+    (semEscala
+      ? '<button type="button" class="mz-chamada" data-acao="mz-escala">' + icone('measure', 16) + 'Definir escala</button>'
+      : '<div class="mz-grupo-barra" aria-label="Escala"><button type="button" class="mz-seg" data-acao="mz-escala" title="Trocar a escala ou calibrar"><span class="mz-ponto ' + estado + '" aria-hidden="true"></span>' + esc(f.escala.nome) + '</button>' +
+          ferr('conferir', 'Conferir', 'aprovacoes', '', 'Medir outra cota conhecida para conferir a escala') + '</div>' +
+        '<span class="mz-estado-escala ' + estado + '">' + (conf ? (conf.ok ? 'conferida ' : 'diferença ') + numero(conf.diferenca * 100, 1) + '%' : 'não conferida') + '</span>') +
+    '<div class="mz-barra-fim">' +
+      '<div class="mz-grupo-barra" aria-label="Zoom"><button type="button" class="mz-seg mz-seg-quadrado" data-acao="mz-zoom" data-passo="-1" aria-label="Diminuir o zoom" title="Diminuir o zoom">−</button>' +
+        '<span class="mz-zoom" id="mz-zoom">' + Math.round(visor.zoom * 100) + '%</span>' +
+        '<button type="button" class="mz-seg mz-seg-quadrado" data-acao="mz-zoom" data-passo="1" aria-label="Aumentar o zoom" title="Aumentar o zoom">+</button>' +
+        '<button type="button" class="mz-seg" data-acao="mz-zoom" data-passo="0" title="Caber a folha inteira">Ajustar</button></div>' +
+      '<button type="button" class="mz-seg mz-seg-solto" data-acao="mz-tela-cheia" aria-pressed="' + !!document.fullscreenElement + '" aria-label="' + (document.fullscreenElement ? 'Sair da tela cheia' : 'Tela cheia') + '" title="' + (document.fullscreenElement ? 'Sair da tela cheia' : 'Tela cheia') + '">' +
+        icone(document.fullscreenElement ? 'recolher' : 'expandir', 16) + '</button></div>';
 }
 
+/* Quantidade curta para a linha da árvore (a completa, em ft-in, fica no detalhe). */
+function textoCurto(c, t) {
+  if (c.tipo === 'contagem') return numero(t.base) + ' each';
+  if (c.tipo === 'linear') return formatarLinear(t.base);
+  return formatarArea(t.base);
+}
+
+/* Painel em árvore: tipo → condição → assemblies e medições. A condição ativa abre sozinha. */
 function htmlPainel() {
   const f = folha(visor.folhaId);
   const cs = condicoesDaFolha(f.id);
   const nOcultas = cs.filter((c) => c.oculta).length;
-  return '<div class="mz-painel-cabeca"><h2>Condições</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-incluir-assembly">' + icone('mais', 14) + 'Incluir assembly</button></div>' +
+  const caret = (aberto) => '<span class="mz-caret' + (aberto ? ' aberto' : '') + '" aria-hidden="true">▸</span>';
+  return '<div class="mz-painel-cabeca"><h2>Condições <span class="mz-contagem">' + cs.length + '</span></h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-incluir-assembly">' + icone('mais', 14) + 'Incluir assembly</button></div>' +
     (cs.length ? '' : '<p class="mz-vazio-painel">Nada no desenho ainda. Clique em <b>Incluir assembly</b>, escolha do catálogo (parede, piso, janela…) e comece a medir.</p>') +
     (cs.length > 1 ? '<div class="mz-cond-acoes mz-visiveis"><button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar="1"' + (nOcultas ? '' : ' disabled') + '>Mostrar todas</button>' +
       '<button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar=""' + (nOcultas === cs.length ? ' disabled' : '') + '>Ocultar todas</button></div>' : '') +
-    cs.map((c) => {
-      const t = totaisDaCondicao(c);
-      const tf = totalNaFolha(c, f.id);
-      const outras = folhasDaCondicao(c).filter((x) => x.id !== f.id);
-      const aqui = c.medicoes.filter((m) => m.folhaId === f.id);
-      const ativa = c.id === visor.condicaoId;
-      const visivel = condicaoVisivel(c);
-      return '<div class="mz-cond' + (ativa ? ' ativa' : '') + (visivel ? '' : ' oculta') + '" style="--cor:' + c.cor + '">' +
-        '<div class="mz-cond-cabeca"><input type="checkbox" class="mz-visivel" data-acao="mz-visivel" data-id="' + c.id + '"' + (visivel ? ' checked' : '') + ' aria-label="Mostrar ' + esc(c.nome) + ' no desenho" title="Mostrar no desenho">' +
-        '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + c.cor + '"></span><span><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') + '<span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></span></button></div>' +
-        '<div class="mz-total">' + (tf.medicoes ? textoPrincipal(c, tf) : '<span class="mudo">nada medido nesta folha</span>') + '</div>' +
-        (outras.length ? '<div class="mz-derivado">Também em ' + esc(outras.map(nomeFolha).join(', ')) + ' · projeto: <b>' + (t.medicoes ? textoPrincipal(c, t) : '—') + '</b></div>' : '') +
-        (t.medicoes ? t.derivados.map((d) => '<div class="mz-derivado">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></div>').join('') : '') +
-        (ativa ? '<div class="mz-cond-assemblies"><span class="mudo pequeno">Assemblies</span>' + ((c.assemblies || []).map((aid) => assembly(aid)).filter(Boolean).map((a) =>
-            '<span class="mz-chip">' + esc(a.nome) + '<button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '">✕</button></span>').join('') || '<span class="mudo pequeno">nenhum</span>') +
-            '<button type="button" class="link-botao pequeno" data-acao="mz-aplicar-assembly" data-cond="' + c.id + '">+ Aplicar assembly</button></div>' : '') +
-        (ativa ? '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-editar-condicao" data-id="' + c.id + '">Editar</button>' +
-          (outras.length ? '<button type="button" class="link-botao pequeno" data-acao="mz-tirar-da-folha" data-id="' + c.id + '">Tirar desta folha</button>' : '') +
-          '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
-          (aqui.length ? '<ol class="mz-medicoes">' + aqui.map((m, i) => {
-            const v = valorDaMedicao(c, m);
-            const txt = c.tipo === 'contagem' ? '1 each' : v == null ? 'sem escala' : c.tipo === 'linear' ? formatarPesPolegadas(v) : (v < 0 ? '− ' : '') + formatarArea(Math.abs(v));
-            const tipoM = m.vaoDe ? 'Vão ' + esc(nomeCurto(condicao(m.vaoDe.condicaoId) || { nome: '?' })) + ': ' : m.desconto ? 'Recorte: ' : '';
-            const nota = m.vao ? ' <span class="mudo">(desenhado' + (m.vao.recortes.length ? ', recorta ' + esc(m.vao.recortes.map((r) => nomeCurto(condicao(r.condicaoId) || { nome: '?' })).join(', ')) : '') + ')</span>' : '';
-            return '<li class="' + (m.desconto ? 'mz-med-recorte' : '') + '"><span>' + (i + 1) + '. ' + tipoM + txt + nota + '</span><button type="button" class="link-botao" data-acao="mz-apagar-medicao" data-cond="' + c.id + '" data-id="' + m.id + '" aria-label="Apagar a medição ' + (i + 1) + '">✕</button></li>';
-          }).join('') + '</ol>' : '') : '') +
-        '</div>';
-    }).join('');
+    '<div class="mz-arvore" role="tree">' + Object.entries(TIPOS).map(([tipo, tp]) => {
+      const lista = cs.filter((c) => c.tipo === tipo);
+      if (!lista.length) return '';
+      const grupoAberto = !visor.gruposFechados.has(tipo);
+      return '<div class="mz-grupo-arvore" role="group"><button type="button" class="mz-no-grupo" data-acao="mz-grupo" data-tipo="' + tipo + '" aria-expanded="' + grupoAberto + '">' + caret(grupoAberto) +
+          '<span>' + tp.nome + '</span><span class="mz-contagem">' + lista.length + '</span><span class="mz-unidade">' + tp.unidade + '</span></button>' +
+        (grupoAberto ? lista.map((c) => htmlNoCondicao(c, f, caret)).join('') : '') + '</div>';
+    }).join('') + '</div>';
+}
+
+function htmlNoCondicao(c, f, caret) {
+  const t = totaisDaCondicao(c);
+  const tf = totalNaFolha(c, f.id);
+  const outras = folhasDaCondicao(c).filter((x) => x.id !== f.id);
+  const aqui = c.medicoes.filter((m) => m.folhaId === f.id);
+  const ativa = c.id === visor.condicaoId;
+  const aberta = ativa ? !visor.fechadas.has(c.id) : visor.abertas.has(c.id);
+  const visivel = condicaoVisivel(c);
+  const as = (c.assemblies || []).map((aid) => assembly(aid)).filter(Boolean);
+  return '<div class="mz-cond' + (ativa ? ' ativa' : '') + (visivel ? '' : ' oculta') + '" style="--cor:' + c.cor + '" role="treeitem" aria-expanded="' + aberta + '" aria-selected="' + ativa + '">' +
+    '<div class="mz-cond-cabeca"><button type="button" class="mz-abrir" data-acao="mz-abrir" data-id="' + c.id + '" aria-label="' + (aberta ? 'Recolher ' : 'Abrir ') + esc(c.nome) + '">' + caret(aberta) + '</button>' +
+      '<input type="checkbox" class="mz-visivel" data-acao="mz-visivel" data-id="' + c.id + '"' + (visivel ? ' checked' : '') + ' aria-label="Mostrar ' + esc(c.nome) + ' no desenho" title="Mostrar no desenho">' +
+      '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + c.cor + '"></span>' +
+        '<span class="mz-cond-nome"><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') +
+        (textoProps(c) ? '<span class="mudo pequeno bloco">' + esc(textoProps(c)) + '</span>' : '') + '</span></button>' +
+      '<span class="mz-total">' + (tf.medicoes ? textoCurto(c, tf) : '<span class="mudo">—</span>') + '</span></div>' +
+    (aberta ? '<div class="mz-filhos">' +
+      '<div class="mz-detalhe">' + (tf.medicoes ? '<span>Nesta folha: <b>' + textoPrincipal(c, tf) + '</b></span>' : '<span class="mudo">nada medido nesta folha</span>') +
+        (outras.length ? '<span>Também em ' + esc(outras.map(nomeFolha).join(', ')) + ' · projeto: <b>' + (t.medicoes ? textoPrincipal(c, t) : '—') + '</b></span>' : '') +
+        (t.medicoes ? t.derivados.map((d) => '<span class="mz-derivado">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</div>' +
+      '<div class="mz-ramo"><span class="mz-ramo-titulo">Assemblies <span class="mz-contagem">' + as.length + '</span></span>' +
+        '<ul class="mz-folhas-arvore">' + as.map((a) => '<li><span>' + esc(a.nome) + '</span><button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '" title="Tirar o assembly">✕</button></li>').join('') +
+          '<li><button type="button" class="link-botao pequeno" data-acao="mz-aplicar-assembly" data-cond="' + c.id + '">+ Aplicar assembly</button></li></ul></div>' +
+      '<div class="mz-ramo"><span class="mz-ramo-titulo">Medições nesta folha <span class="mz-contagem">' + aqui.length + '</span></span>' +
+        (aqui.length ? '<ol class="mz-medicoes mz-folhas-arvore">' + aqui.map((m, i) => {
+          const v = valorDaMedicao(c, m);
+          const txt = c.tipo === 'contagem' ? '1 each' : v == null ? 'sem escala' : c.tipo === 'linear' ? formatarPesPolegadas(v) : (v < 0 ? '− ' : '') + formatarArea(Math.abs(v));
+          const tipoM = m.vaoDe ? 'Vão ' + esc(nomeCurto(condicao(m.vaoDe.condicaoId) || { nome: '?' })) + ': ' : m.desconto ? 'Recorte: ' : '';
+          const nota = m.vao ? ' <span class="mudo">(desenhado' + (m.vao.recortes.length ? ', recorta ' + esc(m.vao.recortes.map((r) => nomeCurto(condicao(r.condicaoId) || { nome: '?' })).join(', ')) : '') + ')</span>' : '';
+          return '<li class="' + (m.desconto ? 'mz-med-recorte' : '') + '"><span>' + (i + 1) + '. ' + tipoM + txt + nota + '</span><button type="button" class="link-botao" data-acao="mz-apagar-medicao" data-cond="' + c.id + '" data-id="' + m.id + '" aria-label="Apagar a medição ' + (i + 1) + '">✕</button></li>';
+        }).join('') + '</ol>' : '<p class="mudo pequeno mz-folhas-arvore">Escolha a ferramenta Medir e clique na planta.</p>') + '</div>' +
+      '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-editar-condicao" data-id="' + c.id + '">Editar</button>' +
+        (outras.length ? '<button type="button" class="link-botao pequeno" data-acao="mz-tirar-da-folha" data-id="' + c.id + '">Tirar desta folha</button>' : '') +
+        '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
+    '</div>' : '') + '</div>';
 }
 
 function dica() {
@@ -963,6 +1003,7 @@ export const acoesMeasure = {
   'mz-ferramenta'(el) { visor.ferramenta = el.dataset.ferramenta; visor.pontos = []; visor.cal = []; atualizarInterface(); },
   'mz-condicao'(el) {
     visor.condicaoId = el.dataset.id; visor.pontos = [];
+    visor.fechadas.delete(el.dataset.id); // escolher a condição abre o nó dela na árvore
     // escolher uma condição é para medir nela (o Vão não usa a condição ativa)
     if (folha(visor.folhaId).escala && (visor.ferramenta === 'mover' || visor.ferramenta === 'vao')) visor.ferramenta = 'medir';
     if (visor.ferramenta === 'recortar' && condicao(el.dataset.id).tipo !== 'area') visor.ferramenta = 'medir';
@@ -1013,6 +1054,18 @@ export const acoesMeasure = {
   'mz-apagar-medicao'(el) {
     const r = excluirMedicao(el.dataset.cond, el.dataset.id);
     if (r.vao) toast('Vão apagado: a contagem e o recorte.');
+    atualizarInterface();
+  },
+  'mz-abrir'(el) {
+    const id = el.dataset.id;
+    const conj = id === visor.condicaoId ? visor.fechadas : visor.abertas;
+    if (conj.has(id)) conj.delete(id); else conj.add(id);
+    if (id !== visor.condicaoId && visor.abertas.has(id)) visor.fechadas.delete(id);
+    atualizarInterface();
+  },
+  'mz-grupo'(el) {
+    const t = el.dataset.tipo;
+    if (visor.gruposFechados.has(t)) visor.gruposFechados.delete(t); else visor.gruposFechados.add(t);
     atualizarInterface();
   },
   'mz-visivel'(el) { mostrarCondicao(el.dataset.id, el.checked); atualizarInterface(); },

@@ -978,17 +978,9 @@ body.sem-rolagem { overflow: hidden; }
 /* ---------- Measure ---------- */
 :root { --cor-measure-claro: #EEF0FF; }
 .pagina-total { max-width: none; padding: 10px 16px 12px; gap: 8px; height: calc(100vh - var(--altura-topo)); }
-.mz-barra-titulo { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.mz-barra-titulo .voltar { margin: 0; white-space: nowrap; }
-.mz-titulo { font-size: 16px; margin: 0; white-space: nowrap; }
 .mz-cor { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; flex-shrink: 0; }
 .mz-visor { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
 .mz-visor:fullscreen { background: var(--fundo, #F4F5F7); padding: 10px; }
-.mz-barra { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: var(--sombra); }
-.mz-barra .btn-linha { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.mz-zoom { min-width: 48px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
-.mz-barra-fim { margin-left: auto; }
-.mz-trocar-folha { max-width: 200px; font-weight: 600; padding: 6px 8px; border: 1px solid var(--borda-forte); border-radius: var(--raio); background: var(--superficie); font: inherit; font-size: 13px; }
 .mz-corpo { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 10px; flex: 1; min-height: 0; }
 .mz-area { position: relative; height: 100%; min-height: 420px; overflow: auto; background: #E9ECF1; border: 1px solid var(--borda); border-radius: var(--raio-grande); }
 .mz-area:focus-visible { outline: 2px solid var(--primario); }
@@ -998,16 +990,9 @@ body.sem-rolagem { overflow: hidden; }
 .mz-carregando { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--mudo); font-weight: 600; }
 .mz-painel { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow-y: auto; padding-right: 2px; }
 .mz-painel-cabeca { display: flex; justify-content: space-between; align-items: center; }
-.mz-painel-cabeca h2 { margin: 0; font-size: 16px; }
-.mz-cond { background: var(--superficie); border: 1px solid var(--borda); border-left: 4px solid var(--cor); border-radius: var(--raio); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-.mz-cond.ativa { box-shadow: 0 0 0 2px var(--cor), var(--sombra); }
 .mz-cond-topo { all: unset; display: flex; align-items: flex-start; cursor: pointer; }
 .mz-cond-topo:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; }
-.mz-total { font-weight: 700; font-variant-numeric: tabular-nums; }
-.mz-derivado { font-size: 13px; color: var(--texto-2); }
 .mz-cond-acoes { display: flex; gap: 12px; }
-.mz-medicoes { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; max-height: 160px; overflow-y: auto; }
-.mz-medicoes li { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px solid var(--borda); font-variant-numeric: tabular-nums; }
 .mz-dica { margin: 0; font-size: 13px; color: var(--texto-2); background: var(--superficie-2); border: 1px dashed var(--borda-forte); border-radius: var(--raio); padding: 8px 12px; }
 .tabela-quantidades .etiqueta { margin-left: 6px; }
 @media (max-width: 900px) {
@@ -1019,9 +1004,6 @@ body.sem-rolagem { overflow: hidden; }
 .mz-cond.oculta { opacity: 0.6; }
 .mz-cond.oculta .mz-cor { background: transparent !important; box-shadow: inset 0 0 0 2px var(--cor); }
 /* Mostrar/ocultar a condição no desenho */
-.mz-cond-cabeca { display: flex; align-items: flex-start; gap: 8px; }
-.mz-visivel { width: 18px; height: 18px; margin: 1px 0 0; flex-shrink: 0; accent-color: var(--cor); cursor: pointer; }
-.mz-cond-cabeca .mz-cond-topo { flex: 1; min-width: 0; }
 .mz-visiveis { align-items: baseline; gap: 10px; white-space: nowrap; margin-top: -2px; }
 .mz-visiveis button[disabled] { opacity: 0.4; cursor: default; }
 dialog .mz-escolha-cor { margin: 8px 0 4px; }
@@ -1064,7 +1046,6 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-conta { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--texto); }
 .mz-pendencias { margin-top: 12px; padding: 10px 12px; border-radius: var(--raio); background: var(--ambar-claro); color: var(--ambar); font-size: 13px; }
 .mz-pendencias ul { margin: 4px 0 0; padding-left: 18px; }
-.mz-cond-assemblies { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
 .mz-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda); }
 .mz-tabela-linhas td { vertical-align: middle; }
 .mz-tabela-linhas select { min-width: 210px; }
@@ -1089,3 +1070,68 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 /* Measure: recorte (borracha) e vão desenhado */
 .mz-medicoes li.mz-med-recorte { color: #B91C1C; }
 .mz-vao-medida { margin: 0 0 8px; padding: 8px 12px; background: var(--superficie-2); border-radius: var(--raio); }
+
+/* ---------- Measure: barra de ferramentas (grupos segmentados) ---------- */
+.mz-barra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 6px 8px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05); }
+.mz-barra-titulo { display: flex; align-items: center; gap: 6px; min-width: 0; padding-right: 6px; border-right: 1px solid var(--borda); }
+.mz-voltar { margin: 0; align-self: center; padding: 6px 6px; border-radius: 7px; white-space: nowrap; font-size: 13px; }
+.mz-voltar:hover { background: var(--superficie-2); }
+.mz-voltar span { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+.mz-titulo { font-size: 15px; margin: 0; white-space: nowrap; }
+.mz-trocar-folha { max-width: 270px; padding: 6px 28px 6px 8px; border: 0; border-radius: 7px; background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--texto); cursor: pointer; }
+.mz-trocar-folha:hover { background: var(--superficie-2); }
+.mz-grupo-barra { display: inline-flex; align-items: center; gap: 2px; padding: 3px; background: var(--superficie-2); border: 1px solid var(--borda); border-radius: 10px; }
+.mz-seg { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: var(--texto-2); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.mz-seg svg { flex-shrink: 0; }
+.mz-seg:hover:not(:disabled) { background: var(--superficie); color: var(--texto); }
+.mz-seg.ativo { background: var(--superficie); color: var(--primario); box-shadow: 0 1px 2px rgba(16, 24, 40, 0.14), 0 0 0 1px var(--borda); }
+.mz-seg:disabled { opacity: 0.38; cursor: not-allowed; }
+.mz-seg:focus-visible, .mz-chamada:focus-visible { outline: 2px solid var(--primario); outline-offset: 1px; }
+.mz-seg-quadrado { width: 30px; padding: 0; justify-content: center; font-size: 16px; }
+.mz-seg-solto { border: 1px solid var(--borda); background: var(--superficie); width: 38px; height: 38px; justify-content: center; padding: 0; }
+.mz-zoom { min-width: 44px; text-align: center; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--texto); }
+.mz-chamada { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1px solid var(--ambar-borda); border-radius: 10px; background: var(--ambar-claro); color: var(--ambar); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.mz-chamada:hover { filter: brightness(0.97); }
+.mz-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--mudo); flex-shrink: 0; }
+.mz-ponto.ok { background: var(--verde); } .mz-ponto.pendente { background: #D97706; } .mz-ponto.erro { background: var(--vermelho); }
+.mz-estado-escala { font-size: 12px; font-weight: 600; color: var(--mudo); margin-left: -6px; white-space: nowrap; }
+.mz-estado-escala.ok { color: var(--verde); } .mz-estado-escala.pendente { color: #B45309; } .mz-estado-escala.erro { color: var(--vermelho); }
+.mz-barra-fim { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+/* ---------- Measure: painel em árvore ---------- */
+.mz-painel-cabeca h2 { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.mz-arvore { display: flex; flex-direction: column; gap: 6px; }
+.mz-grupo-arvore { display: flex; flex-direction: column; gap: 2px; }
+.mz-no-grupo { all: unset; display: flex; align-items: center; gap: 6px; padding: 4px 4px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mudo); cursor: pointer; border-radius: 6px; }
+.mz-no-grupo:hover { color: var(--texto-2); background: var(--superficie-2); }
+.mz-no-grupo:focus-visible { outline: 2px solid var(--primario); }
+.mz-unidade { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.mz-contagem { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--superficie-2); border: 1px solid var(--borda); font-size: 11px; font-weight: 700; color: var(--texto-2); letter-spacing: 0; }
+.mz-caret { display: inline-block; width: 12px; font-size: 10px; color: var(--mudo); transition: transform 0.12s; text-align: center; }
+.mz-caret.aberto { transform: rotate(90deg); }
+.mz-cond { position: relative; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); }
+.mz-cond::before { content: ''; position: absolute; left: -1px; top: -1px; bottom: -1px; width: 3px; border-radius: var(--raio) 0 0 var(--raio); background: var(--cor); }
+.mz-cond.ativa { border-color: var(--cor); box-shadow: 0 0 0 1px var(--cor); }
+.mz-cond-cabeca { display: flex; align-items: center; gap: 6px; padding: 7px 8px 7px 6px; }
+.mz-abrir { all: unset; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 22px; cursor: pointer; border-radius: 4px; flex-shrink: 0; }
+.mz-abrir:hover { background: var(--superficie-2); }
+.mz-abrir:focus-visible { outline: 2px solid var(--primario); }
+.mz-visivel { width: 15px; height: 15px; margin: 0; flex-shrink: 0; accent-color: var(--cor); cursor: pointer; }
+.mz-cond-cabeca .mz-cond-topo { flex: 1; min-width: 0; align-items: center; gap: 0; }
+.mz-cond-topo .mz-cor { width: 10px; height: 10px; margin-right: 7px; }
+.mz-cond-nome { min-width: 0; display: flex; flex-direction: column; font-size: 13.5px; line-height: 1.3; }
+.mz-cond-nome b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mz-cond-nome .bloco { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; }
+.mz-total { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--texto); }
+.mz-filhos { margin: 0 8px 8px 15px; padding-left: 12px; border-left: 1px dashed var(--borda-forte); display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
+.mz-detalhe { display: flex; flex-direction: column; gap: 2px; color: var(--texto-2); }
+.mz-derivado { color: var(--texto-2); }
+.mz-ramo { display: flex; flex-direction: column; gap: 3px; }
+.mz-ramo-titulo { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--mudo); }
+.mz-folhas-arvore { list-style: none; margin: 0; padding: 0; }
+.mz-folhas-arvore li { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 3px 0 3px 10px; position: relative; font-variant-numeric: tabular-nums; }
+.mz-folhas-arvore li::before { content: ''; position: absolute; left: 0; top: 50%; width: 6px; border-top: 1px dashed var(--borda-forte); }
+.mz-medicoes { max-height: 180px; overflow-y: auto; }
+.mz-cond-acoes { display: flex; gap: 12px; }
+.mz-visiveis button { color: var(--texto-2); font-size: 12px; font-weight: 600; text-decoration: none; }
+.mz-visiveis button:hover:not(:disabled) { color: var(--primario); text-decoration: underline; }

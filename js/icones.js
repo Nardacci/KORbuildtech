@@ -17,6 +17,8 @@ const P = {
   voltar: '<path d="M15 18l-6-6 6-6"/>',
   seta: '<path d="M9 18l6-6-6-6"/>',
   mais: '<path d="M12 5v14M5 12h14"/>',
+  expandir: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  recolher: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
   borracha: '<path d="M20 20H9l-5-5a2 2 0 0 1 0-2.8l9-9a2 2 0 0 1 2.8 0l4.4 4.4a2 2 0 0 1 0 2.8L12 18.6"/><path d="M8.5 9.5l6 6"/>',
   janela: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M12 3v18M4 12h16"/>',
   baixar: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/>',

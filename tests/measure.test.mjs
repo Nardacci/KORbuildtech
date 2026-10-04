@@ -250,7 +250,7 @@ verificar(perto(sidingAntesVao - sidingComVao, 16, 0.06), 'e recorta 4\' × 4\' 
 await print('12-vao-recortado');
 await painel('Siding (fachadas)').locator('.mz-cond-topo').click();
 await painel('Siding (fachadas)').locator('.mz-medicoes li:has-text("Vão Janelas W2") button').click();
-verificar((await painel('Janelas W2').textContent()).includes('nada medido') && numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft') === sidingAntesVao, 'apagar o vão apaga a contagem e o recorte juntos');
+verificar((await painel('Janelas W2').locator('.mz-total').textContent()).trim() === '—' && numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft') === sidingAntesVao, 'apagar o vão apaga a contagem e o recorte juntos');
 await desenharW2();
 await page.selectOption('dialog select[name="contagem"]', { label: 'Janelas W2 · 4\'-0" × 4\'-0"' });
 await noDialogo('Contar e recortar');
