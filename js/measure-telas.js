@@ -3,7 +3,7 @@
 
 import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta } from './util.js';
 import { lerFoto, guardarFoto, estado, obra } from './armazem.js';
-import { casca, usuarioAtual, pode } from './plataforma.js';
+import { casca, usuarioAtual, pode, modulosLiberados } from './plataforma.js';
 import { icone } from './icones.js';
 import {
   ESCALAS, polPorPontoDaEscala, interpretarComprimento, interpretarInclinacao, formatarInclinacao,
@@ -38,7 +38,7 @@ function moldura(o) {
 const podeCatalogo = () => pode(usuarioAtual(), 'measure.catalogo');
 
 export function telaMeasure(q) {
-  if (!pode(usuarioAtual(), 'measure.medir')) return { trocar: '#/inicio' };
+  if (!pode(usuarioAtual(), 'measure.medir') || !modulosLiberados(usuarioAtual()).includes('measure')) return { trocar: '#/inicio' };
   // o motor de fórmulas (mathjs) só carrega no Measure; enquanto carrega, uma tela de espera
   if (!motorPronto()) {
     carregarMotor().then(() => app.desenhar()).catch(() => toast('Não foi possível carregar o motor de fórmulas.'));

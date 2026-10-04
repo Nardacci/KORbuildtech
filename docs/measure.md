@@ -7,6 +7,8 @@
 > - [`measure-revisao.md`](measure-revisao.md): a revisão técnica e as decisões;
 > - [`settings.md`](settings.md): permissões.
 >
+> **Quem usa:** a prestadora de serviço (subcontractor). A construtora não abre os desenhos; no futuro, recebe os relatórios ([`saas.md` §Atores](saas.md)).
+>
 > **Mercado:** EUA, unidades imperiais. **Só no computador:** medir planta exige mouse e tela grande.
 
 ## 1. Onde estamos
@@ -172,7 +174,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **104 verificações.** Inclui as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **103 verificações.** Inclui as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;

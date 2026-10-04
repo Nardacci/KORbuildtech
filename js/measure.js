@@ -507,8 +507,7 @@ const ASSEMBLIES_EXEMPLO = [
   ] },
 ];
 
-/* Projetos e plantas de exemplo, com os estimadores e as partes de cada empresa.
- * galpao: quem contrata o mezanino (para a prestadora, uma construtora; para a construtora, o próprio dono). */
+/* Projetos e plantas de exemplo (da prestadora: o Measure é de quem executa o serviço). Sem projetos, só o catálogo. */
 export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = ['u-tom', 'u-rita'], galpao = { contratanteId: 'ct-granite', donoId: 'ct-logsul', obraId: null } } = {}) {
   const projetoId = 'pj-casa';
   const dados = {

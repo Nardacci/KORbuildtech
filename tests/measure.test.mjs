@@ -475,12 +475,8 @@ verificar(page.url().endsWith('#/inicio') && await page.locator('.modulos .modul
 
 console.log('Duas empresas, dados separados');
 await como('u-ana', '#/measure');
-await page.waitForSelector('.tabela-projetos');
-const listaAna = await textoDe('.tabela-projetos');
-verificar(await page.locator('.tabela-projetos tbody tr').count() === 3 && listaAna.includes('Márcia Souza') && listaAna.includes('LogSul Armazéns'), 'a construtora (Ana) tem os seus projetos, com os estimadores e os contatos dela');
-await page.goto(BASE + '#/measure/projeto/pj-casa');
-await page.waitForSelector('.tabela-quantidades');
-verificar((await textoDe('.tabela-quantidades')).includes('Nada medido ainda'), 'e não vê o que a prestadora mediu no projeto dela');
+await page.waitForSelector('.modulos');
+verificar(page.url().endsWith('#/inicio') && await page.locator('.modulos .modulo-measure').count() === 0, 'a construtora (Ana) não abre o Measure: os desenhos são da prestadora');
 await page.goto(BASE + '#/settings/contatos');
 await page.waitForSelector('.tabela-contatos');
 const contatosAna = await textoDe('.tabela-contatos');

@@ -18,7 +18,7 @@ import { fotoDeExemplo } from './fotos.js';
 const TERMOS = 'Proposta válida por 30 dias.\nPagamento: 30% na assinatura, 40% na metade do serviço e 30% na conclusão.\nNão inclui licenças, caçamba e reparos ocultos, salvo quando listados no escopo.\nAlterações de escopo só por escrito (change order), com preço e prazo combinados antes.';
 const SEGUROS = 'General liability: US$ 1.000.000 por ocorrência / US$ 2.000.000 agregado\nWorkers\' compensation\nCommercial auto';
 export const CONSTRUTORA = {
-  id: 'construtora-exemplo', nome: 'Construtora Exemplo', razaoSocial: 'Construtora Exemplo LLC', sigla: 'CE', ein: '00-0000000', atuacao: 'ambas',
+  id: 'construtora-exemplo', nome: 'Construtora Exemplo', razaoSocial: 'Construtora Exemplo LLC', sigla: 'CE', ein: '00-0000000', atuacao: 'construtora',
   especialidades: 'Obras residenciais, comerciais e industriais: estrutura, alvenaria e gestão de obra', endereco: '900 Elm St', cidade: 'Manchester', estado: 'NH', zip: '03101',
   telefone: '(603) 555-0180', email: 'office@construtoraexemplo.com', site: 'construtoraexemplo.com',
   licencas: 'Registro de contractor na cidade de Manchester', seguros: SEGUROS, termosProposta: TERMOS, logo: null,
@@ -192,7 +192,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 18;
+export const VERSAO_DADOS = 19;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -277,14 +277,14 @@ export async function criarDemonstracao() {
   const empresa = {
     ...CONSTRUTORA, desde: somarDias(dia0, -2),
     plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
-    modulos: ['daily', 'crew', 'measure'],
+    modulos: ['daily', 'crew'], // o Measure é das prestadoras
   };
   const usuarios = USUARIOS.map((u, i) => ({ ...u, ativo: true, ultimoAcesso: i < 2 ? null : momento(somarDias(dia0, -i), 17, 5) }));
   // Settings: regra de jornada e encargos da empresa desde antes da primeira admissão
   const inicioEmpresa = somarDias(dia0, -400);
   const settings = criarSettings(inicioEmpresa, new Date(inicioEmpresa + 'T09:00:00').getTime());
   const { funcionarios, ...crew } = criarDadosCrew(obras);
-  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ estimadores: ['u-ana', 'u-marcia'], galpao: { contratanteId: 'ct-logsul', donoId: null, obraId: 'galpao' } }) };
+  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ projetos: false }) };
   return { versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [PRESTADORA.id]: criarPrestadora(dia0) } };
 }
 

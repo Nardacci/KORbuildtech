@@ -31,7 +31,8 @@ export const MODULOS = [
     ligacao: 'Quem bateu ponto na obra entra sozinho na equipe do relatório do Daily. Ninguém digita "6 pedreiros" de novo.',
   },
   {
-    id: 'measure', nome: 'Measure', status: 'disponivel', prototipo: true,
+    // o Measure é de quem executa o serviço: a construtora não abre os desenhos (no futuro, recebe os relatórios)
+    id: 'measure', nome: 'Measure', status: 'disponivel', prototipo: true, atuacoes: ['prestadora', 'ambas'],
     resumo: 'Medição de plantas (takeoff): abre o PDF, calibra a escala e mede em pés e polegadas: lin ft, sq ft, cu yd e unidades.',
     oQueFaz: [
       'Abre a planta em PDF e mede na tela: comprimentos, áreas e contagens.',
@@ -73,7 +74,12 @@ export function usuarioPorEmail(email) {
 /* Módulos que a pessoa abre e estão contratados (Settings vem em todo plano). */
 export function modulosLiberados(u) {
   const contratados = estado().empresa.modulos;
-  return modulosDe(u).filter((id) => id === 'settings' || contratados.includes(id));
+  return modulosDe(u).filter((id) => id === 'settings' || (contratados.includes(id) && moduloParaEmpresa(id)));
+}
+/* Módulo oferecido para o tipo da empresa (ex.: o Measure é das prestadoras, não da construtora). */
+export function moduloParaEmpresa(id) {
+  const m = MODULOS.find((x) => x.id === id);
+  return !m || !m.atuacoes || m.atuacoes.includes(estado().empresa.atuacao);
 }
 /* Para onde a pessoa vai ao entrar: com um módulo só (ex.: o trabalhador, só ponto), direto para ele. */
 export function inicioDoUsuario(u) {
@@ -239,7 +245,7 @@ export function telaModulos(u, saudacao) {
   // Settings vem em todo plano, mas só aparece para quem pode configurar (escritório)
   // Só os módulos que o perfil abre; os "em breve" aparecem para quem usa mais de um módulo (escritório)
   const meus = modulosDe(u);
-  const cartoes = MODULOS.filter((m) => (m.status === 'em-breve' ? meus.length > 1 : meus.includes(m.id))).map((m) => {
+  const cartoes = MODULOS.filter((m) => moduloParaEmpresa(m.id) && (m.status === 'em-breve' ? meus.length > 1 : meus.includes(m.id))).map((m) => {
     const contratado = m.incluso || d.empresa.modulos.includes(m.id);
     const disponivel = m.status === 'disponivel';
     const etiqueta = disponivel
