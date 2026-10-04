@@ -384,7 +384,6 @@ const ITENS_EXEMPLO = [
   ['it-mo-janela', 'MO-WIN', 'Instalação de janela', 'mao-de-obra', 'hora', '08 53 00 · Plastic windows'],
   ['it-mo-siding', 'MO-SID', 'Instalação de siding', 'mao-de-obra', 'hora', '07 46 33 · Plastic siding'],
 ];
-const VAOS_EXTERNOS = ['cd-w1', 'cd-w2', 'cd-d1'];
 const ln = (id, itemId, formula, perda, passo) => ({ id, itemId, formula, perda, passo });
 const linhasJanela = (unidade) => [
   ln('l1', unidade, 'MeasuredCount', 0, 1),
@@ -449,15 +448,7 @@ export function criarDadosMeasure() {
     folhas: [
       ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
     ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null })),
-    condicoes: [
-      { id: 'cd-paredes', projetoId, nome: 'Paredes externas', tipo: 'linear', cor: CORES[0], props: { alturaPol: 108, vaos: VAOS_EXTERNOS }, medicoes: [], assemblies: ['as-parede'] },
-      { id: 'cd-piso', projetoId, nome: 'Piso (LVP)', tipo: 'area', cor: CORES[1], props: {}, medicoes: [], assemblies: ['as-lvp'] },
-      { id: 'cd-portas', projetoId, nome: 'Portas internas', tipo: 'contagem', cor: CORES[2], props: { larguraPol: 30, alturaPol: 80 }, medicoes: [], assemblies: ['as-porta'] },
-      { id: 'cd-w1', projetoId, nome: 'Janelas W1 (5\'-0" × 4\'-0")', tipo: 'contagem', cor: CORES[3], props: { larguraPol: 60, alturaPol: 48 }, medicoes: [], assemblies: ['as-jan-w1'] },
-      { id: 'cd-w2', projetoId, nome: 'Janelas W2 (4\'-0" × 4\'-0")', tipo: 'contagem', cor: CORES[4], props: { larguraPol: 48, alturaPol: 48 }, medicoes: [], assemblies: ['as-jan-w2'] },
-      { id: 'cd-d1', projetoId, nome: 'Porta de entrada D1 (3\'-0" × 6\'-8")', tipo: 'contagem', cor: CORES[5], props: { larguraPol: 36, alturaPol: 80 }, medicoes: [], assemblies: ['as-porta-ext'] },
-      { id: 'cd-siding', projetoId, nome: 'Siding (fachadas)', tipo: 'area', cor: CORES[6], props: { vaos: VAOS_EXTERNOS }, medicoes: [], assemblies: ['as-siding'] },
-    ],
+    condicoes: [], // o desenho abre vazio: cada assembly é incluído pelo visor
     itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({ id, codigo, nome, categoria, unidade, etapa, nota: nota || '' })),
     assemblies: ASSEMBLIES_EXEMPLO,
   };

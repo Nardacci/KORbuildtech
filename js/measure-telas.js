@@ -174,7 +174,7 @@ function telaProjeto(id) {
             '<td><b>' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">—</span>') + '</b>' + (t.semEscala ? '<span class="etiqueta etiqueta-ambar">' + t.semEscala + ' sem escala</span>' : '') + '</td>' +
             '<td>' + (t.medicoes ? t.derivados.map((d) => '<span class="bloco">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</td>' +
             '<td class="num">' + t.medicoes + '</td></tr>';
-        }).join('') + '</tbody></table></div></section>' +
+        }).join('') + (cs.length ? '' : '<tr><td colspan="4" class="mudo">Nada medido ainda. Abra uma folha e inclua os assemblies que vai medir.</td></tr>') + '</tbody></table></div></section>' +
       htmlMateriais(id) +
       '<p class="dica">Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.</p>',
   });
@@ -222,14 +222,16 @@ function telaItens() {
 /* ---------- Assemblies ---------- */
 
 function telaAssemblies() {
-  const usos = (a) => projetos().flatMap((p) => condicoesDo(p.id)).filter((c) => (c.assemblies || []).includes(a.id));
+  const usos = (a) => projetos().flatMap((p) => condicoesDo(p.id)).filter((c) => (c.assemblies || []).includes(a.id)).length;
   return moldura({
     ativo: 'assemblies', largura: 'larga', titulo: 'Assemblies', subtitulo: 'Um conjunto de itens com fórmulas: uma medição alimenta vários materiais e a mão de obra',
     acoes: podeCatalogo() ? '<a class="btn btn-primario btn-pequeno" href="#/measure/assembly/novo">' + icone('mais', 16) + 'Novo assembly</a>' : '',
-    conteudo: '<div class="mz-assemblies">' + assemblies().map((a) => '<a class="cartao mz-assembly" href="#/measure/assembly/' + a.id + '"><span class="etiqueta etiqueta-neutro">' + TIPOS[a.tipo].nome + '</span>' +
-      '<h2 class="cartao-titulo">' + esc(a.nome) + '</h2><p class="mudo pequeno">' + esc(a.descricao) + '</p>' +
-      '<p class="pequeno">' + a.linhas.length + ' linhas · ' + a.linhas.map((l) => esc((item(l.itemId) || {}).nome || '?')).slice(0, 4).join(', ') + (a.linhas.length > 4 ? '…' : '') + '</p>' +
-      '<p class="mudo pequeno">' + (usos(a).length ? 'Aplicado em: ' + usos(a).map((c) => esc(c.nome)).join(', ') : 'Ainda não aplicado') + '</p></a>').join('') + '</div>',
+    conteudo: '<section class="cartao"><div class="tabela-rolagem"><table class="tabela mz-assemblies"><thead><tr><th>Assembly</th><th>Tipo</th><th>Resumo</th><th class="num">Em uso</th><th></th></tr></thead><tbody>' +
+      assemblies().map((a) => '<tr><td><a class="mz-assembly" href="#/measure/assembly/' + a.id + '"><b>' + esc(a.nome) + '</b></a>' + (a.descricao ? '<span class="mudo pequeno bloco">' + esc(a.descricao) + '</span>' : '') + '</td>' +
+        '<td>' + TIPOS[a.tipo].nome + '</td><td class="pequeno">' + esc(resumoAssembly(a)) + '</td>' +
+        '<td class="num">' + (usos(a) ? usos(a) + (usos(a) === 1 ? ' condição' : ' condições') : '<span class="mudo">—</span>') + '</td>' +
+        '<td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/assembly/' + a.id + '">' + (podeCatalogo() ? 'Editar' : 'Ver') + '</a></td></tr>').join('') +
+      '</tbody></table></div></section>',
   });
 }
 
@@ -345,8 +347,8 @@ function htmlPainel() {
   const f = folha(visor.folhaId);
   const cs = condicoesDo(f.projetoId);
   const nOcultas = cs.filter((c) => c.oculta).length;
-  return '<div class="mz-painel-cabeca"><h2>Condições</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-nova-condicao">' + icone('mais', 14) + 'Nova</button></div>' +
-    (cs.length ? '' : '<p class="mudo pequeno">Crie uma condição (ex.: Paredes externas) para começar a medir.</p>') +
+  return '<div class="mz-painel-cabeca"><h2>Condições</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-incluir-assembly">' + icone('mais', 14) + 'Incluir assembly</button></div>' +
+    (cs.length ? '' : '<p class="mz-vazio-painel">Nada no desenho ainda. Clique em <b>Incluir assembly</b>, escolha do catálogo (parede, piso, janela…) e comece a medir.</p>') +
     (cs.length > 1 ? '<div class="mz-cond-acoes mz-visiveis"><button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar="1"' + (nOcultas ? '' : ' disabled') + '>Mostrar todas</button>' +
       '<button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar=""' + (nOcultas === cs.length ? ' disabled' : '') + '>Ocultar todas</button></div>' : '') +
     cs.map((c) => {
@@ -381,7 +383,7 @@ function dica() {
   if (visor.ferramenta === 'conferir') return visor.cal.length ? 'Agora clique na outra ponta da cota.' : 'Conferir: meça OUTRA cota conhecida, de preferência na outra direção. O sistema mostra a diferença.';
   if (!f.escala) return 'Primeiro, defina a escala da folha: escolha da lista (a escala está no carimbo) ou calibre por uma cota.';
   if (visor.ferramenta === 'mover') return 'Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.';
-  if (!c) return 'Escolha ou crie uma condição no painel ao lado.';
+  if (!c) return 'Inclua um assembly no painel ao lado (parede, piso, janela…) para começar a medir.';
   if (!condicaoVisivel(c)) return 'As marcações de "' + c.nome + '" estão ocultas: marque a caixa ao lado do nome para vê-las.';
   if (c.tipo === 'contagem') return 'Contagem: clique em cada item de "' + c.nome + '".';
   if (c.tipo === 'linear') return 'Linear: clique nos pontos. Duplo clique ou Enter conclui, Esc cancela, Backspace desfaz o último ponto. Shift: linha reta. Perto de um ponto já medido, o clique gruda nele (Alt desliga). Para mais precisão, aumente o zoom.';
@@ -683,8 +685,34 @@ async function enviarPdf(input) {
 
 /* ---------- Ações ---------- */
 
-async function dialogoCondicao(c) {
-  const tipoInicial = c ? c.tipo : 'linear';
+/* Incluir no desenho: escolher um assembly do catálogo (ou só medir, sem assembly). */
+async function dialogoIncluir() {
+  const projetoId = folha(visor.folhaId).projetoId;
+  const usados = new Set(condicoesDo(projetoId).flatMap((c) => c.assemblies || []));
+  const opcao = (valor, nome, resumo, marcado) => '<label class="mz-opcao-assembly"><input type="radio" name="assembly" value="' + valor + '"' + (marcado ? ' checked' : '') + '><span><b>' + esc(nome) + '</b>' +
+    (usados.has(valor) ? ' <span class="etiqueta etiqueta-neutro">já no desenho</span>' : '') + '<span class="mudo pequeno bloco">' + esc(resumo) + '</span></span></label>';
+  const res = await abrirDialogo({
+    titulo: 'Incluir assembly',
+    corpo: '<p class="mudo pequeno">Escolha o que vai medir. Depois você confirma o nome, a cor e as medidas (altura da parede, tamanho do vão…).</p>' +
+      '<div class="mz-lista-incluir">' + Object.entries(TIPOS).map(([tipo, t]) => {
+        const lista = assemblies().filter((a) => a.tipo === tipo);
+        return lista.length ? '<p class="mz-grupo">' + t.nome + ' (' + t.unidade + ')</p>' + lista.map((a) => opcao(a.id, a.nome, resumoAssembly(a), false)).join('') : '';
+      }).join('') +
+      '<p class="mz-grupo">Outro</p>' + opcao('', 'Só medir, sem assembly', 'Uma condição sem materiais; dá para aplicar um assembly depois', false) + '</div>',
+    acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Continuar', valor: true, classe: 'btn-primario' }],
+  });
+  if (!res || !res.valor) return;
+  if (!('assembly' in res.campos)) { toast('Escolha um assembly da lista.'); return; }
+  await dialogoCondicao(null, res.campos.assembly ? assembly(res.campos.assembly) : null);
+}
+/* Resumo de um assembly: tipo, linhas e os primeiros itens. */
+function resumoAssembly(a) {
+  const nomes = a.linhas.map((l) => (item(l.itemId) || {}).nome).filter(Boolean);
+  return a.linhas.length + (a.linhas.length === 1 ? ' linha: ' : ' linhas: ') + nomes.slice(0, 3).join(', ') + (nomes.length > 3 ? ' e mais ' + (nomes.length - 3) : '');
+}
+
+async function dialogoCondicao(c, comAssembly) {
+  const tipoInicial = c ? c.tipo : comAssembly ? comAssembly.tipo : 'linear';
   const p = (c && c.props) || {};
   const projetoId = folha(visor.folhaId).projetoId;
   const vaosPossiveis = condicoesDo(projetoId).filter((x) => x.tipo === 'contagem' && (!c || x.id !== c.id));
@@ -692,10 +720,10 @@ async function dialogoCondicao(c) {
   // cada grupo de campos aparece só para os tipos em que faz sentido
   const grupo = (tipos, html) => '<div class="mz-campos" data-tipos="' + tipos + '"' + (tipos.split(' ').includes(tipoInicial) ? '' : ' hidden') + '>' + html + '</div>';
   const promessa = abrirDialogo({
-    titulo: c ? 'Editar condição' : 'Nova condição',
-    corpo: '<label class="rotulo-pequeno" for="mz-nome">Nome</label><input type="text" id="mz-nome" name="nome" value="' + esc(c ? c.nome : '') + '" placeholder="Ex.: Paredes internas, Siding, Janelas W3">' +
+    titulo: c ? 'Editar condição' : comAssembly ? 'Incluir "' + comAssembly.nome + '"' : 'Nova condição',
+    corpo: '<label class="rotulo-pequeno" for="mz-nome">Nome no desenho</label><input type="text" id="mz-nome" name="nome" value="' + esc(c ? c.nome : comAssembly ? comAssembly.nome : '') + '" placeholder="Ex.: Paredes internas, Siding, Janelas W3">' +
       htmlEscolhaCor(c ? c.cor : PALETA.find((x) => !condicoesDo(projetoId).some((o) => o.cor === x)) || PALETA[0]) +
-      '<label class="rotulo-pequeno" for="mz-tipo">Tipo</label><select id="mz-tipo" name="tipo"' + (c ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([id, t]) => '<option value="' + id + '"' + (id === tipoInicial ? ' selected' : '') + '>' + t.nome + ' (' + t.unidade + ')</option>').join('') + '</select>' +
+      '<label class="rotulo-pequeno" for="mz-tipo">Tipo</label><select id="mz-tipo" name="tipo"' + (c || comAssembly ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([id, t]) => '<option value="' + id + '"' + (id === tipoInicial ? ' selected' : '') + '>' + t.nome + ' (' + t.unidade + ')</option>').join('') + '</select>' +
       '<p class="mudo pequeno">Propriedades (geram as medidas derivadas e as variáveis das fórmulas):</p>' +
       grupo('linear', '<label class="rotulo-pequeno" for="mz-altura">Altura da parede. Ex.: 9\'-0"</label><input type="text" id="mz-altura" name="altura" value="' + (c && c.tipo === 'linear' ? ft(p.alturaPol) : '') + '">') +
       grupo('contagem', '<div class="grade-campos"><div class="campo"><label class="rotulo-pequeno" for="mz-vlarg">Largura do vão. Ex.: 3\'-0"</label><input type="text" id="mz-vlarg" name="vaoLargura" value="' + ft(p.larguraPol) + '"></div>' +
@@ -706,13 +734,13 @@ async function dialogoCondicao(c) {
       grupo('linear area', '<fieldset class="mz-vaos"><legend class="rotulo-pequeno">Descontar os vãos de</legend>' +
         (vaosPossiveis.length ? vaosPossiveis.map((x) => '<label class="check pequeno"><input type="checkbox" name="vao-' + x.id + '" value="1"' + ((p.vaos || []).includes(x.id) ? ' checked' : '') + '> ' + esc(x.nome) +
           (x.props && x.props.larguraPol && x.props.alturaPol ? '' : ' <span class="mudo">(sem tamanho)</span>') + '</label>').join('') : '<p class="mudo pequeno">Crie as contagens de janelas e portas com largura e altura.</p>') + '</fieldset>'),
-    acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: c ? 'Salvar' : 'Criar condição', valor: true, classe: 'btn-primario' }],
+    acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: c ? 'Salvar' : comAssembly ? 'Incluir no desenho' : 'Criar condição', valor: true, classe: 'btn-primario' }],
   });
   const sel = document.querySelector('dialog #mz-tipo');
   if (sel) sel.addEventListener('change', () => document.querySelectorAll('dialog .mz-campos').forEach((g) => { g.hidden = !g.dataset.tipos.split(' ').includes(sel.value); }));
   const res = await promessa;
   if (!res || !res.valor) return;
-  const tipo = c ? c.tipo : res.campos.tipo;
+  const tipo = c ? c.tipo : comAssembly ? comAssembly.tipo : res.campos.tipo;
   const props = {};
   const ler = (campo, rotulo, semUnidade) => {
     const t = (res.campos[campo] || '').trim();
@@ -734,6 +762,7 @@ async function dialogoCondicao(c) {
   if (tipo !== 'contagem') props.vaos = Object.keys(res.campos).filter((k) => k.startsWith('vao-')).map((k) => k.slice(4));
   const r = salvarCondicao(c ? c.id : null, { projetoId, nome: res.campos.nome, tipo, props, cor: res.campos.cor });
   if (r.erro) { toast(r.erro); return; }
+  if (comAssembly) aplicarAssembly(r.id, comAssembly.id);
   visor.condicaoId = r.id;
   visor.pontos = [];
   if (folha(visor.folhaId).escala) visor.ferramenta = 'medir';
@@ -855,7 +884,7 @@ export const acoesMeasure = {
     if (!passo) { visor.zoom = ajustarZoom(area); renderizar(); return; }
     zoomEm(visor.zoom * (passo > 0 ? 1.25 : 0.8), cx, cy);
   },
-  async 'mz-nova-condicao'() { await dialogoCondicao(null); },
+  async 'mz-incluir-assembly'() { await dialogoIncluir(); },
   async 'mz-editar-condicao'(el) { await dialogoCondicao(condicao(el.dataset.id)); },
   async 'mz-excluir-condicao'(el) {
     const c = condicao(el.dataset.id);

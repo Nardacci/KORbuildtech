@@ -41,6 +41,17 @@ const noDialogo = async (texto) => { await page.click('dialog button:has-text("'
 // As medidas são conferidas com tolerância (como o estimador confere: zoom maior = mais precisão).
 const numeroDe = (txt, unidade) => { const m = new RegExp('([\\d.]+(?:,\\d+)?) ' + unidade).exec(txt); return m ? Number(m[1].replace(/\./g, '').replace(',', '.')) : NaN; };
 const perto = (v, alvo, tol) => Math.abs(v - alvo) <= alvo * tol;
+// Incluir um assembly no desenho (ou '' = só medir): escolhe no catálogo e confirma nome e medidas
+async function incluir(aid, nome, campos = {}, vaos = []) {
+  await page.click('[data-acao="mz-incluir-assembly"]');
+  await page.check('dialog input[name="assembly"][value="' + aid + '"]');
+  await page.click('dialog button:has-text("Continuar")');
+  await page.waitForSelector('dialog input[name="nome"]');
+  await page.fill('dialog input[name="nome"]', nome);
+  for (const [k, v] of Object.entries(campos)) await page.fill('dialog input[name="' + k + '"]', v);
+  for (const v of vaos) await page.check('dialog .mz-vaos label:has-text("' + v + '") input');
+  await noDialogo(aid ? 'Incluir no desenho' : 'Criar condição');
+}
 const painel = (nome) => page.locator('.mz-cond').filter({ has: page.locator('.mz-cond-topo b', { hasText: nome }) });
 
 await page.goto(BASE);
@@ -71,6 +82,7 @@ await page.waitForFunction(() => { const e = document.getElementById('mz-carrega
 const caixaPainel = await page.locator('#mz-painel').boundingBox(), caixaArea = await page.locator('#mz-area').boundingBox();
 verificar(caixaPainel.x < caixaArea.x && caixaArea.width > 1000 && caixaArea.height > 650 && await page.locator('.lateral').count() === 0, 'visor maximizado: condições à esquerda, planta ocupando o resto (' + Math.round(caixaArea.width) + '×' + Math.round(caixaArea.height) + ')');
 verificar((await page.isDisabled('[data-acao="mz-ferramenta"][data-ferramenta="medir"]')), 'sem escala, não dá para medir');
+verificar(await page.locator('.mz-cond').count() === 0 && await page.locator('.mz-vazio-painel').count() === 1, 'o desenho abre sem nenhum assembly');
 await page.click('[data-acao="mz-escala"]');
 await page.selectOption('dialog select[name="razao"]', '48');
 await noDialogo('Usar esta escala');
@@ -79,6 +91,20 @@ await page.fill('dialog input[name="real"]', '40\'-0"');
 await noDialogo('Conferir');
 verificar((await toast()).includes('Escala conferida'), 'conferência da escala 1/4" = 1\'-0" com a cota de 40\'-0"');
 verificar((await textoDe('#mz-barra')).includes('conferida'), 'barra mostra a escala conferida');
+
+console.log('Incluir assemblies no desenho');
+await page.click('[data-acao="mz-incluir-assembly"]');
+const lista1 = await textoDe('dialog');
+verificar(lista1.includes('Parede externa 2x6') && lista1.includes('Siding vinil') && lista1.includes('Só medir, sem assembly') && lista1.includes('linhas:'), 'catálogo de assemblies para escolher, com resumo, e a opção de só medir');
+await print('0b-incluir');
+await noDialogo('Cancelar');
+await incluir('as-parede', 'Paredes externas', { altura: '9\'-0"' });
+verificar((await painel('Paredes externas').textContent()).includes('Parede externa 2x6') && await painel('Paredes externas').evaluate((e) => e.classList.contains('ativa')), 'assembly incluído vira condição, com o assembly aplicado, pronta para medir');
+await incluir('as-lvp', 'Piso (LVP)');
+await incluir('as-porta', 'Portas internas', { vaoLargura: '2\'-6"', vaoAltura: '6\'-8"' });
+await page.click('[data-acao="mz-incluir-assembly"]');
+verificar((await page.locator('dialog .mz-opcao-assembly:has-text("Piso LVP")').textContent()).includes('já no desenho'), 'o catálogo marca o que já está no desenho');
+await noDialogo('Cancelar');
 
 console.log('Medição');
 await painel('Paredes externas').locator('.mz-cond-topo').click();
@@ -108,7 +134,7 @@ console.log('Mostrar e ocultar cada condição no desenho');
 const tinta = () => page.evaluate(() => { const c = document.getElementById('mz-desenho'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let t = 0; for (let i = 3; i < d.length; i += 4) t += d[i]; return t; });
 await page.mouse.move(5, 5); // cursor fora da planta
 const tintaAntes = await tinta();
-verificar(await page.locator('.mz-camadas').count() === 0 && await page.locator('.mz-cond .mz-visivel').count() === 7, 'cada condição tem a sua caixa "mostrar no desenho"');
+verificar(await page.locator('.mz-camadas').count() === 0 && await page.locator('.mz-cond .mz-visivel').count() === 3, 'cada condição tem a sua caixa "mostrar no desenho"');
 await painel('Paredes externas').locator('.mz-visivel').uncheck();
 const tintaSem = await tinta();
 verificar(tintaSem < tintaAntes * 0.95, 'desmarcar "Paredes externas" tira as paredes do desenho');
@@ -129,7 +155,10 @@ verificar(numeroDe(await painel('Paredes externas').textContent(), 'lin ft') ===
 await page.click('[data-acao="mz-zoom"][data-passo="0"]');
 
 console.log('Nova condição com propriedades');
-await page.click('[data-acao="mz-nova-condicao"]');
+await page.click('[data-acao="mz-incluir-assembly"]');
+await page.check('dialog input[name="assembly"][value=""]');
+await page.click('dialog button:has-text("Continuar")');
+await page.waitForSelector('dialog input[name="nome"]');
 await page.fill('dialog input[name="nome"]', 'Laje de concreto');
 await page.selectOption('dialog select[name="tipo"]', 'area');
 await page.fill('dialog input[name="espessura"]', '4"');
@@ -184,6 +213,15 @@ await clicar([0, -2.5], {}, SUL); await clicar([40, -2.5], {}, SUL); // cota de 
 await page.fill('dialog input[name="real"]', '40\'');
 await noDialogo('Conferir');
 verificar((await toast()).includes('Escala conferida'), 'fachada A-201: escala 1/4" conferida na cota de 40\'-0"');
+await incluir('as-jan-w1', 'Janelas W1', { vaoLargura: '5\'-0"', vaoAltura: '4\'-0"' });
+await incluir('as-jan-w2', 'Janelas W2', { vaoLargura: '4\'-0"', vaoAltura: '4\'-0"' });
+await incluir('as-porta-ext', 'Porta de entrada D1', { vaoLargura: '3\'-0"', vaoAltura: '6\'-8"' });
+await incluir('as-siding', 'Siding (fachadas)', {}, ['Janelas W1', 'Janelas W2', 'Porta de entrada D1']);
+verificar((await painel('Siding (fachadas)').textContent()).includes('desconta Janelas W1, Janelas W2, Porta de entrada D1'), 'siding incluído descontando os vãos');
+await painel('Paredes externas').locator('.mz-cond-topo').click(); // a parede também passa a descontar os vãos
+await page.click('[data-acao="mz-editar-condicao"]');
+for (const v of ['Janelas W1', 'Janelas W2', 'Porta de entrada D1']) await page.check('dialog .mz-vaos label:has-text("' + v + '") input');
+await noDialogo('Salvar');
 await painel('Siding (fachadas)').locator('.mz-cond-topo').click();
 for (const p of [[0, 0], [40, 0], [40, 9], [0, 9]]) await clicar(p, {}, SUL);
 await clicar([0, 0], {}, SUL);
@@ -261,6 +299,8 @@ await print('4-assembly');
 await page.click('[data-acao="mz-salvar-assembly"]');
 await page.waitForSelector('.mz-assemblies');
 verificar((await textoDe('.mz-assemblies')).includes('Forro de drywall'), 'novo assembly salvo');
+verificar(await page.locator('table.mz-assemblies tbody tr').count() === 9 && (await page.locator('table.mz-assemblies tr:has-text("Forro de drywall")').textContent()).includes('2 linhas: Drywall 5/8'), 'assemblies em lista: nome e um resumo das linhas');
+await print('10-assemblies');
 console.log('Cor da condição no desenho');
 await page.goto(BASE + '#/measure/folha/fl-a101');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });

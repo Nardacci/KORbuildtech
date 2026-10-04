@@ -1066,10 +1066,6 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-pendencias ul { margin: 4px 0 0; padding-left: 18px; }
 .mz-cond-assemblies { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
 .mz-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--superficie-2); border: 1px solid var(--borda); }
-.mz-assemblies { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-.mz-assembly { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: var(--texto); }
-.mz-assembly:hover { border-color: var(--cor-measure); }
-.mz-assembly .etiqueta { align-self: flex-start; }
 .mz-tabela-linhas td { vertical-align: middle; }
 .mz-tabela-linhas select { min-width: 210px; }
 .mz-formula { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; min-width: 220px; }
@@ -1080,3 +1076,13 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-ajuda ul { margin: 6px 0; padding-left: 18px; }
 .mz-ajuda code, .mz-conta code { font-size: 12.5px; }
 .mz-vaos { border: 1px solid var(--borda); border-radius: var(--raio); padding: 8px 12px; margin: 8px 0 0; display: flex; flex-direction: column; gap: 4px; }
+
+/* Measure: incluir assembly no desenho e lista de assemblies */
+.mz-assemblies td { vertical-align: top; }
+.mz-assembly { color: var(--texto); }
+.mz-vazio-painel { margin: 0; padding: 12px; font-size: 13px; color: var(--texto-2); background: var(--superficie); border: 1px dashed var(--borda-forte); border-radius: var(--raio); }
+.mz-lista-incluir { display: flex; flex-direction: column; gap: 4px; max-height: 55vh; overflow-y: auto; margin-top: 4px; }
+.mz-lista-incluir .mz-grupo { margin: 10px 0 2px; }
+.mz-opcao-assembly { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--borda); border-radius: var(--raio); cursor: pointer; }
+.mz-opcao-assembly:has(input:checked) { border-color: var(--primario); background: #FFF8F3; }
+.mz-opcao-assembly input { margin-top: 3px; accent-color: var(--primario); width: 16px; height: 16px; flex-shrink: 0; }
