@@ -66,6 +66,9 @@ condição medida ──► variáveis (lin ft, sq ft, cu yd…) ──► assem
 | MZ-24 | **Excluir um projeto** apaga as folhas e as condições (com as medições) dele, depois de confirmar | `excluirProjeto` |
 | MZ-25 | **Cor da condição:** quem cria ou edita a condição escolhe a cor (paleta sugerida ou "Outra", qualquer cor). As marcações dela no desenho, no painel e na tabela de quantidades usam essa cor. Condição nova sem escolha pega uma cor da paleta ainda não usada no projeto | `salvarCondicao` |
 | MZ-27 | **O desenho começa vazio:** nenhuma condição pronta. No visor, **Incluir assembly** abre o catálogo agrupado por tipo (linear, área, contagem), com o resumo de cada um e a marca "já no desenho". Escolhido o assembly, a pessoa confirma o nome no desenho, a cor e as medidas (altura, espessura, vão, vãos a descontar); a condição nasce com o assembly aplicado e já ativa para medir. "Só medir, sem assembly" cria uma condição sem materiais (o assembly pode ser aplicado depois) | `dialogoIncluir` |
+| MZ-28 | **Recortar (borracha):** ferramenta da barra, só para condição de área. Desenha um polígono que **sai do total** da condição (escada, chaminé, recorte). Aparece hachurado em vermelho, com "− X sq ft", e na lista como "Recorte" | `finalizar` |
+| MZ-29 | **Vão desenhado:** a ferramenta **Vão** desenha o retângulo da janela ou porta (dois cantos opostos) e pergunta qual é. Ela **conta +1** nessa contagem, que gera os materiais do vão (janela, flashing, guarnição), e **recorta a mesma área** das condições de área escolhidas. A tela já marca as áreas que estão por trás do vão nesta folha. O recorte usa a **medida desenhada**; a contagem continua dando o tamanho cadastrado para as paredes da planta | `adicionarVao` |
+| MZ-30 | **Sem desconto em dobro:** se a área também tem essa contagem em "Descontar os vãos de", o vão que já a recortou não é descontado de novo pelo tamanho cadastrado. Os vãos desenhados entram em `OpeningCount` e `OpeningPerimeter` (J-channel) com a medida desenhada. Apagar a contagem ou o recorte de um vão apaga os dois | `vaosLigados`, `vaosDesenhados`, `excluirMedicao` |
 | MZ-26 | **Mostrar no desenho:** cada condição tem uma caixa ao lado do nome. Desmarcada, as marcações dela somem da planta (em todas as folhas) e o cartão fica apagado, com a etiqueta "oculta". É só visual: as quantidades e os materiais não mudam, e o clique não gruda em ponto oculto. Fica guardado na condição (continua oculta ao reabrir). "Mostrar todas" e "Ocultar todas" no topo do painel | `mostrarCondicao` |
 
 **Exemplo** (Paredes externas medidas com 135,87 lin ft, altura 9'):
@@ -98,6 +101,7 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 
 ### Visor de medição
 - **Tela maximizada:** a planta ocupa a tela inteira, sem o menu lateral; as **condições ficam à esquerda** e a planta no resto. O caminho de volta ao projeto e a folha (com troca rápida entre as folhas do projeto) ficam na própria barra. **Tela cheia** usa a tela do monitor toda e reajusta a planta.
+- **Ferramentas:** Mover, Medir, **Recortar** (borracha, MZ-28) e **Vão** (MZ-29). Escolher uma condição no painel volta para Medir.
 - **Incluir assembly** (no topo do painel): o desenho abre sem nenhuma condição; cada assembly do catálogo é incluído quando a pessoa vai medir (ver MZ-27).
 - **Mostrar no desenho:** a caixa ao lado do nome de cada condição mostra ou oculta as marcações dela; no topo do painel, "Mostrar todas" e "Ocultar todas". A condição oculta aparece apagada, com a etiqueta "oculta", e a dica avisa se a condição ativa está oculta.
 - **Barra:**
@@ -115,7 +119,6 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 - **Painel:**
   - cada condição com a caixa "mostrar no desenho", a cor escolhida, tipo, propriedades, total e derivadas;
   - a condição ativa mostra a lista de medições (apagar uma por uma), **Editar** e **Excluir**;
-  - na condição de área, a opção "desenhar como desconto".
 - **Dica:** uma linha embaixo explica o próximo passo da ferramenta atual.
 
 ### Jogo de plantas de exemplo (`assets/plantas/casa-modelo.pdf`, 3 folhas)
@@ -164,7 +167,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **75 verificações.** Inclui o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **83 verificações.** Inclui a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;

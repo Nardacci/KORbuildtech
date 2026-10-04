@@ -120,6 +120,11 @@ export function mostrarCondicao(id, visivel) {
 }
 
 export function excluirCondicao(id) {
+  // vão desenhado: a contagem excluída leva os recortes que fez; a área excluída sai dos vãos que a recortavam
+  for (const c of mz().condicoes) {
+    c.medicoes = c.medicoes.filter((m) => !(m.vaoDe && m.vaoDe.condicaoId === id));
+    for (const m of c.medicoes) if (m.vao) m.vao.recortes = m.vao.recortes.filter((r) => r.condicaoId !== id);
+  }
   mz().condicoes = mz().condicoes.filter((c) => c.id !== id);
   // a contagem excluída deixa de ser vão descontado nas paredes e no siding
   for (const c of mz().condicoes) if (c.props && c.props.vaos) c.props.vaos = c.props.vaos.filter((x) => x !== id);
@@ -134,10 +139,33 @@ export function adicionarMedicao(condicaoId, folhaId, pontos, desconto) {
   return m;
 }
 
+/* Apagar uma medição. Um vão desenhado é uma coisa só: apagar a contagem ou o recorte apaga os dois. */
 export function excluirMedicao(condicaoId, medicaoId) {
   const c = condicao(condicaoId);
-  c.medicoes = c.medicoes.filter((m) => m.id !== medicaoId);
+  const m = c.medicoes.find((x) => x.id === medicaoId);
+  const raiz = m && m.vaoDe ? { c: condicao(m.vaoDe.condicaoId), id: m.vaoDe.medicaoId } : { c, id: medicaoId };
+  const mr = raiz.c && raiz.c.medicoes.find((x) => x.id === raiz.id);
+  if (mr && mr.vao) for (const r of mr.vao.recortes) { const o = condicao(r.condicaoId); if (o) o.medicoes = o.medicoes.filter((x) => x.id !== r.medicaoId); }
+  if (raiz.c) raiz.c.medicoes = raiz.c.medicoes.filter((x) => x.id !== raiz.id);
+  c.medicoes = c.medicoes.filter((x) => x.id !== medicaoId);
   salvar();
+  return { vao: !!(mr && mr.vao) };
+}
+
+/* Vão desenhado (janela, porta): o retângulo conta +1 na contagem e recorta a mesma área das condições
+ * de área escolhidas (siding, pintura). O recorte usa a medida desenhada; a contagem dá os materiais do vão. */
+export function adicionarVao(contagemId, folhaId, retangulo, recortarIds) {
+  const [a, b] = retangulo;
+  const pts = [[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]];
+  const m = adicionarMedicao(contagemId, folhaId, [[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]]);
+  m.vao = { pontos: pts, recortes: [] };
+  for (const id of recortarIds) {
+    const d = adicionarMedicao(id, folhaId, pts, true);
+    d.vaoDe = { condicaoId: contagemId, medicaoId: m.id };
+    m.vao.recortes.push({ condicaoId: id, medicaoId: d.id });
+  }
+  salvar();
+  return m;
 }
 
 /* Valor de uma medição na unidade base: polegadas (linear), polegadas² (área), unidades (contagem).
@@ -194,7 +222,7 @@ export function variaveisDaCondicao(c) {
     if (p.alturaPol) { v.WallHeight = p.alturaPol / POL_POR_PE; v.SurfaceArea = v.MeasuredLinear * v.WallHeight; }
     if (fator) v.PitchedLinear = v.MeasuredLinear * fator;
   } else if (c.tipo === 'area') {
-    v.MeasuredArea = t.base / POL2_POR_PE2;
+    v.MeasuredArea = t.base / POL2_POR_PE2; // os recortes desenhados já saíram daqui
     if (p.profundidadePol) { v.Thickness = p.profundidadePol; v.VolumeCF = v.MeasuredArea * p.profundidadePol / POL_POR_PE; v.VolumeCY = v.VolumeCF / 27; }
     if (fator) v.PitchedArea = v.MeasuredArea * fator;
   } else {
@@ -210,7 +238,8 @@ export function variaveisDaCondicao(c) {
   // parede e siding: descontar os vãos das condições de contagem ligadas (props.vaos)
   if (c.tipo !== 'contagem') {
     const vaos = vaosLigados(c);
-    v.OpeningCount = vaos.count; v.OpeningArea = vaos.area; v.OpeningPerimeter = vaos.perimetro;
+    const des = vaosDesenhados(c);
+    v.OpeningCount = vaos.count + des.count; v.OpeningArea = vaos.area + des.area; v.OpeningPerimeter = vaos.perimetro + des.perimetro;
     if (v.SurfaceArea != null) v.NetSurfaceArea = Math.max(0, v.SurfaceArea - vaos.area);
     if (v.MeasuredArea != null) v.NetArea = Math.max(0, v.MeasuredArea - vaos.area);
   }
@@ -223,10 +252,27 @@ export function vaosLigados(c) {
   for (const id of (c.props && c.props.vaos) || []) {
     const o = condicao(id);
     if (!o || o.tipo !== 'contagem') continue;
-    const n = totaisDaCondicao(o).base;
+    // o vão desenhado que já recortou esta condição não é descontado de novo pelo tamanho cadastrado
+    const n = o.medicoes.filter((m) => !(m.vao && m.vao.recortes.some((x) => x.condicaoId === c.id))).reduce((t, m) => t + m.pontos.length, 0);
     const w = (o.props || {}).larguraPol / POL_POR_PE, h = (o.props || {}).alturaPol / POL_POR_PE;
     r.count += n;
     if (w && h) { r.area += n * w * h; r.perimetro += n * 2 * (w + h); } else if (n) r.semTamanho.push(o.nome);
+  }
+  return r;
+}
+
+/* Vãos desenhados que recortaram esta condição de área: a área já saiu da medição; contam no
+ * OpeningCount e no OpeningPerimeter (J-channel, flashing) com a medida desenhada. */
+export function vaosDesenhados(c) {
+  const r = { count: 0, area: 0, perimetro: 0 };
+  for (const m of c.medicoes) {
+    if (!m.vaoDe) continue;
+    const f = folha(m.folhaId);
+    if (!f || !f.escala) continue;
+    const k = f.escala.polPorPonto;
+    r.count++;
+    r.area += areaPoligono(m.pontos) * k * k / POL2_POR_PE2;
+    r.perimetro += comprimento(m.pontos.concat([m.pontos[0]])) * k / POL_POR_PE;
   }
   return r;
 }

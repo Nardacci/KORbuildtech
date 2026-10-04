@@ -119,12 +119,14 @@ for (const p of [[0.5, 0.5], [39.5, 0.5], [39.5, 27.5], [0.5, 27.5]]) await clic
 await clicar([0.5, 0.5]); // clicar no primeiro ponto fecha a área
 const piso1 = numeroDe(await painel('Piso (LVP)').locator('.mz-total').textContent(), 'sq ft');
 verificar(perto(piso1, 1053, 0.01), 'área interna ≈ 39\' × 27\' = 1.053 sq ft, fechando no primeiro ponto (' + piso1 + ')');
-await painel('Piso (LVP)').locator('input[data-acao="mz-desconto"]').check();
+verificar(await page.isEnabled('[data-acao="mz-ferramenta"][data-ferramenta="recortar"]'), 'Recortar (borracha) liberado na condição de área');
+await page.click('[data-acao="mz-ferramenta"][data-ferramenta="recortar"]');
 for (const p of [[22, 12], [30, 12], [30, 18]]) await clicar(p);
 const fim = await naTela([22, 18]);
 await page.mouse.dblclick(fim.x, fim.y);
 const piso2 = numeroDe(await painel('Piso (LVP)').locator('.mz-total').textContent(), 'sq ft');
-verificar(perto(piso2, 1005, 0.01) && piso1 - piso2 >= 46 && piso1 - piso2 <= 50, 'desconto do banheiro (8\' × 6\' = 48 sq ft), concluído com duplo clique (' + piso2 + ')');
+verificar(perto(piso2, 1005, 0.01) && piso1 - piso2 >= 46 && piso1 - piso2 <= 50, 'borracha: recorte do banheiro (8\' × 6\' = 48 sq ft), concluído com duplo clique (' + piso2 + ')');
+verificar((await painel('Piso (LVP)').locator('.mz-medicoes').textContent()).includes('Recorte: −'), 'o recorte aparece na lista de medições');
 await painel('Portas internas').locator('.mz-cond-topo').click();
 for (const p of [[22, 8.5], [27.5, 12], [32.5, 18]]) await clicar(p);
 verificar((await painel('Portas internas').textContent()).includes('3 each'), 'contagem: 3 portas');
@@ -231,8 +233,30 @@ const sidingBruto = numeroDe(await painel('Siding (fachadas)').locator('.mz-tota
 verificar(perto(sidingBruto, 710, 0.01), 'siding medido na fachada: sul 40\' × 9\' + leste 28\' × 9\' com empena (+98) ≈ 710 sq ft (' + sidingBruto + ')');
 await painel('Janelas W1').locator('.mz-cond-topo').click();
 await clicar([16.5, 5], {}, SUL); await clicar([32.5, 5], {}, SUL);
-await painel('Janelas W2').locator('.mz-cond-topo').click();
-await clicar([6, 5], {}, LESTE);
+console.log('Vão desenhado: conta a janela e recorta o siding');
+const sidingAntesVao = numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft');
+const desenharW2 = async () => {
+  await page.click('[data-acao="mz-ferramenta"][data-ferramenta="vao"]');
+  await clicar([4, 3], {}, LESTE); await clicar([8, 7], {}, LESTE); // cantos da W2 na fachada leste
+  await page.waitForSelector('dialog select[name="contagem"]');
+};
+await desenharW2();
+const medidaVao = await textoDe('dialog .mz-vao-medida');
+verificar(perto(numeroDe(medidaVao, 'sq ft'), 16, 0.06) && /(4'-0|3'-11)/.test(medidaVao), 'mostra a medida desenhada do vão (' + medidaVao.trim() + ')');
+verificar(await page.isChecked('dialog .mz-vaos label:has-text("Siding") input') && !(await page.isChecked('dialog .mz-vaos label:has-text("Piso") input')), 'já marca a área que está por trás (o siding desta fachada), e não o piso da outra folha');
+await page.selectOption('dialog select[name="contagem"]', { label: 'Janelas W2 · 4\'-0" × 4\'-0"' });
+await print('11-vao');
+await noDialogo('Contar e recortar');
+verificar((await painel('Janelas W2').textContent()).includes('1 each'), 'o vão conta +1 janela W2');
+const sidingComVao = numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft');
+verificar(perto(sidingAntesVao - sidingComVao, 16, 0.06), 'e recorta 4\' × 4\' = 16 sq ft do siding (' + sidingAntesVao + ' → ' + sidingComVao + ')');
+await print('12-vao-recortado');
+await painel('Siding (fachadas)').locator('.mz-cond-topo').click();
+await painel('Siding (fachadas)').locator('.mz-medicoes li:has-text("Vão Janelas W2") button').click();
+verificar((await painel('Janelas W2').textContent()).includes('nada medido') && numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft') === sidingAntesVao, 'apagar o vão apaga a contagem e o recorte juntos');
+await desenharW2();
+await page.selectOption('dialog select[name="contagem"]', { label: 'Janelas W2 · 4\'-0" × 4\'-0"' });
+await noDialogo('Contar e recortar');
 await painel('Porta de entrada D1').locator('.mz-cond-topo').click();
 await clicar([9.5, 3], {}, SUL);
 verificar((await painel('Janelas W1').textContent()).includes('2 each') && (await painel('Porta de entrada D1').textContent()).includes('vão 3\'-0" × 6\'-8"'), 'janelas e porta contadas na fachada, com o tamanho do vão');
@@ -248,7 +272,9 @@ verificar(await qtdDe('Fita de flashing') === 2 && await qtdDe('Janela vinil 5')
 verificar(Math.abs(await qtdDe('OSB 7/16') - Math.ceil((perimetro * 9 - vaosArea) / 32 * 1.1 - 1e-9)) <= 1, 'parede: o OSB já desconta os vãos (NetSurfaceArea)');
 await itemDe('Siding vinil').locator('summary').click();
 const rastroSiding = await itemDe('Siding vinil').locator('.mz-rastro').textContent();
-verificar(rastroSiding.includes('NetArea / 100') && rastroSiding.includes('OpeningArea = 76'), 'rastro do siding mostra a área líquida e os vãos descontados');
+const varSiding = (n) => Number((new RegExp(n + ' = ([\\d.]+(?:,\\d+)?)').exec(rastroSiding) || [0, 'NaN'])[1].replace(/\./g, '').replace(',', '.'));
+verificar(rastroSiding.includes('NetArea / 100') && Math.abs(varSiding('OpeningArea') - 76) < 0.6, 'rastro do siding mostra a área líquida e os vãos (W1 e D1 pelo tamanho, W2 desenhada): ' + varSiding('OpeningArea'));
+verificar(Math.abs(varSiding('NetArea') - (sidingBruto - 76)) < 1, 'a W2 desenhada e ligada não é descontada duas vezes (NetArea ' + varSiding('NetArea') + ')');
 await print('6-materiais-vaos');
 
 console.log('Corte em outra escala');

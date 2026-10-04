@@ -984,11 +984,11 @@ body.sem-rolagem { overflow: hidden; }
 .mz-cor { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; vertical-align: -1px; flex-shrink: 0; }
 .mz-visor { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
 .mz-visor:fullscreen { background: var(--fundo, #F4F5F7); padding: 10px; }
-.mz-barra { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 12px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: var(--sombra); }
+.mz-barra { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 12px; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: var(--sombra); }
 .mz-barra .btn-linha { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .mz-zoom { min-width: 48px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .mz-barra-fim { margin-left: auto; }
-.mz-trocar-folha { max-width: 260px; font-weight: 600; padding: 6px 8px; border: 1px solid var(--borda-forte); border-radius: var(--raio); background: var(--superficie); font: inherit; font-size: 13px; }
+.mz-trocar-folha { max-width: 200px; font-weight: 600; padding: 6px 8px; border: 1px solid var(--borda-forte); border-radius: var(--raio); background: var(--superficie); font: inherit; font-size: 13px; }
 .mz-corpo { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: 10px; flex: 1; min-height: 0; }
 .mz-area { position: relative; height: 100%; min-height: 420px; overflow: auto; background: #E9ECF1; border: 1px solid var(--borda); border-radius: var(--raio-grande); }
 .mz-area:focus-visible { outline: 2px solid var(--primario); }
@@ -1086,3 +1086,6 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-opcao-assembly { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--borda); border-radius: var(--raio); cursor: pointer; }
 .mz-opcao-assembly:has(input:checked) { border-color: var(--primario); background: #FFF8F3; }
 .mz-opcao-assembly input { margin-top: 3px; accent-color: var(--primario); width: 16px; height: 16px; flex-shrink: 0; }
+/* Measure: recorte (borracha) e vão desenhado */
+.mz-medicoes li.mz-med-recorte { color: #B91C1C; }
+.mz-vao-medida { margin: 0 0 8px; padding: 8px 12px; background: var(--superficie-2); border-radius: var(--raio); }

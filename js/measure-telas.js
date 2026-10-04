@@ -13,7 +13,7 @@ import {
   projetos, projeto, folha, folhasDo, condicao, condicoesDo, TIPOS, definirEscala, registrarConferencia,
   salvarCondicao, excluirCondicao, adicionarMedicao, excluirMedicao, totaisDaCondicao, valorDaMedicao, verticeProximo, criarFolhas,
   CATEGORIAS, itens, item, salvarItem, excluirItem, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
-  quantidadesDoProjeto, variaveisDaCondicao, mostrarCondicao,
+  quantidadesDoProjeto, variaveisDaCondicao, mostrarCondicao, adicionarVao,
   TIPOS_PROJETO, SITUACOES, enderecoDoProjeto, salvarProjeto, excluirProjeto, PALETA,
 } from './measure.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
@@ -302,15 +302,18 @@ function testarLinhas() {
 /* ---------- Visor de medição ---------- */
 
 const visor = {
-  folhaId: null, condicaoId: null, ferramenta: 'medir', desconto: false, zoom: 1,
+  folhaId: null, condicaoId: null, ferramenta: 'medir', zoom: 1,
   pontos: [], cursor: null, cal: [], viewport: null, page: null, arrastando: null, espaco: false,
 };
 const condicaoVisivel = (c) => !c.oculta;
+// ferramentas que desenham pontos (as outras: mover, calibrar, conferir)
+const desenhando = () => ['medir', 'recortar', 'vao'].includes(visor.ferramenta);
+const nomeCurto = (c) => c.nome.split(' (')[0];
 
 function telaFolha(id) {
   const f = folha(id);
   if (visor.folhaId !== id) {
-    Object.assign(visor, { folhaId: id, pontos: [], cal: [], cursor: null, zoom: 0, page: null, viewport: null, desconto: false });
+    Object.assign(visor, { folhaId: id, pontos: [], cal: [], cursor: null, zoom: 0, page: null, viewport: null });
     const cs = condicoesDo(f.projetoId);
     visor.condicaoId = cs.length ? cs[0].id : null;
     visor.ferramenta = f.escala ? 'medir' : 'mover';
@@ -330,11 +333,15 @@ function htmlBarra() {
   const f = folha(visor.folhaId);
   const b = (ferr, rot, ic, extra) => '<button type="button" class="btn btn-pequeno ' + (visor.ferramenta === ferr ? 'btn-primario' : 'btn-contorno') + '" data-acao="mz-ferramenta" data-ferramenta="' + ferr + '"' + (extra || '') + '>' + icone(ic, 16) + rot + '</button>';
   const semEscala = !f.escala;
+  const ativa = condicao(visor.condicaoId);
+  const semArea = !ativa || ativa.tipo !== 'area';
   // a planta ocupa a tela: o caminho de volta e o nome da folha ficam na própria barra
   const fs = folhasDo(f.projetoId);
   return '<div class="mz-barra-titulo"><a class="voltar" href="#/measure/projeto/' + f.projetoId + '" title="Voltar para o projeto">' + icone('voltar', 18) + esc(projeto(f.projetoId).nome) + '</a>' +
       (fs.length > 1 ? '<select class="mz-trocar-folha" aria-label="Folha">' + fs.map((x) => '<option value="' + x.id + '"' + (x.id === f.id ? ' selected' : '') + '>' + esc(x.nome) + '</option>').join('') + '</select>' : '<h1 class="mz-titulo">' + esc(f.nome) + '</h1>') + '</div>' +
-    '<div class="btn-linha">' + b('mover', 'Mover', 'seta') + b('medir', 'Medir', 'measure', semEscala ? ' disabled title="Defina a escala primeiro"' : '') + '</div>' +
+    '<div class="btn-linha">' + b('mover', 'Mover', 'seta') + b('medir', 'Medir', 'measure', semEscala ? ' disabled title="Defina a escala primeiro"' : '') +
+      b('recortar', 'Recortar', 'borracha', semEscala ? ' disabled title="Defina a escala primeiro"' : semArea ? ' disabled title="Escolha uma condição de área (siding, piso…) para recortar"' : ' title="Borracha: desenha uma área que sai do total"') +
+      b('vao', 'Vão', 'janela', semEscala ? ' disabled title="Defina a escala primeiro"' : ' title="Desenhe a janela ou porta: conta o vão e recorta o siding"') + '</div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-pequeno ' + (semEscala ? 'btn-primario' : 'btn-contorno') + '" data-acao="mz-escala">' + icone('measure', 16) + (f.escala ? 'Escala: ' + esc(f.escala.nome) : 'Definir escala') + '</button>' +
       (f.escala ? b('conferir', 'Conferir', 'aprovacoes') : '') +
       (f.escala && f.escala.conferencia ? '<span class="etiqueta ' + (f.escala.conferencia.ok ? 'etiqueta-verde' : 'etiqueta-alerta') + '">' + (f.escala.conferencia.ok ? 'conferida' : 'diferença') + ' ' + numero(f.escala.conferencia.diferenca * 100, 1) + '%</span>' : f.escala ? '<span class="etiqueta etiqueta-ambar">não conferida</span>' : '') + '</div>' +
@@ -361,7 +368,6 @@ function htmlPainel() {
         '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + c.cor + '"></span><span><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') + '<span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></span></button></div>' +
         '<div class="mz-total">' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">nada medido</span>') + '</div>' +
         (t.medicoes ? t.derivados.map((d) => '<div class="mz-derivado">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></div>').join('') : '') +
-        (ativa && c.tipo === 'area' ? '<label class="check pequeno"><input type="checkbox" data-acao="mz-desconto"' + (visor.desconto ? ' checked' : '') + '> Desenhar como desconto (vão, recorte)</label>' : '') +
         (ativa ? '<div class="mz-cond-assemblies"><span class="mudo pequeno">Assemblies</span>' + ((c.assemblies || []).map((aid) => assembly(aid)).filter(Boolean).map((a) =>
             '<span class="mz-chip">' + esc(a.nome) + '<button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '">✕</button></span>').join('') || '<span class="mudo pequeno">nenhum</span>') +
             '<button type="button" class="link-botao pequeno" data-acao="mz-aplicar-assembly" data-cond="' + c.id + '">+ Aplicar assembly</button></div>' : '') +
@@ -369,8 +375,10 @@ function htmlPainel() {
           '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
           (aqui.length ? '<ol class="mz-medicoes">' + aqui.map((m, i) => {
             const v = valorDaMedicao(c, m);
-            const txt = c.tipo === 'contagem' ? '1 each' : v == null ? 'sem escala' : c.tipo === 'linear' ? formatarPesPolegadas(v) : formatarArea(v);
-            return '<li><span>' + (i + 1) + '. ' + (m.desconto ? 'desconto ' : '') + txt + '</span><button type="button" class="link-botao" data-acao="mz-apagar-medicao" data-cond="' + c.id + '" data-id="' + m.id + '" aria-label="Apagar a medição ' + (i + 1) + '">✕</button></li>';
+            const txt = c.tipo === 'contagem' ? '1 each' : v == null ? 'sem escala' : c.tipo === 'linear' ? formatarPesPolegadas(v) : (v < 0 ? '− ' : '') + formatarArea(Math.abs(v));
+            const tipoM = m.vaoDe ? 'Vão ' + esc(nomeCurto(condicao(m.vaoDe.condicaoId) || { nome: '?' })) + ': ' : m.desconto ? 'Recorte: ' : '';
+            const nota = m.vao ? ' <span class="mudo">(desenhado' + (m.vao.recortes.length ? ', recorta ' + esc(m.vao.recortes.map((r) => nomeCurto(condicao(r.condicaoId) || { nome: '?' })).join(', ')) : '') + ')</span>' : '';
+            return '<li class="' + (m.desconto ? 'mz-med-recorte' : '') + '"><span>' + (i + 1) + '. ' + tipoM + txt + nota + '</span><button type="button" class="link-botao" data-acao="mz-apagar-medicao" data-cond="' + c.id + '" data-id="' + m.id + '" aria-label="Apagar a medição ' + (i + 1) + '">✕</button></li>';
           }).join('') + '</ol>' : '') : '') +
         '</div>';
     }).join('');
@@ -382,12 +390,14 @@ function dica() {
   if (visor.ferramenta === 'calibrar') return visor.cal.length ? 'Agora clique na outra ponta da cota.' : 'Calibrar: clique nas duas pontas de uma cota conhecida (ex.: a de 40\'-0"). Shift deixa a linha reta.';
   if (visor.ferramenta === 'conferir') return visor.cal.length ? 'Agora clique na outra ponta da cota.' : 'Conferir: meça OUTRA cota conhecida, de preferência na outra direção. O sistema mostra a diferença.';
   if (!f.escala) return 'Primeiro, defina a escala da folha: escolha da lista (a escala está no carimbo) ou calibre por uma cota.';
+  if (visor.ferramenta === 'vao') return visor.pontos.length ? 'Agora clique no canto oposto da janela ou porta.' : 'Vão: clique num canto da janela ou porta e depois no canto oposto. Ela é contada e a área sai do siding (ou de outra área) que estiver por trás.';
   if (visor.ferramenta === 'mover') return 'Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.';
   if (!c) return 'Inclua um assembly no painel ao lado (parede, piso, janela…) para começar a medir.';
   if (!condicaoVisivel(c)) return 'As marcações de "' + c.nome + '" estão ocultas: marque a caixa ao lado do nome para vê-las.';
   if (c.tipo === 'contagem') return 'Contagem: clique em cada item de "' + c.nome + '".';
   if (c.tipo === 'linear') return 'Linear: clique nos pontos. Duplo clique ou Enter conclui, Esc cancela, Backspace desfaz o último ponto. Shift: linha reta. Perto de um ponto já medido, o clique gruda nele (Alt desliga). Para mais precisão, aumente o zoom.';
-  return 'Área: clique nos cantos. Duplo clique, Enter ou clique no primeiro ponto fecha a área.' + (visor.desconto ? ' Modo desconto: a área será subtraída.' : '');
+  if (visor.ferramenta === 'recortar') return 'Recortar (borracha): clique nos cantos do que sai de "' + c.nome + '" (escada, chaminé, recorte). Duplo clique, Enter ou clique no primeiro ponto fecha.';
+  return 'Área: clique nos cantos. Duplo clique, Enter ou clique no primeiro ponto fecha a área.';
 }
 
 function atualizarInterface() {
@@ -462,7 +472,7 @@ function pontoDoEvento(ev, comSnap) {
     const ancora = visor.pontos.length >= 3 && distancia(visor.pontos[0], p) < raio ? visor.pontos[0] : verticeProximo(visor.folhaId, p, raio, condicaoVisivel);
     if (ancora) return [ancora[0], ancora[1]];
   }
-  const ultimo = visor.ferramenta === 'medir' ? visor.pontos[visor.pontos.length - 1] : visor.cal[visor.cal.length - 1];
+  const ultimo = desenhando() ? visor.pontos[visor.pontos.length - 1] : visor.cal[visor.cal.length - 1];
   if (ev.shiftKey && ultimo) p = Math.abs(p[0] - ultimo[0]) > Math.abs(p[1] - ultimo[1]) ? [p[0], ultimo[1]] : [ultimo[0], p[1]];
   return p;
 }
@@ -486,7 +496,9 @@ function desenharSobreposicao() {
   };
   const caminho = (pts, fechar) => { ctx.beginPath(); pts.forEach((p, i) => { const [x, y] = paraTela(p); if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); if (fechar) ctx.closePath(); };
   const centro = (pts) => { const t = pts.map(paraTela); return [t.reduce((s, p) => s + p[0], 0) / t.length, t.reduce((s, p) => s + p[1], 0) / t.length]; };
-  for (const c of condicoesDo(f.projetoId)) {
+  // áreas embaixo, linhas no meio e contagens por cima (o ponto da janela fica visível sobre o recorte)
+  const ordem = { area: 0, linear: 1, contagem: 2 };
+  for (const c of condicoesDo(f.projetoId).slice().sort((x, y) => ordem[x.tipo] - ordem[y.tipo])) {
     if (!condicaoVisivel(c)) continue;
     const ativa = c.id === visor.condicaoId;
     const corC = c.cor;
@@ -494,26 +506,40 @@ function desenharSobreposicao() {
       const v = valorDaMedicao(c, m);
       ctx.strokeStyle = corC; ctx.fillStyle = corC; ctx.lineWidth = ativa ? 3 : 2; ctx.setLineDash(m.desconto ? [6, 4] : []);
       if (c.tipo === 'contagem') {
+        if (m.vao) { caminho(m.vao.pontos, true); ctx.lineWidth = 2; ctx.stroke(); } // o contorno do vão desenhado
         const [x, y] = paraTela(m.pontos[0]);
         ctx.beginPath(); ctx.arc(x, y, ativa ? 8 : 7, 0, Math.PI * 2); ctx.globalAlpha = 0.85; ctx.fill(); ctx.globalAlpha = 1;
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
       } else if (c.tipo === 'linear') {
         caminho(m.pontos); ctx.stroke();
         if (v != null && ativa) { const [x, y] = centro([m.pontos[0], m.pontos[m.pontos.length - 1]]); rotulo(x, y, formatarPesPolegadas(v), corC); }
+      } else if (m.desconto) {
+        // recorte (borracha) e vão: a área "apagada" fica clara, hachurada em vermelho, com a medida que saiu
+        caminho(m.pontos, true); ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fill();
+        ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(220,38,38,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([]);
+        const t = m.pontos.map(paraTela), xs = t.map((p) => p[0]), ys = t.map((p) => p[1]);
+        const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+        ctx.beginPath(); for (let d = x0 - (y1 - y0); d < x1; d += 7) { ctx.moveTo(d, y1); ctx.lineTo(d + (y1 - y0), y0); } ctx.stroke(); ctx.restore();
+        caminho(m.pontos, true); ctx.strokeStyle = '#DC2626'; ctx.lineWidth = 2; ctx.setLineDash([5, 3]); ctx.stroke();
+        // no vão, o rótulo vai logo abaixo (o ponto da contagem fica no centro)
+        if (v != null) { const [x, y] = centro(m.pontos); rotulo(x, m.vaoDe ? y1 + 14 : y, '− ' + formatarArea(Math.abs(v)), '#DC2626'); }
       } else {
-        caminho(m.pontos, true); ctx.globalAlpha = m.desconto ? 0.12 : 0.22; ctx.fill(); ctx.globalAlpha = 1; ctx.stroke();
-        if (v != null && ativa) { const [x, y] = centro(m.pontos); rotulo(x, y, (m.desconto ? '− ' : '') + formatarArea(Math.abs(v)), corC); }
+        caminho(m.pontos, true); ctx.globalAlpha = 0.22; ctx.fill(); ctx.globalAlpha = 1; ctx.stroke();
+        if (v != null && ativa) { const [x, y] = centro(m.pontos); rotulo(x, y, formatarArea(Math.abs(v)), corC); }
       }
       ctx.setLineDash([]);
     }
   }
   // em andamento: calibração/conferência ou medição
-  const cor = visor.ferramenta === 'medir' ? (condicao(visor.condicaoId) || {}).cor || '#C2410C' : '#C2410C';
-  const pts = (visor.ferramenta === 'medir' ? visor.pontos : visor.cal).concat(visor.cursor && (visor.ferramenta === 'medir' ? visor.pontos.length : visor.cal.length) ? [visor.cursor] : []);
+  const cor = visor.ferramenta === 'medir' ? (condicao(visor.condicaoId) || {}).cor || '#C2410C' : visor.ferramenta === 'recortar' || visor.ferramenta === 'vao' ? '#DC2626' : '#C2410C';
+  const base = desenhando() ? visor.pontos : visor.cal;
+  let pts = base.concat(visor.cursor && base.length ? [visor.cursor] : []);
+  // vão: retângulo do primeiro canto até o cursor
+  if (visor.ferramenta === 'vao' && pts.length === 2) { const [a, b] = pts; pts = [a, [b[0], a[1]], b, [a[0], b[1]]]; }
   if (pts.length) {
     ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
     const c = condicao(visor.condicaoId);
-    const area = visor.ferramenta === 'medir' && c && c.tipo === 'area';
+    const area = (visor.ferramenta === 'medir' && c && c.tipo === 'area') || visor.ferramenta === 'recortar' || visor.ferramenta === 'vao';
     caminho(pts, area && pts.length > 2); ctx.stroke(); ctx.setLineDash([]);
     if (area && pts.length > 2) { ctx.fillStyle = cor; ctx.globalAlpha = 0.12; ctx.fill(); ctx.globalAlpha = 1; }
     for (const p of pts) { const [x, y] = paraTela(p); ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.stroke(); }
@@ -530,10 +556,11 @@ function desenharSobreposicao() {
 
 function finalizar() {
   const c = condicao(visor.condicaoId);
-  if (!c || visor.ferramenta !== 'medir') return;
+  if (!c || (visor.ferramenta !== 'medir' && visor.ferramenta !== 'recortar')) return;
+  const recorte = visor.ferramenta === 'recortar';
   const minimo = c.tipo === 'area' ? 3 : 2;
   if (visor.pontos.length < minimo) { toast(c.tipo === 'area' ? 'A área precisa de pelo menos 3 pontos.' : 'Marque pelo menos 2 pontos.'); return; }
-  adicionarMedicao(c.id, visor.folhaId, visor.pontos, c.tipo === 'area' && visor.desconto);
+  adicionarMedicao(c.id, visor.folhaId, visor.pontos, c.tipo === 'area' && recorte);
   visor.pontos = [];
   atualizarInterface();
 }
@@ -595,16 +622,21 @@ function ligarVisor() {
     if (!visor.viewport || visor.ferramenta === 'mover' || visor.espaco) return;
     const p = pontoDoEvento(ev, true);
     if (visor.ferramenta === 'calibrar' || visor.ferramenta === 'conferir') { cliqueCalibracao(p); return; }
+    if (visor.ferramenta === 'vao') {
+      visor.pontos.push(p);
+      if (visor.pontos.length === 2) dialogoVao(); else desenharSobreposicao();
+      return;
+    }
     const c = condicao(visor.condicaoId);
     if (!c) { toast('Escolha uma condição no painel.'); return; }
     if (c.tipo === 'contagem') { adicionarMedicao(c.id, visor.folhaId, [p]); atualizarInterface(); return; }
     const ultimo = visor.pontos[visor.pontos.length - 1];
     if (ultimo && distancia(ultimo, p) < 0.5 / visor.zoom) return; // segundo clique do duplo clique
-    if (c.tipo === 'area' && visor.pontos.length >= 3 && distancia(visor.pontos[0], p) < 0.01) { finalizar(); return; } // fechou no primeiro ponto
+    if ((c.tipo === 'area') && visor.pontos.length >= 3 && distancia(visor.pontos[0], p) < 0.01) { finalizar(); return; } // fechou no primeiro ponto
     visor.pontos.push(p);
     desenharSobreposicao();
   });
-  cv.addEventListener('dblclick', (ev) => { ev.preventDefault(); if (visor.ferramenta === 'medir' && visor.pontos.length) finalizar(); });
+  cv.addEventListener('dblclick', (ev) => { ev.preventDefault(); if ((visor.ferramenta === 'medir' || visor.ferramenta === 'recortar') && visor.pontos.length) finalizar(); });
   area.addEventListener('wheel', (ev) => {
     if (!ev.ctrlKey || !visor.viewport) return;
     ev.preventDefault();
@@ -769,6 +801,53 @@ async function dialogoCondicao(c, comAssembly) {
   atualizarInterface();
 }
 
+/* Ponto dentro de um polígono (para achar a área que está por trás do vão). */
+function dentro(p, pts) {
+  let r = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    if ((pts[i][1] > p[1]) !== (pts[j][1] > p[1]) && p[0] < (pts[j][0] - pts[i][0]) * (p[1] - pts[i][1]) / (pts[j][1] - pts[i][1]) + pts[i][0]) r = !r;
+  }
+  return r;
+}
+
+/* Vão desenhado: qual janela/porta é, e de quais áreas ela sai. */
+async function dialogoVao() {
+  const [a, b] = visor.pontos;
+  visor.pontos = [];
+  const f = folha(visor.folhaId);
+  const k = f.escala.polPorPonto;
+  const largura = Math.abs(b[0] - a[0]) * k, altura = Math.abs(b[1] - a[1]) * k;
+  if (largura < 1 || altura < 1) { toast('Desenhe o vão clicando em dois cantos opostos.'); atualizarInterface(); return; }
+  const cs = condicoesDo(f.projetoId);
+  const contagens = cs.filter((c) => c.tipo === 'contagem');
+  if (!contagens.length) { toast('Inclua primeiro o assembly da janela ou porta (uma contagem, como "Janela W2").'); atualizarInterface(); return; }
+  const centro = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const areas = cs.filter((c) => c.tipo === 'area');
+  // marca de saída as áreas desta folha que estão por trás do vão
+  const atras = (c) => c.medicoes.some((m) => m.folhaId === f.id && !m.desconto && dentro(centro, m.pontos));
+  const ativa = condicao(visor.condicaoId);
+  const sugerida = ativa && ativa.tipo === 'contagem' ? ativa.id : contagens[0].id;
+  const tam = (c) => c.props && c.props.larguraPol && c.props.alturaPol ? formatarPesPolegadas(c.props.larguraPol) + ' × ' + formatarPesPolegadas(c.props.alturaPol) : 'sem tamanho cadastrado';
+  atualizarInterface();
+  const res = await abrirDialogo({
+    titulo: 'Vão desenhado',
+    corpo: '<p class="mz-vao-medida">Desenhado: <b>' + esc(formatarPesPolegadas(largura)) + ' × ' + esc(formatarPesPolegadas(altura)) + '</b> = ' + esc(formatarArea(largura * altura)) + '</p>' +
+      '<label class="rotulo-pequeno" for="mz-vao-cont">Qual é (conta +1 nesta contagem)</label><select id="mz-vao-cont" name="contagem">' +
+        contagens.map((c) => '<option value="' + c.id + '"' + (c.id === sugerida ? ' selected' : '') + '>' + esc(nomeCurto(c)) + ' · ' + esc(tam(c)) + '</option>').join('') + '</select>' +
+      '<p class="mudo pequeno">O recorte usa a medida desenhada; a contagem gera os materiais do vão (janela, flashing, guarnição).</p>' +
+      '<fieldset class="mz-vaos"><legend class="rotulo-pequeno">Recortar a área de</legend>' +
+        (areas.length ? areas.map((c) => '<label class="check pequeno"><input type="checkbox" name="recorta-' + c.id + '" value="1"' + (atras(c) ? ' checked' : '') + '> ' + esc(c.nome) + (atras(c) ? ' <span class="mudo">(está por trás)</span>' : '') + '</label>').join('')
+          : '<p class="mudo pequeno">Nenhuma condição de área no desenho: o vão só será contado.</p>') + '</fieldset>',
+    acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Contar e recortar', valor: true, classe: 'btn-primario' }],
+  });
+  if (!res || !res.valor) { atualizarInterface(); return; }
+  const recortar = Object.keys(res.campos).filter((x) => x.startsWith('recorta-')).map((x) => x.slice(8));
+  adicionarVao(res.campos.contagem, f.id, [a, b], recortar);
+  const c = condicao(res.campos.contagem);
+  toast(nomeCurto(c) + ': +1' + (recortar.length ? ', recortado de ' + recortar.map((id) => nomeCurto(condicao(id))).join(', ') : '') + '.');
+  atualizarInterface();
+}
+
 async function dialogoItem(it) {
   const v = it || { categoria: 'material' };
   const res = await abrirDialogo({
@@ -854,11 +933,12 @@ export const acoesMeasure = {
   },
   'mz-ferramenta'(el) { visor.ferramenta = el.dataset.ferramenta; visor.pontos = []; visor.cal = []; atualizarInterface(); },
   'mz-condicao'(el) {
-    visor.condicaoId = el.dataset.id; visor.pontos = []; visor.desconto = false;
-    if (folha(visor.folhaId).escala && visor.ferramenta === 'mover') visor.ferramenta = 'medir';
+    visor.condicaoId = el.dataset.id; visor.pontos = [];
+    // escolher uma condição é para medir nela (o Vão não usa a condição ativa)
+    if (folha(visor.folhaId).escala && (visor.ferramenta === 'mover' || visor.ferramenta === 'vao')) visor.ferramenta = 'medir';
+    if (visor.ferramenta === 'recortar' && condicao(el.dataset.id).tipo !== 'area') visor.ferramenta = 'medir';
     atualizarInterface();
   },
-  'mz-desconto'(el) { visor.desconto = el.checked; visor.pontos = []; atualizarInterface(); },
   async 'mz-escala'() {
     const f = folha(visor.folhaId);
     const atual = f.escala && f.escala.origem === 'lista' ? f.escala.razao : 48;
@@ -893,7 +973,11 @@ export const acoesMeasure = {
     visor.condicaoId = (condicoesDo(folha(visor.folhaId).projetoId)[0] || {}).id || null;
     atualizarInterface();
   },
-  'mz-apagar-medicao'(el) { excluirMedicao(el.dataset.cond, el.dataset.id); atualizarInterface(); },
+  'mz-apagar-medicao'(el) {
+    const r = excluirMedicao(el.dataset.cond, el.dataset.id);
+    if (r.vao) toast('Vão apagado: a contagem e o recorte.');
+    atualizarInterface();
+  },
   'mz-visivel'(el) { mostrarCondicao(el.dataset.id, el.checked); atualizarInterface(); },
   'mz-mostrar-todas'(el) {
     for (const c of condicoesDo(folha(visor.folhaId).projetoId)) mostrarCondicao(c.id, !!el.dataset.mostrar);
