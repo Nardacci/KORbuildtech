@@ -215,15 +215,12 @@ await clicar([0, -2.5], {}, SUL); await clicar([40, -2.5], {}, SUL); // cota de 
 await page.fill('dialog input[name="real"]', '40\'');
 await noDialogo('Conferir');
 verificar((await toast()).includes('Escala conferida'), 'fachada A-201: escala 1/4" conferida na cota de 40\'-0"');
+verificar(await page.locator('.mz-cond').count() === 0, 'a fachada abre só com o que foi incluído nela (as condições da planta baixa não aparecem)');
 await incluir('as-jan-w1', 'Janelas W1', { vaoLargura: '5\'-0"', vaoAltura: '4\'-0"' });
 await incluir('as-jan-w2', 'Janelas W2', { vaoLargura: '4\'-0"', vaoAltura: '4\'-0"' });
 await incluir('as-porta-ext', 'Porta de entrada D1', { vaoLargura: '3\'-0"', vaoAltura: '6\'-8"' });
 await incluir('as-siding', 'Siding (fachadas)', {}, ['Janelas W1', 'Janelas W2', 'Porta de entrada D1']);
 verificar((await painel('Siding (fachadas)').textContent()).includes('desconta Janelas W1, Janelas W2, Porta de entrada D1'), 'siding incluído descontando os vãos');
-await painel('Paredes externas').locator('.mz-cond-topo').click(); // a parede também passa a descontar os vãos
-await page.click('[data-acao="mz-editar-condicao"]');
-for (const v of ['Janelas W1', 'Janelas W2', 'Porta de entrada D1']) await page.check('dialog .mz-vaos label:has-text("' + v + '") input');
-await noDialogo('Salvar');
 await painel('Siding (fachadas)').locator('.mz-cond-topo').click();
 for (const p of [[0, 0], [40, 0], [40, 9], [0, 9]]) await clicar(p, {}, SUL);
 await clicar([0, 0], {}, SUL);
@@ -243,7 +240,7 @@ const desenharW2 = async () => {
 await desenharW2();
 const medidaVao = await textoDe('dialog .mz-vao-medida');
 verificar(perto(numeroDe(medidaVao, 'sq ft'), 16, 0.06) && /(4'-0|3'-11)/.test(medidaVao), 'mostra a medida desenhada do vão (' + medidaVao.trim() + ')');
-verificar(await page.isChecked('dialog .mz-vaos label:has-text("Siding") input') && !(await page.isChecked('dialog .mz-vaos label:has-text("Piso") input')), 'já marca a área que está por trás (o siding desta fachada), e não o piso da outra folha');
+verificar(await page.isChecked('dialog .mz-vaos label:has-text("Siding") input') && await page.locator('dialog .mz-vaos input').count() === 1, 'já marca a área que está por trás (o siding desta fachada); só as áreas desta folha');
 await page.selectOption('dialog select[name="contagem"]', { label: 'Janelas W2 · 4\'-0" × 4\'-0"' });
 await print('11-vao');
 await noDialogo('Contar e recortar');
@@ -261,6 +258,15 @@ await painel('Porta de entrada D1').locator('.mz-cond-topo').click();
 await clicar([9.5, 3], {}, SUL);
 verificar((await painel('Janelas W1').textContent()).includes('2 each') && (await painel('Porta de entrada D1').textContent()).includes('vão 3\'-0" × 6\'-8"'), 'janelas e porta contadas na fachada, com o tamanho do vão');
 await print('5-fachadas');
+// a parede (medida na planta baixa) desconta os vãos contados na fachada
+await page.selectOption('.mz-trocar-folha', 'fl-a101');
+await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
+verificar(await page.locator('.mz-cond').count() === 4 && await page.locator('.mz-cond:has-text("Siding")').count() === 0, 'de volta à planta baixa: só as condições dela');
+await painel('Paredes externas').locator('.mz-cond-topo').click();
+await page.click('[data-acao="mz-editar-condicao"]');
+verificar((await page.locator('dialog .mz-vaos label:has-text("Janelas W1")').textContent()).includes('A-201'), 'os vãos de outra folha aparecem para descontar, com a folha');
+for (const v of ['Janelas W1', 'Janelas W2', 'Porta de entrada D1']) await page.check('dialog .mz-vaos label:has-text("' + v + '") input');
+await noDialogo('Salvar');
 await page.click('a.voltar');
 await page.waitForSelector('#mz-materiais');
 // vãos: W1 2 × 5' × 4' = 40, W2 1 × 4' × 4' = 16, D1 1 × 3' × 6'-8" = 20 → 76 sq ft; perímetros 36 + 16 + 19,33 = 71,33 lin ft
@@ -287,6 +293,15 @@ await clicar([0, -6], {}, CORTE); await clicar([28, -6], {}, CORTE);
 await page.fill('dialog input[name="real"]', '28\'');
 await noDialogo('Conferir');
 verificar((await toast()).includes('Escala conferida'), 'corte A-301 em 3/8" = 1\'-0" (escala diferente na mesma planta), conferido na cota de 28\'-0"');
+verificar(await page.locator('.mz-cond').count() === 0, 'o corte abre sem as condições das outras folhas');
+await page.click('[data-acao="mz-incluir-assembly"]');
+await page.click('dialog .mz-opcao-assembly:has-text("Paredes externas")');
+await noDialogo('Continuar');
+const paredeNoCorte = await painel('Paredes externas').textContent();
+verificar(paredeNoCorte.includes('nada medido nesta folha') && paredeNoCorte.includes('Também em A-101'), 'reaproveitar uma condição de outra folha (soma no mesmo total)');
+await page.click('[data-acao="mz-tirar-da-folha"]');
+await noDialogo('Tirar');
+verificar(await page.locator('.mz-cond').count() === 0, '"Tirar desta folha" tira só daqui');
 await page.click('a.voltar');
 await page.waitForSelector('.tabela-quantidades');
 verificar((await textoDe('.pagina')).includes('3/8" = 1\'-0"'), 'cada folha guarda a sua escala');

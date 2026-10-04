@@ -145,7 +145,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 14;
+export const VERSAO_DADOS = 15;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();

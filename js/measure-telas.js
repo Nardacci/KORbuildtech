@@ -14,6 +14,7 @@ import {
   salvarCondicao, excluirCondicao, adicionarMedicao, excluirMedicao, totaisDaCondicao, valorDaMedicao, verticeProximo, criarFolhas,
   CATEGORIAS, itens, item, salvarItem, excluirItem, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
   quantidadesDoProjeto, variaveisDaCondicao, mostrarCondicao, adicionarVao,
+  condicoesDaFolha, incluirNaFolha, tirarDaFolha, folhasDaCondicao,
   TIPOS_PROJETO, SITUACOES, enderecoDoProjeto, salvarProjeto, excluirProjeto, PALETA,
 } from './measure.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
@@ -170,7 +171,8 @@ function telaProjeto(id) {
       '<section class="cartao"><h2 class="cartao-titulo">Quantidades</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>Condição</th><th>Medido</th><th>Derivadas</th><th class="num">Medições</th></tr></thead><tbody>' +
         cs.map((c) => {
           const t = totaisDaCondicao(c);
-          return '<tr><td><span class="mz-cor" style="background:' + c.cor + '"></span><b>' + esc(c.nome) + '</b><span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></td>' +
+          return '<tr><td><span class="mz-cor" style="background:' + c.cor + '"></span><b>' + esc(c.nome) + '</b><span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') +
+              (folhasDaCondicao(c).length ? ' · ' + esc(folhasDaCondicao(c).map(nomeFolha).join(', ')) : '') + '</span></td>' +
             '<td><b>' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">—</span>') + '</b>' + (t.semEscala ? '<span class="etiqueta etiqueta-ambar">' + t.semEscala + ' sem escala</span>' : '') + '</td>' +
             '<td>' + (t.medicoes ? t.derivados.map((d) => '<span class="bloco">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</td>' +
             '<td class="num">' + t.medicoes + '</td></tr>';
@@ -309,12 +311,19 @@ const condicaoVisivel = (c) => !c.oculta;
 // ferramentas que desenham pontos (as outras: mover, calibrar, conferir)
 const desenhando = () => ['medir', 'recortar', 'vao'].includes(visor.ferramenta);
 const nomeCurto = (c) => c.nome.split(' (')[0];
+const nomeFolha = (f) => f.nome.split(' · ')[0];
+/* Total da condição só nesta folha (o painel mostra o que está no desenho aberto). */
+function totalNaFolha(c, folhaId) {
+  let base = 0, medicoes = 0;
+  for (const m of c.medicoes) if (m.folhaId === folhaId) { const v = valorDaMedicao(c, m); medicoes++; if (v != null) base += v; }
+  return { base, medicoes };
+}
 
 function telaFolha(id) {
   const f = folha(id);
   if (visor.folhaId !== id) {
     Object.assign(visor, { folhaId: id, pontos: [], cal: [], cursor: null, zoom: 0, page: null, viewport: null });
-    const cs = condicoesDo(f.projetoId);
+    const cs = condicoesDaFolha(id);
     visor.condicaoId = cs.length ? cs[0].id : null;
     visor.ferramenta = f.escala ? 'medir' : 'mover';
   }
@@ -352,7 +361,7 @@ function htmlBarra() {
 
 function htmlPainel() {
   const f = folha(visor.folhaId);
-  const cs = condicoesDo(f.projetoId);
+  const cs = condicoesDaFolha(f.id);
   const nOcultas = cs.filter((c) => c.oculta).length;
   return '<div class="mz-painel-cabeca"><h2>Condições</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-incluir-assembly">' + icone('mais', 14) + 'Incluir assembly</button></div>' +
     (cs.length ? '' : '<p class="mz-vazio-painel">Nada no desenho ainda. Clique em <b>Incluir assembly</b>, escolha do catálogo (parede, piso, janela…) e comece a medir.</p>') +
@@ -360,18 +369,22 @@ function htmlPainel() {
       '<button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar=""' + (nOcultas === cs.length ? ' disabled' : '') + '>Ocultar todas</button></div>' : '') +
     cs.map((c) => {
       const t = totaisDaCondicao(c);
+      const tf = totalNaFolha(c, f.id);
+      const outras = folhasDaCondicao(c).filter((x) => x.id !== f.id);
       const aqui = c.medicoes.filter((m) => m.folhaId === f.id);
       const ativa = c.id === visor.condicaoId;
       const visivel = condicaoVisivel(c);
       return '<div class="mz-cond' + (ativa ? ' ativa' : '') + (visivel ? '' : ' oculta') + '" style="--cor:' + c.cor + '">' +
         '<div class="mz-cond-cabeca"><input type="checkbox" class="mz-visivel" data-acao="mz-visivel" data-id="' + c.id + '"' + (visivel ? ' checked' : '') + ' aria-label="Mostrar ' + esc(c.nome) + ' no desenho" title="Mostrar no desenho">' +
         '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + c.cor + '"></span><span><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') + '<span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></span></button></div>' +
-        '<div class="mz-total">' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">nada medido</span>') + '</div>' +
+        '<div class="mz-total">' + (tf.medicoes ? textoPrincipal(c, tf) : '<span class="mudo">nada medido nesta folha</span>') + '</div>' +
+        (outras.length ? '<div class="mz-derivado">Também em ' + esc(outras.map(nomeFolha).join(', ')) + ' · projeto: <b>' + (t.medicoes ? textoPrincipal(c, t) : '—') + '</b></div>' : '') +
         (t.medicoes ? t.derivados.map((d) => '<div class="mz-derivado">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></div>').join('') : '') +
         (ativa ? '<div class="mz-cond-assemblies"><span class="mudo pequeno">Assemblies</span>' + ((c.assemblies || []).map((aid) => assembly(aid)).filter(Boolean).map((a) =>
             '<span class="mz-chip">' + esc(a.nome) + '<button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '">✕</button></span>').join('') || '<span class="mudo pequeno">nenhum</span>') +
             '<button type="button" class="link-botao pequeno" data-acao="mz-aplicar-assembly" data-cond="' + c.id + '">+ Aplicar assembly</button></div>' : '') +
         (ativa ? '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-editar-condicao" data-id="' + c.id + '">Editar</button>' +
+          (outras.length ? '<button type="button" class="link-botao pequeno" data-acao="mz-tirar-da-folha" data-id="' + c.id + '">Tirar desta folha</button>' : '') +
           '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
           (aqui.length ? '<ol class="mz-medicoes">' + aqui.map((m, i) => {
             const v = valorDaMedicao(c, m);
@@ -498,7 +511,7 @@ function desenharSobreposicao() {
   const centro = (pts) => { const t = pts.map(paraTela); return [t.reduce((s, p) => s + p[0], 0) / t.length, t.reduce((s, p) => s + p[1], 0) / t.length]; };
   // áreas embaixo, linhas no meio e contagens por cima (o ponto da janela fica visível sobre o recorte)
   const ordem = { area: 0, linear: 1, contagem: 2 };
-  for (const c of condicoesDo(f.projetoId).slice().sort((x, y) => ordem[x.tipo] - ordem[y.tipo])) {
+  for (const c of condicoesDaFolha(f.id).sort((x, y) => ordem[x.tipo] - ordem[y.tipo])) {
     if (!condicaoVisivel(c)) continue;
     const ativa = c.id === visor.condicaoId;
     const corC = c.cor;
@@ -719,8 +732,10 @@ async function enviarPdf(input) {
 
 /* Incluir no desenho: escolher um assembly do catálogo (ou só medir, sem assembly). */
 async function dialogoIncluir() {
-  const projetoId = folha(visor.folhaId).projetoId;
-  const usados = new Set(condicoesDo(projetoId).flatMap((c) => c.assemblies || []));
+  const f = folha(visor.folhaId);
+  const daFolha = condicoesDaFolha(f.id);
+  const usados = new Set(daFolha.flatMap((c) => c.assemblies || []));
+  const deOutras = condicoesDo(f.projetoId).filter((c) => !daFolha.includes(c));
   const opcao = (valor, nome, resumo, marcado) => '<label class="mz-opcao-assembly"><input type="radio" name="assembly" value="' + valor + '"' + (marcado ? ' checked' : '') + '><span><b>' + esc(nome) + '</b>' +
     (usados.has(valor) ? ' <span class="etiqueta etiqueta-neutro">já no desenho</span>' : '') + '<span class="mudo pequeno bloco">' + esc(resumo) + '</span></span></label>';
   const res = await abrirDialogo({
@@ -730,11 +745,22 @@ async function dialogoIncluir() {
         const lista = assemblies().filter((a) => a.tipo === tipo);
         return lista.length ? '<p class="mz-grupo">' + t.nome + ' (' + t.unidade + ')</p>' + lista.map((a) => opcao(a.id, a.nome, resumoAssembly(a), false)).join('') : '';
       }).join('') +
+      (deOutras.length ? '<p class="mz-grupo">Já medido em outras folhas deste projeto</p>' + deOutras.map((c) => opcao('cond:' + c.id, c.nome,
+        'Continua a mesma condição (soma no mesmo total) · em ' + folhasDaCondicao(c).map(nomeFolha).join(', '), false)).join('') : '') +
       '<p class="mz-grupo">Outro</p>' + opcao('', 'Só medir, sem assembly', 'Uma condição sem materiais; dá para aplicar um assembly depois', false) + '</div>',
     acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Continuar', valor: true, classe: 'btn-primario' }],
   });
   if (!res || !res.valor) return;
   if (!('assembly' in res.campos)) { toast('Escolha um assembly da lista.'); return; }
+  if (res.campos.assembly.startsWith('cond:')) {
+    const id = res.campos.assembly.slice(5);
+    incluirNaFolha(id, f.id);
+    visor.condicaoId = id; visor.pontos = [];
+    if (f.escala) visor.ferramenta = 'medir';
+    toast('"' + condicao(id).nome + '" incluída nesta folha: as medições daqui somam no mesmo total.');
+    atualizarInterface();
+    return;
+  }
   await dialogoCondicao(null, res.campos.assembly ? assembly(res.campos.assembly) : null);
 }
 /* Resumo de um assembly: tipo, linhas e os primeiros itens. */
@@ -747,7 +773,9 @@ async function dialogoCondicao(c, comAssembly) {
   const tipoInicial = c ? c.tipo : comAssembly ? comAssembly.tipo : 'linear';
   const p = (c && c.props) || {};
   const projetoId = folha(visor.folhaId).projetoId;
+  // os vãos podem estar em outra folha (janelas contadas na fachada, parede medida na planta)
   const vaosPossiveis = condicoesDo(projetoId).filter((x) => x.tipo === 'contagem' && (!c || x.id !== c.id));
+  const ondeEsta = (x) => { const fs = folhasDaCondicao(x); return fs.length ? ' <span class="mudo">· ' + esc(fs.map(nomeFolha).join(', ')) + '</span>' : ''; };
   const ft = (pol) => (pol ? esc(formatarPesPolegadas(pol)) : '');
   // cada grupo de campos aparece só para os tipos em que faz sentido
   const grupo = (tipos, html) => '<div class="mz-campos" data-tipos="' + tipos + '"' + (tipos.split(' ').includes(tipoInicial) ? '' : ' hidden') + '>' + html + '</div>';
@@ -765,7 +793,7 @@ async function dialogoCondicao(c, comAssembly) {
       grupo('area', '<label class="rotulo-pequeno" for="mz-espessura">Espessura (área → volume). Ex.: 4"</label><input type="text" id="mz-espessura" name="espessura" value="' + ft(p.profundidadePol) + '">') +
       grupo('linear area', '<fieldset class="mz-vaos"><legend class="rotulo-pequeno">Descontar os vãos de</legend>' +
         (vaosPossiveis.length ? vaosPossiveis.map((x) => '<label class="check pequeno"><input type="checkbox" name="vao-' + x.id + '" value="1"' + ((p.vaos || []).includes(x.id) ? ' checked' : '') + '> ' + esc(x.nome) +
-          (x.props && x.props.larguraPol && x.props.alturaPol ? '' : ' <span class="mudo">(sem tamanho)</span>') + '</label>').join('') : '<p class="mudo pequeno">Crie as contagens de janelas e portas com largura e altura.</p>') + '</fieldset>'),
+          (x.props && x.props.larguraPol && x.props.alturaPol ? '' : ' <span class="mudo">(sem tamanho)</span>') + ondeEsta(x) + '</label>').join('') : '<p class="mudo pequeno">Crie as contagens de janelas e portas com largura e altura.</p>') + '</fieldset>'),
     acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: c ? 'Salvar' : comAssembly ? 'Incluir no desenho' : 'Criar condição', valor: true, classe: 'btn-primario' }],
   });
   const sel = document.querySelector('dialog #mz-tipo');
@@ -792,7 +820,7 @@ async function dialogoCondicao(c, comAssembly) {
   } catch (e) { toast(e.message); return; }
   if (tipo !== 'contagem' && (res.campos.inclinacao || '').trim()) { const r = interpretarInclinacao(res.campos.inclinacao); if (r.erro) { toast(r.erro); return; } props.inclinacao = r.razao; }
   if (tipo !== 'contagem') props.vaos = Object.keys(res.campos).filter((k) => k.startsWith('vao-')).map((k) => k.slice(4));
-  const r = salvarCondicao(c ? c.id : null, { projetoId, nome: res.campos.nome, tipo, props, cor: res.campos.cor });
+  const r = salvarCondicao(c ? c.id : null, { projetoId, folhaId: visor.folhaId, nome: res.campos.nome, tipo, props, cor: res.campos.cor });
   if (r.erro) { toast(r.erro); return; }
   if (comAssembly) aplicarAssembly(r.id, comAssembly.id);
   visor.condicaoId = r.id;
@@ -818,8 +846,9 @@ async function dialogoVao() {
   const k = f.escala.polPorPonto;
   const largura = Math.abs(b[0] - a[0]) * k, altura = Math.abs(b[1] - a[1]) * k;
   if (largura < 1 || altura < 1) { toast('Desenhe o vão clicando em dois cantos opostos.'); atualizarInterface(); return; }
-  const cs = condicoesDo(f.projetoId);
-  const contagens = cs.filter((c) => c.tipo === 'contagem');
+  const cs = condicoesDaFolha(f.id);
+  // a janela pode ter sido incluída em outra folha: as desta folha vêm primeiro
+  const contagens = cs.filter((c) => c.tipo === 'contagem').concat(condicoesDo(f.projetoId).filter((c) => c.tipo === 'contagem' && !cs.includes(c)));
   if (!contagens.length) { toast('Inclua primeiro o assembly da janela ou porta (uma contagem, como "Janela W2").'); atualizarInterface(); return; }
   const centro = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   const areas = cs.filter((c) => c.tipo === 'area');
@@ -970,7 +999,15 @@ export const acoesMeasure = {
     const c = condicao(el.dataset.id);
     if (!(await confirmar('Excluir "' + c.nome + '"?', c.medicoes.length ? 'As ' + c.medicoes.length + ' medições dela, em todas as folhas, também serão apagadas.' : 'A condição não tem medições.', 'Excluir'))) return;
     excluirCondicao(c.id);
-    visor.condicaoId = (condicoesDo(folha(visor.folhaId).projetoId)[0] || {}).id || null;
+    visor.condicaoId = (condicoesDaFolha(visor.folhaId)[0] || {}).id || null;
+    atualizarInterface();
+  },
+  async 'mz-tirar-da-folha'(el) {
+    const c = condicao(el.dataset.id);
+    const n = c.medicoes.filter((m) => m.folhaId === visor.folhaId).length;
+    if (!(await confirmar('Tirar "' + c.nome + '" desta folha?', (n ? 'As ' + n + ' medições dela nesta folha serão apagadas. ' : '') + 'Nas outras folhas ela continua.', 'Tirar'))) return;
+    tirarDaFolha(c.id, visor.folhaId);
+    visor.condicaoId = (condicoesDaFolha(visor.folhaId)[0] || {}).id || null;
     atualizarInterface();
   },
   'mz-apagar-medicao'(el) {
@@ -980,7 +1017,7 @@ export const acoesMeasure = {
   },
   'mz-visivel'(el) { mostrarCondicao(el.dataset.id, el.checked); atualizarInterface(); },
   'mz-mostrar-todas'(el) {
-    for (const c of condicoesDo(folha(visor.folhaId).projetoId)) mostrarCondicao(c.id, !!el.dataset.mostrar);
+    for (const c of condicoesDaFolha(visor.folhaId)) mostrarCondicao(c.id, !!el.dataset.mostrar);
     atualizarInterface();
   },
   async 'mz-tela-cheia'() {

@@ -17,6 +17,30 @@ export function folha(id) { return mz().folhas.find((f) => f.id === id); }
 export function folhasDo(projetoId) { return mz().folhas.filter((f) => f.projetoId === projetoId); }
 export function condicao(id) { return mz().condicoes.find((c) => c.id === id); }
 export function condicoesDo(projetoId) { return mz().condicoes.filter((c) => c.projetoId === projetoId); }
+/* As condições de uma folha: as incluídas nela (e, por segurança, as que já têm medição nela). */
+export function condicoesDaFolha(folhaId) {
+  const f = folha(folhaId);
+  return condicoesDo(f.projetoId).filter((c) => (c.folhas || []).includes(folhaId) || c.medicoes.some((m) => m.folhaId === folhaId));
+}
+/* Reaproveitar uma condição em outra folha (ex.: paredes do 1º e do 2º pavimento somando juntas). */
+export function incluirNaFolha(condicaoId, folhaId) {
+  const c = condicao(condicaoId);
+  c.folhas = c.folhas || [];
+  if (!c.folhas.includes(folhaId)) c.folhas.push(folhaId);
+  salvar();
+}
+/* Tirar a condição de uma folha: as medições dela nesta folha saem (as das outras folhas ficam). */
+export function tirarDaFolha(condicaoId, folhaId) {
+  const c = condicao(condicaoId);
+  for (const m of c.medicoes.filter((x) => x.folhaId === folhaId)) if (condicao(condicaoId).medicoes.some((x) => x.id === m.id)) excluirMedicao(condicaoId, m.id);
+  c.folhas = (c.folhas || []).filter((x) => x !== folhaId);
+  salvar();
+}
+/* Folhas em que a condição está (incluída ou medida). */
+export function folhasDaCondicao(c) {
+  const ids = new Set((c.folhas || []).concat(c.medicoes.map((m) => m.folhaId)));
+  return folhasDo(c.projetoId).filter((f) => ids.has(f.id));
+}
 
 export const TIPOS = {
   linear: { nome: 'Linear', unidade: 'lin ft', icone: 'measure' },
@@ -105,7 +129,7 @@ export function salvarCondicao(id, dados) {
   }
   const usadas = condicoesDo(dados.projetoId).map((c) => c.cor);
   const c = {
-    id: novoId('cd'), projetoId: dados.projetoId, nome: dados.nome.trim(), tipo: dados.tipo,
+    id: novoId('cd'), projetoId: dados.projetoId, folhas: dados.folhaId ? [dados.folhaId] : [], nome: dados.nome.trim(), tipo: dados.tipo,
     cor: cor || PALETA.find((x) => !usadas.includes(x)) || PALETA[usadas.length % PALETA.length], props: dados.props || {}, medicoes: [],
   };
   mz().condicoes.push(c);
@@ -157,6 +181,7 @@ export function excluirMedicao(condicaoId, medicaoId) {
 export function adicionarVao(contagemId, folhaId, retangulo, recortarIds) {
   const [a, b] = retangulo;
   const pts = [[a[0], a[1]], [b[0], a[1]], [b[0], b[1]], [a[0], b[1]]];
+  incluirNaFolha(contagemId, folhaId); // a janela passa a aparecer na folha em que foi desenhada
   const m = adicionarMedicao(contagemId, folhaId, [[(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]]);
   m.vao = { pontos: pts, recortes: [] };
   for (const id of recortarIds) {
