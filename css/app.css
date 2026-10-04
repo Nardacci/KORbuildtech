@@ -1152,3 +1152,58 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .form-settings textarea { min-height: 60px; }
 .usuarios-demo p { margin: 4px 0 0; }
 .usuarios-demo-empresa { font-weight: 700; color: var(--texto); }
+
+/* ---------- Measure: documentos (lista para cotação e proposta) ---------- */
+.doc { padding: 24px; display: flex; flex-direction: column; gap: 16px; font-size: 13px; color: #141B26; background: #fff; }
+.pdf-folha .doc { padding: 14mm 12mm; }
+.doc-topo { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; padding-bottom: 12px; border-bottom: 2px solid #141B26; }
+.doc-empresa { display: flex; gap: 12px; align-items: center; }
+.doc-empresa > div { display: flex; flex-direction: column; font-size: 12px; color: #475467; }
+.doc-empresa b { font-size: 15px; color: #141B26; }
+.doc-logo { max-width: 150px; max-height: 56px; object-fit: contain; }
+.doc-titulo { text-align: right; display: flex; flex-direction: column; font-size: 12px; color: #475467; }
+.doc-titulo h1 { font-size: 20px; margin: 0 0 2px; white-space: nowrap; color: #141B26; letter-spacing: -0.01em; }
+.doc-rascunho { color: #B45309; text-transform: uppercase; letter-spacing: 0.06em; }
+.doc-partes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.doc-bloco { display: flex; flex-direction: column; gap: 1px; padding: 10px 12px; background: #F5F6F8; border-radius: 6px; font-size: 12.5px; }
+.doc-rotulo { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #667085; }
+.doc-texto { margin: 0; }
+.doc-tabela { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.doc-tabela th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; color: #667085; border-bottom: 1.5px solid #141B26; padding: 6px 8px; }
+.doc-tabela td { border-bottom: 1px solid #E4E7EC; padding: 7px 8px; vertical-align: top; }
+.doc-tabela .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.doc-tabela td.doc-branco { min-width: 90px; background: #FAFAFB; border-left: 1px solid #E4E7EC; }
+.doc-tabela th.doc-branco { min-width: 90px; }
+.doc-nota { display: block; font-size: 11.5px; color: #667085; }
+.doc-nota-inline { font-size: 11px; color: #667085; }
+.doc-subtotal td { font-weight: 600; color: #475467; background: #F9FAFB; }
+.doc-total td { font-weight: 800; font-size: 14.5px; border-top: 2px solid #141B26; border-bottom: 0; }
+.doc-rodape-tabela { display: grid; grid-template-columns: 1fr 140px; gap: 4px 0; margin-left: auto; width: 280px; font-size: 12.5px; font-weight: 600; }
+.doc-rodape-tabela span { padding: 6px 8px; border-bottom: 1px solid #E4E7EC; }
+.doc-rodape-tabela .doc-branco { background: #FAFAFB; border-left: 1px solid #E4E7EC; }
+.doc-secao h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: #667085; margin: 0 0 4px; }
+.doc-pre { white-space: pre-line; margin: 0; }
+.doc-duas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 11.5px; }
+.doc-assinaturas { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 24px; }
+.doc-assinaturas div { display: flex; flex-direction: column; font-size: 12px; font-weight: 600; }
+.doc-assinaturas span { border-top: 1px solid #141B26; margin-bottom: 4px; height: 36px; }
+.doc-assinaturas small { font-weight: 400; color: #667085; }
+.doc-fim { display: flex; justify-content: space-between; font-size: 10.5px; color: #98A2B3; border-top: 1px solid #E4E7EC; padding-top: 8px; }
+@media print { .doc { padding: 0; font-size: 11.5px; } .doc-tabela tr { break-inside: avoid; } .doc-assinaturas { break-inside: avoid; } }
+@media (max-width: 640px) { .doc-topo, .doc-partes, .doc-duas { display: flex; flex-direction: column; } .doc-titulo { text-align: left; } }
+/* editor da proposta e da cotação */
+.campo-dinheiro { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--texto-2); }
+.campo-dinheiro input { width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+.prop-linhas td { vertical-align: top; }
+.prop-linhas input[name="titulo"] { width: 100%; min-width: 180px; }
+.prop-fora td:not(:first-child) { opacity: 0.45; }
+.prop-extra { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+.prop-extra input[name="extra-descricao"] { flex: 1; }
+.prop-total { flex-direction: row !important; align-items: center; gap: 12px; }
+.prop-total b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.prop-total span:first-child { font-weight: 600; color: var(--texto-2); }
+.prop-versoes { list-style: none; margin: 0; padding: 0; }
+.prop-versoes li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--borda); flex-wrap: wrap; }
+.cot-fornecedor .cartao-cabeca { align-items: flex-start; }
+.cot-fornecedor .cartao-cabeca .etiqueta { margin-left: 8px; }
+.cot-fornecedor .doc-tabela, .cot-sem .doc-tabela { font-size: 13px; }

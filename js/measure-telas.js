@@ -19,6 +19,7 @@ import {
 } from './measure.js';
 import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
+import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta } from './measure-relatorios.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -46,7 +47,15 @@ export function telaMeasure(q) {
   }
   if (!q.length) return telaProjetos();
   if (q[0] === 'projeto' && q[1] === 'novo') return telaFormProjeto(null);
-  if (q[0] === 'projeto' && projeto(q[1])) return q[2] === 'editar' ? telaFormProjeto(q[1]) : telaProjeto(q[1]);
+  if (q[0] === 'projeto' && projeto(q[1])) {
+    if (q[2] === 'editar') return telaFormProjeto(q[1]);
+    // relatórios do projeto: lista para cotação (por fornecedor) e proposta
+    if (q[2] === 'cotacao' && q[4] === 'imprimir' && contato(q[3])) return telaImpressaoCotacao(q[1], q[3]);
+    if (q[2] === 'cotacao') return telaCotacao(q[1], moldura);
+    if (q[2] === 'proposta' && q[3] === 'imprimir') return telaImpressaoProposta(q[1], q[4] ? decodeURIComponent(q[4]) : null);
+    if (q[2] === 'proposta') return telaProposta(q[1], moldura);
+    return telaProjeto(q[1]);
+  }
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
   if (q[0] === 'itens') return telaItens();
   if (q[0] === 'assemblies') return telaAssemblies();
@@ -164,6 +173,8 @@ function telaProjeto(id) {
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: textoPartes(p) + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: 'Projetos' },
     acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/editar">Editar projeto</a>' +
+      '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + 'Lista para cotação</a>' +
+      '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/proposta">' + icone('daily', 16) + 'Proposta' + ((p.propostas || []).length ? ' · ' + p.propostas[p.propostas.length - 1].numero : '') + '</a>' +
       '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + 'Enviar PDF<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></div>',
     conteudo:
       '<section class="cartao"><dl class="mz-dados">' + dado('Contratante', contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +

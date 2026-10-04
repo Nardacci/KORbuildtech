@@ -26,7 +26,7 @@ export const CONSTRUTORA = {
 export const PRESTADORA = {
   id: 'prestadora-exemplo', nome: 'Northfield Framing & Siding', razaoSocial: 'Northfield Framing & Siding LLC', sigla: 'NFS', ein: '00-0000001', atuacao: 'prestadora',
   especialidades: 'Framing, siding, janelas e acabamento externo', endereco: '210 Canal St', cidade: 'Manchester', estado: 'NH', zip: '03101',
-  telefone: '(603) 555-0100', email: 'office@construtoraexemplo.com', site: 'prestadoraexemplo.com',
+  telefone: '(603) 555-0100', email: 'office@prestadoraexemplo.com', site: 'prestadoraexemplo.com',
   licencas: 'Registro de contractor na cidade de Manchester\nEPA Lead-Safe Certified Firm (RRP)', seguros: SEGUROS, termosProposta: TERMOS, logo: null,
 };
 /* Os de fora: um diretório só, com marcadores (docs/saas.md §Atores). Cada empresa tem o seu. */
@@ -192,7 +192,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 19;
+export const VERSAO_DADOS = 20;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();

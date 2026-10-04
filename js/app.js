@@ -17,6 +17,7 @@ import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } fr
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
 import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure } from './measure-telas.js';
 import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
+import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
@@ -1431,11 +1432,12 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
   ligarContatos({ desenhar, ir });
+  ligarRelatorios({ desenhar, ir });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
     return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));

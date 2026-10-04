@@ -153,6 +153,27 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 - **Folha A-101 · First Floor Plan:** PDF vetorial gerado por `tools/gerar-planta.py`, casa de 40'-0" × 28'-0" em 1/4" = 1'-0", com cotas para calibrar e conferir.
 - **Condições:** nenhuma pronta; o desenho abre vazio e os assemblies são incluídos pelo visor.
 
+## 3b. Relatórios (prestadora → fornecedor e → contratante)
+
+| Relatório | Rota | O que é |
+| --- | --- | --- |
+| **Lista para cotação** | `#/measure/projeto/<id>/cotacao` | Os **materiais** do projeto (sem mão de obra), na unidade de compra, já com perda e arredondados, **separados por fornecedor**: cada fornecedor recebe só os itens das etapas que ele fornece (Settings › Contatos). Item de etapa que ninguém fornece vai para "Sem fornecedor", com o aviso. "Responder até" e observações por projeto |
+| **Pedido de cotação (A4)** | `…/cotacao/<fornecedor>/imprimir` | Cabeçalho da empresa (logo, endereço, contato), fornecedor, obra e local de entrega, itens com **preço unitário e total em branco**, subtotal, frete e total em branco, observações |
+| **Proposta** | `#/measure/projeto/<id>/proposta` | Escopo; **uma linha por etapa** (cost code) com material e mão de obra juntos, mostrando como base as quantidades e as horas estimadas; o **preço de cada linha é digitado** (valor fechado); linhas podem ficar de fora; **outros itens** (mobilização, caçamba…); total ao vivo; validade e **termos** (vêm do perfil da empresa e podem ser ajustados). O rascunho é guardado a cada mudança |
+| **Proposta (A4)** | `…/proposta/imprimir[/<número>]` | Logo e dados da empresa, número, data, validade, contratante e obra (e o dono, se for outro), escopo, itens com subtotais, total, termos, licenças e seguros, assinaturas da empresa e do aceite |
+
+**Regras**
+
+| # | Regra | Onde |
+| --- | --- | --- |
+| RL-01 | **Emitir** exige contratante, ao menos um item e preço em todas as linhas incluídas | `prop-emitir` |
+| RL-02 | A proposta emitida recebe um **número** (`P-AAAA-NNN`, sequência da empresa) e fica **congelada**: mudar o projeto ou o rascunho depois não muda o que foi enviado. Cada emissão é uma versão nova | `propostas[]` |
+| RL-03 | Emitir muda a situação do projeto de "Em orçamento" para "Proposta enviada" | `prop-emitir` |
+| RL-04 | **E-mail**: no protótipo não há servidor, então o e-mail **abre pronto** no programa de e-mail da pessoa (para o fornecedor, com a lista e o prazo; para o contratante, com o número e o total), e o PDF vai em anexo. O pedido de cotação preparado fica registrado no projeto. No produto, o envio sai pelo sistema | `abrirEmail` |
+| RL-05 | O fornecedor nunca vê preço de venda, mão de obra nem fórmula; o contratante vê o preço por linha e, se a prestadora quiser, as quantidades de material | documentos |
+
+**Ainda não:** preço do material vindo da cotação (com vigência), custo da mão de obra pelo valor hora do Crew, overhead e lucro. Hoje o preço da linha é digitado pelo estimador.
+
 ## 4. Permissões
 
 | Permissão | O que libera | Perfis prontos |
@@ -174,7 +195,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **103 verificações.** Inclui as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **118 verificações.** Inclui os relatórios (lista para cotação por fornecedor com e-mail e PDF; proposta com preço por linha, outros itens, total, emissão numerada e congelada, e-mail e PDF), as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;
