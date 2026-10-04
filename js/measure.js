@@ -507,15 +507,16 @@ const ASSEMBLIES_EXEMPLO = [
   ] },
 ];
 
-/* projetos: com os projetos e as plantas de exemplo (a prestadora); sem eles, só o catálogo. */
-export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = ['u-tom', 'u-rita'] } = {}) {
+/* Projetos e plantas de exemplo, com os estimadores e as partes de cada empresa.
+ * galpao: quem contrata o mezanino (para a prestadora, uma construtora; para a construtora, o próprio dono). */
+export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = ['u-tom', 'u-rita'], galpao = { contratanteId: 'ct-granite', donoId: 'ct-logsul', obraId: null } } = {}) {
   const projetoId = 'pj-casa';
   const dados = {
     projetos: [
       { id: projetoId, nome: 'Casa modelo', contratanteId: 'ct-thompson', donoId: null, endereco: '88 Bridge St', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
         descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing, siding vinil', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), 6), criadoEm: Date.now() },
-      { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', contratanteId: 'ct-granite', donoId: 'ct-logsul', endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
-        descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
+      { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', contratanteId: galpao.contratanteId, donoId: galpao.donoId, endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
+        descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: galpao.obraId, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
       { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
         descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
     ],

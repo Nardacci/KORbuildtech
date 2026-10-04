@@ -192,7 +192,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 17;
+export const VERSAO_DADOS = 18;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -284,7 +284,7 @@ export async function criarDemonstracao() {
   const inicioEmpresa = somarDias(dia0, -400);
   const settings = criarSettings(inicioEmpresa, new Date(inicioEmpresa + 'T09:00:00').getTime());
   const { funcionarios, ...crew } = criarDadosCrew(obras);
-  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ projetos: false }) };
+  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ estimadores: ['u-ana', 'u-marcia'], galpao: { contratanteId: 'ct-logsul', donoId: null, obraId: 'galpao' } }) };
   return { versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [PRESTADORA.id]: criarPrestadora(dia0) } };
 }
 

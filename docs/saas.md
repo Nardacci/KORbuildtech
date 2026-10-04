@@ -30,8 +30,8 @@ Decidido em outubro de 2026. Público: **prestadoras de serviço e construtoras/
 | **Prestadora** (vista pela construtora) | *Subcontractor* | **Contato** da construtora: a empresa de serviço que ela contrata. Se a prestadora também assina o KORbuild, ela tem a sua própria empresa, com os seus dados |
 
 **Na demonstração** há duas empresas, isoladas (cada uma só vê os seus dados):
-- **Construtora Exemplo**: Ana (administradora), Márcia (gestora), Carlos e Roberto (encarregados), Diego (trabalhador); as três obras com diário, ponto e custos. Para ela, a Northfield é um contato (prestadora).
-- **Northfield Framing & Siding**: Tom (administrador), Rita (estimadora, gestor de obras), José (encarregado) e Luis (trabalhador); os projetos do Measure e um serviço no Residencial Jardim das Flores, em que a contratante é a Construtora Exemplo e a dona é a Incorporadora Horizonte.
+- **Construtora Exemplo**: Ana (administradora), Márcia (gestora), Carlos e Roberto (encarregados), Diego (trabalhador); as três obras com diário, ponto e custos; os mesmos três projetos de exemplo no Measure, com os estimadores (Ana, Márcia) e os contatos dela. Para ela, a Northfield é um contato (prestadora).
+- **Northfield Framing & Siding**: Tom (administrador), Rita (estimadora, gestor de obras), José (encarregado) e Luis (trabalhador); os projetos do Measure (com as plantas) e um serviço no Residencial Jardim das Flores, em que a contratante é a Construtora Exemplo e a dona é a Incorporadora Horizonte.
 - No aparelho, o armazenamento guarda `{ versao, padrao, empresas: { id: dados } }`; a empresa aberta é a do usuário da sessão (`js/armazem.js`).
 
 **Regras dos atores**
