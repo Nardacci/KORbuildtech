@@ -25,7 +25,7 @@ export const TIPOS = {
 };
 // Cores das condições, na ordem (bem distintas entre si e da planta em preto e branco)
 export const CORES = ['#2563EB', '#C2410C', '#0F766E', '#7C3AED', '#B45309', '#DB2777', '#0891B2', '#4D7C0F'];
-// Paleta sugerida para os assemblies (a pessoa também pode escolher qualquer outra cor)
+// Paleta sugerida para as condições (a pessoa também pode escolher qualquer outra cor)
 export const PALETA = CORES.concat(['#DC2626', '#16A34A', '#9333EA', '#EA580C', '#1E3A8A', '#525252']);
 const COR_VALIDA = /^#[0-9a-f]{6}$/i;
 
@@ -74,13 +74,6 @@ export function excluirProjeto(id) {
   salvar();
 }
 
-/* Cor da marcação no desenho: a do primeiro assembly visível da condição; sem assembly, a da condição. */
-export function corDaCondicao(c, visivel) {
-  const as = (c.assemblies || []).map(assembly).filter(Boolean);
-  const a = (visivel ? as.find((x) => visivel(x.id)) : null) || as[0];
-  return a && a.cor ? a.cor : c.cor;
-}
-
 /* ---------- Escala ---------- */
 
 export function definirEscala(folhaId, escala) {
@@ -102,20 +95,28 @@ export function registrarConferencia(folhaId, esperadoPol, medidoPol) {
 export function salvarCondicao(id, dados) {
   if (!dados.nome || !dados.nome.trim()) return { erro: 'Dê um nome à condição (ex.: Paredes externas).' };
   if (!TIPOS[dados.tipo]) return { erro: 'Escolha o tipo.' };
+  const cor = String(dados.cor || '').trim().toUpperCase();
+  if (cor && !COR_VALIDA.test(cor)) return { erro: 'Cor inválida.' };
   if (id) {
     const c = condicao(id);
-    Object.assign(c, { nome: dados.nome.trim(), props: dados.props || {} });
+    Object.assign(c, { nome: dados.nome.trim(), props: dados.props || {} }, cor ? { cor } : {});
     salvar();
     return { ok: true, id };
   }
   const usadas = condicoesDo(dados.projetoId).map((c) => c.cor);
   const c = {
     id: novoId('cd'), projetoId: dados.projetoId, nome: dados.nome.trim(), tipo: dados.tipo,
-    cor: CORES.find((x) => !usadas.includes(x)) || CORES[usadas.length % CORES.length], props: dados.props || {}, medicoes: [],
+    cor: cor || PALETA.find((x) => !usadas.includes(x)) || PALETA[usadas.length % PALETA.length], props: dados.props || {}, medicoes: [],
   };
   mz().condicoes.push(c);
   salvar();
   return { ok: true, id: c.id };
+}
+
+/* Mostrar ou ocultar as marcações da condição no desenho (só visual: as quantidades não mudam). */
+export function mostrarCondicao(id, visivel) {
+  condicao(id).oculta = !visivel;
+  salvar();
 }
 
 export function excluirCondicao(id) {
@@ -278,10 +279,7 @@ export function salvarAssembly(id, dados) {
     linhas.push({ id: l.id || novoId('ln'), itemId: l.itemId, formula: String(l.formula).trim(), perda, passo: Number(l.passo) || 0 });
   }
   if (!linhas.length) return { erro: 'O assembly precisa de pelo menos uma linha.' };
-  let cor = String(dados.cor || '').trim();
-  if (cor && !COR_VALIDA.test(cor)) return { erro: 'Cor inválida.' };
-  if (!cor) cor = id && assembly(id).cor ? assembly(id).cor : PALETA.find((x) => !assemblies().some((a) => a.cor === x)) || PALETA[0];
-  const dadosOk = { nome, tipo, descricao: (dados.descricao || '').trim(), cor: cor.toUpperCase(), linhas };
+  const dadosOk = { nome, tipo, descricao: (dados.descricao || '').trim(), linhas };
   if (id) { Object.assign(assembly(id), dadosOk); salvar(); return { ok: true, id }; }
   const novo = { id: novoId('as'), ...dadosOk };
   mz().assemblies.push(novo);
@@ -396,7 +394,7 @@ const linhasJanela = (unidade) => [
   ln('l5', 'it-mo-janela', 'MeasuredCount * 2.5', 0, 0),
 ];
 const ASSEMBLIES_EXEMPLO = [
-  { id: 'as-parede', cor: CORES[0], nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.', linhas: [
+  { id: 'as-parede', nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.', linhas: [
     ln('l1', 'it-stud', 'MeasuredLinear * 12 / 16', 15, 1),
     ln('l2', 'it-plate', 'MeasuredLinear * 3 / 16', 10, 1),
     ln('l3', 'it-osb', 'NetSurfaceArea / 32', 10, 1),
@@ -406,31 +404,31 @@ const ASSEMBLIES_EXEMPLO = [
     ln('l7', 'it-mo-estrutura', 'MeasuredLinear * 0.35', 0, 0),
     ln('l8', 'it-mo-drywall', 'SurfaceArea * 0.02', 0, 0),
   ] },
-  { id: 'as-lvp', cor: CORES[1], nome: 'Piso LVP com manta', tipo: 'area', descricao: 'Piso vinílico flutuante sobre manta.', linhas: [
+  { id: 'as-lvp', nome: 'Piso LVP com manta', tipo: 'area', descricao: 'Piso vinílico flutuante sobre manta.', linhas: [
     ln('l1', 'it-lvp', 'MeasuredArea / 20', 8, 1),
     ln('l2', 'it-manta', 'MeasuredArea / 100', 5, 1),
     ln('l3', 'it-mo-piso', 'MeasuredArea * 0.03', 0, 0),
   ] },
-  { id: 'as-laje', cor: CORES[7], nome: 'Laje de concreto com tela (com espessura)', tipo: 'area', descricao: 'Concreto usinado pedido de meia em meia jarda. Precisa da espessura na condição.', linhas: [
+  { id: 'as-laje', nome: 'Laje de concreto com tela (com espessura)', tipo: 'area', descricao: 'Concreto usinado pedido de meia em meia jarda. Precisa da espessura na condição.', linhas: [
     ln('l1', 'it-conc', 'VolumeCY', 5, 0.5),
     ln('l2', 'it-tela', 'MeasuredArea / 750', 10, 1),
     ln('l3', 'it-mo-concreto', 'MeasuredArea * 0.02', 0, 0),
   ] },
-  { id: 'as-porta', cor: CORES[2], nome: 'Porta interna 30" pré-montada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição dos dois lados.', linhas: [
+  { id: 'as-porta', nome: 'Porta interna 30" pré-montada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição dos dois lados.', linhas: [
     ln('l1', 'it-porta', 'MeasuredCount', 0, 1),
     ln('l2', 'it-fechadura', 'MeasuredCount', 0, 1),
     ln('l3', 'it-guarnicao', 'MeasuredCount * 2 * (2 * OpeningHeight + OpeningWidth) / 7', 10, 1),
     ln('l4', 'it-mo-porta', 'MeasuredCount * 1.5', 0, 0),
   ] },
-  { id: 'as-jan-w1', cor: CORES[3], nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: 'Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.', linhas: linhasJanela('it-jan-w1') },
-  { id: 'as-jan-w2', cor: CORES[4], nome: 'Janela W2 4\'×4\' instalada', tipo: 'contagem', descricao: 'Igual à W1, com a janela 4\'×4\'.', linhas: linhasJanela('it-jan-w2') },
-  { id: 'as-porta-ext', cor: CORES[5], nome: 'Porta de entrada instalada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).', linhas: [
+  { id: 'as-jan-w1', nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: 'Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.', linhas: linhasJanela('it-jan-w1') },
+  { id: 'as-jan-w2', nome: 'Janela W2 4\'×4\' instalada', tipo: 'contagem', descricao: 'Igual à W1, com a janela 4\'×4\'.', linhas: linhasJanela('it-jan-w2') },
+  { id: 'as-porta-ext', nome: 'Porta de entrada instalada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).', linhas: [
     ln('l1', 'it-porta-ext', 'MeasuredCount', 0, 1),
     ln('l2', 'it-fech-ext', 'MeasuredCount', 0, 1),
     ln('l3', 'it-trim-ext', 'MeasuredCount * (2 * OpeningHeight + OpeningWidth) / 12', 15, 1),
     ln('l4', 'it-mo-porta', 'MeasuredCount * 3', 0, 0),
   ] },
-  { id: 'as-siding', cor: CORES[6], nome: 'Siding vinil com J-channel', tipo: 'area', descricao: 'Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.', linhas: [
+  { id: 'as-siding', nome: 'Siding vinil com J-channel', tipo: 'area', descricao: 'Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.', linhas: [
     ln('l1', 'it-siding', 'NetArea / 100', 10, 1),
     ln('l2', 'it-jchannel', 'OpeningPerimeter / 12.5', 10, 1),
     ln('l3', 'it-mo-siding', 'NetArea * 0.025', 0, 0),

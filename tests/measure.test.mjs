@@ -104,20 +104,22 @@ for (const p of [[22, 8.5], [27.5, 12], [32.5, 18]]) await clicar(p);
 verificar((await painel('Portas internas').textContent()).includes('3 each'), 'contagem: 3 portas');
 await print('1-medicao');
 
-console.log('Ocultar as marcações de um assembly');
+console.log('Mostrar e ocultar cada condição no desenho');
 const tinta = () => page.evaluate(() => { const c = document.getElementById('mz-desenho'); const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data; let t = 0; for (let i = 3; i < d.length; i += 4) t += d[i]; return t; });
 await page.mouse.move(5, 5); // cursor fora da planta
 const tintaAntes = await tinta();
-await page.locator('.mz-camada:has-text("Parede externa 2x6") input').uncheck();
+verificar(await page.locator('.mz-camadas').count() === 0 && await page.locator('.mz-cond .mz-visivel').count() === 7, 'cada condição tem a sua caixa "mostrar no desenho"');
+await painel('Paredes externas').locator('.mz-visivel').uncheck();
 const tintaSem = await tinta();
-verificar(tintaSem < tintaAntes * 0.95, 'desmarcar o assembly "Parede externa" tira as paredes do desenho');
-verificar(await painel('Paredes externas').evaluate((e) => e.classList.contains('oculta')) && !(await painel('Piso (LVP)').evaluate((e) => e.classList.contains('oculta'))), 'só a condição desse assembly fica oculta');
-await page.locator('.mz-camada:has-text("Parede externa 2x6") input').check();
+verificar(tintaSem < tintaAntes * 0.95, 'desmarcar "Paredes externas" tira as paredes do desenho');
+verificar(await painel('Paredes externas').evaluate((e) => e.classList.contains('oculta')) && !(await painel('Piso (LVP)').evaluate((e) => e.classList.contains('oculta'))), 'só essa condição fica oculta');
+verificar(perto(numeroDe(await painel('Paredes externas').textContent(), 'lin ft'), 136, 0.005), 'ocultar não muda a quantidade');
+await painel('Paredes externas').locator('.mz-visivel').check();
 verificar(await tinta() === tintaAntes, 'marcar de novo: as paredes voltam');
-await page.click('[data-acao="mz-camadas-todas"][data-mostrar=""]');
-verificar(await tinta() === 0, '"Ocultar todos" limpa o desenho');
-await page.click('[data-acao="mz-camadas-todas"][data-mostrar="1"]');
-verificar(await tinta() === tintaAntes, '"Mostrar todos" volta tudo');
+await page.click('[data-acao="mz-mostrar-todas"][data-mostrar=""]');
+verificar(await tinta() === 0, '"Ocultar todas" limpa o desenho');
+await page.click('[data-acao="mz-mostrar-todas"][data-mostrar="1"]');
+verificar(await tinta() === tintaAntes, '"Mostrar todas" volta tudo');
 
 console.log('Zoom não muda a medida');
 await page.click('[data-acao="mz-zoom"][data-passo="1"]');
@@ -131,7 +133,10 @@ await page.click('[data-acao="mz-nova-condicao"]');
 await page.fill('dialog input[name="nome"]', 'Laje de concreto');
 await page.selectOption('dialog select[name="tipo"]', 'area');
 await page.fill('dialog input[name="espessura"]', '4"');
+await page.click('dialog .mz-amostra[title="#9333EA"]');
+verificar(await page.inputValue('dialog #mz-cor') === '#9333ea', 'cor da condição escolhida na paleta');
 await noDialogo('Criar condição');
+verificar(await painel('Laje de concreto').locator('.mz-cor').first().evaluate((e) => getComputedStyle(e).backgroundColor) === 'rgb(147, 51, 234)', 'condição nova com a cor escolhida');
 for (const p of [[0, 0], [40, 0], [40, 28], [0, 28]]) await clicar(p);
 await page.keyboard.press('Enter');
 const laje = await painel('Laje de concreto').textContent();
@@ -252,23 +257,23 @@ await page.click('[data-acao="mz-salvar-assembly"]');
 verificar((await toast()).includes('Linha 2'), 'não salva com fórmula recusada, e diz qual linha');
 await l2.locator('[name="formula"]').fill('MeasuredArea * 0.025');
 await l2.locator('[name="passo"]').selectOption('0');
-await page.click('.mz-amostra[title="#9333EA"]');
-verificar(await page.inputValue('#as-cor') === '#9333ea', 'escolher a cor na paleta');
 await print('4-assembly');
 await page.click('[data-acao="mz-salvar-assembly"]');
 await page.waitForSelector('.mz-assemblies');
 verificar((await textoDe('.mz-assemblies')).includes('Forro de drywall'), 'novo assembly salvo');
-verificar(await page.locator('.mz-assembly:has-text("Forro de drywall")').evaluate((e) => e.style.getPropertyValue('--cor')) === '#9333EA', 'assembly guarda a cor escolhida');
-console.log('Cor do assembly no desenho');
-await page.click('.mz-assembly:has-text("Parede externa 2x6")');
-await page.waitForSelector('#form-assembly');
-await page.fill('#as-cor', '#16a34a'); // qualquer cor, fora da paleta também
-await page.click('[data-acao="mz-salvar-assembly"]');
-await page.waitForSelector('.mz-assemblies');
+console.log('Cor da condição no desenho');
 await page.goto(BASE + '#/measure/folha/fl-a101');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
-verificar(await painel('Paredes externas').locator('.mz-cor').first().evaluate((e) => getComputedStyle(e).backgroundColor) === 'rgb(22, 163, 74)', 'as paredes passam a usar a cor do assembly no painel');
-await page.locator('.mz-camada:has-text("Laje de concreto com tela") input').uncheck(); // a laje tem o mesmo contorno das paredes
+await painel('Paredes externas').locator('.mz-cond-topo').click();
+await page.click('[data-acao="mz-editar-condicao"]');
+await page.fill('dialog #mz-cor', '#16a34a'); // qualquer cor, fora da paleta também
+await print('9-cor-condicao');
+await noDialogo('Salvar');
+verificar(await painel('Paredes externas').locator('.mz-cor').first().evaluate((e) => getComputedStyle(e).backgroundColor) === 'rgb(22, 163, 74)', 'editar a condição troca a cor no painel');
+await painel('Laje de concreto').locator('.mz-visivel').uncheck(); // a laje tem o mesmo contorno das paredes
+await page.reload();
+await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
+verificar(await painel('Laje de concreto').evaluate((e) => e.classList.contains('oculta')) && !(await painel('Laje de concreto').locator('.mz-visivel').isChecked()), 'condição oculta continua oculta ao reabrir a folha');
 const pixel = await page.evaluate(([x, y]) => { const c = document.getElementById('mz-desenho'); const r = c.getBoundingClientRect(); return Array.from(c.getContext('2d').getImageData(Math.round(x - r.left), Math.round(y - r.top), 1, 1).data); }, Object.values(await naTela([20, 0])));
 verificar(pixel[0] === 22 && pixel[1] === 163 && pixel[2] === 74, 'e no desenho da planta (pixel da parede de baixo: ' + pixel.join(',') + ')');
 await print('7-cor-assembly');

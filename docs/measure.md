@@ -64,8 +64,8 @@ condição medida ──► variáveis (lin ft, sq ft, cu yd…) ──► assem
 | MZ-22 | **Cadastro do projeto:** nome, cliente, cidade e estado são obrigatórios; estado com 2 letras, ZIP com 5 dígitos (ou 5+4). O estado vem preenchido com NH (só sugestão; nada amarra o sistema a um estado) e o estimador com quem está cadastrando | `salvarProjeto` |
 | MZ-23 | **Situação do projeto:** Em orçamento → Proposta enviada → Ganha ou Perdida. O prazo da proposta (*bid due date*) só alerta (vencido, hoje, em até 3 dias) enquanto está **Em orçamento** | `SITUACOES`, lista |
 | MZ-24 | **Excluir um projeto** apaga as folhas e as condições (com as medições) dele, depois de confirmar | `excluirProjeto` |
-| MZ-25 | **Cor do assembly:** cada assembly tem a sua cor (paleta sugerida ou qualquer outra). A marcação de uma condição no desenho usa a cor do **primeiro assembly visível** dela; sem assembly, a cor da própria condição | `corDaCondicao` |
-| MZ-26 | **Mostrar no desenho:** desmarcar um assembly oculta as marcações das condições que o usam. Uma condição com dois assemblies só some quando os dois estão desmarcados. Condição sem assembly tem o seu próprio interruptor. Ocultar é só visual: as quantidades e os materiais não mudam, e o clique não "gruda" em ponto oculto. Vale para todas as folhas do projeto enquanto o visor está aberto | visor |
+| MZ-25 | **Cor da condição:** quem cria ou edita a condição escolhe a cor (paleta sugerida ou "Outra", qualquer cor). As marcações dela no desenho, no painel e na tabela de quantidades usam essa cor. Condição nova sem escolha pega uma cor da paleta ainda não usada no projeto | `salvarCondicao` |
+| MZ-26 | **Mostrar no desenho:** cada condição tem uma caixa ao lado do nome. Desmarcada, as marcações dela somem da planta (em todas as folhas) e o cartão fica apagado, com a etiqueta "oculta". É só visual: as quantidades e os materiais não mudam, e o clique não gruda em ponto oculto. Fica guardado na condição (continua oculta ao reabrir). "Mostrar todas" e "Ocultar todas" no topo do painel | `mostrarCondicao` |
 
 **Exemplo** (Paredes externas medidas com 135,87 lin ft, altura 9'):
 - SurfaceArea = 1.222,83 sq ft;
@@ -93,11 +93,11 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 | **Projeto › Materiais e mão de obra** | (na tela do projeto) | Itens por categoria com a quantidade na unidade de compra; tocar abre o cálculo de cada linha; total de horas de mão de obra; pendências; **Exportar CSV** com o cálculo |
 | **Itens** | `#/measure/itens` | Catálogo por categoria: código, nome, unidade de compra, etapa, nota; novo, editar e excluir (o item usado em assembly não sai) |
 | **Assemblies** | `#/measure/assemblies` | Os conjuntos, com o tipo, as linhas e onde estão aplicados |
-| **Assembly** | `#/measure/assembly/<id>` (ou `/novo`) | Editor: **cor no desenho** (paleta ou "Outra"), item, fórmula, perda, arredondamento e a coluna **Teste**, ao vivo, com valores de exemplo; a ajuda lista as variáveis do tipo |
+| **Assembly** | `#/measure/assembly/<id>` (ou `/novo`) | Editor: item, fórmula, perda, arredondamento e a coluna **Teste**, ao vivo, com valores de exemplo; a ajuda lista as variáveis do tipo |
 
 ### Visor de medição
 - **Tela maximizada:** a planta ocupa a tela inteira, sem o menu lateral; as **condições ficam à esquerda** e a planta no resto. O caminho de volta ao projeto e a folha (com troca rápida entre as folhas do projeto) ficam na própria barra. **Tela cheia** usa a tela do monitor toda e reajusta a planta.
-- **Mostrar no desenho** (no topo do painel): um interruptor por assembly usado no projeto, com a cor dele, mais "Mostrar todos" e "Ocultar todos". A condição oculta aparece apagada no painel, com a etiqueta "oculta", e a dica avisa se a condição ativa está oculta.
+- **Mostrar no desenho:** a caixa ao lado do nome de cada condição mostra ou oculta as marcações dela; no topo do painel, "Mostrar todas" e "Ocultar todas". A condição oculta aparece apagada, com a etiqueta "oculta", e a dica avisa se a condição ativa está oculta.
 - **Barra:**
   - ferramentas **Mover** e **Medir**;
   - **Escala** (lista ou "Calibrar por uma cota") e **Conferir**, com a etiqueta "conferida" ou "diferença";
@@ -111,7 +111,7 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
   - **Espaço segurado** ou **Mover**: arrastar a planta.
 - **Em andamento:** a linha tracejada mostra a medida ao vivo (ft-in ou sq ft).
 - **Painel:**
-  - cada condição com a cor (do assembly), tipo, propriedades, total e derivadas;
+  - cada condição com a caixa "mostrar no desenho", a cor escolhida, tipo, propriedades, total e derivadas;
   - a condição ativa mostra a lista de medições (apagar uma por uma), **Editar** e **Excluir**;
   - na condição de área, a opção "desenhar como desconto".
 - **Dica:** uma linha embaixo explica o próximo passo da ferramenta atual.
@@ -138,7 +138,6 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 - **Casa modelo** (Thompson Family), 88 Bridge St, Manchester, NH 03104 · residencial unifamiliar · em orçamento, com as 3 folhas.
 - **Galpão Logístico · ampliação do mezanino** (LogSul Armazéns), Nashua (NH) · industrial · proposta enviada, vinculado à obra Galpão Logístico Rodovia.
 - **Reforma de cozinha · Mitchell**, Concord (NH) · reforma · ganha.
-- Os assemblies de exemplo já vêm com cores iguais às das condições.
 - **Folha A-101 · First Floor Plan:** PDF vetorial gerado por `tools/gerar-planta.py`, casa de 40'-0" × 28'-0" em 1/4" = 1'-0", com cotas para calibrar e conferir.
 - **Condições prontas:** Paredes externas (linear, altura 9'-0"), Piso (LVP) (área) e Portas internas (contagem).
 
@@ -163,7 +162,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **66 verificações.** Inclui a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; ocultar e mostrar as marcações por assembly (conferido pelos pixels do desenho); a cor escolhida no assembly aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **69 verificações.** Inclui a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;

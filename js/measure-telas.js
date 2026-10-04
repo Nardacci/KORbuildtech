@@ -13,8 +13,8 @@ import {
   projetos, projeto, folha, folhasDo, condicao, condicoesDo, TIPOS, definirEscala, registrarConferencia,
   salvarCondicao, excluirCondicao, adicionarMedicao, excluirMedicao, totaisDaCondicao, valorDaMedicao, verticeProximo, criarFolhas,
   CATEGORIAS, itens, item, salvarItem, excluirItem, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
-  quantidadesDoProjeto, variaveisDaCondicao,
-  TIPOS_PROJETO, SITUACOES, enderecoDoProjeto, salvarProjeto, excluirProjeto, PALETA, corDaCondicao,
+  quantidadesDoProjeto, variaveisDaCondicao, mostrarCondicao,
+  TIPOS_PROJETO, SITUACOES, enderecoDoProjeto, salvarProjeto, excluirProjeto, PALETA,
 } from './measure.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
@@ -170,7 +170,7 @@ function telaProjeto(id) {
       '<section class="cartao"><h2 class="cartao-titulo">Quantidades</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>Condição</th><th>Medido</th><th>Derivadas</th><th class="num">Medições</th></tr></thead><tbody>' +
         cs.map((c) => {
           const t = totaisDaCondicao(c);
-          return '<tr><td><span class="mz-cor" style="background:' + corDaCondicao(c) + '"></span><b>' + esc(c.nome) + '</b><span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></td>' +
+          return '<tr><td><span class="mz-cor" style="background:' + c.cor + '"></span><b>' + esc(c.nome) + '</b><span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></td>' +
             '<td><b>' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">—</span>') + '</b>' + (t.semEscala ? '<span class="etiqueta etiqueta-ambar">' + t.semEscala + ' sem escala</span>' : '') + '</td>' +
             '<td>' + (t.medicoes ? t.derivados.map((d) => '<span class="bloco">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</td>' +
             '<td class="num">' + t.medicoes + '</td></tr>';
@@ -226,21 +226,20 @@ function telaAssemblies() {
   return moldura({
     ativo: 'assemblies', largura: 'larga', titulo: 'Assemblies', subtitulo: 'Um conjunto de itens com fórmulas: uma medição alimenta vários materiais e a mão de obra',
     acoes: podeCatalogo() ? '<a class="btn btn-primario btn-pequeno" href="#/measure/assembly/novo">' + icone('mais', 16) + 'Novo assembly</a>' : '',
-    conteudo: '<div class="mz-assemblies">' + assemblies().map((a) => '<a class="cartao mz-assembly" href="#/measure/assembly/' + a.id + '" style="--cor:' + (a.cor || '#888') + '"><span class="etiqueta etiqueta-neutro">' + TIPOS[a.tipo].nome + '</span>' +
-      '<h2 class="cartao-titulo"><span class="mz-cor" style="background:' + (a.cor || '#888') + '"></span>' + esc(a.nome) + '</h2><p class="mudo pequeno">' + esc(a.descricao) + '</p>' +
+    conteudo: '<div class="mz-assemblies">' + assemblies().map((a) => '<a class="cartao mz-assembly" href="#/measure/assembly/' + a.id + '"><span class="etiqueta etiqueta-neutro">' + TIPOS[a.tipo].nome + '</span>' +
+      '<h2 class="cartao-titulo">' + esc(a.nome) + '</h2><p class="mudo pequeno">' + esc(a.descricao) + '</p>' +
       '<p class="pequeno">' + a.linhas.length + ' linhas · ' + a.linhas.map((l) => esc((item(l.itemId) || {}).nome || '?')).slice(0, 4).join(', ') + (a.linhas.length > 4 ? '…' : '') + '</p>' +
       '<p class="mudo pequeno">' + (usos(a).length ? 'Aplicado em: ' + usos(a).map((c) => esc(c.nome)).join(', ') : 'Ainda não aplicado') + '</p></a>').join('') + '</div>',
   });
 }
 
-/* Cor das marcações deste assembly no desenho: paleta sugerida ou qualquer outra cor. */
-function htmlEscolhaCor(cor, editavel) {
-  const dis = editavel ? '' : ' disabled';
+/* Cor das marcações da condição no desenho: paleta sugerida ou qualquer outra cor. */
+function htmlEscolhaCor(cor) {
+  const dis = '';
   const atual = cor.toUpperCase();
   return '<fieldset class="campo mz-escolha-cor"><legend class="rotulo-pequeno">Cor no desenho</legend><div class="mz-cores">' +
     PALETA.map((c) => '<label class="mz-amostra" title="' + c + '"><input type="radio" name="corPaleta" value="' + c + '"' + (c === atual ? ' checked' : '') + dis + ' aria-label="Cor ' + c + '"><span style="background:' + c + '"></span></label>').join('') +
-    '<label class="mz-outra-cor">Outra <input type="color" name="cor" id="as-cor" value="' + atual.toLowerCase() + '"' + dis + '></label></div>' +
-    '<p class="mudo pequeno">As marcações das condições que usam este assembly aparecem nesta cor na planta.</p></fieldset>';
+    '<label class="mz-outra-cor">Outra <input type="color" name="cor" id="mz-cor" value="' + atual.toLowerCase() + '"' + dis + '></label></div></fieldset>';
 }
 
 function htmlLinhaAssembly(l, tipo, i, editavel) {
@@ -271,8 +270,7 @@ function telaAssembly(id) {
       '<section class="cartao"><div class="grade-campos">' +
         '<div class="campo"><label class="rotulo-pequeno" for="as-nome">Nome</label><input type="text" id="as-nome" name="nome" value="' + esc(a.nome) + '"' + (ed ? '' : ' disabled') + '></div>' +
         '<div class="campo"><label class="rotulo-pequeno" for="as-tipo">Para condições do tipo</label><select id="as-tipo" name="tipo"' + (id || !ed ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([t, x]) => '<option value="' + t + '"' + (t === a.tipo ? ' selected' : '') + '>' + x.nome + ' (' + x.unidade + ')</option>').join('') + '</select></div>' +
-      '</div><div class="campo"><label class="rotulo-pequeno" for="as-desc">Descrição</label><input type="text" id="as-desc" name="descricao" value="' + esc(a.descricao) + '"' + (ed ? '' : ' disabled') + '></div>' +
-      htmlEscolhaCor(a.cor || PALETA.find((x) => !assemblies().some((o) => o.cor === x)) || PALETA[0], ed) + '</section>' +
+      '</div><div class="campo"><label class="rotulo-pequeno" for="as-desc">Descrição</label><input type="text" id="as-desc" name="descricao" value="' + esc(a.descricao) + '"' + (ed ? '' : ' disabled') + '></div></section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Linhas</h2><div class="tabela-rolagem"><table class="tabela mz-tabela-linhas"><thead><tr><th>Item</th><th>Fórmula (quantidade bruta)</th><th>Perda</th><th>Arredondamento</th><th>Teste</th><th></th></tr></thead><tbody id="as-linhas">' +
         linhas.map((l, i) => htmlLinhaAssembly(l, a.tipo, i, ed)).join('') + '</tbody></table></div>' +
         (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-nova-linha">' + icone('mais', 14) + 'Linha</button>' : '') +
@@ -304,23 +302,13 @@ function testarLinhas() {
 const visor = {
   folhaId: null, condicaoId: null, ferramenta: 'medir', desconto: false, zoom: 1,
   pontos: [], cursor: null, cal: [], viewport: null, page: null, arrastando: null, espaco: false,
-  projetoId: null, ocultos: new Set(), // assemblies desmarcados ("as-…") e condições sem assembly ("c:cd-…")
 };
-
-/* Uma condição aparece no desenho se ao menos um dos seus assemblies está marcado (sem assembly: a própria condição). */
-const assemblyVisivel = (id) => !visor.ocultos.has(id);
-function condicaoVisivel(c) {
-  const as = (c.assemblies || []).filter((id) => assembly(id));
-  return as.length ? as.some(assemblyVisivel) : !visor.ocultos.has('c:' + c.id);
-}
-const corNoDesenho = (c) => corDaCondicao(c, assemblyVisivel);
+const condicaoVisivel = (c) => !c.oculta;
 
 function telaFolha(id) {
   const f = folha(id);
   if (visor.folhaId !== id) {
     Object.assign(visor, { folhaId: id, pontos: [], cal: [], cursor: null, zoom: 0, page: null, viewport: null, desconto: false });
-    // o que foi ocultado vale para todas as folhas do mesmo projeto
-    if (visor.projetoId !== f.projetoId) { visor.projetoId = f.projetoId; visor.ocultos = new Set(); }
     const cs = condicoesDo(f.projetoId);
     visor.condicaoId = cs.length ? cs[0].id : null;
     visor.ferramenta = f.escala ? 'medir' : 'mover';
@@ -356,21 +344,24 @@ function htmlBarra() {
 function htmlPainel() {
   const f = folha(visor.folhaId);
   const cs = condicoesDo(f.projetoId);
-  return htmlCamadas(cs) + '<div class="mz-painel-cabeca"><h2>Condições</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-nova-condicao">' + icone('mais', 14) + 'Nova</button></div>' +
+  const nOcultas = cs.filter((c) => c.oculta).length;
+  return '<div class="mz-painel-cabeca"><h2>Condições</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-nova-condicao">' + icone('mais', 14) + 'Nova</button></div>' +
     (cs.length ? '' : '<p class="mudo pequeno">Crie uma condição (ex.: Paredes externas) para começar a medir.</p>') +
+    (cs.length > 1 ? '<div class="mz-cond-acoes mz-visiveis"><button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar="1"' + (nOcultas ? '' : ' disabled') + '>Mostrar todas</button>' +
+      '<button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar=""' + (nOcultas === cs.length ? ' disabled' : '') + '>Ocultar todas</button></div>' : '') +
     cs.map((c) => {
       const t = totaisDaCondicao(c);
       const aqui = c.medicoes.filter((m) => m.folhaId === f.id);
       const ativa = c.id === visor.condicaoId;
       const visivel = condicaoVisivel(c);
-      const cor = corNoDesenho(c);
-      return '<div class="mz-cond' + (ativa ? ' ativa' : '') + (visivel ? '' : ' oculta') + '" style="--cor:' + cor + '">' +
-        '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + cor + '"></span><span><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') + '<span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></span></button>' +
+      return '<div class="mz-cond' + (ativa ? ' ativa' : '') + (visivel ? '' : ' oculta') + '" style="--cor:' + c.cor + '">' +
+        '<div class="mz-cond-cabeca"><input type="checkbox" class="mz-visivel" data-acao="mz-visivel" data-id="' + c.id + '"' + (visivel ? ' checked' : '') + ' aria-label="Mostrar ' + esc(c.nome) + ' no desenho" title="Mostrar no desenho">' +
+        '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + c.cor + '"></span><span><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') + '<span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') + '</span></span></button></div>' +
         '<div class="mz-total">' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">nada medido</span>') + '</div>' +
         (t.medicoes ? t.derivados.map((d) => '<div class="mz-derivado">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></div>').join('') : '') +
         (ativa && c.tipo === 'area' ? '<label class="check pequeno"><input type="checkbox" data-acao="mz-desconto"' + (visor.desconto ? ' checked' : '') + '> Desenhar como desconto (vão, recorte)</label>' : '') +
         (ativa ? '<div class="mz-cond-assemblies"><span class="mudo pequeno">Assemblies</span>' + ((c.assemblies || []).map((aid) => assembly(aid)).filter(Boolean).map((a) =>
-            '<span class="mz-chip"><span class="mz-cor" style="background:' + (a.cor || c.cor) + '"></span>' + esc(a.nome) + '<button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '">✕</button></span>').join('') || '<span class="mudo pequeno">nenhum</span>') +
+            '<span class="mz-chip">' + esc(a.nome) + '<button type="button" class="link-botao" data-acao="mz-remover-assembly" data-cond="' + c.id + '" data-id="' + a.id + '" aria-label="Tirar ' + esc(a.nome) + '">✕</button></span>').join('') || '<span class="mudo pequeno">nenhum</span>') +
             '<button type="button" class="link-botao pequeno" data-acao="mz-aplicar-assembly" data-cond="' + c.id + '">+ Aplicar assembly</button></div>' : '') +
         (ativa ? '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-editar-condicao" data-id="' + c.id + '">Editar</button>' +
           '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
@@ -383,21 +374,6 @@ function htmlPainel() {
     }).join('');
 }
 
-/* "Mostrar no desenho": um interruptor por assembly usado no projeto (e por condição sem assembly). */
-function htmlCamadas(cs) {
-  const usados = [];
-  for (const c of cs) for (const id of c.assemblies || []) { const a = assembly(id); if (a && !usados.includes(a)) usados.push(a); }
-  const soltas = cs.filter((c) => !(c.assemblies || []).some((id) => assembly(id)));
-  if (!usados.length && !soltas.length) return '';
-  const linha = (chave, cor, nome, nota) => '<label class="check pequeno mz-camada"><input type="checkbox" data-acao="mz-camada" data-id="' + chave + '"' + (visor.ocultos.has(chave) ? '' : ' checked') + '>' +
-    '<span class="mz-cor" style="background:' + cor + '"></span><span class="mz-camada-nome">' + esc(nome) + (nota ? ' <span class="mudo">' + esc(nota) + '</span>' : '') + '</span></label>';
-  const nOcultos = usados.filter((a) => visor.ocultos.has(a.id)).length + soltas.filter((c) => visor.ocultos.has('c:' + c.id)).length;
-  return '<details class="mz-camadas" open><summary><b>Mostrar no desenho</b>' + (nOcultos ? ' <span class="etiqueta etiqueta-neutro">' + nOcultos + ' oculto' + (nOcultos > 1 ? 's' : '') + '</span>' : '') + '</summary>' +
-    '<div class="mz-camadas-lista">' + usados.map((a) => linha(a.id, a.cor || '#888', a.nome, '')).join('') +
-      soltas.map((c) => linha('c:' + c.id, c.cor, c.nome, '(sem assembly)')).join('') + '</div>' +
-    '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-camadas-todas" data-mostrar="1">Mostrar todos</button><button type="button" class="link-botao pequeno" data-acao="mz-camadas-todas" data-mostrar="">Ocultar todos</button></div></details>';
-}
-
 function dica() {
   const f = folha(visor.folhaId);
   const c = condicao(visor.condicaoId);
@@ -406,7 +382,7 @@ function dica() {
   if (!f.escala) return 'Primeiro, defina a escala da folha: escolha da lista (a escala está no carimbo) ou calibre por uma cota.';
   if (visor.ferramenta === 'mover') return 'Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.';
   if (!c) return 'Escolha ou crie uma condição no painel ao lado.';
-  if (!condicaoVisivel(c)) return 'As marcações de "' + c.nome + '" estão ocultas: marque o assembly em "Mostrar no desenho" para vê-las.';
+  if (!condicaoVisivel(c)) return 'As marcações de "' + c.nome + '" estão ocultas: marque a caixa ao lado do nome para vê-las.';
   if (c.tipo === 'contagem') return 'Contagem: clique em cada item de "' + c.nome + '".';
   if (c.tipo === 'linear') return 'Linear: clique nos pontos. Duplo clique ou Enter conclui, Esc cancela, Backspace desfaz o último ponto. Shift: linha reta. Perto de um ponto já medido, o clique gruda nele (Alt desliga). Para mais precisão, aumente o zoom.';
   return 'Área: clique nos cantos. Duplo clique, Enter ou clique no primeiro ponto fecha a área.' + (visor.desconto ? ' Modo desconto: a área será subtraída.' : '');
@@ -511,7 +487,7 @@ function desenharSobreposicao() {
   for (const c of condicoesDo(f.projetoId)) {
     if (!condicaoVisivel(c)) continue;
     const ativa = c.id === visor.condicaoId;
-    const corC = corNoDesenho(c);
+    const corC = c.cor;
     for (const m of c.medicoes.filter((x) => x.folhaId === f.id)) {
       const v = valorDaMedicao(c, m);
       ctx.strokeStyle = corC; ctx.fillStyle = corC; ctx.lineWidth = ativa ? 3 : 2; ctx.setLineDash(m.desconto ? [6, 4] : []);
@@ -530,7 +506,7 @@ function desenharSobreposicao() {
     }
   }
   // em andamento: calibração/conferência ou medição
-  const cor = visor.ferramenta === 'medir' && condicao(visor.condicaoId) ? corNoDesenho(condicao(visor.condicaoId)) : '#C2410C';
+  const cor = visor.ferramenta === 'medir' ? (condicao(visor.condicaoId) || {}).cor || '#C2410C' : '#C2410C';
   const pts = (visor.ferramenta === 'medir' ? visor.pontos : visor.cal).concat(visor.cursor && (visor.ferramenta === 'medir' ? visor.pontos.length : visor.cal.length) ? [visor.cursor] : []);
   if (pts.length) {
     ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
@@ -659,12 +635,7 @@ document.addEventListener('keyup', (ev) => { if (ev.key === ' ') visor.espaco = 
 export async function aposDesenharMeasure() {
   const fa = document.getElementById('form-assembly');
   if (fa) {
-    fa.addEventListener('input', (ev) => {
-      // a paleta e o seletor livre ficam em sincronia; o que vale é o seletor (name="cor")
-      if (ev.target.name === 'cor') fa.querySelectorAll('[name="corPaleta"]').forEach((r) => { r.checked = r.value.toLowerCase() === ev.target.value.toLowerCase(); });
-      else testarLinhas();
-    });
-    fa.addEventListener('change', (ev) => { if (ev.target.name === 'corPaleta') fa.querySelector('[name="cor"]').value = ev.target.value.toLowerCase(); });
+    fa.addEventListener('input', testarLinhas);
     fa.addEventListener('change', (ev) => {
       if (ev.target.name === 'tipo') document.getElementById('as-ajuda').innerHTML = htmlAjudaVariaveis(ev.target.value);
       testarLinhas();
@@ -723,6 +694,7 @@ async function dialogoCondicao(c) {
   const promessa = abrirDialogo({
     titulo: c ? 'Editar condição' : 'Nova condição',
     corpo: '<label class="rotulo-pequeno" for="mz-nome">Nome</label><input type="text" id="mz-nome" name="nome" value="' + esc(c ? c.nome : '') + '" placeholder="Ex.: Paredes internas, Siding, Janelas W3">' +
+      htmlEscolhaCor(c ? c.cor : PALETA.find((x) => !condicoesDo(projetoId).some((o) => o.cor === x)) || PALETA[0]) +
       '<label class="rotulo-pequeno" for="mz-tipo">Tipo</label><select id="mz-tipo" name="tipo"' + (c ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([id, t]) => '<option value="' + id + '"' + (id === tipoInicial ? ' selected' : '') + '>' + t.nome + ' (' + t.unidade + ')</option>').join('') + '</select>' +
       '<p class="mudo pequeno">Propriedades (geram as medidas derivadas e as variáveis das fórmulas):</p>' +
       grupo('linear', '<label class="rotulo-pequeno" for="mz-altura">Altura da parede. Ex.: 9\'-0"</label><input type="text" id="mz-altura" name="altura" value="' + (c && c.tipo === 'linear' ? ft(p.alturaPol) : '') + '">') +
@@ -760,7 +732,7 @@ async function dialogoCondicao(c) {
   } catch (e) { toast(e.message); return; }
   if (tipo !== 'contagem' && (res.campos.inclinacao || '').trim()) { const r = interpretarInclinacao(res.campos.inclinacao); if (r.erro) { toast(r.erro); return; } props.inclinacao = r.razao; }
   if (tipo !== 'contagem') props.vaos = Object.keys(res.campos).filter((k) => k.startsWith('vao-')).map((k) => k.slice(4));
-  const r = salvarCondicao(c ? c.id : null, { projetoId, nome: res.campos.nome, tipo, props });
+  const r = salvarCondicao(c ? c.id : null, { projetoId, nome: res.campos.nome, tipo, props, cor: res.campos.cor });
   if (r.erro) { toast(r.erro); return; }
   visor.condicaoId = r.id;
   visor.pontos = [];
@@ -810,7 +782,7 @@ export const acoesMeasure = {
       perda: tr.querySelector('[name="perda"]').value, passo: tr.querySelector('[name="passo"]').value,
     }));
     const id = form.dataset.id || null;
-    const r = salvarAssembly(id, { nome: form.querySelector('[name="nome"]').value, tipo: form.querySelector('[name="tipo"]').value, descricao: form.querySelector('[name="descricao"]').value, cor: form.querySelector('[name="cor"]').value, linhas });
+    const r = salvarAssembly(id, { nome: form.querySelector('[name="nome"]').value, tipo: form.querySelector('[name="tipo"]').value, descricao: form.querySelector('[name="descricao"]').value, linhas });
     if (r.erro) { toast(r.erro); return; }
     toast('Assembly salvo.');
     app.ir('#/measure/assemblies');
@@ -893,14 +865,9 @@ export const acoesMeasure = {
     atualizarInterface();
   },
   'mz-apagar-medicao'(el) { excluirMedicao(el.dataset.cond, el.dataset.id); atualizarInterface(); },
-  'mz-camada'(el) {
-    if (el.checked) visor.ocultos.delete(el.dataset.id); else visor.ocultos.add(el.dataset.id);
-    atualizarInterface();
-  },
-  'mz-camadas-todas'(el) {
-    const cs = condicoesDo(folha(visor.folhaId).projetoId);
-    const chaves = cs.flatMap((c) => { const as = (c.assemblies || []).filter((id) => assembly(id)); return as.length ? as : ['c:' + c.id]; });
-    visor.ocultos = el.dataset.mostrar ? new Set() : new Set(chaves);
+  'mz-visivel'(el) { mostrarCondicao(el.dataset.id, el.checked); atualizarInterface(); },
+  'mz-mostrar-todas'(el) {
+    for (const c of condicoesDo(folha(visor.folhaId).projetoId)) mostrarCondicao(c.id, !!el.dataset.mostrar);
     atualizarInterface();
   },
   async 'mz-tela-cheia'() {
@@ -929,7 +896,14 @@ export const acoesMeasure = {
   },
 };
 
-document.addEventListener('change', (ev) => { if (ev.target.matches('.mz-trocar-folha')) app.ir('#/measure/folha/' + ev.target.value); });
+document.addEventListener('change', (ev) => {
+  if (ev.target.matches('.mz-trocar-folha')) app.ir('#/measure/folha/' + ev.target.value);
+  // paleta → seletor livre (o que vale ao salvar é o seletor, name="cor")
+  if (ev.target.name === 'corPaleta') ev.target.closest('.mz-escolha-cor').querySelector('[name="cor"]').value = ev.target.value.toLowerCase();
+});
+document.addEventListener('input', (ev) => {
+  if (ev.target.name === 'cor' && ev.target.closest('.mz-escolha-cor')) ev.target.closest('.mz-escolha-cor').querySelectorAll('[name="corPaleta"]').forEach((r) => { r.checked = r.value.toLowerCase() === ev.target.value.toLowerCase(); });
+});
 
 /* Tela cheia: refaz o ajuste da planta ao novo tamanho. */
 document.addEventListener('fullscreenchange', () => {
