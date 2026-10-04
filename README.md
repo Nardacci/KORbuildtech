@@ -42,7 +42,7 @@ Para mostrar no celular, publique no GitHub Pages: **Settings → Pages → Depl
 10. O **sininho**, no topo, reúne os alertas do Daily e do Crew.
 7. No Galpão Logístico há um RDO com **ajustes pedidos**: entre como Carlos, corrija e reenvie.
 
-Usuários de demonstração: `diego@construtoraexemplo.com` (trabalhador, só ponto), `carlos@construtoraexemplo.com` (encarregado) e `ana@construtoraexemplo.com` (administradora). Eles aparecem numa linha embaixo do login; tocar no e-mail preenche o campo. A senha não é conferida.
+Usuários de demonstração: `diego@prestadoraexemplo.com` (trabalhador, só ponto), `carlos@prestadoraexemplo.com` (encarregado) e `ana@prestadoraexemplo.com` (administradora). Eles aparecem numa linha embaixo do login; tocar no e-mail preenche o campo. A senha não é conferida.
 
 "Recomeçar demonstração", no menu do usuário, apaga tudo e recria os dados de exemplo. As datas de exemplo são sempre relativas a hoje, então o farol mostra verde, amarelo e vermelho em qualquer dia.
 
@@ -93,14 +93,14 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 - **Fila de aprovação:** aprovar ou pedir ajustes (com o motivo, que aparece no celular do canteiro).
 - **Lacre na aprovação:** o conteúdo do RDO, incluindo o hash de cada foto, recebe um hash SHA-256. Os 12 primeiros caracteres viram o código de verificação. Depois de aprovado, ninguém edita.
 - **Histórico** de cada RDO: quem começou, enviou, quando chegou, quem pediu ajustes e quem aprovou.
-- **PDF A4** com o logo da construtora, os dados da obra, o clima, as tabelas, as fotos com legenda, data e GPS, o lacre e as assinaturas.
+- **PDF A4** com o logo da empresa, os dados da obra, o clima, as tabelas, as fotos com legenda, data e GPS, o lacre e as assinaturas.
 - **Link do cliente** (somente leitura, sem conta) que confere o lacre: se o conteúdo mudar depois da aprovação, o link avisa.
 
 ## O que é simulado
 
 | No protótipo | Na versão real |
 | --- | --- |
-| Dados no navegador; campo e escritório no mesmo aparelho | Servidor com banco de dados e armazenamento de fotos (ex.: Supabase), separado por construtora |
+| Dados no navegador; campo e escritório no mesmo aparelho | Servidor com banco de dados e armazenamento de fotos (ex.: Supabase), separado por empresa |
 | "Enviar" troca o estado e mostra o progresso | Upload de verdade, com nova tentativa automática |
 | "Melhorar texto" com regras no aparelho | Modelo de IA no servidor, guardando o texto original |
 | PDF pela impressão do navegador ("Salvar como PDF") | PDF gerado no servidor |

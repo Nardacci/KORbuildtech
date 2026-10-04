@@ -17,6 +17,8 @@ import {
   condicoesDaFolha, incluirNaFolha, tirarDaFolha, folhasDaCondicao,
   TIPOS_PROJETO, SITUACOES, enderecoDoProjeto, salvarProjeto, excluirProjeto, PALETA,
 } from './measure.js';
+import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
+import { htmlEscolhaContato } from './contatos-telas.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -109,7 +111,7 @@ function telaProjetos() {
     conteudo: '<div class="btn-linha mz-filtros" role="group" aria-label="Filtrar por situação">' + filtro('todos', 'Todos', todos.length) +
         Object.entries(SITUACOES).map(([id, x]) => filtro(id, x.nome, todos.filter((p) => p.situacao === id).length)).join('') + '</div>' +
       (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-projetos"><thead><tr><th>Projeto</th><th>Local</th><th>Tipo</th><th>Estimador</th><th>Prazo da proposta</th><th class="num">Folhas</th><th>Situação</th></tr></thead><tbody>' +
-        lista.map((p) => '<tr><td><a href="#/measure/projeto/' + p.id + '" class="mz-projeto-nome"><b>' + esc(p.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(p.cliente) + (p.obraId && obra(p.obraId) ? ' · obra ' + esc(obra(p.obraId).nome) : '') + '</span></td>' +
+        lista.map((p) => '<tr><td><a href="#/measure/projeto/' + p.id + '" class="mz-projeto-nome"><b>' + esc(p.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(textoPartes(p)) + (p.obraId && obra(p.obraId) ? ' · obra ' + esc(obra(p.obraId).nome) : '') + '</span></td>' +
           '<td>' + esc(p.cidade) + ', ' + esc(p.estado) + '</td><td>' + esc(TIPOS_PROJETO[p.tipo] || '') + '</td><td>' + esc(nomeUsuario(p.estimadorId)) + '</td>' +
           '<td>' + textoPrazo(p) + '</td><td class="num">' + folhasDo(p.id).length + '</td><td>' + etiquetaSituacao(p) + '</td></tr>').join('') +
         '</tbody></table></div></section>'
@@ -128,11 +130,15 @@ function telaFormProjeto(id) {
     ativo: 'projetos', largura: 'larga', titulo: id ? 'Editar projeto' : 'Novo projeto',
     voltar: id ? { href: '#/measure/projeto/' + id, rotulo: p.nome } : { href: '#/measure', rotulo: 'Projetos' },
     conteudo: '<form id="form-projeto" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
-      '<section class="cartao"><h2 class="cartao-titulo">Projeto e cliente</h2><div class="grade-campos">' +
-        texto('nome', 'Nome do projeto *', ' placeholder="Ex.: Casa Thompson, Mezanino LogSul"') + texto('cliente', 'Cliente *', ' placeholder="Quem pediu o orçamento"') +
+      '<section class="cartao"><h2 class="cartao-titulo">Projeto</h2><div class="grade-campos">' +
+        texto('nome', 'Nome do projeto *', ' placeholder="Ex.: Casa Thompson, Mezanino LogSul"') + '<div></div>' +
         campo('tipo', 'Tipo de obra', '<select id="pj-tipo" name="tipo">' + opcoes(Object.entries(TIPOS_PROJETO), p.tipo) + '</select>') +
         campo('situacao', 'Situação', '<select id="pj-situacao" name="situacao">' + opcoes(Object.entries(SITUACOES).map(([k, x]) => [k, x.nome]), p.situacao) + '</select>') +
       '</div>' + campo('descricao', 'Escopo', '<textarea id="pj-descricao" name="descricao" rows="2" placeholder="Ex.: Residência térrea, wood framing, siding vinil">' + v('descricao') + '</textarea>') + '</section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">Para quem é a proposta</h2><div class="grade-campos">' +
+        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: 'Contratante * (recebe a proposta)', papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
+        htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: 'Dono da obra (se não for o contratante)', papeis: ['cliente'], atual: p.donoId, vazio: 'O próprio contratante' }) +
+      '</div><p class="mudo pequeno">Trabalhando para uma construtora, ela é a contratante e o cliente final é o dono. Contratado direto pelo dono do imóvel, ele é o contratante.</p></section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Local da obra</h2>' + texto('endereco', 'Endereço', ' placeholder="Ex.: 88 Bridge St"') +
         '<div class="grade-campos mz-grade-local">' + texto('cidade', 'Cidade *') + texto('estado', 'Estado *', ' maxlength="2" autocapitalize="characters"') + texto('zip', 'ZIP code', ' inputmode="numeric" maxlength="10"') + '</div></section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Proposta</h2><div class="grade-campos">' +
@@ -156,11 +162,12 @@ function telaProjeto(id) {
     : esc(f.escala.nome) + (f.escala.conferencia ? (f.escala.conferencia.ok ? ' <span class="etiqueta etiqueta-verde">conferida</span>' : ' <span class="etiqueta etiqueta-alerta">conferência com diferença</span>') : ' <span class="etiqueta etiqueta-neutro">não conferida</span>');
   const dado = (rot, html) => html ? '<div><dt>' + rot + '</dt><dd>' + html + '</dd></div>' : '';
   return moldura({
-    ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: p.cliente + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: 'Projetos' },
+    ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: textoPartes(p) + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: 'Projetos' },
     acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/editar">Editar projeto</a>' +
       '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + 'Enviar PDF<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></div>',
     conteudo:
-      '<section class="cartao"><dl class="mz-dados">' + dado('Situação', etiquetaSituacao(p)) + dado('Tipo', esc(TIPOS_PROJETO[p.tipo] || '')) + dado('Prazo da proposta', textoPrazo(p)) +
+      '<section class="cartao"><dl class="mz-dados">' + dado('Contratante', contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
+        dado('Dono da obra', p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado('Situação', etiquetaSituacao(p)) + dado('Tipo', esc(TIPOS_PROJETO[p.tipo] || '')) + dado('Prazo da proposta', textoPrazo(p)) +
         dado('Estimador', esc(nomeUsuario(p.estimadorId))) + dado('Obra vinculada', p.obraId && obra(p.obraId) ? esc(obra(p.obraId).nome) : '') + dado('Escopo', esc(p.descricao)) + '</dl></section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Folhas</h2>' + (fs.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>Folha</th><th>Escala</th><th class="num">Medições</th><th></th></tr></thead><tbody>' +
         fs.map((f) => {

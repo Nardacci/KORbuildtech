@@ -253,7 +253,7 @@ verificar(true, 'adulteração detectada pelo lacre');
 await page.goto(BASE + '#/daily/pdf/' + id);
 await page.waitForSelector('#form-login');
 verificar(true, 'PDF pede login');
-await page.fill('#login-email', 'ana@construtoraexemplo.com');
+await page.fill('#login-email', 'ana@prestadoraexemplo.com');
 await page.click('#form-login button[type="submit"]');
 await page.waitForSelector('.modulos');
 await page.goto(BASE + '#/daily/pdf/' + id);

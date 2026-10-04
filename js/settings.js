@@ -216,7 +216,7 @@ export const PERMISSOES = [
   { grupo: 'Daily', modulo: 'daily', itens: [
     { id: 'daily.preencher', nome: 'Preencher o diário de obra', descricao: 'Criar e enviar o RDO das suas obras' },
     { id: 'daily.acompanhar', nome: 'Acompanhar todas as obras', descricao: 'Painel, obras e relatórios enviados' },
-    { id: 'daily.aprovar', nome: 'Aprovar RDO e enviar ao cliente', descricao: 'Aprovar, pedir ajuste, PDF e link do cliente', requer: ['daily.acompanhar'] },
+    { id: 'daily.aprovar', nome: 'Aprovar RDO e enviar ao contratante', descricao: 'Aprovar, pedir ajuste, PDF e link do contratante', requer: ['daily.acompanhar'] },
   ] },
   { grupo: 'Measure', modulo: 'measure', itens: [
     { id: 'measure.medir', nome: 'Medir plantas (takeoff)', descricao: 'Abrir plantas, definir a escala, medir e aplicar assemblies' },
@@ -226,7 +226,8 @@ export const PERMISSOES = [
     { id: 'settings.funcionarios', nome: 'Cadastro de funcionários', descricao: 'Dados, certificações e valor hora' },
     { id: 'settings.regras', nome: 'Encargos e regras de jornada', descricao: 'Mudanças com vigência, sem mexer no passado' },
     { id: 'settings.acesso', nome: 'Usuários e perfis de acesso', descricao: 'Quem entra e o que cada perfil pode fazer' },
-    { id: 'settings.conta', nome: 'Conta da empresa e plano', descricao: 'Dados da empresa, plano e módulos' },
+    { id: 'settings.conta', nome: 'Empresa, conta e plano', descricao: 'Dados e logo da empresa, termos da proposta, plano e módulos' },
+    { id: 'settings.contatos', nome: 'Contatos', descricao: 'Construtoras, clientes e fornecedores' },
   ] },
 ];
 export const TODAS_PERMISSOES = PERMISSOES.flatMap((g) => g.itens.map((i) => i.id));

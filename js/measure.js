@@ -9,6 +9,7 @@ import { novoId, hoje, somarDias } from './util.js';
 import { estado, salvar } from './armazem.js';
 import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2_POR_PE2 } from './imperial.js';
 import { calcularLinha, validar } from './formulas.js';
+import { contato } from './contatos.js';
 
 function mz() { return estado().measure; }
 export function projetos() { return mz().projetos; }
@@ -72,11 +73,12 @@ export function enderecoDoProjeto(p) {
 export function salvarProjeto(id, dados) {
   const t = (k) => String(dados[k] || '').trim();
   const d = {
-    nome: t('nome'), cliente: t('cliente'), endereco: t('endereco'), cidade: t('cidade'), estado: t('estado').toUpperCase(), zip: t('zip'),
+    nome: t('nome'), contratanteId: t('contratanteId') || null, donoId: t('donoId') || null, endereco: t('endereco'), cidade: t('cidade'), estado: t('estado').toUpperCase(), zip: t('zip'),
     tipo: dados.tipo, situacao: dados.situacao, descricao: t('descricao'), obraId: t('obraId') || null, estimadorId: t('estimadorId') || null, prazoProposta: t('prazoProposta') || null,
   };
   if (!d.nome) return { erro: 'Dê um nome ao projeto.' };
-  if (!d.cliente) return { erro: 'Informe o cliente (quem pediu o orçamento).' };
+  if (!d.contratanteId || !contato(d.contratanteId)) return { erro: 'Escolha o contratante: a construtora que pediu a proposta, ou o próprio cliente quando contrata direto.' };
+  if (d.donoId === d.contratanteId) d.donoId = null;
   if (!d.cidade || !d.estado) return { erro: 'Informe a cidade e o estado da obra.' };
   if (!/^[A-Z]{2}$/.test(d.estado)) return { erro: 'Estado com 2 letras (ex.: NH).' };
   if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: 'ZIP code com 5 dígitos (ex.: 03104).' };
@@ -509,11 +511,11 @@ export function criarDadosMeasure() {
   const projetoId = 'pj-casa';
   return {
     projetos: [
-      { id: projetoId, nome: 'Casa modelo', cliente: 'Thompson Family', endereco: '88 Bridge St', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
+      { id: projetoId, nome: 'Casa modelo', contratanteId: 'ct-thompson', donoId: null, endereco: '88 Bridge St', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
         descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing, siding vinil', obraId: null, estimadorId: 'u-marcia', prazoProposta: somarDias(hoje(), 6), criadoEm: Date.now() },
-      { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', cliente: 'LogSul Armazéns', endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
+      { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', contratanteId: 'ct-granite', donoId: 'ct-logsul', endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
         descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: 'galpao', estimadorId: 'u-ana', prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
-      { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', cliente: 'Sarah Mitchell', endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
+      { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
         descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: 'u-marcia', prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
     ],
     folhas: [

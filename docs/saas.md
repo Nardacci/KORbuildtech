@@ -8,13 +8,38 @@ Documento de análise de negócio. Descreve como a plataforma se organiza como S
 
 | Conceito | O que é | Exemplo |
 | --- | --- | --- |
-| **Empresa** (tenant) | O cliente da plataforma: quem assina e paga. Tudo pertence a uma empresa. | Construtora Exemplo |
+| **Empresa** (tenant) | O cliente da plataforma: quem assina e paga. Tudo pertence a uma empresa. Pode ser uma **prestadora de serviço** (subcontractor) ou uma **construtora** (general contractor). Ver §Atores. | Northfield Framing & Siding (prestadora) |
 | **Assinatura** | O plano da empresa, a situação (teste, ativa, em atraso, cancelada) e os limites. | Plano Profissional, teste grátis até 14/10 |
 | **Módulo** | Uma parte da plataforma que a empresa contrata. | Daily, Crew, Measure |
 | **Usuário** | Uma pessoa da empresa, com login próprio e um papel. | Carlos (campo), Ana (administradora) |
 | **Papel** | O que o usuário pode fazer. | Administrador, Campo |
 | **Obra** | Cadastro comum a todos os módulos. Unidade de cobrança. | Residencial Jardim das Flores |
-| **Convidado externo** | Quem recebe informação sem ter conta: o cliente final da construtora. | Incorporadora Horizonte, pelo link do relatório |
+| **Contato** | Os de fora, num diretório só com marcadores: construtora, cliente (dono da obra), fornecedor. Recebem documentos sem ter conta. | Merrimack Valley Builders (construtora), pelo link do diário |
+
+## Atores
+
+Decidido em outubro de 2026. Público: **prestadoras de serviço e construtoras/empreiteiras nos EUA**, começando por New Hampshire.
+
+| Ator | No mercado americano | Papel no KORbuild |
+| --- | --- | --- |
+| **Empresa** | *Subcontractor / trade contractor* (framing, siding, drywall, reforma) ou *general contractor* | **Assina e usa.** Mede e orça (Measure), controla a equipe (Crew), faz o diário (Daily). O perfil (logo, licenças, seguros, termos da proposta) fica em Settings › Empresa |
+| **Funcionários** | *Crew* | São da empresa (Settings › Funcionários) e entram como usuários, com perfil de acesso |
+| **Construtora** | *General contractor (GC)* | **Contato.** Contrata a prestadora; recebe a proposta, o diário e o avanço por link ou PDF |
+| **Cliente** | *Owner / homeowner* | **Contato.** Dono da obra. Recebe a proposta quando contrata a prestadora direto (sem construtora) |
+| **Fornecedor** | *Supplier / lumber yard* | **Contato.** Recebe a lista de materiais para cotação e devolve os preços. Diz o que fornece (etapas do catálogo) |
+
+**Regras dos atores**
+1. **Nada fixo de "construtora".** A empresa assinante é "a empresa"; no perfil ela diz como atua (prestadora, construtora ou as duas).
+2. **Um diretório de contatos, com marcadores.** O papel depende do projeto: a mesma empresa contrata como construtora num projeto e é cliente em outro. Contato em uso (projeto, obra) não pode ser excluído.
+3. **Partes de cada projeto (Measure) e obra (Daily):**
+   - **contratante** (obrigatório): quem recebe a proposta e o diário. É a construtora, ou o dono quando contrata direto;
+   - **dono da obra** (opcional): o cliente final, quando não é o contratante.
+4. **Para onde vai cada documento:**
+   - proposta → contratante;
+   - lista de materiais → fornecedores (por etapa);
+   - diário de obra (link lacrado) → contratante.
+5. **Contato novo sem sair do formulário:** o botão "Novo" ao lado do campo cria o contato (só nome, pessoa, e-mail, telefone e marcador) e já o escolhe.
+6. **Permissões:** o perfil da empresa é de quem tem "Empresa, conta e plano"; o cadastro completo de contatos é de quem tem "Contatos". Escolher e criar um contato dentro do projeto faz parte de medir.
 
 ## Regras
 
@@ -22,7 +47,7 @@ Documento de análise de negócio. Descreve como a plataforma se organiza como S
 2. **Cadastros comuns.** Obras, pessoas (usuários e funcionários), funções e equipamentos pertencem à empresa, não a um módulo. É isso que permite um módulo alimentar o outro (Crew → equipe do Daily; Measure → meta de avanço do Daily).
 3. **Módulo não contratado não abre.** A tela de módulos mostra todos, mas só os contratados entram; os demais levam à página do módulo (conhecer, contratar ou registrar interesse).
 4. **Papéis por empresa.** O mesmo e-mail pode ser administrador numa empresa e campo em outra (ex.: um engenheiro que presta serviço para duas construtoras). Ao entrar, ele escolhe a empresa.
-5. **Convidados não pagam e não contam como usuário.** O cliente final abre relatórios por link, sem conta.
+5. **Contatos não pagam e não contam como usuário.** O contratante abre relatórios por link, sem conta.
 6. **Teste grátis de 14 dias** com todos os módulos disponíveis; ao fim, a empresa assina ou a conta fica só leitura (os dados não são apagados).
 
 ## Papéis

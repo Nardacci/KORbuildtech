@@ -12,6 +12,7 @@ import {
   encargosVersao, encargosEm, historicoEncargos, novosEncargos, auditoria, segundaDe,
   PERMISSOES, perfis, perfilDe, modulosDe, salvarPermissoes, criarPerfil, excluirPerfil, salvarUsuario,
 } from './settings.js';
+import { telaEmpresa, telaContatos, telaFormContato } from './contatos-telas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarSettings(funcoes) { app = { ...app, ...funcoes }; }
@@ -24,6 +25,8 @@ function nav() {
     itens.push({ id: 'funcionarios', href: '#/settings/funcionarios', rotulo: 'Funcionários', icone: 'crew', contador: alertas });
   }
   if (pode(u, 'settings.regras')) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: 'Encargos', icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: 'Jornada', icone: 'relogio' });
+  if (pode(u, 'settings.conta')) itens.push({ id: 'empresa', href: '#/settings/empresa', rotulo: 'Empresa', icone: 'obras' });
+  if (pode(u, 'settings.contatos')) itens.push({ id: 'contatos', href: '#/settings/contatos', rotulo: 'Contatos', icone: 'link' });
   if (pode(u, 'settings.acesso')) itens.push({ id: 'usuarios', href: '#/settings/usuarios', rotulo: 'Usuários', icone: 'conta' }, { id: 'perfis', href: '#/settings/perfis', rotulo: 'Perfis', icone: 'aprovacoes' }, { id: 'auditoria', href: '#/settings/auditoria', rotulo: 'Auditoria', icone: 'historico' });
   return itens;
 }
@@ -39,10 +42,14 @@ const proximaSegunda = () => somarDias(segundaDe(hoje()), 7);
 /* Rotas #/settings/... */
 export function telaSettings(q) {
   const u = usuarioAtual();
-  const precisa = { funcionarios: 'settings.funcionarios', funcionario: 'settings.funcionarios', encargos: 'settings.regras', regras: 'settings.regras', usuarios: 'settings.acesso', usuario: 'settings.acesso', perfis: 'settings.acesso', auditoria: 'settings.acesso' };
+  const precisa = { funcionarios: 'settings.funcionarios', funcionario: 'settings.funcionarios', encargos: 'settings.regras', regras: 'settings.regras', usuarios: 'settings.acesso', usuario: 'settings.acesso', perfis: 'settings.acesso', auditoria: 'settings.acesso', empresa: 'settings.conta', contatos: 'settings.contatos', contato: 'settings.contatos' };
   const primeira = nav()[0];
   if (!primeira) return { trocar: '#/inicio' };
   if (!q.length || (precisa[q[0]] && !pode(u, precisa[q[0]]))) return { trocar: primeira.href };
+  if (q[0] === 'empresa') return telaEmpresa(moldura);
+  if (q[0] === 'contatos') return telaContatos(moldura, q[1]);
+  if (q[0] === 'contato' && q[1] === 'novo') return telaFormContato(moldura, null, q[2]);
+  if (q[0] === 'contato' && q[1]) return telaFormContato(moldura, q[1]);
   if (q[0] === 'usuarios') return telaUsuarios();
   if (q[0] === 'usuario') return telaFormUsuario(q[1] === 'novo' ? null : q[1]);
   if (q[0] === 'perfis') return telaPerfis();

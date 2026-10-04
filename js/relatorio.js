@@ -1,5 +1,6 @@
 /* KORbuild Daily — o relatório em si: a mesma peça serve para a tela, o PDF e o link do cliente. */
 
+import { contratanteDe, donoDe } from './contatos.js';
 import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre } from './util.js';
 import { estado } from './armazem.js';
 import { enviadoComAtraso, prazoDe } from './prazos.js';
@@ -46,13 +47,13 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
   const empresa = estado().empresa;
   return '<article class="relatorio">' +
     '<header class="rel-topo">' +
-      '<div class="rel-marca"><span class="rel-logo">' + esc(empresa.sigla) + '</span><div><b>' + esc(empresa.nome) + '</b><small>EIN ' + esc(empresa.ein) + '</small></div></div>' +
+      '<div class="rel-marca">' + (empresa.logo ? '<img class="rel-logo-img" src="' + empresa.logo + '" alt="' + esc(empresa.nome) + '">' : '<span class="rel-logo">' + esc(empresa.sigla) + '</span>') + '<div><b>' + esc(empresa.nome) + '</b><small>EIN ' + esc(empresa.ein) + '</small></div></div>' +
       '<div class="rel-titulo"><h1>Relatório Diário de Obra</h1><p>RDO nº ' + r.numero + ' · ' + diaDaSemana(r.data) + ', ' + dataCurta(r.data) + '</p></div>' +
       '<div class="rel-status">' + seloStatus(r) + '</div>' +
     '</header>' +
 
     '<section class="rel-obra">' +
-      campo('Obra', obra.nome) + campo('Cliente', obra.cliente) + campo('Endereço', obra.endereco + ' · ' + obra.cidade) +
+      campo('Obra', obra.nome) + campo('Contratante', (contratanteDe(obra) || {}).nome || '—') + (obra.donoId && obra.donoId !== obra.contratanteId ? campo('Dono da obra', (donoDe(obra) || {}).nome || '') : '') + campo('Endereço', obra.endereco + ' · ' + obra.cidade) +
       campo('Preenchido por', r.autor + ' · Mestre de obras') + campo('Etapa atual', obra.etapa) +
       campo('Prazo', decorridos + ' dias decorridos · ' + Math.max(0, restantes) + ' restantes') +
     '</section>' +

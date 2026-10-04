@@ -1135,3 +1135,18 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-cond-acoes { display: flex; gap: 12px; }
 .mz-visiveis button { color: var(--texto-2); font-size: 12px; font-weight: 600; text-decoration: none; }
 .mz-visiveis button:hover:not(:disabled) { color: var(--primario); text-decoration: underline; }
+
+/* ---------- Atores: empresa (logo) e contatos ---------- */
+.escolha-contato { display: flex; gap: 6px; align-items: center; }
+.escolha-contato select { flex: 1; min-width: 0; }
+.logo-campo { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.logo-previa { min-width: 180px; min-height: 72px; display: grid; place-items: center; padding: 10px 16px; border: 1px dashed var(--borda-forte); border-radius: var(--raio); background: var(--superficie); }
+.logo-previa .rel-logo { width: 56px; height: 56px; font-size: 18px; }
+.logo-acoes { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; max-width: 360px; }
+.logo-empresa { max-width: 240px; max-height: 80px; object-fit: contain; }
+.rel-logo-img { max-width: 140px; max-height: 48px; object-fit: contain; flex-shrink: 0; }
+.papeis-contato { display: flex; flex-direction: column; gap: 8px; border: 0; padding: 0; margin: 4px 0; }
+.etapas-contato { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 4px 16px; }
+.tabela-contatos td { vertical-align: top; }
+.tabela-contatos .etiqueta { margin: 0 4px 2px 0; }
+.form-settings textarea { min-height: 60px; }

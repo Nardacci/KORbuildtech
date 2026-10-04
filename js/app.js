@@ -16,6 +16,8 @@ import {
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
 import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure } from './measure-telas.js';
+import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
+import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
@@ -364,7 +366,8 @@ function telaCampo() {
 
 function resumoObra(o) {
   return '<section class="cartao obra-resumo">' +
-    '<div class="linha-info"><span>Cliente</span><b>' + esc(o.cliente) + '</b></div>' +
+    '<div class="linha-info"><span>Contratante</span><b>' + esc((contratanteDe(o) || {}).nome || '—') + '</b></div>' +
+    (o.donoId && o.donoId !== o.contratanteId ? '<div class="linha-info"><span>Dono da obra</span><b>' + esc((donoDe(o) || {}).nome || '—') + '</b></div>' : '') +
     '<div class="linha-info"><span>Etapa atual</span><b>' + esc(o.etapa) + '</b></div>' +
     '<div class="linha-info"><span>Endereço</span><b>' + esc(o.endereco) + ' · ' + esc(o.cidade) + '</b></div>' +
   '</section>';
@@ -799,7 +802,7 @@ function telaObrasAdmin() {
       const qtd = rdosDaObra(o.id).filter(recebido).length;
       return '<a class="cartao-obra" href="#/daily/obras/' + o.id + '">' +
         '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
-        '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(o.cliente) + '</span>' +
+        '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(textoPartes(o)) + '</span>' +
         '<span class="mudo">' + esc(o.etapa) + '</span>' +
         '<span class="cartao-obra-rodape">' + f.texto + ' · ' + qtd + ' RDOs recebidos</span></a>';
     }).join('') + '</div>',
@@ -846,8 +849,9 @@ function telaRdoPainel(id) {
     painelAcoes = '<h2 class="cartao-titulo">Aprovado e lacrado</h2>' +
       '<p class="mudo pequeno">Código de verificação</p><p class="codigo grande">' + esc(r.codigo) + '</p>' +
       '<a class="btn btn-primario btn-bloco" href="#/daily/pdf/' + r.id + '">' + icone('baixar', 18) + 'Baixar PDF</a>' +
-      '<button type="button" class="btn btn-contorno btn-bloco" data-acao="copiar-link">' + icone('link', 18) + 'Copiar link para o cliente</button>' +
-      '<a class="btn btn-contorno btn-bloco" href="#/cliente/' + r.codigo + '">' + icone('olho', 18) + 'Ver como o cliente vê</a>';
+      '<button type="button" class="btn btn-contorno btn-bloco" data-acao="copiar-link">' + icone('link', 18) + 'Copiar link para o contratante</button>' +
+      '<a class="btn btn-contorno btn-bloco" href="#/cliente/' + r.codigo + '">' + icone('olho', 18) + 'Ver como o contratante vê</a>' +
+      (contratanteDe(acharObra(r.obraId)) ? '<p class="mudo pequeno">Contratante: <b>' + esc(contratanteDe(acharObra(r.obraId)).nome) + '</b>' + (contratanteDe(acharObra(r.obraId)).email ? ' · ' + esc(contratanteDe(acharObra(r.obraId)).email) : '') + '</p>' : '');
   }
   const historico = '<h3 class="subtitulo">Histórico</h3><ol class="historico">' + r.historico.map((h) =>
     '<li><span class="mudo">' + dataHora(h.em) + '</span><b>' + esc(h.quem) + '</b><span>' + esc(h.acao) + '</span></li>').join('') + '</ol>';
@@ -875,7 +879,7 @@ function telaPdf(id) {
     '<p class="pdf-dica nao-imprimir">Na janela que abrir, escolha "Salvar como PDF". Na versão final, o PDF é gerado no servidor e chega pronto.</p>';
 }
 
-/* ---------- Link do cliente ---------- */
+/* ---------- Link do contratante (a construtora, ou o dono quando contrata direto) ---------- */
 
 function telaCliente(codigo) {
   const r = estado().rdos.find((x) => x.codigo === codigo && x.status === 'aprovado');
@@ -883,7 +887,7 @@ function telaCliente(codigo) {
     return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>Relatório não encontrado</b><span>Confira o link. No protótipo não há servidor, então o link do cliente só abre no mesmo navegador em que o RDO foi aprovado.</span></div></main>';
   }
   const o = acharObra(r.obraId);
-  return '<header class="cliente-topo"><div class="cliente-empresa"><span class="rel-logo">' + esc(estado().empresa.sigla) + '</span><div><span class="mudo">Relatório compartilhado por</span><b>' + esc(estado().empresa.nome) + '</b></div></div>' +
+  return '<header class="cliente-topo"><div class="cliente-empresa">' + htmlLogo('rel-logo-img') + '<div><span class="mudo">Relatório compartilhado por</span><b>' + esc(estado().empresa.nome) + '</b></div></div>' +
       '<span class="cliente-via">via ' + marca(18) + 'KORbuild Daily</span></header>' +
     '<main class="pagina pagina-larga">' +
       '<div class="aviso aviso-verde" id="verificacao"><b>Verificando o lacre…</b></div>' +
@@ -1272,11 +1276,12 @@ const acoes = {
     const link = location.origin + location.pathname + '#/cliente/' + r.codigo;
     try {
       await navigator.clipboard.writeText(link);
-      toast('Link copiado. O cliente vê o relatório sem precisar de conta.');
+      const ct = contratanteDe(acharObra(r.obraId));
+      toast('Link copiado' + (ct ? ' para enviar a ' + ct.nome : '') + '. Ele vê o relatório sem precisar de conta.');
     } catch (e) {
       await abrirDialogo({
-        titulo: 'Link para o cliente',
-        corpo: '<input type="text" readonly value="' + esc(link) + '" aria-label="Link para o cliente" onfocus="this.select()">',
+        titulo: 'Link para o contratante',
+        corpo: '<input type="text" readonly value="' + esc(link) + '" aria-label="Link para o contratante" onfocus="this.select()">',
         acoes: [{ rotulo: 'Fechar', valor: true, classe: 'btn-primario' }],
       });
     }
@@ -1415,10 +1420,11 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
+  ligarContatos({ desenhar, ir });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
     return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));

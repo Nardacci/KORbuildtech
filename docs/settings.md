@@ -107,11 +107,12 @@ A tela sempre mostra **de onde vem o valor** ("padrão da empresa" ou "definido 
 | Crew · escritório | **Ver custos e valores em dinheiro** | Custos das obras, orçamento, salários nos timesheets (inclui "acompanhar") |
 | Daily | Preencher o diário de obra | Criar e enviar o RDO |
 | Daily | Acompanhar todas as obras | Painel, obras e relatórios enviados |
-| Daily | Aprovar RDO e enviar ao cliente | Aprovar, pedir ajuste, PDF e link do cliente (inclui "acompanhar") |
+| Daily | Aprovar RDO e enviar ao contratante | Aprovar, pedir ajuste, PDF e link do contratante (inclui "acompanhar") |
 | Settings | Cadastro de funcionários | Dados, certificações e valor hora |
 | Settings | Encargos e regras de jornada | Versões com vigência |
 | Settings | Usuários e perfis de acesso | Quem entra e o que cada perfil pode |
-| Settings | Conta da empresa e plano | Dados da empresa, plano e módulos |
+| Settings | Empresa, conta e plano | **Settings › Empresa** (logo, identificação, endereço, licenças e seguros, termos padrão da proposta), plano e módulos |
+| Settings | Contatos | **Settings › Contatos**: construtoras, clientes e fornecedores num diretório só, com marcadores (ver [`saas.md` §Atores](saas.md)) |
 
 "Ver valores em dinheiro" é separada de propósito: um engenheiro pode aprovar horas sem ver o salário de cada um.
 
