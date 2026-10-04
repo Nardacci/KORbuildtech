@@ -5,24 +5,47 @@
 
 const CHAVE = 'kbt.rdo.v1';
 const BANCO = 'kbt-rdo-fotos';
+const CHAVE_SESSAO = 'kbt.sessao';
 
-let dados = null;
+/* Várias empresas (tenants) no mesmo aparelho, cada uma com os seus dados, isoladas:
+ * { versao, padrao, empresas: { [id]: dados da empresa } }. A empresa aberta é a do usuário da sessão. */
+let banco = null;
 
-export function estado() {
-  if (!dados) {
-    try { dados = JSON.parse(localStorage.getItem(CHAVE)); } catch (e) { dados = null; }
+function carregar() {
+  if (!banco) {
+    try { banco = JSON.parse(localStorage.getItem(CHAVE)); } catch (e) { banco = null; }
+    if (banco && !banco.empresas) banco = null; // formato antigo (uma empresa só): recriado
   }
-  return dados;
+  return banco;
+}
+export function bancoDeDados() { return carregar(); }
+
+/* A empresa aberta: a do usuário logado; sem ninguém logado, a padrão (tela de entrada). */
+export function empresaAtualId() {
+  const b = carregar();
+  if (!b) return null;
+  let sessao = null;
+  try { sessao = localStorage.getItem(CHAVE_SESSAO); } catch (e) { sessao = null; }
+  if (sessao) for (const [id, d] of Object.entries(b.empresas)) if (d.usuarios.some((u) => u.id === sessao)) return id;
+  return b.padrao || Object.keys(b.empresas)[0];
 }
 
+/* Os dados da empresa aberta. Uma empresa nunca vê os dados de outra. */
+export function estado() {
+  const b = carregar();
+  return b ? b.empresas[empresaAtualId()] : null;
+}
+/* Todas as empresas: só para achar o usuário pelo e-mail na entrada. */
+export function todasAsEmpresas() { const b = carregar(); return b ? Object.values(b.empresas) : []; }
+
 export function definirEstado(novo) {
-  dados = novo;
+  banco = novo;
   salvar();
 }
 
 export function salvar() {
   try {
-    localStorage.setItem(CHAVE, JSON.stringify(dados));
+    localStorage.setItem(CHAVE, JSON.stringify(banco));
   } catch (e) {
     console.error('Não foi possível salvar no aparelho', e);
   }
@@ -113,7 +136,7 @@ export function hidratarFotos(raiz) {
 
 export async function apagarTudo() {
   localStorage.removeItem(CHAVE);
-  dados = null;
+  banco = null;
   urls.clear();
   await operacao('readwrite', (s) => s.clear());
 }

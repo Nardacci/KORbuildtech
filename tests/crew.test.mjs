@@ -389,7 +389,7 @@ verificar(true, 'novo perfil criado a partir de outro');
 await page.goto(BASE + '#/settings/usuario/novo');
 await page.waitForSelector('#form-usuario');
 await page.fill('#form-usuario [name="nome"]', 'Bruno Alves');
-await page.fill('#form-usuario [name="email"]', 'bruno@prestadoraexemplo.com');
+await page.fill('#form-usuario [name="email"]', 'bruno@construtoraexemplo.com');
 await page.check('#form-usuario input[value="trabalhador"]');
 await page.click('[data-acao="settings-salvar-usuario"]');
 await page.waitForFunction(() => /ligue o usuário ao cadastro/.test((document.getElementById('toast') || {}).textContent || ''));
@@ -397,7 +397,7 @@ verificar(true, 'quem bate o próprio ponto precisa estar ligado ao funcionário
 await page.selectOption('#form-usuario [name="funcionarioId"]', 'f-bruno');
 await page.click('[data-acao="settings-salvar-usuario"]');
 await page.waitForSelector('.tabela-usuarios-settings');
-verificar((await page.textContent('.tabela-usuarios-settings')).includes('bruno@prestadoraexemplo.com'), 'novo usuário ligado ao funcionário');
+verificar((await page.textContent('.tabela-usuarios-settings')).includes('bruno@construtoraexemplo.com'), 'novo usuário ligado ao funcionário');
 await page.goto(BASE + '#/settings/auditoria');
 await page.waitForSelector('.lista-auditoria');
 verificar((await page.textContent('.lista-auditoria')).includes('Permissões do perfil Trabalhador') && (await page.textContent('.lista-auditoria')).includes('Novo usuário: Bruno Alves'), 'auditoria registra permissões e usuários');

@@ -58,14 +58,14 @@ await page.goto(BASE);
 await page.waitForSelector('#form-login', { timeout: 30000 });
 
 console.log('Módulo e permissões');
-await como('u-ana', '#/inicio');
+await como('u-tom', '#/inicio');
 await page.waitForSelector('.modulos');
 verificar((await textoDe('.modulos .modulo-measure')).includes('Protótipo'), 'Measure aparece na tela de módulos (protótipo)');
 await page.click('.modulos .modulo-measure');
 await page.waitForSelector('.tabela-projetos');
 verificar(await page.locator('.tabela-projetos tbody tr').count() === 3, 'Measure abre na lista de projetos (3 de exemplo)');
 const lista = await textoDe('.tabela-projetos');
-verificar(lista.includes('Thompson Family') && lista.includes('Manchester, NH') && lista.includes('Em orçamento') && lista.includes('Márcia Souza'), 'lista mostra cliente, local, situação e estimador');
+verificar(lista.includes('Thompson Family') && lista.includes('Manchester, NH') && lista.includes('Em orçamento') && lista.includes('Rita Gomes'), 'lista mostra cliente, local, situação e estimador');
 await page.click('[data-acao="mz-filtro"][data-situacao="enviada"]');
 verificar(await page.locator('.tabela-projetos tbody tr').count() === 1 && (await textoDe('.tabela-projetos')).includes('LogSul'), 'filtro por situação: proposta enviada');
 await page.click('[data-acao="mz-filtro"][data-situacao="todos"]');
@@ -360,7 +360,7 @@ verificar(pixel[0] === 22 && pixel[1] === 163 && pixel[2] === 74, 'e no desenho 
 await print('7-cor-assembly');
 
 console.log('Permissão do catálogo');
-await como('u-marcia', '#/measure/assemblies');
+await como('u-rita', '#/measure/assemblies');
 await page.waitForSelector('.mz-assemblies');
 verificar(await page.locator('a:has-text("Novo assembly")').count() === 0, 'gestor (sem "Itens e assemblies") não cria assembly');
 await page.click('.mz-assembly:has-text("Piso LVP")');
@@ -368,11 +368,11 @@ await page.waitForSelector('#form-assembly');
 verificar(await page.isDisabled('.mz-linha [name="formula"]'), 'gestor vê as fórmulas, mas não edita');
 
 console.log('Cadastro de projeto');
-await como('u-ana', '#/measure');
+await como('u-tom', '#/measure');
 await page.waitForSelector('.tabela-projetos');
 await page.click('a:has-text("Novo projeto")');
 await page.waitForSelector('#form-projeto');
-verificar(await page.inputValue('#pj-estado') === 'NH' && await page.inputValue('#pj-estimadorId') === 'u-ana', 'novo projeto já vem com o estado e o estimador (quem está cadastrando)');
+verificar(await page.inputValue('#pj-estado') === 'NH' && await page.inputValue('#pj-estimadorId') === 'u-tom', 'novo projeto já vem com o estado e o estimador (quem está cadastrando)');
 await page.fill('#pj-nome', 'Casa Bedford');
 await page.click('[data-acao="mz-salvar-projeto"]');
 verificar((await toast()).includes('contratante'), 'o contratante é obrigatório');
@@ -389,7 +389,7 @@ await page.click('[data-acao="mz-salvar-projeto"]');
 verificar((await toast()).includes('ZIP'), 'ZIP code conferido (5 dígitos)');
 await page.fill('#pj-zip', '03110');
 await page.fill('#pj-prazoProposta', '2026-10-09');
-await page.selectOption('#pj-obraId', 'jardim');
+await page.selectOption('#pj-obraId', 'nf-jardim');
 await print('8-cadastro');
 await page.click('[data-acao="mz-salvar-projeto"]');
 await page.waitForSelector('.mz-dados');
@@ -409,11 +409,11 @@ await page.click('[data-acao="mz-excluir-projeto"]');
 await noDialogo('Excluir');
 await page.waitForSelector('.tabela-projetos');
 verificar(await page.locator('.tabela-projetos tbody tr').count() === 3, 'excluir o projeto');
-await como('u-ana', '#/measure/projeto/pj-casa');
+await como('u-tom', '#/measure/projeto/pj-casa');
 await page.waitForSelector('.tabela-quantidades');
 
 console.log('Empresa e contatos (os atores)');
-await como('u-ana', '#/settings/empresa');
+await como('u-tom', '#/settings/empresa');
 await page.waitForSelector('#form-empresa');
 verificar(await page.inputValue('#em-nome') === 'Northfield Framing & Siding' && await page.inputValue('#em-atuacao') === 'prestadora', 'a empresa que assina é uma prestadora de serviço');
 await page.setInputFiles('#empresa-logo', 'icons/icon-192.png');
@@ -436,18 +436,18 @@ await page.check('#form-contato [name="etapas"][value="09 29 00 · Gypsum board"
 await page.click('[data-acao="contato-salvar"]');
 await page.waitForSelector('.tabela-contatos');
 verificar((await textoDe('.tabela-contatos')).includes('Granite Drywall Supply'), 'fornecedor cadastrado');
-await page.goto(BASE + '#/settings/contato/ct-merrimack');
+await page.goto(BASE + '#/settings/contato/ct-construtora');
 await page.waitForSelector('#form-contato');
 await page.check('#form-contato [name="papeis"][value="cliente"]'); // a mesma empresa pode ser construtora e cliente
 await page.click('[data-acao="contato-excluir"]');
 await noDialogo('Excluir');
 verificar((await toast()).includes('Em uso'), 'contato em uso (obra, projeto) não sai do cadastro');
 await print('14-contatos');
-await page.goto(BASE + '#/daily/obras/jardim');
+await page.goto(BASE + '#/daily/obras/nf-jardim');
 await page.waitForSelector('.obra-resumo');
 const resumoObra = await textoDe('.obra-resumo');
-verificar(resumoObra.includes('Merrimack Valley Builders') && resumoObra.includes('Incorporadora Horizonte'), 'a obra do Daily mostra o contratante (construtora) e o dono');
-await como('u-ana', '#/measure/projeto/pj-casa');
+verificar(resumoObra.includes('Construtora Exemplo') && resumoObra.includes('Incorporadora Horizonte'), 'o serviço da prestadora no Daily: contratante (a construtora) e dono da obra');
+await como('u-tom', '#/measure/projeto/pj-casa');
 await page.waitForSelector('.tabela-quantidades');
 
 console.log('Enviar PDF e calibrar por uma cota');
@@ -469,9 +469,22 @@ verificar((await toast()).includes('Escala conferida'), 'conferência na outra d
 await print('3-calibrada');
 
 console.log('Permissões');
-await como('u-carlos', '#/measure');
+await como('u-jose', '#/measure');
 await page.waitForSelector('.modulos');
-verificar(page.url().endsWith('#/inicio') && await page.locator('.modulos .modulo-measure').count() === 0, 'encarregado não vê o Measure (sem a permissão)');
+verificar(page.url().endsWith('#/inicio') && await page.locator('.modulos .modulo-measure').count() === 0, 'encarregado da prestadora não vê o Measure (sem a permissão)');
+
+console.log('Duas empresas, dados separados');
+await como('u-ana', '#/measure');
+await page.waitForSelector('.pagina');
+await page.waitForFunction(() => /Projetos/.test(document.querySelector('.pagina h1')?.textContent || ''));
+verificar(await page.locator('.tabela-projetos').count() === 0, 'a construtora (Ana) não vê os projetos da prestadora');
+await page.goto(BASE + '#/settings/contatos');
+await page.waitForSelector('.tabela-contatos');
+const contatosAna = await textoDe('.tabela-contatos');
+verificar(contatosAna.includes('Northfield Framing & Siding') && contatosAna.includes('Prestadora') && !contatosAna.includes('Granite Drywall Supply'), 'para a construtora, a Northfield é um contato (prestadora); o que a prestadora cadastrou não aparece');
+await como('u-tom', '#/daily/obras');
+await page.waitForSelector('.grade-obras');
+verificar(await page.locator('.cartao-obra').count() === 1 && !(await textoDe('.grade-obras')).includes('Edifício Atlântico'), 'a prestadora só vê o próprio serviço, não as obras da construtora');
 
 verificar(erros.length === 0, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.join(' | ') : ''));
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');

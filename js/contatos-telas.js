@@ -16,7 +16,7 @@ const quem = () => (usuarioAtual() || {}).nome;
 const campo = (id, rotulo, html, classe) => '<div class="campo' + (classe ? ' ' + classe : '') + '"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
 const texto = (pre, nome, rotulo, valor, extra) => campo(pre + nome, rotulo, '<input type="text" id="' + pre + nome + '" name="' + nome + '" value="' + esc(valor || '') + '"' + (extra || '') + '>');
 const area = (pre, nome, rotulo, valor, linhas, ph) => campo(pre + nome, rotulo, '<textarea id="' + pre + nome + '" name="' + nome + '" rows="' + (linhas || 3) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : '') + '>' + esc(valor || '') + '</textarea>');
-const etiquetasPapeis = (c) => c.papeis.map((p) => '<span class="etiqueta ' + (p === 'construtora' ? 'etiqueta-azul' : p === 'fornecedor' ? 'etiqueta-ambar' : 'etiqueta-verde') + '">' + PAPEIS[p].nome + '</span>').join(' ');
+const etiquetasPapeis = (c) => c.papeis.map((p) => '<span class="etiqueta ' + ({ construtora: 'etiqueta-azul', fornecedor: 'etiqueta-ambar', prestadora: 'etiqueta-neutro' }[p] || 'etiqueta-verde') + '">' + PAPEIS[p].nome + '</span>').join(' ');
 
 /* Logo da empresa: o que aparece no lugar da logo quando não há imagem. */
 export function htmlLogo(classe) {

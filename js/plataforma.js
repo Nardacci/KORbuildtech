@@ -5,7 +5,7 @@
  * isola os dados de cada empresa. */
 
 import { esc, dataCurta, diasEntre, hoje, dataHora } from './util.js';
-import { estado, salvar } from './armazem.js';
+import { estado, todasAsEmpresas, salvar } from './armazem.js';
 import { pode, perfilDe, modulosDe } from './settings.js';
 import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
 
@@ -60,9 +60,14 @@ export function usuarioAtual() {
 export function entrar(usuario) { localStorage.setItem(CHAVE_SESSAO, usuario.id); }
 export function sair() { localStorage.removeItem(CHAVE_SESSAO); }
 
+/* Na entrada, o e-mail diz a empresa: procura em todas e a sessão abre a empresa do usuário. */
 export function usuarioPorEmail(email) {
   const e = String(email || '').trim().toLowerCase();
-  return estado().usuarios.find((u) => u.email.toLowerCase() === e && u.ativo) || null;
+  for (const d of todasAsEmpresas()) {
+    const u = d.usuarios.find((x) => x.email.toLowerCase() === e && x.ativo);
+    if (u) return u;
+  }
+  return null;
 }
 
 /* Módulos que a pessoa abre e estão contratados (Settings vem em todo plano). */
@@ -195,9 +200,10 @@ function menuUsuario(u) {
 
 /* ---------- Login ---------- */
 
-export function telaLogin(usuarios) {
+/* grupos: [{ empresa, usuarios: [{ u, perfil }] }] — os usuários de demonstração de cada empresa. */
+export function telaLogin(grupos) {
   const email = (u) => '<button type="button" class="email-demo" data-acao="preencher-email" data-email="' + esc(u.email) + '">' + esc(u.email) + '</button>';
-  const admin = usuarios.filter((u) => pode(u, 'settings.acesso'));
+  const admin = grupos.length ? grupos[0].usuarios.filter((x) => x.admin).map((x) => x.u) : [];
   return '<div class="login-pagina">' +
     '<section class="login-marca">' +
       marca(40) +
@@ -219,7 +225,8 @@ export function telaLogin(usuarios) {
         '<label class="lembrar"><input type="checkbox" checked> Manter conectado</label>' +
         '<p class="login-erro" id="login-erro" role="alert" hidden></p>' +
         '<button type="submit" class="btn btn-primario btn-bloco btn-grande">Entrar</button>' +
-        '<p class="usuarios-demo"><b>Usuários de demonstração</b>' + usuarios.map((u) => ' · ' + esc((perfilDe(u) || {}).nome || '') + ': ' + email(u)).join('') + '</p>' +
+        '<div class="usuarios-demo"><b>Usuários de demonstração</b>' + grupos.map((g) => '<p><span class="usuarios-demo-empresa">' + esc(g.empresa) + '</span>' +
+          g.usuarios.map((x) => ' · ' + esc(x.perfil) + ': ' + email(x.u)).join('') + '</p>').join('') + '</div>' +
       '</form>' +
     '</section>' +
   '</div>';

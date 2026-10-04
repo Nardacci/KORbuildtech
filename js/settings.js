@@ -342,12 +342,12 @@ export function auditoria() { return cfg().auditoria || []; }
 
 /* ---------- Dados iniciais ---------- */
 
-export function criarSettings(desde, dataRegistro) {
+export function criarSettings(desde, dataRegistro, por = 'Ana Ribeiro') {
   return {
-    regras: [{ id: 'rg-inicial', desde, ...structuredClone(MODELOS_REGRA.federal), motivo: 'Configuração inicial da empresa', por: 'Ana Ribeiro', em: dataRegistro }],
-    encargos: [{ id: 'en-inicial', desde, itens: structuredClone(ENCARGOS_INICIAIS), motivo: 'Configuração inicial da empresa', por: 'Ana Ribeiro', em: dataRegistro }],
+    regras: [{ id: 'rg-inicial', desde, ...structuredClone(MODELOS_REGRA.federal), motivo: 'Configuração inicial da empresa', por, em: dataRegistro }],
+    encargos: [{ id: 'en-inicial', desde, itens: structuredClone(ENCARGOS_INICIAIS), motivo: 'Configuração inicial da empresa', por, em: dataRegistro }],
     perfis: structuredClone(PERFIS_INICIAIS),
     funcoes: ['Pedreiro', 'Servente', 'Carpinteiro', 'Armador', 'Eletricista', 'Encanador', 'Pintor', 'Mestre de obras', 'Encarregado', 'Operador de máquinas'],
-    auditoria: [{ id: 'au-inicial', em: dataRegistro, por: 'Ana Ribeiro', area: 'Empresa', descricao: 'Configuração inicial: regra New Hampshire (FLSA federal) e encargos padrão', antes: '', depois: '', motivo: '' }],
+    auditoria: [{ id: 'au-inicial', em: dataRegistro, por, area: 'Empresa', descricao: 'Configuração inicial: regra New Hampshire (FLSA federal) e encargos padrão', antes: '', depois: '', motivo: '' }],
   };
 }

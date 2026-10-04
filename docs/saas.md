@@ -8,7 +8,7 @@ Documento de análise de negócio. Descreve como a plataforma se organiza como S
 
 | Conceito | O que é | Exemplo |
 | --- | --- | --- |
-| **Empresa** (tenant) | O cliente da plataforma: quem assina e paga. Tudo pertence a uma empresa. Pode ser uma **prestadora de serviço** (subcontractor) ou uma **construtora** (general contractor). Ver §Atores. | Northfield Framing & Siding (prestadora) |
+| **Empresa** (tenant) | O cliente da plataforma: quem assina e paga. Tudo pertence a uma empresa. Pode ser uma **prestadora de serviço** (subcontractor) ou uma **construtora** (general contractor). Ver §Atores. | Construtora Exemplo · Northfield Framing & Siding (prestadora) |
 | **Assinatura** | O plano da empresa, a situação (teste, ativa, em atraso, cancelada) e os limites. | Plano Profissional, teste grátis até 14/10 |
 | **Módulo** | Uma parte da plataforma que a empresa contrata. | Daily, Crew, Measure |
 | **Usuário** | Uma pessoa da empresa, com login próprio e um papel. | Carlos (campo), Ana (administradora) |
@@ -27,6 +27,12 @@ Decidido em outubro de 2026. Público: **prestadoras de serviço e construtoras/
 | **Construtora** | *General contractor (GC)* | **Contato.** Contrata a prestadora; recebe a proposta, o diário e o avanço por link ou PDF |
 | **Cliente** | *Owner / homeowner* | **Contato.** Dono da obra. Recebe a proposta quando contrata a prestadora direto (sem construtora) |
 | **Fornecedor** | *Supplier / lumber yard* | **Contato.** Recebe a lista de materiais para cotação e devolve os preços. Diz o que fornece (etapas do catálogo) |
+| **Prestadora** (vista pela construtora) | *Subcontractor* | **Contato** da construtora: a empresa de serviço que ela contrata. Se a prestadora também assina o KORbuild, ela tem a sua própria empresa, com os seus dados |
+
+**Na demonstração** há duas empresas, isoladas (cada uma só vê os seus dados):
+- **Construtora Exemplo**: Ana (administradora), Márcia (gestora), Carlos e Roberto (encarregados), Diego (trabalhador); as três obras com diário, ponto e custos. Para ela, a Northfield é um contato (prestadora).
+- **Northfield Framing & Siding**: Tom (administrador), Rita (estimadora, gestor de obras), José (encarregado) e Luis (trabalhador); os projetos do Measure e um serviço no Residencial Jardim das Flores, em que a contratante é a Construtora Exemplo e a dona é a Incorporadora Horizonte.
+- No aparelho, o armazenamento guarda `{ versao, padrao, empresas: { id: dados } }`; a empresa aberta é a do usuário da sessão (`js/armazem.js`).
 
 **Regras dos atores**
 1. **Nada fixo de "construtora".** A empresa assinante é "a empresa"; no perfil ela diz como atua (prestadora, construtora ou as duas).

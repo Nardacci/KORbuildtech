@@ -58,7 +58,7 @@ await page.goto(BASE);
 await page.waitForSelector('#form-login', { timeout: 30000 });
 verificar(page.url().endsWith('#/entrar'), 'sem login, abre a tela de entrar');
 verificar((await page.inputValue('#login-email')).length > 0, 'login já vem preenchido (mockup)');
-verificar(await page.locator('.usuarios-demo .email-demo').count() === 3, 'linha com os usuários de demonstração: trabalhador, encarregado e administrador');
+verificar(await page.locator('.usuarios-demo p').count() === 2 && await page.locator('.usuarios-demo p:has-text("Construtora Exemplo") .email-demo').count() === 3 && await page.locator('.usuarios-demo p:has-text("Northfield") .email-demo').count() === 4, 'usuários de demonstração das duas empresas: construtora (3) e prestadora (4)');
 await page.fill('#login-email', 'ninguem@exemplo.com');
 await page.click('#form-login button[type="submit"]');
 verificar(await page.isVisible('#login-erro'), 'e-mail desconhecido mostra erro');
@@ -175,7 +175,7 @@ await page.setInputFiles('input[data-fotos="camera"]', { name: 'IMG_0001.jpg', m
 await page.waitForSelector('#s-fotos .foto img[src^="blob:"]', { timeout: 20000 });
 const meta = await page.textContent('#s-fotos .foto .mudo');
 verificar(/GPS ✓/.test(meta), 'foto com GPS do aparelho: ' + meta);
-const dados = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
+const dados = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['construtora-exemplo']);
 const novo = dados.rdos.find((r) => r.obraId === 'jardim' && r.status === 'rascunho');
 const f = novo.fotos[0];
 verificar(f.tamanho < 400 * 1024 && f.tamanhoOriginal > f.tamanho * 3, 'foto comprimida: ' + Math.round(f.tamanhoOriginal / 1024) + ' KB → ' + Math.round(f.tamanho / 1024) + ' KB');
@@ -241,9 +241,9 @@ verificar(true, 'link do cliente abre sem login: documento autêntico');
 await print('08-cliente');
 // adulteração: muda um texto direto no armazenamento → a verificação acusa
 await page.evaluate((id) => {
-  const d = JSON.parse(localStorage.getItem('kbt.rdo.v1'));
-  d.rdos.find((r) => r.id === id).atividades[0].descricao += ' (editado)';
-  localStorage.setItem('kbt.rdo.v1', JSON.stringify(d));
+  const b = JSON.parse(localStorage.getItem('kbt.rdo.v1'));
+  b.empresas['construtora-exemplo'].rdos.find((r) => r.id === id).atividades[0].descricao += ' (editado)';
+  localStorage.setItem('kbt.rdo.v1', JSON.stringify(b));
 }, id);
 await page.reload();
 await page.waitForFunction(() => /mudou depois da aprovação/.test(document.getElementById('verificacao').textContent));
@@ -253,7 +253,7 @@ verificar(true, 'adulteração detectada pelo lacre');
 await page.goto(BASE + '#/daily/pdf/' + id);
 await page.waitForSelector('#form-login');
 verificar(true, 'PDF pede login');
-await page.fill('#login-email', 'ana@prestadoraexemplo.com');
+await page.fill('#login-email', 'ana@construtoraexemplo.com');
 await page.click('#form-login button[type="submit"]');
 await page.waitForSelector('.modulos');
 await page.goto(BASE + '#/daily/pdf/' + id);
@@ -273,7 +273,7 @@ verificar((await page.textContent('[data-acao="enviar"]')).includes('Reenviar'),
 await page.click('[data-acao="enviar"]');
 await page.waitForSelector('.aviso-azul, .aviso-ambar', { timeout: 15000 });
 await page.waitForFunction(() => !/Enviando/.test(document.getElementById('conexao').textContent), null, { timeout: 15000 });
-const dados2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
+const dados2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['construtora-exemplo']);
 const reenviado = dados2.rdos.find((r) => r.id === 'rdo-galpao-m2');
 verificar(reenviado.status === 'enviado' && reenviado.sync === 'enviado', 'reenviado e recebido');
 
@@ -286,7 +286,7 @@ await page.waitForSelector('dialog .opcao-rdo');
 await page.click('dialog .opcao-rdo >> nth=2');
 await page.click('dialog button:has-text("Copiar")');
 await page.waitForSelector('#s-clima');
-const dados3 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
+const dados3 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['construtora-exemplo']);
 const copiaAntiga = dados3.rdos.find((r) => r.obraId === 'galpao' && r.status === 'rascunho');
 verificar(copiaAntiga && copiaAntiga.historico[0].acao.includes('nº 115'), 'copiar: dá para escolher um RDO mais antigo (nº 115)');
 verificar(copiaAntiga && copiaAntiga.equipe.length === 4 && copiaAntiga.fotos.length === 0, 'copiar: traz a equipe e começa sem fotos');

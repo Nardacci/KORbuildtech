@@ -5,10 +5,10 @@ import {
   toast, abrirDialogo, confirmar,
 } from './util.js';
 import {
-  estado, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
+  estado, bancoDeDados, todasAsEmpresas, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
   guardarFoto, apagarFoto, hidratarFotos, apagarTudo, idMiniatura,
 } from './armazem.js';
-import { criarDemonstracao, CONTAS_DEMO, VERSAO_DADOS } from './exemplo.js';
+import { criarDemonstracao, VERSAO_DADOS } from './exemplo.js';
 import {
   usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, registrarInteresse, modulo, definirPodeInstalar,
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
@@ -195,7 +195,7 @@ function desenhar() {
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
     else return trocarRota(inicioDoPapel);
   } else if (p[0] === 'cliente') html = telaCliente(p[1]);
-  else if (p[0] === 'entrar') html = telaLogin(estado().usuarios.filter((x) => CONTAS_DEMO.includes(x.id)));
+  else if (p[0] === 'entrar') html = telaLogin(gruposDeEntrada());
   else if (p[0] === 'conta') {
     if (!pode(u, 'settings.conta')) return trocarRota(inicioDoUsuario(u));
     html = telaConta(u);
@@ -879,6 +879,17 @@ function telaPdf(id) {
     '<p class="pdf-dica nao-imprimir">Na janela que abrir, escolha "Salvar como PDF". Na versão final, o PDF é gerado no servidor e chega pronto.</p>';
 }
 
+/* Usuários de demonstração de cada empresa, para a tela de entrada. */
+function gruposDeEntrada() {
+  return todasAsEmpresas().map((d) => ({
+    empresa: d.empresa.nome,
+    usuarios: d.usuarios.filter((u) => (d.contasDemo || []).includes(u.id)).map((u) => {
+      const perfil = d.settings.perfis.find((x) => x.id === u.perfilId) || {};
+      return { u, perfil: perfil.nome || '', admin: (perfil.permissoes || []).includes('settings.acesso') };
+    }),
+  }));
+}
+
 /* ---------- Link do contratante (a construtora, ou o dono quando contrata direto) ---------- */
 
 function telaCliente(codigo) {
@@ -1438,7 +1449,7 @@ async function iniciar() {
     definirPodeInstalar(true);
   });
   // Dados de uma versão antiga do protótipo são recriados no formato novo.
-  if (!estado() || estado().versao !== VERSAO_DADOS) {
+  if (!bancoDeDados() || bancoDeDados().versao !== VERSAO_DADOS) {
     app.innerHTML = carregando();
     await apagarTudo();
     sair();

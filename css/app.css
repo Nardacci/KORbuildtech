@@ -1150,3 +1150,5 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .tabela-contatos td { vertical-align: top; }
 .tabela-contatos .etiqueta { margin: 0 4px 2px 0; }
 .form-settings textarea { min-height: 60px; }
+.usuarios-demo p { margin: 4px 0 0; }
+.usuarios-demo-empresa { font-weight: 700; color: var(--texto); }

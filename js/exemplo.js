@@ -12,21 +12,25 @@ import { criarDadosMeasure } from './measure.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
-// A empresa que assina o KORbuild: uma prestadora de serviço (subcontractor) que trabalha para construtoras
-export const EMPRESA = {
-  nome: 'Northfield Framing & Siding', razaoSocial: 'Northfield Framing & Siding LLC', sigla: 'NFS', ein: '00-0000000', atuacao: 'prestadora',
-  especialidades: 'Estrutura, framing, siding e acabamento externo', endereco: '210 Canal St', cidade: 'Manchester', estado: 'NH', zip: '03101',
-  telefone: '(603) 555-0100', email: 'office@prestadoraexemplo.com', site: 'prestadoraexemplo.com',
-  licencas: 'Registro de contractor na cidade de Manchester\nEPA Lead-Safe Certified Firm (RRP)',
-  seguros: 'General liability: US$ 1.000.000 por ocorrência / US$ 2.000.000 agregado\nWorkers\' compensation\nCommercial auto',
-  termosProposta: 'Proposta válida por 30 dias.\nPagamento: 30% na assinatura, 40% na metade do serviço e 30% na conclusão.\nNão inclui licenças, caçamba e reparos ocultos, salvo quando listados no escopo.\nAlterações de escopo só por escrito (change order), com preço e prazo combinados antes.',
-  logo: null,
+/* Duas empresas assinam o KORbuild na demonstração, cada uma com os seus dados (docs/saas.md §Atores):
+ *  - a CONSTRUTORA (general contractor que também executa): Ana é a administradora;
+ *  - a PRESTADORA (subcontractor de framing e siding): mede e orça no Measure e trabalha para a construtora. */
+const TERMOS = 'Proposta válida por 30 dias.\nPagamento: 30% na assinatura, 40% na metade do serviço e 30% na conclusão.\nNão inclui licenças, caçamba e reparos ocultos, salvo quando listados no escopo.\nAlterações de escopo só por escrito (change order), com preço e prazo combinados antes.';
+const SEGUROS = 'General liability: US$ 1.000.000 por ocorrência / US$ 2.000.000 agregado\nWorkers\' compensation\nCommercial auto';
+export const CONSTRUTORA = {
+  id: 'construtora-exemplo', nome: 'Construtora Exemplo', razaoSocial: 'Construtora Exemplo LLC', sigla: 'CE', ein: '00-0000000', atuacao: 'ambas',
+  especialidades: 'Obras residenciais, comerciais e industriais: estrutura, alvenaria e gestão de obra', endereco: '900 Elm St', cidade: 'Manchester', estado: 'NH', zip: '03101',
+  telefone: '(603) 555-0180', email: 'office@construtoraexemplo.com', site: 'construtoraexemplo.com',
+  licencas: 'Registro de contractor na cidade de Manchester', seguros: SEGUROS, termosProposta: TERMOS, logo: null,
 };
-/* Os de fora: um diretório só, com marcadores (docs/saas.md §Atores). */
-const CONTATOS = [
-  ['ct-merrimack', 'Merrimack Valley Builders', 'Paul Bennett', 'construtora', 'Manchester'],
-  ['ct-seacoast', 'Seacoast General Contractors', 'Linda Carver', 'construtora', 'Portsmouth'],
-  ['ct-granite', 'Granite Industrial Construction', 'Mark Sullivan', 'construtora', 'Nashua'],
+export const PRESTADORA = {
+  id: 'prestadora-exemplo', nome: 'Northfield Framing & Siding', razaoSocial: 'Northfield Framing & Siding LLC', sigla: 'NFS', ein: '00-0000001', atuacao: 'prestadora',
+  especialidades: 'Framing, siding, janelas e acabamento externo', endereco: '210 Canal St', cidade: 'Manchester', estado: 'NH', zip: '03101',
+  telefone: '(603) 555-0100', email: 'office@construtoraexemplo.com', site: 'prestadoraexemplo.com',
+  licencas: 'Registro de contractor na cidade de Manchester\nEPA Lead-Safe Certified Firm (RRP)', seguros: SEGUROS, termosProposta: TERMOS, logo: null,
+};
+/* Os de fora: um diretório só, com marcadores (docs/saas.md §Atores). Cada empresa tem o seu. */
+const CONTATOS_COMUNS = [
   ['ct-horizonte', 'Incorporadora Horizonte', 'Renata Alves', 'cliente', 'Manchester'],
   ['ct-atlantico', 'Condomínio Atlântico', 'Síndico Jorge Prado', 'cliente', 'Portsmouth'],
   ['ct-logsul', 'LogSul Armazéns', 'Fernanda Rocha', 'cliente', 'Nashua'],
@@ -38,10 +42,21 @@ const CONTATOS = [
   ['ct-readymix', 'Merrimack Ready-Mix', 'Despacho', 'fornecedor', 'Hooksett', ['03 30 00 · Cast-in-place concrete', '03 21 00 · Reinforcement']],
   ['ct-floor', 'Floor Center NH', 'Vendas', 'fornecedor', 'Manchester', ['09 65 00 · Resilient flooring']],
 ];
-function criarContatos() {
-  return CONTATOS.map(([id, nome, pessoa, papel, cidade, etapas], i) => ({
+// só da construtora: as prestadoras que ela contrata
+const CONTATOS_CONSTRUTORA = [
+  ['ct-northfield', 'Northfield Framing & Siding', 'Tom Reilly', 'prestadora', 'Manchester'],
+  ['ct-bayside', 'Bayside Drywall', 'Ellen Price', 'prestadora', 'Manchester'],
+];
+// só da prestadora: as construtoras que a contratam
+const CONTATOS_PRESTADORA = [
+  ['ct-construtora', 'Construtora Exemplo', 'Ana Ribeiro', 'construtora', 'Manchester'],
+  ['ct-merrimack', 'Merrimack Valley Builders', 'Paul Bennett', 'construtora', 'Manchester'],
+  ['ct-granite', 'Granite Industrial Construction', 'Mark Sullivan', 'construtora', 'Nashua'],
+];
+function criarContatos(proprios) {
+  return proprios.concat(CONTATOS_COMUNS).map(([id, nome, pessoa, papel, cidade, etapas], i) => ({
     id, nome, pessoa, papeis: [papel], cidade, estado: 'NH', endereco: '', zip: '',
-    email: id.slice(3) + '@' + (papel === 'fornecedor' ? 'fornecedor' : papel === 'construtora' ? 'construtora' : 'cliente') + '.exemplo.com',
+    email: id === 'ct-construtora' ? 'ana@construtoraexemplo.com' : id.slice(3) + '@' + papel + '.exemplo.com',
     telefone: '(603) 555-0' + String(200 + i), etapas: etapas || [], notas: '', criadoEm: Date.now(),
   }));
 }
@@ -53,28 +68,28 @@ export const PESSOAS = {
 /* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
 // perfilId: perfil de acesso do Settings (Administrador, Gestor de obras, Encarregado, Trabalhador)
 const USUARIOS = [
-  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@prestadoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: 'Mestre de obras', telefone: '(603) 555-0142' },
-  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@prestadoraexemplo.com', perfilId: 'administrador', cargo: 'Engenheira responsável', telefone: '(603) 555-0187' },
-  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@prestadoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: 'Encarregado', telefone: '(603) 555-0163' },
-  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@prestadoraexemplo.com', perfilId: 'gestor', cargo: 'Diretora de obras', telefone: '(603) 555-0119' },
-  { id: 'u-diego', nome: 'Diego Santos', email: 'diego@prestadoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: 'Pedreiro', telefone: '(603) 555-0175' },
+  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: 'Mestre de obras', telefone: '(603) 555-0142' },
+  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com', perfilId: 'administrador', cargo: 'Engenheira responsável', telefone: '(603) 555-0187' },
+  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: 'Encarregado', telefone: '(603) 555-0163' },
+  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com', perfilId: 'gestor', cargo: 'Diretora de obras', telefone: '(603) 555-0119' },
+  { id: 'u-diego', nome: 'Diego Santos', email: 'diego@construtoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: 'Pedreiro', telefone: '(603) 555-0175' },
 ];
 // Contas da tela de login: uma de cada jeito de usar (só ponto, campo, escritório)
 export const CONTAS_DEMO = ['u-diego', 'u-carlos', 'u-ana'];
 
 const OBRAS = [
   {
-    id: 'jardim', nome: 'Residencial Jardim das Flores', contratanteId: 'ct-merrimack', donoId: 'ct-horizonte',
+    id: 'jardim', nome: 'Residencial Jardim das Flores', contratanteId: 'ct-horizonte', donoId: null,
     endereco: '1450 Elm St · North End', cidade: 'Manchester, NH 03104',
     lat: 43.0040, lon: -71.4635, etapa: 'Alvenaria do 3º pavimento', inicio: -120, prazo: 240,
   },
   {
-    id: 'atlantico', nome: 'Edifício Atlântico', contratanteId: 'ct-seacoast', donoId: 'ct-atlantico',
+    id: 'atlantico', nome: 'Edifício Atlântico', contratanteId: 'ct-atlantico', donoId: null,
     endereco: '120 Market St · Downtown', cidade: 'Portsmouth, NH 03801',
     lat: 43.0757, lon: -70.7568, etapa: 'Estrutura do 7º pavimento', inicio: -200, prazo: 400,
   },
   {
-    id: 'galpao', nome: 'Galpão Logístico Rodovia', contratanteId: 'ct-granite', donoId: 'ct-logsul',
+    id: 'galpao', nome: 'Galpão Logístico Rodovia', contratanteId: 'ct-logsul', donoId: null,
     endereco: '45 Northeastern Blvd · Industrial Park', cidade: 'Nashua, NH 03062',
     lat: 42.7268, lon: -71.4402, etapa: 'Piso industrial', inicio: -60, prazo: 150,
   },
@@ -177,7 +192,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 16;
+export const VERSAO_DADOS = 17;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -260,7 +275,7 @@ export async function criarDemonstracao() {
   }
 
   const empresa = {
-    id: 'prestadora-exemplo', ...EMPRESA, desde: somarDias(dia0, -2),
+    ...CONSTRUTORA, desde: somarDias(dia0, -2),
     plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
     modulos: ['daily', 'crew', 'measure'],
   };
@@ -269,5 +284,50 @@ export async function criarDemonstracao() {
   const inicioEmpresa = somarDias(dia0, -400);
   const settings = criarSettings(inicioEmpresa, new Date(inicioEmpresa + 'T09:00:00').getTime());
   const { funcionarios, ...crew } = criarDadosCrew(obras);
-  return { versao: VERSAO_DADOS, criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, interesses: [], contatos: criarContatos(), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure() };
+  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ projetos: false }) };
+  return { versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [PRESTADORA.id]: criarPrestadora(dia0) } };
+}
+
+/* ---------- A prestadora de serviço (subcontractor) ---------- */
+
+const USUARIOS_PRESTADORA = [
+  { id: 'u-tom', nome: 'Tom Reilly', email: 'tom@prestadoraexemplo.com', perfilId: 'administrador', cargo: 'Sócio e estimador', telefone: '(603) 555-0101' },
+  { id: 'u-rita', nome: 'Rita Gomes', email: 'rita@prestadoraexemplo.com', perfilId: 'gestor', cargo: 'Estimadora', telefone: '(603) 555-0102' },
+  { id: 'u-jose', nome: 'José Pereira', email: 'jose@prestadoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-jose', cargo: 'Encarregado de framing', telefone: '(603) 555-0103' },
+  { id: 'u-luis', nome: 'Luis Ortega', email: 'luis@prestadoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-luis', cargo: 'Carpinteiro', telefone: '(603) 555-0104' },
+];
+const FUNCIONARIOS_PRESTADORA = [
+  ['f-jose', 'José Pereira', 'Encarregado', 34, 'u-jose'],
+  ['f-luis', 'Luis Ortega', 'Carpinteiro', 27, 'u-luis'],
+  ['f-kevin', 'Kevin Dunn', 'Carpinteiro', 26, null],
+  ['f-andre', 'André Lima', 'Ajudante', 19, null],
+];
+
+function criarPrestadora(dia0) {
+  const inicio = somarDias(dia0, -300);
+  const registro = new Date(inicio + 'T09:00:00').getTime();
+  const jardim = OBRAS.find((o) => o.id === 'jardim');
+  // a mesma obra da construtora, vista pela prestadora: aqui é um serviço (framing e siding) contratado pela construtora
+  const obras = [{
+    ...jardim, id: 'nf-jardim', nome: 'Residencial Jardim das Flores · framing e siding', contratanteId: 'ct-construtora', donoId: 'ct-horizonte',
+    etapa: 'Framing do 2º pavimento', inicio: somarDias(dia0, -30), prazo: somarDias(dia0, 60), responsavelId: 'u-jose', diasTrabalho: DIAS_TRABALHO,
+    cerca: { lat: jardim.lat, lon: jardim.lon, raio: RAIO_CERCA },
+  }];
+  const funcionarios = FUNCIONARIOS_PRESTADORA.map(([id, nome, funcao, valor, usuarioId], n) => {
+    const admissao = somarDias(dia0, -(120 + n * 35));
+    return {
+      id, nome, funcao, equipeId: 'eq-nf', admissao, valores: [{ desde: admissao, valor, motivo: 'Admissão', por: 'Tom Reilly', em: new Date(admissao + 'T09:00:00').getTime() }],
+      usuarioId, codigo: 'N-' + String(11 + n), telefone: '(603) 555-02' + String(10 + n), emergencia: '', classificacao: 'w2', flsa: 'nao-isento', situacao: 'ativo',
+      desligamento: '', avisoGps: admissao, certificacoes: n === 0 ? [{ nome: 'OSHA 10', validade: somarDias(dia0, 400) }] : [],
+    };
+  });
+  return {
+    criadoEm: Date.now(), offlineSimulado: false,
+    empresa: { ...PRESTADORA, desde: somarDias(dia0, -5), plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 9), limiteObras: 5 }, modulos: ['daily', 'crew', 'measure'] },
+    usuarios: USUARIOS_PRESTADORA.map((u) => ({ ...u, ativo: true, ultimoAcesso: null })), contasDemo: USUARIOS_PRESTADORA.map((u) => u.id),
+    interesses: [], contatos: criarContatos(CONTATOS_PRESTADORA), obras, rdos: [], funcionarios,
+    settings: criarSettings(inicio, registro, 'Tom Reilly'),
+    crew: { equipes: [{ id: 'eq-nf', nome: 'Equipe do José', encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
+    measure: criarDadosMeasure({ projetos: true, estimadores: ['u-tom', 'u-rita'] }),
+  };
 }

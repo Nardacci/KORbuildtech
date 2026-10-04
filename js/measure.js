@@ -507,16 +507,17 @@ const ASSEMBLIES_EXEMPLO = [
   ] },
 ];
 
-export function criarDadosMeasure() {
+/* projetos: com os projetos e as plantas de exemplo (a prestadora); sem eles, só o catálogo. */
+export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = ['u-tom', 'u-rita'] } = {}) {
   const projetoId = 'pj-casa';
-  return {
+  const dados = {
     projetos: [
       { id: projetoId, nome: 'Casa modelo', contratanteId: 'ct-thompson', donoId: null, endereco: '88 Bridge St', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
-        descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing, siding vinil', obraId: null, estimadorId: 'u-marcia', prazoProposta: somarDias(hoje(), 6), criadoEm: Date.now() },
+        descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing, siding vinil', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), 6), criadoEm: Date.now() },
       { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', contratanteId: 'ct-granite', donoId: 'ct-logsul', endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
-        descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: 'galpao', estimadorId: 'u-ana', prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
+        descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
       { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
-        descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: 'u-marcia', prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
+        descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
     ],
     folhas: [
       ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
@@ -525,4 +526,6 @@ export function criarDadosMeasure() {
     itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({ id, codigo, nome, categoria, unidade, etapa, nota: nota || '' })),
     assemblies: ASSEMBLIES_EXEMPLO,
   };
+  if (!comProjetos) { dados.projetos = []; dados.folhas = []; }
+  return dados;
 }

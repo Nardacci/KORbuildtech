@@ -15,6 +15,7 @@ export const PAPEIS = {
   construtora: { nome: 'Construtora', plural: 'Construtoras', dica: 'General contractor: contrata a empresa para um serviço da obra' },
   cliente: { nome: 'Cliente', plural: 'Clientes', dica: 'Dono da obra (owner): contrata direto ou por uma construtora' },
   fornecedor: { nome: 'Fornecedor', plural: 'Fornecedores', dica: 'Recebe a lista de materiais para cotação' },
+  prestadora: { nome: 'Prestadora', plural: 'Prestadoras', dica: 'Subcontractor: a empresa de serviço (framing, drywall…) que a construtora contrata' },
 };
 export const ATUACOES = {
   prestadora: 'Prestadora de serviço (subcontractor)',
