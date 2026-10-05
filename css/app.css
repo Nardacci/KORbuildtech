@@ -1232,3 +1232,4 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-typical-projeto + .mz-typical-projeto { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borda); }
 .mz-typical-projeto p { margin: 0 0 6px; }
 .tabela-typical th, .tabela-typical td { white-space: nowrap; }
+.nota-batida { display: block; margin-top: 2px; font-size: 13px; font-style: italic; color: var(--texto); }

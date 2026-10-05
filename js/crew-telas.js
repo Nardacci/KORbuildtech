@@ -177,7 +177,7 @@ function telaMeuPonto() {
         '</div></section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Hoje</h2>' +
         (j.batidas.length ? '<ol class="linha-tempo">' + j.batidas.map((b) => '<li class="' + (b.dentroCerca === false ? 'fora' : '') + '"><span class="lt-hora">' + horaCurta(b.em) + '</span><div><span><b>' + ROTULO_BATIDA[b.tipo] + '</b> · ' + esc(nomeObra(b.obraId)) + '</span>' +
-          '<span class="mudo pequeno">' + (b.fonteGps === 'gps' ? (b.dentroCerca ? 'Dentro da obra' : 'Fora da obra') : 'Sem GPS') + (b.registradoPor !== u.id ? ' · registrado pelo encarregado' : '') + '</span></div></li>').join('') + '</ol>' : '<p class="vazio">Nenhuma batida hoje.</p>') +
+          '<span class="mudo pequeno">' + (b.fonteGps === 'gps' ? (b.dentroCerca ? 'Dentro da obra' : 'Fora da obra') : 'Sem GPS') + (b.registradoPor !== u.id ? ' · registrado pelo encarregado' : '') + '</span>' + htmlNota(b) + '</div></li>').join('') + '</ol>' : '<p class="vazio">Nenhuma batida hoje.</p>') +
       '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Minha semana</h2><ul class="minha-semana">' +
         s.dias.filter((x) => x.pago || x.iso === hoje()).map((x) => '<li><span>' + primeiraMaiuscula(diaDaSemana(x.iso)).slice(0, 3) + ' ' + dataCurta(x.iso).slice(0, 5) + '</span><b>' + (x.pago ? horas(x.pago) : '–') + '</b></li>').join('') +
@@ -222,6 +222,9 @@ function opcoesEtapas(selecionada) {
   return ETAPAS.map((e) => '<option' + (e === selecionada ? ' selected' : '') + '>' + esc(e) + '</option>').join('');
 }
 
+// nota opcional na batida (até 280 caracteres): fica junto da batida, para o escritório ver
+const campoNota = '<label class="rotulo-pequeno" for="crew-nota">Nota (opcional)</label><textarea id="crew-nota" name="nota" rows="2" maxlength="280" placeholder="Ex.: o material atrasou; saí mais cedo com autorização do encarregado"></textarea>';
+const htmlNota = (b) => b.nota ? '<span class="nota-batida">“' + esc(b.nota) + '”</span>' : '';
 const simulacao = '<label class="simular-local"><input type="checkbox" name="simular" value="1"> Usar a localização da obra (simulação do protótipo)</label>';
 
 async function dialogoComLocal({ titulo, obraId, corpoAntes, corpoDepois, rotulo, comObra }) {
@@ -232,7 +235,7 @@ async function dialogoComLocal({ titulo, obraId, corpoAntes, corpoDepois, rotulo
     corpo: (corpoAntes || '') +
       (comObra ? '<label class="rotulo-pequeno" for="crew-obra">Obra</label><select id="crew-obra" name="obra">' + opcoesObras(obraId) + '</select>' : '') +
       '<div id="crew-local">' + textoDistancia(loc) + '</div>' + (loc.dentro === false ? simulacao : '') +
-      (corpoDepois || ''),
+      (corpoDepois || '') + campoNota,
     acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo, valor: true, classe: 'btn-primario' }],
   });
   const sel = document.getElementById('crew-obra');
@@ -329,7 +332,7 @@ export const acoesCrew = {
         '<label class="lembrar"><input type="checkbox" name="foto" value="1"> Foto da equipe (no celular, abre a câmera)</label>',
     });
     if (!r) return;
-    aplicar(ids, 'entrada', r.obraId, r.campos.etapa, r.loc, { foto: !!r.campos.foto });
+    aplicar(ids, 'entrada', r.obraId, r.campos.etapa, r.loc, { foto: !!r.campos.foto, nota: r.campos.nota });
     selecionados.clear();
     toast('Entrada registrada' + (proprio(ids) ? '' : ' para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas')) + ' às ' + horaCurta(Date.now()) + '.');
     app.desenhar();
@@ -338,8 +341,13 @@ export const acoesCrew = {
   async 'crew-volta'() { await batidaSimples('volta', 'intervalo-fim', 'Volta do intervalo registrada'); },
   async 'crew-saida'() {
     const ids = aplicaveis(Array.from(selecionados)).saida;
-    if (!(await confirmar(proprio(ids) ? 'Bater a sua saída?' : 'Bater a saída de ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + '?', 'A jornada de hoje é encerrada. Se alguém continuar trabalhando, deixe essa pessoa de fora.', 'Bater saída'))) return;
-    await batidaSimples('saida', 'saida', 'Saída registrada', true);
+    const res = await abrirDialogo({
+      titulo: proprio(ids) ? 'Bater a sua saída?' : 'Bater a saída de ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + '?',
+      corpo: '<p class="mudo">A jornada de hoje é encerrada. Se alguém continuar trabalhando, deixe essa pessoa de fora.</p>' + campoNota,
+      acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Bater saída', valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    await batidaSimples('saida', 'saida', 'Saída registrada', true, res.campos.nota);
   },
   async 'crew-troca'() {
     const ids = aplicaveis(Array.from(selecionados)).troca;
@@ -347,13 +355,13 @@ export const acoesCrew = {
     const res = await abrirDialogo({
       titulo: 'Trocar de obra',
       corpo: '<p class="mudo pequeno">' + ids.length + (ids.length === 1 ? ' pessoa sai' : ' pessoas saem') + ' de ' + esc(nomeObra(atual)) + '. O tempo de deslocamento até a outra obra conta como hora trabalhada.</p>' +
-        '<label class="rotulo-pequeno" for="crew-destino">Para qual obra?</label><select id="crew-destino" name="destino">' + opcoesObras(null, atual) + '</select>',
+        '<label class="rotulo-pequeno" for="crew-destino">Para qual obra?</label><select id="crew-destino" name="destino">' + opcoesObras(null, atual) + '</select>' + campoNota,
       acoes: [{ rotulo: 'Cancelar', valor: false }, { rotulo: 'Sair para a obra', valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
     toast('Localizando o celular…');
     const loc = await localizar(atual);
-    aplicar(ids, 'troca', res.campos.destino, null, loc);
+    aplicar(ids, 'troca', res.campos.destino, null, loc, { nota: res.campos.nota });
     selecionados.clear();
     toast('Deslocamento para ' + nomeObra(res.campos.destino) + ' iniciado. Toque em "Chegou" na chegada.');
     app.desenhar();
@@ -366,7 +374,7 @@ export const acoesCrew = {
       corpoDepois: '<label class="rotulo-pequeno" for="crew-etapa">Etapa nesta obra</label><select id="crew-etapa" name="etapa">' + opcoesEtapas(ETAPAS[0]) + '</select>',
     });
     if (!r) return;
-    aplicar(ids, 'chegada', destino, r.campos.etapa, r.loc);
+    aplicar(ids, 'chegada', destino, r.campos.etapa, r.loc, { nota: r.campos.nota });
     selecionados.clear();
     toast('Chegada registrada.');
     app.desenhar();
@@ -459,7 +467,7 @@ export const acoesCrew = {
   },
 };
 
-async function batidaSimples(acao, tipo, mensagem, saida) {
+async function batidaSimples(acao, tipo, mensagem, saida, nota) {
   const ids = aplicaveis(Array.from(selecionados))[acao];
   if (!ids.length) return;
   toast('Localizando o celular…');
@@ -472,7 +480,7 @@ async function batidaSimples(acao, tipo, mensagem, saida) {
     registrarBatidas([id], {
       tipo, obraId: a.obraId || obraId, etapa: a.etapa || null, lat: loc.lat, lon: loc.lon, precisao: loc.precisao,
       dentroCerca: loc.fonte === 'gps' ? dentroDaCerca(acharObra(a.obraId || obraId), loc.lat, loc.lon) : false,
-      fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: proprio(ids) ? 'pessoal' : 'equipe',
+      fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: proprio(ids) ? 'pessoal' : 'equipe', nota,
     });
   }
   selecionados.clear();
@@ -1332,7 +1340,7 @@ function telaDia(funcId, iso) {
     em: b.em, html: '<span><b>' + ROTULO_BATIDA[b.tipo] + '</b> · ' + esc(nomeObra(b.obraId)) + (b.etapa ? ' · ' + esc(b.etapa) : '') + '</span>' +
       '<span class="mudo pequeno">' + (b.ajuste ? 'Ajuste de ' + esc(b.ajuste.por) + ': "' + esc(b.ajuste.motivo) + '"'
         : (b.fonteGps === 'gps' ? (b.dentroCerca ? 'Dentro da cerca' : 'Fora da cerca' + (b.conferida ? ' · conferida' : '')) + ' · GPS ±' + b.precisao + ' m' : 'Sem GPS') +
-          ' · registrado por ' + esc((estado().usuarios.find((x) => x.id === b.registradoPor) || {}).nome || '—') + (b.foto ? ' · com foto' : '')) + '</span>',
+          ' · registrado por ' + esc((estado().usuarios.find((x) => x.id === b.registradoPor) || {}).nome || '—') + (b.foto ? ' · com foto' : '')) + '</span>' + htmlNota(b),
     classe: b.ajuste ? 'ajuste' : b.dentroCerca === false ? 'fora' : '',
   })).concat(trilha.excursoes.map((e) => ({
     em: e.ini, html: '<span><b>Saiu da cerca com o ponto aberto</b> · ' + horaCurta(e.ini) + '–' + horaCurta(e.fim) + '</span><span class="mudo pequeno">' + esc(e.local) + ' (trilha do GPS)</span>', classe: 'fora',

@@ -122,6 +122,7 @@ Tipos de batida: `entrada · intervalo-inicio · intervalo-fim · troca (sai rum
 | **RN-15** | **Projeção:** com avanço físico informado, projeção = realizado ÷ avanço. Sem avanço, projeção = realizado + média das últimas 4 semanas completas × semanas que faltam até o prazo. |
 | **RN-16** | **Situação da obra:** **No rumo** (projeção ≤ orçamento), **Atenção** (até 5% acima), **Estouro previsto** (mais de 5% acima). |
 | **RN-17** | **Localização só com o ponto aberto.** Nada é gravado no intervalo, com o ponto fechado ou fora do expediente. O trabalhador é avisado. |
+| **RN-18** | **Nota na batida (opcional).** Na entrada, na troca de obra, na chegada e na saída, quem bate o ponto pode escrever uma nota de até 280 caracteres (ex.: "o material atrasou"). A nota fica gravada na batida, aparece no Meu ponto e no dia do funcionário para o escritório, e não muda as horas. O intervalo continua com um toque só, sem nota. |
 
 ---
 

@@ -345,15 +345,20 @@ await page.reload(); // mesmo endereço do usuário anterior: recarrega para ent
 await page.waitForSelector('.meu-ponto');
 verificar(page.url().endsWith('#/crew/meu'), 'trabalhador entra direto no Meu ponto, sem a tela de módulos');
 verificar(await page.locator('.topo-botao[aria-label="Módulos"]').count() === 0 && await page.locator('.lateral').count() === 0, 'trabalhador: sem botão de módulos e sem menu');
+const notaDiego = 'Material atrasou, fiquei ajudando na descarga';
 if (await page.locator('.meu-ponto [data-acao="crew-saida"]').count()) {
   await page.click('.meu-ponto [data-acao="crew-saida"]');
+  await page.fill('dialog textarea[name="nota"]', notaDiego);
   await page.click('dialog button:has-text("Bater saída")');
 } else {
   await page.click('.meu-ponto [data-acao="crew-entrada"]');
+  await page.fill('dialog textarea[name="nota"]', notaDiego);
   await page.click('dialog button:has-text("Bater entrada")');
 }
 await page.waitForFunction(() => /Saiu às|Trabalhando desde/.test(document.querySelector('.meu-ponto').textContent) && /Saída|Entrada/.test(document.querySelector('.linha-tempo').textContent));
 verificar(true, 'trabalhador bate o próprio ponto');
+await page.waitForSelector('.linha-tempo .nota-batida');
+verificar((await page.textContent('.linha-tempo')).includes(notaDiego), 'nota na batida: aparece junto da batida no Meu ponto');
 verificar(await page.locator('.minha-semana .total').count() === 1 && !(await page.textContent('.pagina')).includes('US$'), 'trabalhador vê as próprias horas, sem valores em dinheiro');
 await print('11-meu-ponto');
 for (const h of ['#/crew/agora', '#/daily/painel', '#/settings/funcionarios']) {
@@ -367,6 +372,10 @@ verificar(await page.locator('.modulos .modulo-daily').count() === 1 && await pa
 await page.goto(BASE + '#/crew/custos');
 await page.waitForSelector('.custo-obra');
 verificar(true, 'gestor vê os custos');
+const hojeIso = await page.evaluate(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); });
+await como('u-ana', '#/crew/dia/f-diego/' + hojeIso);
+await page.waitForSelector('.nota-batida');
+verificar((await page.textContent('.pagina')).includes(notaDiego), 'o escritório vê a nota no dia do funcionário');
 await como('u-ana', '#/settings/perfis');
 await page.waitForSelector('.matriz-perfis');
 verificar(await page.locator('.matriz-perfis input[name^="administrador|"]:disabled').count() > 0, 'perfil Administrador é fixo');

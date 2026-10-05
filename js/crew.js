@@ -325,6 +325,7 @@ export function registrarBatidas(funcIds, dados) {
       lat: dados.lat, lon: dados.lon, precisao: dados.precisao, dentroCerca: dados.dentroCerca,
       fonteGps: dados.fonteGps || 'gps', registradoPor: dados.registradoPor, modo: dados.modo || 'equipe',
       foto: !!dados.foto, ajuste: dados.ajuste || null, conferida: false,
+      nota: String(dados.nota || '').trim().slice(0, 280) || null, // opcional: quem bate o ponto explica algo (atraso, saída antes…)
     });
   }
   salvar();
