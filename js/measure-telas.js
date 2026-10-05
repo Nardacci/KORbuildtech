@@ -20,6 +20,7 @@ import {
 import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
 import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta } from './measure-relatorios.js';
+import { telaPrecos } from './precos-telas.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -30,6 +31,7 @@ function navMeasure() {
     { id: 'projetos', href: '#/measure', rotulo: 'Projetos', icone: 'obras' },
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: 'Assemblies', icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: 'Itens', icone: 'measure' },
+    { id: 'precos', href: '#/measure/precos', rotulo: 'Preços', icone: 'dinheiro' },
   ];
 }
 // o visor da planta usa a tela inteira, sem o menu lateral
@@ -58,6 +60,7 @@ export function telaMeasure(q) {
   }
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
   if (q[0] === 'itens') return telaItens();
+  if (q[0] === 'precos') return telaPrecos(moldura);
   if (q[0] === 'assemblies') return telaAssemblies();
   if (q[0] === 'assembly' && (q[1] === 'novo' || assembly(q[1]))) return telaAssembly(q[1] === 'novo' ? null : q[1]);
   return { trocar: '#/measure' };

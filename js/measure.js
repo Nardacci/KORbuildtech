@@ -457,6 +457,14 @@ const ITENS_EXEMPLO = [
   ['it-mo-janela', 'MO-WIN', 'Instalação de janela', 'mao-de-obra', 'hora', '08 53 00 · Plastic windows'],
   ['it-mo-siding', 'MO-SID', 'Instalação de siding', 'mao-de-obra', 'hora', '07 46 33 · Plastic siding'],
 ];
+/* Preços de exemplo (US$, na unidade de compra; mão de obra em US$/hora de custo). EXEMPLOS para a
+ * demonstração, não referência de mercado: cada empresa registra os seus (cotação ou digitado). */
+const PRECOS_EXEMPLO = {
+  'it-stud': 9.8, 'it-plate': 14.5, 'it-osb': 16.9, 'it-wrap': 165, 'it-r21': 68, 'it-dw': 14.2, 'it-lvp': 62, 'it-manta': 45, 'it-conc': 185, 'it-tela': 95,
+  'it-porta': 189, 'it-fechadura': 28, 'it-guarnicao': 11.5, 'it-jan-w1': 420, 'it-jan-w2': 360, 'it-flash': 32, 'it-trim-ext': 24, 'it-porta-ext': 780,
+  'it-fech-ext': 95, 'it-siding': 135, 'it-jchannel': 9.8,
+  'it-mo-estrutura': 38, 'it-mo-drywall': 38, 'it-mo-piso': 38, 'it-mo-concreto': 38, 'it-mo-porta': 38, 'it-mo-janela': 38, 'it-mo-siding': 38,
+};
 const ln = (id, itemId, formula, perda, passo) => ({ id, itemId, formula, perda, passo });
 const linhasJanela = (unidade) => [
   ln('l1', unidade, 'MeasuredCount', 0, 1),
@@ -523,7 +531,11 @@ export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = 
       ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
     ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null })),
     condicoes: [], // o desenho abre vazio: cada assembly é incluído pelo visor
-    itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({ id, codigo, nome, categoria, unidade, etapa, nota: nota || '' })),
+    itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({
+      id, codigo, nome, categoria, unidade, etapa, nota: nota || '',
+      precos: PRECOS_EXEMPLO[id] ? [{ valor: PRECOS_EXEMPLO[id], desde: somarDias(hoje(), -60), fonte: 'Tabela de exemplo', fornecedorId: null, por: 'Configuração inicial', em: Date.now() }] : [],
+    })),
+    margens: [{ overheadPct: 12, lucroPct: 10, modo: 'markup', impostoMaterialPct: 0, desde: somarDias(hoje(), -60), motivo: 'Configuração inicial (exemplo)', por: 'Configuração inicial', em: Date.now() }],
     assemblies: ASSEMBLIES_EXEMPLO,
   };
   if (!comProjetos) { dados.projetos = []; dados.folhas = []; }

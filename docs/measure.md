@@ -19,7 +19,7 @@ O desenvolvimento é em fatias finas: o canvas e o motor de cálculo andam junto
 | --- | --- | --- |
 | **1** | Tradutor imperial; abrir o PDF no navegador; escala da lista ou por calibração, mais a conferência; condições (linear, área, contagem) com propriedades; medição no canvas; quantidades | **Feita** |
 | **2** | Catálogo de itens, assemblies e fórmulas (mathjs restrito), perda e arredondamento como campos, quantidades de material e mão de obra com o cálculo à vista, CSV | **Feita** |
-| 3 | Preços com vigência, estimativa (material, mão de obra, equipamento, subempreiteiro, overhead, lucro com markup **e** margem), snapshot | Próxima |
+| **3** | Preços com vigência (cotação, digitado, Crew), margens com vigência (overhead, lucro em markup **ou** margem, imposto), preço calculado na proposta, versão emitida congelada | **Feita** |
 | 4 | Ligações: horas estimadas por etapa → orçamento de mão de obra do Crew; quantidades → avanço físico no Daily | — |
 
 ## 2. Regras de unidade e geometria (implementadas)
@@ -172,7 +172,26 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 | RL-04 | **E-mail**: no protótipo não há servidor, então o e-mail **abre pronto** no programa de e-mail da pessoa (para o fornecedor, com a lista e o prazo; para o contratante, com o número e o total), e o PDF vai em anexo. O pedido de cotação preparado fica registrado no projeto. No produto, o envio sai pelo sistema | `abrirEmail` |
 | RL-05 | O fornecedor nunca vê preço de venda, mão de obra nem fórmula; o contratante vê o preço por linha e, se a prestadora quiser, as quantidades de material | documentos |
 
-**Ainda não:** preço do material vindo da cotação (com vigência), custo da mão de obra pelo valor hora do Crew, overhead e lucro. Hoje o preço da linha é digitado pelo estimador.
+## 3c. Preços e margens (fatia 3)
+
+| Tela | Rota | O que faz |
+| --- | --- | --- |
+| **Preços** | `#/measure/precos` | Margens atuais (com exemplo de custo → venda e histórico) e, por categoria, o **preço atual de cada item** na unidade de compra, desde quando vale e de onde veio (tabela, digitado, Crew, cotação de um fornecedor); "Novo preço" e "Nova versão" das margens. Editar: permissão "Itens e assemblies" |
+| **Lista para cotação › Registrar preços recebidos** | (na lista) | Digita os preços que o fornecedor devolveu; viram o preço dos itens a partir da data, com a origem "Cotação · fornecedor" |
+| **Proposta** | (já existia) | Cada linha mostra o custo (material + imposto + mão de obra + outros) e o **preço calculado**; o valor digitado vale no lugar dele; resumo interno com o custo e o resultado sobre a venda |
+
+| # | Regra | Onde |
+| --- | --- | --- |
+| PR-01 | **Preço com vigência**: um preço novo vale a partir de uma data; os antigos ficam no histórico e nunca são apagados. A proposta usa o preço que vale **no dia** | `precoEm` |
+| PR-02 | **Mão de obra** é um item com preço em US$/hora de custo. O Crew sugere: média do valor hora de hoje dos funcionários ativos (W-2) + encargos do Settings | `custoHoraDoCrew` |
+| PR-03 | **Margens com vigência** (com motivo, na auditoria): overhead % sobre o custo; lucro em **markup** (% sobre custo + overhead) ou em **margem** (% do preço de venda); imposto sobre material (sales tax; 0 no exemplo de New Hampshire, mas é um parâmetro) | `margensEm`, `novasMargens` |
+| PR-04 | **Preço calculado da linha** = (material × (1 + imposto) + mão de obra + outros) × (1 + overhead) → + lucro (markup: × (1 + lucro); margem: ÷ (1 − lucro)) | `custoDe`, `precoDeVenda` |
+| PR-05 | Item sem preço no catálogo não entra no custo e aparece como "Sem preço" na linha e no resumo | `custoDe` |
+| PR-06 | O documento da proposta mostra só o preço de cada linha: **custo, margem e overhead nunca saem** para o contratante; ficam guardados na versão emitida, para consulta interna | `dadosDaProposta` |
+
+**Exemplo** (sheathing, 40 chapas de OSB): 40 × US$ 16,90 = US$ 676,00 de custo → +12% overhead = 757,12 → +10% markup = **US$ 832,83**. Com o preço da cotação (US$ 18,50) e margens de 15% e 20% em margem: 740,00 × 1,15 ÷ 0,80 = **US$ 1.063,75**.
+
+**Dados de exemplo:** preços em "Tabela de exemplo" para os 28 itens (mão de obra a US$ 38/h de custo) e margens de 12% de overhead e 10% de lucro (markup), sem imposto. São exemplos para a demonstração, não referência de mercado.
 
 ## 4. Permissões
 
@@ -195,7 +214,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **118 verificações.** Inclui os relatórios (lista para cotação por fornecedor com e-mail e PDF; proposta com preço por linha, outros itens, total, emissão numerada e congelada, e-mail e PDF), as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **128 verificações.** Inclui os preços (calculado pelo catálogo e as margens; preço que veio da cotação; margens novas em margem; digitado no lugar do calculado; voltar ao calculado), os relatórios (lista para cotação por fornecedor com e-mail e PDF; proposta com preço por linha, outros itens, total, emissão numerada e congelada, e-mail e PDF), as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;

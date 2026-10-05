@@ -7,11 +7,12 @@
 
 import { esc, toast, hoje, somarDias, dataCurta, confirmar } from './util.js';
 import { estado, salvar } from './armazem.js';
-import { usuarioAtual } from './plataforma.js';
+import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { numero } from './imperial.js';
 import { dinheiro } from './crew.js';
 import { projeto, quantidadesDoProjeto, enderecoDoProjeto } from './measure.js';
+import { custoDe, margensEm, textoMargens } from './precos.js';
 import { empresa, enderecoDaEmpresa, contato, contatosCom, contratanteDe, donoDe } from './contatos.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
@@ -72,6 +73,7 @@ function htmlTabelaCotacao(itens) {
 
 function prazoResposta(p) { return (p.cotacao && p.cotacao.responderAte) || somarDias(hoje(), 3); }
 function obsCotacao(p) { return (p.cotacao && p.cotacao.observacoes) != null ? p.cotacao.observacoes : 'Entrega na obra. Informe o prazo de entrega e se o preço inclui o frete.'; }
+const respostas = (p, fornecedorId) => ((p.cotacao && p.cotacao.respostas) || []).filter((x) => x.fornecedorId === fornecedorId);
 const envios = (p, fornecedorId) => ((p.cotacao && p.cotacao.envios) || []).filter((x) => x.fornecedorId === fornecedorId);
 
 export function telaCotacao(id, moldura) {
@@ -82,8 +84,10 @@ export function telaCotacao(id, moldura) {
     const ultimos = envios(p, f.id);
     return '<section class="cartao cot-fornecedor"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + esc(f.nome) + '</h2>' +
         '<span class="mudo pequeno">' + esc([f.pessoa, f.email].filter(Boolean).join(' · ') || 'sem e-mail cadastrado') + ' · ' + g.itens.length + (g.itens.length === 1 ? ' item' : ' itens') + '</span>' +
-        (ultimos.length ? '<span class="etiqueta etiqueta-verde">e-mail preparado em ' + dataCurta(ultimos[ultimos.length - 1].em.slice(0, 10)) + '</span>' : '') + '</div>' +
-        '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/cotacao/' + f.id + '/imprimir">' + icone('baixar', 16) + 'PDF</a>' +
+        (ultimos.length ? '<span class="etiqueta etiqueta-verde">e-mail preparado em ' + dataCurta(ultimos[ultimos.length - 1].em.slice(0, 10)) + '</span>' : '') +
+        (respostas(p, f.id).length ? '<span class="etiqueta etiqueta-azul">preços recebidos em ' + dataCurta(respostas(p, f.id).slice(-1)[0].em.slice(0, 10)) + '</span>' : '') + '</div>' +
+        '<div class="btn-linha">' + (pode(usuarioAtual(), 'measure.catalogo') ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="cot-resposta" data-projeto="' + id + '" data-fornecedor="' + f.id + '">Registrar preços recebidos</button>' : '') +
+        '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/cotacao/' + f.id + '/imprimir">' + icone('baixar', 16) + 'PDF</a>' +
         '<button type="button" class="btn btn-primario btn-pequeno" data-acao="cot-email" data-projeto="' + id + '" data-fornecedor="' + f.id + '"' + (f.email ? '' : ' disabled title="Cadastre o e-mail do fornecedor"') + '>' + icone('link', 16) + 'Enviar por e-mail</button></div></div>' +
       '<div class="tabela-rolagem">' + htmlTabelaCotacao(g.itens) + '</div></section>';
   };
@@ -141,13 +145,18 @@ export function linhasDaProposta(p) {
   const etapas = new Map();
   for (const g of q.porItem) {
     const e = g.item.etapa || 'Outros';
-    if (!etapas.has(e)) etapas.set(e, { etapa: e, materiais: [], horas: 0 });
+    if (!etapas.has(e)) etapas.set(e, { etapa: e, materiais: [], horas: 0, grupos: [] });
+    etapas.get(e).grupos.push(g);
     if (g.item.categoria === 'material') etapas.get(e).materiais.push(g);
     else if (g.item.categoria === 'mao-de-obra') etapas.get(e).horas += g.total;
   }
   return Array.from(etapas.values()).sort((a, b) => a.etapa.localeCompare(b.etapa)).map((x) => {
     const s = salvas[x.etapa] || {};
-    return { ...x, titulo: s.titulo || nomeEtapa(x.etapa), valor: s.valor != null ? s.valor : null, incluir: s.incluir !== false };
+    // preço calculado: custo (preços com vigência de hoje) + overhead + lucro; o digitado, se houver, vale mais
+    const custo = custoDe(x.grupos);
+    const calculado = custo.venda > 0 ? custo.venda : null;
+    const digitado = s.valor != null ? s.valor : null;
+    return { ...x, custo, calculado, digitado, valor: digitado != null ? digitado : calculado, titulo: s.titulo || nomeEtapa(x.etapa), incluir: s.incluir !== false };
   });
 }
 function rascunho(p) {
@@ -165,7 +174,8 @@ function totais(p) {
   const linhas = linhasDaProposta(p).filter((l) => l.incluir);
   const extras = rascunho(p).extras.filter((x) => x.descricao);
   const soma = linhas.reduce((t, l) => t + (l.valor || 0), 0) + extras.reduce((t, x) => t + (x.valor || 0), 0);
-  return { linhas, extras, total: Math.round(soma * 100) / 100, semPreco: linhas.filter((l) => !l.valor) };
+  const custo = linhas.reduce((t, l) => t + l.custo.custo, 0);
+  return { linhas, extras, total: Math.round(soma * 100) / 100, custo: Math.round(custo * 100) / 100, semPreco: linhas.filter((l) => !l.valor), itensSemPreco: Array.from(new Set(linhas.flatMap((l) => l.custo.semPreco.map((i) => i.nome)))) };
 }
 
 export function telaProposta(id, moldura) {
@@ -175,7 +185,14 @@ export function telaProposta(id, moldura) {
   const t = totais(p);
   const ct = contratanteDe(p);
   const versoes = p.propostas || [];
-  const campoValor = (nome, valor) => '<span class="campo-dinheiro">US$<input type="text" inputmode="decimal" name="' + nome + '" value="' + (valor != null ? esc(numero(valor, 2)) : '') + '" placeholder="0,00"></span>';
+  const campoValor = (nome, valor, sugerido) => '<span class="campo-dinheiro">US$<input type="text" inputmode="decimal" name="' + nome + '" value="' + (valor != null ? esc(numero(valor, 2)) : '') + '" placeholder="' + (sugerido != null ? esc(numero(sugerido, 2)) : '0,00') + '"></span>';
+  const m = margensEm();
+  const base = (l) => {
+    const c = l.custo;
+    const partes = [c.material ? 'material ' + dinheiro(c.material) : '', c.imposto ? 'imposto ' + dinheiro(c.imposto) : '', c.maoDeObra ? 'mão de obra ' + dinheiro(c.maoDeObra) : '', c.outros ? 'outros ' + dinheiro(c.outros) : ''].filter(Boolean);
+    return '<span class="prop-custo">' + (partes.length ? 'Custo ' + dinheiro(c.custo) + ' = ' + partes.join(' + ') : 'Sem custo calculado') + '</span>' +
+      (c.semPreco.length ? '<span class="prop-sem-preco">Sem preço: ' + esc(c.semPreco.map((i) => i.nome).join(', ')) + '</span>' : '');
+  };
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: 'Proposta', subtitulo: p.nome + (ct ? ' · para ' + ct.nome : ''),
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
@@ -186,20 +203,24 @@ export function telaProposta(id, moldura) {
       '<section class="cartao"><h2 class="cartao-titulo">Escopo</h2><textarea name="escopo" rows="2" aria-label="Escopo">' + esc(r.escopo) + '</textarea></section>' +
       '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Itens da proposta</h2>' +
         '<label class="check pequeno"><input type="checkbox" name="mostrarQuantidades"' + (r.mostrarQuantidades ? ' checked' : '') + '> Mostrar as quantidades de material no documento</label></div>' +
-        '<p class="mudo pequeno">Uma linha por etapa do projeto (material e mão de obra juntos). Digite o preço fechado de cada uma; as quantidades e as horas são a base para o seu preço.</p>' +
+        '<p class="mudo pequeno">Uma linha por etapa (material e mão de obra juntos). O preço é <b>calculado</b>: quantidades × preços do catálogo (com vigência) + ' + esc(textoMargens(m)) +
+          ' (<a href="#/measure/precos">Preços</a>). Digite outro valor quando quiser; apagar o que foi digitado volta ao calculado.</p>' +
+        (linhas.some((l) => l.digitado != null) ? '<button type="button" class="link-botao pequeno" data-acao="prop-recalcular">Usar os preços calculados em todas as linhas</button>' : '') +
         (linhas.length ? '<div class="tabela-rolagem"><table class="tabela prop-linhas"><thead><tr><th></th><th>Etapa</th><th>Base do cálculo</th><th class="num">Preço</th></tr></thead><tbody>' +
           linhas.map((l) => '<tr class="' + (l.incluir ? '' : 'prop-fora') + '"><td><input type="checkbox" name="incluir" data-etapa="' + esc(l.etapa) + '"' + (l.incluir ? ' checked' : '') + ' aria-label="Incluir ' + esc(l.titulo) + '"></td>' +
             '<td><input type="text" name="titulo" data-etapa="' + esc(l.etapa) + '" value="' + esc(l.titulo) + '" aria-label="Título da linha"><span class="mudo pequeno bloco">' + esc(codigoEtapa(l.etapa)) + '</span></td>' +
             '<td class="pequeno">' + (l.materiais.map((g) => qtd(g.total) + ' ' + esc(g.item.unidade) + ' ' + esc(g.item.nome)).join('<br>') || '<span class="mudo">sem material</span>') +
-              (l.horas ? '<span class="bloco mudo">Mão de obra estimada: ' + qtd(l.horas) + ' h</span>' : '') + '</td>' +
-            '<td class="num">' + campoValor('valor', l.valor).replace('name="valor"', 'name="valor" data-etapa="' + esc(l.etapa) + '"') + '</td></tr>').join('') + '</tbody></table></div>'
+              (l.horas ? '<span class="bloco mudo">Mão de obra estimada: ' + qtd(l.horas) + ' h</span>' : '') + base(l) + '</td>' +
+            '<td class="num">' + campoValor('valor', l.digitado, l.calculado).replace('name="valor"', 'name="valor" data-etapa="' + esc(l.etapa) + '"') +
+              '<span class="prop-origem" data-etapa="' + esc(l.etapa) + '">' + (l.digitado != null ? 'digitado' + (l.calculado ? ' · calculado ' + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : 'sem preço') + '</span></td></tr>').join('') + '</tbody></table></div>'
           : '<p class="vazio">Meça as condições com assemblies para gerar as linhas.</p>') + '</section>' +
       '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Outros itens</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-extra">' + icone('mais', 14) + 'Linha</button></div>' +
         '<p class="mudo pequeno">O que não vem da planta: mobilização, caçamba, andaime, licença…</p>' +
         '<div id="prop-extras">' + r.extras.map((x, i) => '<div class="prop-extra"><input type="text" name="extra-descricao" data-i="' + i + '" value="' + esc(x.descricao) + '" placeholder="Descrição" aria-label="Descrição">' +
           campoValor('extra-valor', x.valor).replace('name="extra-valor"', 'name="extra-valor" data-i="' + i + '"') + '<button type="button" class="link-botao" data-acao="prop-tirar-extra" data-i="' + i + '" aria-label="Tirar a linha">✕</button></div>').join('') + '</div></section>' +
       '<section class="cartao prop-total"><span>Total da proposta</span><b id="prop-total">' + dinheiro(t.total) + '</b>' +
-        (t.semPreco.length ? '<span class="etiqueta etiqueta-ambar">' + t.semPreco.length + (t.semPreco.length === 1 ? ' linha sem preço' : ' linhas sem preço') + '</span>' : '') + '</section>' +
+        (t.semPreco.length ? '<span class="etiqueta etiqueta-ambar">' + t.semPreco.length + (t.semPreco.length === 1 ? ' linha sem preço' : ' linhas sem preço') + '</span>' : '') +
+        '<span class="prop-resumo" id="prop-resumo">' + htmlResumo(t) + '</span></section>' +
       '<section class="cartao"><h2 class="cartao-titulo">Condições</h2><div class="grade-campos">' +
         '<div class="campo"><label class="rotulo-pequeno" for="prop-validade">Validade (dias)</label><input type="number" id="prop-validade" name="validadeDias" min="1" max="365" value="' + r.validadeDias + '"></div></div>' +
         '<div class="campo"><label class="rotulo-pequeno" for="prop-termos">Termos (vêm do perfil da empresa; ajuste para esta proposta)</label><textarea id="prop-termos" name="termos" rows="5">' + esc(r.termos) + '</textarea></div></section>' +
@@ -209,6 +230,15 @@ export function telaProposta(id, moldura) {
         '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-email" data-projeto="' + id + '" data-numero="' + esc(v.numero) + '"' + (ct && ct.email ? '' : ' disabled') + '>Enviar por e-mail</button></span></li>').join('') + '</ul></section>' : '') +
     '</form>',
   });
+}
+
+/* Resumo interno (não vai para o documento): custo dos itens medidos e a margem que sobra no total. */
+function htmlResumo(t) {
+  const extras = t.extras.reduce((s, x) => s + (x.valor || 0), 0);
+  const venda = t.total - extras;
+  const margem = venda > 0 ? (venda - t.custo) / venda * 100 : 0;
+  return 'Custo dos itens medidos <b>' + dinheiro(t.custo) + '</b> · resultado sobre a venda <b class="' + (margem < 0 ? 'negativo' : '') + '">' + numero(margem, 1) + '%</b>' +
+    (t.itensSemPreco.length ? ' · <span class="prop-sem-preco">' + t.itensSemPreco.length + (t.itensSemPreco.length === 1 ? ' item sem preço' : ' itens sem preço') + ' no catálogo</span>' : '');
 }
 
 /* O conteúdo congelado (ou o rascunho, para pré-visualizar). */
@@ -224,7 +254,7 @@ function dadosDaProposta(p) {
     obra: { nome: p.nome, endereco: enderecoDoProjeto(p) }, escopo: r.escopo, mostrarQuantidades: r.mostrarQuantidades,
     linhas: t.linhas.map((l) => ({ titulo: l.titulo, codigo: codigoEtapa(l.etapa), valor: l.valor || 0, materiais: l.materiais.map((g) => qtd(g.total) + ' ' + g.item.unidade + ' · ' + g.item.nome) })),
     extras: t.extras.map((x) => ({ descricao: x.descricao, valor: x.valor || 0 })),
-    total: t.total, validadeDias: r.validadeDias, termos: r.termos, por: quem(),
+    total: t.total, custo: t.custo, margens: textoMargens(margensEm()), validadeDias: r.validadeDias, termos: r.termos, por: quem(),
   };
 }
 
@@ -298,6 +328,12 @@ document.addEventListener('change', (ev) => {
   const t = totais(p);
   const alvo = document.getElementById('prop-total');
   if (alvo) alvo.textContent = dinheiro(t.total);
+  const resumo = document.getElementById('prop-resumo');
+  if (resumo) resumo.innerHTML = htmlResumo(t);
+  for (const l of linhasDaProposta(p)) {
+    const el = document.querySelector('.prop-origem[data-etapa="' + CSS.escape(l.etapa) + '"]');
+    if (el) el.textContent = l.digitado != null ? 'digitado' + (l.calculado ? ' · calculado ' + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : 'sem preço';
+  }
   if (ev.target.name === 'incluir') ev.target.closest('tr').classList.toggle('prop-fora', !ev.target.checked);
   // o valor digitado volta formatado
   if (ev.target.name === 'valor' || ev.target.name === 'extra-valor') { const v = lerValor(ev.target.value); ev.target.value = v != null ? numero(v, 2) : ''; }
@@ -321,6 +357,13 @@ export const acoesRelatorios = {
     p.cotacao.envios = (p.cotacao.envios || []).concat([{ fornecedorId: g.fornecedor.id, em: new Date().toISOString(), por: quem(), itens: g.itens.map((x) => ({ itemId: x.item.id, quantidade: x.total })) }]);
     salvar();
     toast('E-mail para ' + g.fornecedor.nome + ' aberto no seu programa de e-mail. Se quiser, anexe o PDF.');
+    app.desenhar();
+  },
+  'prop-recalcular'() {
+    const p = lerFormProposta();
+    for (const v of Object.values(rascunho(p).linhas)) v.valor = null;
+    salvar();
+    toast('Preços calculados em todas as linhas.');
     app.desenhar();
   },
   'prop-extra'() {

@@ -1200,10 +1200,24 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .prop-extra { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
 .prop-extra input[name="extra-descricao"] { flex: 1; }
 .prop-total { flex-direction: row !important; align-items: center; gap: 12px; }
-.prop-total b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.prop-total > b { font-size: 22px; font-variant-numeric: tabular-nums; }
 .prop-total span:first-child { font-weight: 600; color: var(--texto-2); }
 .prop-versoes { list-style: none; margin: 0; padding: 0; }
 .prop-versoes li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--borda); flex-wrap: wrap; }
 .cot-fornecedor .cartao-cabeca { align-items: flex-start; }
 .cot-fornecedor .cartao-cabeca .etiqueta { margin-left: 8px; }
 .cot-fornecedor .doc-tabela, .cot-sem .doc-tabela { font-size: 13px; }
+/* Measure: preços */
+.prop-custo { display: block; font-size: 12px; color: var(--texto-2); margin-top: 4px; }
+.prop-sem-preco { display: block; font-size: 12px; color: #B45309; font-weight: 600; }
+.prop-origem { display: block; font-size: 11.5px; color: var(--mudo); margin-top: 3px; }
+.prop-resumo { flex-basis: 100%; font-size: 13px; color: var(--texto-2); }
+.prop-resumo .negativo { color: var(--vermelho); }
+.prop-total { flex-wrap: wrap; }
+.margens-atual { margin: 0; font-size: 15px; }
+.tabela-precos td { vertical-align: top; }
+.preco-historico { font-size: 12px; color: var(--texto-2); margin-top: 2px; }
+.preco-historico summary { cursor: pointer; color: var(--mudo); }
+.preco-historico ul { margin: 4px 0 0; padding-left: 16px; }
+.resposta-cotacao { display: grid; grid-template-columns: 1fr; gap: 2px; max-height: 50vh; overflow-y: auto; }
+.cot-fornecedor .cartao-cabeca .etiqueta-azul { margin-left: 8px; }
