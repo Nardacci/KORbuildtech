@@ -214,6 +214,20 @@ Medir uma vez o que se repete: o apartamento tipo, o pavimento tipo, a casa repe
 
 **Exemplo de dados:** projeto **Townhouses Elm Row · 6 unidades** (Northfield): a planta da unidade (A-101) é um typical da folha inteira, Bloco A 3 + Bloco B 3. Paredes medidas uma vez (136 lin ft) valem 816 lin ft.
 
+## 3e. Measure no celular (consulta)
+
+Decidido em outubro de 2026, junto com o plano do app nas lojas (App Store e Google Play). **Desenhar e medir é só no computador.** No celular, o Measure é de **consulta e envio**: quem está na obra ou na rua vê os números sem abrir o desenho.
+
+| No celular (app) | Só no computador |
+| --- | --- |
+| Lista de projetos com situação, contratante e valor da proposta | Abrir o desenho, escala, medir, borracha, vãos e typicals |
+| Resumo do projeto: cada condição com a cor, a folha e o total (já com os typicals) | Incluir e editar condições |
+| Materiais e mão de obra por etapa (a listagem do cálculo) | Catálogo de itens e assemblies |
+| Lista para cotação por fornecedor: ver, gerar PDF e enviar por e-mail | Preços e margens |
+| Proposta emitida: ver, gerar PDF e enviar por e-mail | Montar e emitir a proposta |
+
+Pontos a decidir: mudar a situação do projeto (Ganha, Perdida) pelo celular; registrar pelo celular os preços que o fornecedor devolveu.
+
 ## 4. Permissões
 
 | Permissão | O que libera | Perfis prontos |
