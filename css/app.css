@@ -1221,3 +1221,14 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .preco-historico ul { margin: 4px 0 0; padding-left: 16px; }
 .resposta-cotacao { display: grid; grid-template-columns: 1fr; gap: 2px; max-height: 50vh; overflow-y: auto; }
 .cot-fornecedor .cartao-cabeca .etiqueta-azul { margin-left: 8px; }
+/* Measure: typicals */
+.mz-typicais { display: flex; flex-direction: column; gap: 4px; }
+.mz-typical { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border: 1px dashed #6D28D9; border-radius: var(--raio); background: #F5F3FF; font-size: 13px; }
+.mz-typical-icone { color: #6D28D9; margin-top: 1px; }
+.mz-typical-nome { flex: 1; min-width: 0; }
+.mz-vezes { display: inline-block; padding: 0 6px; border-radius: 9px; background: #EDE9FE; color: #5B21B6; font-weight: 700; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.mz-typicais > .link-botao { display: inline-flex; align-items: center; gap: 6px; color: #6D28D9; }
+.ty-ocorrencias { display: grid; grid-template-columns: 1fr 90px; gap: 6px; margin-top: 6px; }
+.mz-typical-projeto + .mz-typical-projeto { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--borda); }
+.mz-typical-projeto p { margin: 0 0 6px; }
+.tabela-typical th, .tabela-typical td { white-space: nowrap; }

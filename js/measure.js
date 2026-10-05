@@ -97,6 +97,7 @@ export function excluirProjeto(id) {
   mz().projetos = projetos().filter((p) => p.id !== id);
   mz().folhas = mz().folhas.filter((f) => f.projetoId !== id);
   mz().condicoes = mz().condicoes.filter((c) => c.projetoId !== id);
+  mz().typicais = (mz().typicais || []).filter((t) => t.projetoId !== id);
   salvar();
 }
 
@@ -143,6 +144,71 @@ export function salvarCondicao(id, dados) {
 export function mostrarCondicao(id, visivel) {
   condicao(id).oculta = !visivel;
   salvar();
+}
+
+/* ---------- Typicals: o que se repete ----------
+ * Um typical é um grupo de medições que se repete (apartamento tipo, pavimento tipo, casa repetida).
+ * Ele tem uma REGIÃO na folha (retângulo, em points do PDF) ou a FOLHA INTEIRA (regiao = null), e as
+ * OCORRÊNCIAS: onde se repete e quantas vezes, contando a que está desenhada (ex.: 2º pav. 4, 3º pav. 4).
+ * Toda medição cujo centro cai na região vale × o total de ocorrências, em todos os cálculos. */
+
+export function typicaisDo(projetoId) { return (mz().typicais || []).filter((t) => t.projetoId === projetoId); }
+export function typicaisDaFolha(folhaId) { return (mz().typicais || []).filter((t) => t.folhaId === folhaId); }
+export function typical(id) { return (mz().typicais || []).find((t) => t.id === id); }
+export function repeticoes(t) { return t.ocorrencias.reduce((s, o) => s + o.quantidade, 0); }
+
+const centro = (pts) => [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
+const dentroDaRegiao = (p, r) => p[0] >= r[0] && p[0] <= r[2] && p[1] >= r[1] && p[1] <= r[3];
+
+/* O typical a que a medição pertence (pelo centro dela), ou null. */
+export function typicalDaMedicao(m) {
+  const ts = typicaisDaFolha(m.folhaId);
+  if (!ts.length) return null;
+  const c = centro(m.pontos);
+  return ts.find((t) => !t.regiao || dentroDaRegiao(c, t.regiao)) || null;
+}
+export function fatorDaMedicao(m) { const t = typicalDaMedicao(m); return t ? repeticoes(t) : 1; }
+
+export function salvarTypical(id, dados, por) {
+  const nome = String(dados.nome || '').trim();
+  if (!nome) return { erro: 'Dê um nome ao typical (ex.: Apartamento tipo A).' };
+  const ocorrencias = (dados.ocorrencias || []).map((o) => ({ rotulo: String(o.rotulo || '').trim(), quantidade: Number(o.quantidade) }))
+    .filter((o) => o.rotulo || o.quantidade);
+  if (!ocorrencias.length) return { erro: 'Informe onde ele se repete e quantas vezes.' };
+  if (ocorrencias.some((o) => !o.rotulo || !(Number.isInteger(o.quantidade) && o.quantidade >= 1))) return { erro: 'Cada ocorrência precisa de um nome (ex.: 2º pavimento) e de uma quantidade inteira a partir de 1.' };
+  const atual = id ? typical(id) : null;
+  const folhaId = atual ? atual.folhaId : dados.folhaId;
+  const regiao = atual ? atual.regiao : (dados.regiao ? [Math.min(dados.regiao[0][0], dados.regiao[1][0]), Math.min(dados.regiao[0][1], dados.regiao[1][1]), Math.max(dados.regiao[0][0], dados.regiao[1][0]), Math.max(dados.regiao[0][1], dados.regiao[1][1])] : null);
+  // folha inteira não convive com outros typicals na mesma folha (seria multiplicar duas vezes)
+  const outros = typicaisDaFolha(folhaId).filter((t) => t.id !== id);
+  if (!regiao && outros.length) return { erro: 'Esta folha já tem typical por região. Para a folha inteira, tire os outros antes.' };
+  if (outros.some((t) => !t.regiao)) return { erro: 'Esta folha inteira já é um typical. Edite as ocorrências dele.' };
+  if (regiao && outros.some((t) => !(regiao[2] < t.regiao[0] || regiao[0] > t.regiao[2] || regiao[3] < t.regiao[1] || regiao[1] > t.regiao[3]))) return { erro: 'A região encosta em outro typical. Typicals não podem se sobrepor.' };
+  mz().typicais = mz().typicais || [];
+  if (atual) { Object.assign(atual, { nome, ocorrencias, alteradoPor: por, alteradoEm: Date.now() }); salvar(); return { ok: true, id }; }
+  const novo = { id: novoId('ty'), projetoId: folha(folhaId).projetoId, folhaId, nome, regiao, ocorrencias, por, em: Date.now() };
+  mz().typicais.push(novo);
+  salvar();
+  return { ok: true, id: novo.id };
+}
+export function excluirTypical(id) {
+  mz().typicais = (mz().typicais || []).filter((t) => t.id !== id);
+  salvar();
+}
+
+/* Quanto cada condição mede dentro de um typical (uma unidade) — para o resumo por ocorrência. */
+export function medidoNoTypical(t) {
+  const r = [];
+  for (const c of condicoesDo(t.projetoId)) {
+    let base = 0, n = 0;
+    for (const m of c.medicoes) {
+      if (m.folhaId !== t.folhaId || typicalDaMedicao(m) !== t) continue;
+      const v = valorDaMedicao(c, m);
+      if (v != null) { base += v; n++; }
+    }
+    if (n) r.push({ condicao: c, base, medicoes: n });
+  }
+  return r;
 }
 
 export function excluirCondicao(id) {
@@ -211,7 +277,7 @@ export function totaisDaCondicao(c) {
   let base = 0, semEscala = 0;
   for (const m of c.medicoes) {
     const v = valorDaMedicao(c, m);
-    if (v == null) semEscala++; else base += v;
+    if (v == null) semEscala++; else base += v * fatorDaMedicao(m); // typical: a medição vale × repetições
   }
   const p = c.props || {};
   const derivados = [];
@@ -280,7 +346,7 @@ export function vaosLigados(c) {
     const o = condicao(id);
     if (!o || o.tipo !== 'contagem') continue;
     // o vão desenhado que já recortou esta condição não é descontado de novo pelo tamanho cadastrado
-    const n = o.medicoes.filter((m) => !(m.vao && m.vao.recortes.some((x) => x.condicaoId === c.id))).reduce((t, m) => t + m.pontos.length, 0);
+    const n = o.medicoes.filter((m) => !(m.vao && m.vao.recortes.some((x) => x.condicaoId === c.id))).reduce((t, m) => t + m.pontos.length * fatorDaMedicao(m), 0);
     const w = (o.props || {}).larguraPol / POL_POR_PE, h = (o.props || {}).alturaPol / POL_POR_PE;
     r.count += n;
     if (w && h) { r.area += n * w * h; r.perimetro += n * 2 * (w + h); } else if (n) r.semTamanho.push(o.nome);
@@ -297,9 +363,10 @@ export function vaosDesenhados(c) {
     const f = folha(m.folhaId);
     if (!f || !f.escala) continue;
     const k = f.escala.polPorPonto;
-    r.count++;
-    r.area += areaPoligono(m.pontos) * k * k / POL2_POR_PE2;
-    r.perimetro += comprimento(m.pontos.concat([m.pontos[0]])) * k / POL_POR_PE;
+    const n = fatorDaMedicao(m);
+    r.count += n;
+    r.area += n * areaPoligono(m.pontos) * k * k / POL2_POR_PE2;
+    r.perimetro += n * comprimento(m.pontos.concat([m.pontos[0]])) * k / POL_POR_PE;
   }
   return r;
 }
@@ -526,10 +593,17 @@ export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = 
         descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: galpao.obraId, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
       { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
         descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
+      // repetição: a mesma casa seis vezes (dois blocos de três) — a planta é medida uma vez e vale × 6
+      { id: 'pj-townhouses', nome: 'Townhouses Elm Row · 6 unidades', contratanteId: 'ct-merrimack', donoId: 'ct-horizonte', endereco: '300 Elm Row', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-multi', situacao: 'orcamento',
+        descricao: 'Seis casas iguais em dois blocos: framing e siding', obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), 12), criadoEm: Date.now() },
     ],
     folhas: [
       ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
-    ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null })),
+    ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null }))
+      .concat([['fl-th-a101', 'A-101 · Unit Plan (typical)', 1], ['fl-th-a201', 'A-201 · Elevations', 2]].map(([id, nome, pagina]) =>
+        ({ id, projetoId: 'pj-townhouses', nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null }))),
+    typicais: [{ id: 'ty-unidade', projetoId: 'pj-townhouses', folhaId: 'fl-th-a101', nome: 'Unidade tipo (a planta inteira)', regiao: null,
+      ocorrencias: [{ rotulo: 'Bloco A', quantidade: 3 }, { rotulo: 'Bloco B', quantidade: 3 }], por: 'Configuração inicial', em: Date.now() }],
     condicoes: [], // o desenho abre vazio: cada assembly é incluído pelo visor
     itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({
       id, codigo, nome, categoria, unidade, etapa, nota: nota || '',
@@ -538,6 +612,6 @@ export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = 
     margens: [{ overheadPct: 12, lucroPct: 10, modo: 'markup', impostoMaterialPct: 0, desde: somarDias(hoje(), -60), motivo: 'Configuração inicial (exemplo)', por: 'Configuração inicial', em: Date.now() }],
     assemblies: ASSEMBLIES_EXEMPLO,
   };
-  if (!comProjetos) { dados.projetos = []; dados.folhas = []; }
+  if (!comProjetos) { dados.projetos = []; dados.folhas = []; dados.typicais = []; }
   return dados;
 }

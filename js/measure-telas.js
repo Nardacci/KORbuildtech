@@ -15,6 +15,7 @@ import {
   CATEGORIAS, itens, item, salvarItem, excluirItem, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
   quantidadesDoProjeto, variaveisDaCondicao, mostrarCondicao, adicionarVao,
   condicoesDaFolha, incluirNaFolha, tirarDaFolha, folhasDaCondicao,
+  typicaisDo, typicaisDaFolha, typical, repeticoes, fatorDaMedicao, typicalDaMedicao, salvarTypical, excluirTypical, medidoNoTypical,
   TIPOS_PROJETO, SITUACOES, enderecoDoProjeto, salvarProjeto, excluirProjeto, PALETA,
 } from './measure.js';
 import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
@@ -189,6 +190,7 @@ function telaProjeto(id) {
           return '<tr><td><a href="#/measure/folha/' + f.id + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(f.arquivo.nome || '') + (f.pagina > 1 ? ' · página ' + f.pagina : '') + '</span></td>' +
             '<td>' + escalaTxt(f) + '</td><td class="num">' + n + '</td><td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/folha/' + f.id + '">Abrir</a></td></tr>';
         }).join('') + '</tbody></table></div>' : '<p class="vazio">Nenhuma folha ainda. Envie o PDF do jogo de plantas: cada página vira uma folha.</p>') + '</section>' +
+      htmlTypicaisDoProjeto(p) +
       '<section class="cartao"><h2 class="cartao-titulo">Quantidades</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>Condição</th><th>Medido</th><th>Derivadas</th><th class="num">Medições</th></tr></thead><tbody>' +
         cs.map((c) => {
           const t = totaisDaCondicao(c);
@@ -201,6 +203,22 @@ function telaProjeto(id) {
       htmlMateriais(id) +
       '<p class="dica">Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.</p>',
   });
+}
+
+/* O que se repete no projeto: cada typical, as ocorrências e quanto cada condição mede por unidade. */
+function htmlTypicaisDoProjeto(p) {
+  const ts = typicaisDo(p.id);
+  if (!ts.length) return '';
+  const qtdPor = (c, base) => c.tipo === 'contagem' ? numero(base) + ' each' : c.tipo === 'linear' ? formatarLinear(base) : formatarArea(base);
+  return '<section class="cartao" id="mz-typicais-projeto"><h2 class="cartao-titulo">' + icone('repetir', 18) + ' Typicals (o que se repete)</h2>' + ts.map((t) => {
+    const n = repeticoes(t);
+    const med = medidoNoTypical(t);
+    return '<div class="mz-typical-projeto"><p><b>' + esc(t.nome) + '</b> <span class="mz-vezes">× ' + n + '</span> <span class="mudo pequeno">· ' + esc((folha(t.folhaId) || {}).nome || '') + ' · ' + (t.regiao ? 'região marcada' : 'a folha inteira') + '</span></p>' +
+      '<div class="tabela-rolagem"><table class="tabela tabela-typical"><thead><tr><th>Condição</th><th class="num">Por unidade</th>' + t.ocorrencias.map((o) => '<th class="num">' + esc(o.rotulo) + ' (× ' + o.quantidade + ')</th>').join('') + '<th class="num">Total (× ' + n + ')</th></tr></thead><tbody>' +
+        (med.length ? med.map((x) => '<tr><td><span class="mz-cor" style="background:' + x.condicao.cor + '"></span>' + esc(x.condicao.nome) + '</td><td class="num">' + qtdPor(x.condicao, x.base) + '</td>' +
+          t.ocorrencias.map((o) => '<td class="num">' + qtdPor(x.condicao, x.base * o.quantidade) + '</td>').join('') + '<td class="num"><b>' + qtdPor(x.condicao, x.base * n) + '</b></td></tr>').join('')
+          : '<tr><td colspan="' + (3 + t.ocorrencias.length) + '" class="mudo">Nada medido dentro dele ainda.</td></tr>') + '</tbody></table></div></div>';
+  }).join('') + '<p class="mudo pequeno">As quantidades, os materiais, a cotação e a proposta já contam as repetições.</p></section>';
 }
 
 /* Materiais e mão de obra: o que os assemblies calculam a partir das medições. */
@@ -331,13 +349,14 @@ const visor = {
 };
 const condicaoVisivel = (c) => !c.oculta;
 // ferramentas que desenham pontos (as outras: mover, calibrar, conferir)
-const desenhando = () => ['medir', 'recortar', 'vao'].includes(visor.ferramenta);
+const desenhando = () => ['medir', 'recortar', 'vao', 'typical'].includes(visor.ferramenta);
+const textoOcorrencias = (t) => t.ocorrencias.map((o) => o.rotulo + ' ' + o.quantidade).join(' · ');
 const nomeCurto = (c) => c.nome.split(' (')[0];
 const nomeFolha = (f) => f.nome.split(' · ')[0];
 /* Total da condição só nesta folha (o painel mostra o que está no desenho aberto). */
 function totalNaFolha(c, folhaId) {
   let base = 0, medicoes = 0;
-  for (const m of c.medicoes) if (m.folhaId === folhaId) { const v = valorDaMedicao(c, m); medicoes++; if (v != null) base += v; }
+  for (const m of c.medicoes) if (m.folhaId === folhaId) { const v = valorDaMedicao(c, m); medicoes++; if (v != null) base += v * fatorDaMedicao(m); }
   return { base, medicoes };
 }
 
@@ -379,7 +398,8 @@ function htmlBarra() {
       ferr('mover', 'Mover', 'seta', '', 'Arrastar a planta (ou segure a barra de espaço)') +
       ferr('medir', 'Medir', 'measure', precisaEscala, 'Medir na condição escolhida') +
       ferr('recortar', 'Recortar', 'borracha', precisaEscala || (semArea ? 'Escolha uma condição de área (siding, piso…) para recortar' : ''), 'Borracha: desenha uma área que sai do total') +
-      ferr('vao', 'Vão', 'janela', precisaEscala, 'Desenhe a janela ou porta: conta o vão e recorta o siding') + '</div>' +
+      ferr('vao', 'Vão', 'janela', precisaEscala, 'Desenhe a janela ou porta: conta o vão e recorta o siding') +
+      ferr('typical', 'Typical', 'repetir', typicaisDaFolha(f.id).some((t) => !t.regiao) ? 'A folha inteira já é um typical' : '', 'Marque a região que se repete (apartamento tipo, casa repetida)') + '</div>' +
     (semEscala
       ? '<button type="button" class="mz-chamada" data-acao="mz-escala">' + icone('measure', 16) + 'Definir escala</button>'
       : '<div class="mz-grupo-barra" aria-label="Escala"><button type="button" class="mz-seg" data-acao="mz-escala" title="Trocar a escala ou calibrar"><span class="mz-ponto ' + estado + '" aria-hidden="true"></span>' + esc(f.escala.nome) + '</button>' +
@@ -411,6 +431,7 @@ function htmlPainel() {
     (cs.length ? '' : '<p class="mz-vazio-painel">Nada no desenho ainda. Clique em <b>Incluir assembly</b>, escolha do catálogo (parede, piso, janela…) e comece a medir.</p>') +
     (cs.length > 1 ? '<div class="mz-cond-acoes mz-visiveis"><button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar="1"' + (nOcultas ? '' : ' disabled') + '>Mostrar todas</button>' +
       '<button type="button" class="link-botao pequeno" data-acao="mz-mostrar-todas" data-mostrar=""' + (nOcultas === cs.length ? ' disabled' : '') + '>Ocultar todas</button></div>' : '') +
+    htmlTypicais(f) +
     '<div class="mz-arvore" role="tree">' + Object.entries(TIPOS).map(([tipo, tp]) => {
       const lista = cs.filter((c) => c.tipo === tipo);
       if (!lista.length) return '';
@@ -450,12 +471,22 @@ function htmlNoCondicao(c, f, caret) {
           const txt = c.tipo === 'contagem' ? '1 each' : v == null ? 'sem escala' : c.tipo === 'linear' ? formatarPesPolegadas(v) : (v < 0 ? '− ' : '') + formatarArea(Math.abs(v));
           const tipoM = m.vaoDe ? 'Vão ' + esc(nomeCurto(condicao(m.vaoDe.condicaoId) || { nome: '?' })) + ': ' : m.desconto ? 'Recorte: ' : '';
           const nota = m.vao ? ' <span class="mudo">(desenhado' + (m.vao.recortes.length ? ', recorta ' + esc(m.vao.recortes.map((r) => nomeCurto(condicao(r.condicaoId) || { nome: '?' })).join(', ')) : '') + ')</span>' : '';
-          return '<li class="' + (m.desconto ? 'mz-med-recorte' : '') + '"><span>' + (i + 1) + '. ' + tipoM + txt + nota + '</span><button type="button" class="link-botao" data-acao="mz-apagar-medicao" data-cond="' + c.id + '" data-id="' + m.id + '" aria-label="Apagar a medição ' + (i + 1) + '">✕</button></li>';
+          const fator = fatorDaMedicao(m);
+          return '<li class="' + (m.desconto ? 'mz-med-recorte' : '') + '"><span>' + (i + 1) + '. ' + tipoM + txt + nota + (fator > 1 ? ' <span class="mz-vezes" title="Typical: ' + esc(typicalDaMedicao(m).nome) + '">× ' + fator + '</span>' : '') + '</span><button type="button" class="link-botao" data-acao="mz-apagar-medicao" data-cond="' + c.id + '" data-id="' + m.id + '" aria-label="Apagar a medição ' + (i + 1) + '">✕</button></li>';
         }).join('') + '</ol>' : '<p class="mudo pequeno mz-folhas-arvore">Escolha a ferramenta Medir e clique na planta.</p>') + '</div>' +
       '<div class="mz-cond-acoes"><button type="button" class="link-botao pequeno" data-acao="mz-editar-condicao" data-id="' + c.id + '">Editar</button>' +
         (outras.length ? '<button type="button" class="link-botao pequeno" data-acao="mz-tirar-da-folha" data-id="' + c.id + '">Tirar desta folha</button>' : '') +
         '<button type="button" class="link-botao pequeno" data-acao="mz-excluir-condicao" data-id="' + c.id + '">Excluir</button></div>' +
     '</div>' : '') + '</div>';
+}
+
+/* Os typicals desta folha: o que se repete e quantas vezes. */
+function htmlTypicais(f) {
+  const ts = typicaisDaFolha(f.id);
+  return '<div class="mz-typicais">' + (ts.length ? ts.map((t) => '<div class="mz-typical"><span class="mz-typical-icone">' + icone('repetir', 14) + '</span>' +
+      '<span class="mz-typical-nome"><b>' + esc(t.nome) + '</b> <span class="mz-vezes">× ' + repeticoes(t) + '</span><span class="mudo pequeno bloco">' + (t.regiao ? 'região marcada' : 'a folha inteira') + ' · ' + esc(textoOcorrencias(t)) + '</span></span>' +
+      '<button type="button" class="link-botao pequeno" data-acao="mz-typical-editar" data-id="' + t.id + '">Editar</button></div>').join('')
+    : '<button type="button" class="link-botao pequeno" data-acao="mz-typical-folha">' + icone('repetir', 14) + ' Esta folha se repete (pavimento tipo, casa repetida)</button>') + '</div>';
 }
 
 function dica() {
@@ -464,6 +495,7 @@ function dica() {
   if (visor.ferramenta === 'calibrar') return visor.cal.length ? 'Agora clique na outra ponta da cota.' : 'Calibrar: clique nas duas pontas de uma cota conhecida (ex.: a de 40\'-0"). Shift deixa a linha reta.';
   if (visor.ferramenta === 'conferir') return visor.cal.length ? 'Agora clique na outra ponta da cota.' : 'Conferir: meça OUTRA cota conhecida, de preferência na outra direção. O sistema mostra a diferença.';
   if (!f.escala) return 'Primeiro, defina a escala da folha: escolha da lista (a escala está no carimbo) ou calibre por uma cota.';
+  if (visor.ferramenta === 'typical') return visor.pontos.length ? 'Agora clique no canto oposto da região que se repete.' : 'Typical: clique num canto da unidade que se repete (ex.: o apartamento tipo) e depois no canto oposto. Tudo o que for medido dentro vale × as repetições.';
   if (visor.ferramenta === 'vao') return visor.pontos.length ? 'Agora clique no canto oposto da janela ou porta.' : 'Vão: clique num canto da janela ou porta e depois no canto oposto. Ela é contada e a área sai do siding (ou de outra área) que estiver por trás.';
   if (visor.ferramenta === 'mover') return 'Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.';
   if (!c) return 'Inclua um assembly no painel ao lado (parede, piso, janela…) para começar a medir.';
@@ -604,16 +636,29 @@ function desenharSobreposicao() {
       ctx.setLineDash([]);
     }
   }
+  // typicals: a região que se repete (ou a folha inteira), com o nome e as repetições
+  for (const t of typicaisDaFolha(f.id)) {
+    ctx.save();
+    ctx.strokeStyle = '#6D28D9'; ctx.lineWidth = 2; ctx.setLineDash([10, 5]);
+    if (t.regiao) {
+      const [x0, y0] = paraTela([t.regiao[0], t.regiao[3]]), [x1, y1] = paraTela([t.regiao[2], t.regiao[1]]);
+      ctx.strokeRect(Math.min(x0, x1), Math.min(y0, y1), Math.abs(x1 - x0), Math.abs(y1 - y0));
+      ctx.setLineDash([]); rotulo(Math.min(x0, x1) + 90, Math.min(y0, y1) + 14, t.nome + ' × ' + repeticoes(t), '#6D28D9');
+    } else {
+      ctx.setLineDash([]); rotulo(110, 18, t.nome + ' × ' + repeticoes(t), '#6D28D9');
+    }
+    ctx.restore();
+  }
   // em andamento: calibração/conferência ou medição
-  const cor = visor.ferramenta === 'medir' ? (condicao(visor.condicaoId) || {}).cor || '#C2410C' : visor.ferramenta === 'recortar' || visor.ferramenta === 'vao' ? '#DC2626' : '#C2410C';
+  const cor = visor.ferramenta === 'medir' ? (condicao(visor.condicaoId) || {}).cor || '#C2410C' : visor.ferramenta === 'typical' ? '#6D28D9' : visor.ferramenta === 'recortar' || visor.ferramenta === 'vao' ? '#DC2626' : '#C2410C';
   const base = desenhando() ? visor.pontos : visor.cal;
   let pts = base.concat(visor.cursor && base.length ? [visor.cursor] : []);
   // vão: retângulo do primeiro canto até o cursor
-  if (visor.ferramenta === 'vao' && pts.length === 2) { const [a, b] = pts; pts = [a, [b[0], a[1]], b, [a[0], b[1]]]; }
+  if ((visor.ferramenta === 'vao' || visor.ferramenta === 'typical') && pts.length === 2) { const [a, b] = pts; pts = [a, [b[0], a[1]], b, [a[0], b[1]]]; }
   if (pts.length) {
     ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
     const c = condicao(visor.condicaoId);
-    const area = (visor.ferramenta === 'medir' && c && c.tipo === 'area') || visor.ferramenta === 'recortar' || visor.ferramenta === 'vao';
+    const area = (visor.ferramenta === 'medir' && c && c.tipo === 'area') || visor.ferramenta === 'recortar' || visor.ferramenta === 'vao' || visor.ferramenta === 'typical';
     caminho(pts, area && pts.length > 2); ctx.stroke(); ctx.setLineDash([]);
     if (area && pts.length > 2) { ctx.fillStyle = cor; ctx.globalAlpha = 0.12; ctx.fill(); ctx.globalAlpha = 1; }
     for (const p of pts) { const [x, y] = paraTela(p); ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = cor; ctx.lineWidth = 2; ctx.stroke(); }
@@ -696,9 +741,9 @@ function ligarVisor() {
     if (!visor.viewport || visor.ferramenta === 'mover' || visor.espaco) return;
     const p = pontoDoEvento(ev, true);
     if (visor.ferramenta === 'calibrar' || visor.ferramenta === 'conferir') { cliqueCalibracao(p); return; }
-    if (visor.ferramenta === 'vao') {
+    if (visor.ferramenta === 'vao' || visor.ferramenta === 'typical') {
       visor.pontos.push(p);
-      if (visor.pontos.length === 2) dialogoVao(); else desenharSobreposicao();
+      if (visor.pontos.length === 2) { if (visor.ferramenta === 'vao') dialogoVao(); else { const r = visor.pontos; visor.pontos = []; dialogoTypical(null, r); } } else desenharSobreposicao();
       return;
     }
     const c = condicao(visor.condicaoId);
@@ -887,6 +932,35 @@ async function dialogoCondicao(c, comAssembly) {
   visor.condicaoId = r.id;
   visor.pontos = [];
   if (folha(visor.folhaId).escala) visor.ferramenta = 'medir';
+  atualizarInterface();
+}
+
+/* Typical: nome e onde se repete (contando a unidade desenhada). Novo: região (2 cantos) ou a folha inteira. */
+async function dialogoTypical(t, regiao) {
+  const f = folha(visor.folhaId);
+  const linhas = (t ? t.ocorrencias : [{ rotulo: '', quantidade: '' }]).concat(Array.from({ length: Math.max(0, 6 - (t ? t.ocorrencias.length : 1)) }, () => ({ rotulo: '', quantidade: '' })));
+  const res = await abrirDialogo({
+    titulo: t ? 'Typical · ' + t.nome : regiao ? 'Nova região que se repete' : 'Esta folha se repete',
+    corpo: '<label class="rotulo-pequeno" for="ty-nome">Nome</label><input type="text" id="ty-nome" name="nome" value="' + esc(t ? t.nome : regiao ? '' : 'Pavimento tipo') + '" placeholder="Ex.: Apartamento tipo A, Casa modelo B">' +
+      '<p class="mudo pequeno">Onde ele se repete e quantas vezes, <b>contando o que está desenhado</b>. Ex.: 4 apartamentos iguais por andar, em 3 andares: 2º pavimento 4, 3º pavimento 4, 4º pavimento 4 (× 12).</p>' +
+      '<div class="ty-ocorrencias">' + linhas.map((o, i) => '<input type="text" name="oc-rotulo-' + i + '" value="' + esc(o.rotulo) + '" placeholder="' + (i ? '' : 'Ex.: 2º pavimento') + '" aria-label="Ocorrência ' + (i + 1) + '">' +
+        '<input type="number" min="1" step="1" name="oc-qtd-' + i + '" value="' + esc(o.quantidade) + '" placeholder="qtd" aria-label="Quantidade ' + (i + 1) + '">').join('') + '</div>',
+    acoes: [{ rotulo: 'Cancelar', valor: false }].concat(t ? [{ rotulo: 'Excluir', valor: 'excluir' }] : []).concat([{ rotulo: t ? 'Salvar' : 'Criar typical', valor: true, classe: 'btn-primario' }]),
+  });
+  if (!res || !res.valor) { atualizarInterface(); return; }
+  if (res.valor === 'excluir') {
+    if (!(await confirmar('Excluir "' + t.nome + '"?', 'As medições continuam, mas passam a valer uma vez só.', 'Excluir'))) return;
+    excluirTypical(t.id);
+    toast('Typical excluído: as medições voltam a valer uma vez.');
+    atualizarInterface();
+    return;
+  }
+  const ocorrencias = linhas.map((_, i) => ({ rotulo: res.campos['oc-rotulo-' + i], quantidade: res.campos['oc-qtd-' + i] === '' ? 0 : Number(res.campos['oc-qtd-' + i]) }));
+  const r = salvarTypical(t ? t.id : null, { folhaId: f.id, nome: res.campos.nome, regiao, ocorrencias }, (usuarioAtual() || {}).nome);
+  if (r.erro) { toast(r.erro); atualizarInterface(); return; }
+  const novo = typical(r.id);
+  toast('"' + novo.nome + '" vale × ' + repeticoes(novo) + ': as medições ' + (novo.regiao ? 'dentro da região' : 'desta folha') + ' já contam as repetições.');
+  if (visor.ferramenta === 'typical') visor.ferramenta = 'medir';
   atualizarInterface();
 }
 
@@ -1089,6 +1163,8 @@ export const acoesMeasure = {
     if (visor.gruposFechados.has(t)) visor.gruposFechados.delete(t); else visor.gruposFechados.add(t);
     atualizarInterface();
   },
+  async 'mz-typical-editar'(el) { await dialogoTypical(typical(el.dataset.id), null); },
+  async 'mz-typical-folha'() { await dialogoTypical(null, null); },
   'mz-visivel'(el) { mostrarCondicao(el.dataset.id, el.checked); atualizarInterface(); },
   'mz-mostrar-todas'(el) {
     for (const c of condicoesDaFolha(visor.folhaId)) mostrarCondicao(c.id, !!el.dataset.mostrar);

@@ -193,6 +193,27 @@ As condições prontas incluem Janelas W1, Janelas W2, Porta de entrada D1 e Sid
 
 **Dados de exemplo:** preços em "Tabela de exemplo" para os 28 itens (mão de obra a US$ 38/h de custo) e margens de 12% de overhead e 10% de lucro (markup), sem imposto. São exemplos para a demonstração, não referência de mercado.
 
+## 3d. Typicals (o que se repete)
+
+Medir uma vez o que se repete: o apartamento tipo, o pavimento tipo, a casa repetida num condomínio de townhouses.
+
+| Onde | O que faz |
+| --- | --- |
+| **Visor › ferramenta Typical** | Dois cliques nos cantos da unidade que se repete marcam a **região** (retângulo roxo tracejado, com o nome e "× N") |
+| **Visor › "Esta folha se repete"** | A **folha inteira** é o typical (pavimento tipo, planta da unidade) |
+| **Painel do visor** | Os typicals da folha, com as ocorrências e "Editar"; nas medições de dentro, a marca "× N" |
+| **Projeto › Typicals** | Cada typical com a quebra: quanto cada condição mede **por unidade**, por **ocorrência** (ex.: Bloco A × 3, Bloco B × 4) e no total |
+
+| # | Regra | Onde |
+| --- | --- | --- |
+| TY-01 | Um typical tem um nome, uma **região** na folha (ou a folha inteira) e as **ocorrências**: onde se repete e quantas vezes, **contando a que está desenhada** (ex.: 2º pav. 4, 3º pav. 4, 4º pav. 4 = × 12) | `salvarTypical` |
+| TY-02 | Uma medição pertence ao typical se o **centro** dela cai dentro da região; ela vale × o total de ocorrências | `typicalDaMedicao`, `fatorDaMedicao` |
+| TY-03 | A multiplicação vale em **todos os cálculos**: totais da condição, vãos ligados e desenhados, variáveis das fórmulas, materiais, lista para cotação e proposta | `totaisDaCondicao`, `vaosLigados`, `vaosDesenhados` |
+| TY-04 | Typicals não se sobrepõem; a folha inteira não convive com regiões na mesma folha (seria multiplicar duas vezes) | `salvarTypical` |
+| TY-05 | Mudar as ocorrências recalcula na hora; excluir o typical faz as medições voltarem a valer uma vez (as medições ficam) | visor |
+
+**Exemplo de dados:** projeto **Townhouses Elm Row · 6 unidades** (Northfield): a planta da unidade (A-101) é um typical da folha inteira, Bloco A 3 + Bloco B 3. Paredes medidas uma vez (136 lin ft) valem 816 lin ft.
+
 ## 4. Permissões
 
 | Permissão | O que libera | Perfis prontos |
@@ -214,7 +235,7 @@ Encarregado e Trabalhador não veem o Measure (configurável em Settings › Per
 
 - `tests/imperial.test.mjs` (Node, sem navegador): saída e entrada em ft-in, ida e volta, inclinação, Shoelace e escalas. **50 verificações.**
 - `tests/formulas.test.mjs` (Node, sem navegador): fórmulas aceitas, **14 tentativas de abuso recusadas**, perda e arredondamento (inclusive 10.000 ÷ 32 → 344 chapas), validação. **31 verificações.**
-- `tests/measure.test.mjs` (Chromium, tela de computador): **128 verificações.** Inclui os preços (calculado pelo catálogo e as margens; preço que veio da cotação; margens novas em margem; digitado no lugar do calculado; voltar ao calculado), os relatórios (lista para cotação por fornecedor com e-mail e PDF; proposta com preço por linha, outros itens, total, emissão numerada e congelada, e-mail e PDF), as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
+- `tests/measure.test.mjs` (Chromium, tela de computador): **135 verificações.** Inclui os typicals (folha inteira × 6, mudar as ocorrências, região só na fachada sul, quebra por ocorrência no projeto), os preços (calculado pelo catálogo e as margens; preço que veio da cotação; margens novas em margem; digitado no lugar do calculado; voltar ao calculado), os relatórios (lista para cotação por fornecedor com e-mail e PDF; proposta com preço por linha, outros itens, total, emissão numerada e congelada, e-mail e PDF), as condições por folha (a fachada e o corte abrem só com o que foi incluído neles; reaproveitar e tirar de uma folha; vãos da fachada descontados na parede da planta), a borracha no piso, o vão desenhado na fachada (conta a W2, recorta o siding, sem desconto em dobro, apagar leva os dois), o desenho abrindo vazio e os assemblies incluídos um a um pelo catálogo (com nome, medidas e vãos); a lista de assemblies com resumo; a lista de projetos com filtro, o cadastro (obrigatórios, ZIP, prazo, obra vinculada), edição e exclusão; o visor maximizado com as condições à esquerda; mostrar e ocultar cada condição no desenho (conferido pelos pixels, e guardado ao reabrir); a cor escolhida na condição (paleta e cor livre) aparecendo no painel e na planta. Inclui também siding na fachada com empena, janelas e porta contadas com o tamanho do vão, materiais descontando os vãos e o corte em outra escala. Além do que está abaixo, cobre:
   - aplicar um assembly pelo visor;
   - materiais calculados (OSB, montantes, portas, concreto de meia em meia jarda);
   - o rastro do cálculo e o CSV;
