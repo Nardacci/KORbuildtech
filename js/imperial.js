@@ -5,6 +5,8 @@
  * Este arquivo é a camada de tradução: texto do usuário → polegadas → texto amigável.
  * As frações comuns (1/2 … 1/64") são exatas em ponto flutuante: não há perda ao guardar. */
 
+import { locale, tr } from './i18n.js';
+
 export const POL_POR_PE = 12;
 export const POL2_POR_PE2 = 144;
 export const POL3_POR_PE3 = 1728;
@@ -32,11 +34,9 @@ export function formatarPesPolegadas(pol, den) {
   return sinal + pes + "'-" + inteiras + (frac ? ' ' + frac : '') + '"';
 }
 
-/* Números no formato do idioma da conta (hoje pt-BR; na versão final, en-US). */
-let LOCALE = 'pt-BR';
-export function definirLocale(l) { LOCALE = l; }
+/* Números no formato do idioma escolhido (js/i18n.js): 1.234,5 (pt) · 1,234.5 (en). */
 export function numero(v, casas) {
-  return Number(v).toLocaleString(LOCALE, { minimumFractionDigits: casas || 0, maximumFractionDigits: casas || 0 });
+  return Number(v).toLocaleString(locale(), { minimumFractionDigits: casas || 0, maximumFractionDigits: casas || 0 });
 }
 
 export function pesLineares(pol) { return pol / POL_POR_PE; }
@@ -75,7 +75,7 @@ export function interpretarComprimento(texto, semUnidade) {
     .replace(/[″“”]/g, '"').replace(/[′’‘`]/g, "'")
     .replace(/\s*(feet|foot|ft)\b\.?/g, "'").replace(/\s*(inches|inch|in)\b\.?/g, '"')
     .replace(/,/g, '.').replace(/\s+/g, ' ');
-  if (!t) return { erro: 'Digite uma medida, ex.: 12\'-6 1/2"' };
+  if (!t) return { erro: tr('Digite uma medida, ex.: 12\'-6 1/2"') };
   const neg = t.startsWith('-');
   if (neg) t = t.slice(1).trim();
   let pes = 0, pol = 0;
@@ -85,24 +85,24 @@ export function interpretarComprimento(texto, semUnidade) {
     pol = Number(dash[2]) + (dash[3] ? Number(dash[3]) / Number(dash[4]) : 0);
   } else if (t.includes("'")) {
     const [a, ...resto] = t.split("'");
-    if (resto.length > 1 || !new RegExp('^' + NUM + '$').test(a.trim())) return { erro: 'Não entendi os pés em "' + texto + '"' };
+    if (resto.length > 1 || !new RegExp('^' + NUM + '$').test(a.trim())) return { erro: tr('Não entendi os pés em "{texto}"', { texto }) };
     pes = Number(a.trim());
     let b = resto.join('').trim().replace(/^-\s*/, '');
     if (b.endsWith('"')) b = b.slice(0, -1);
-    else if (b && /"/.test(b)) return { erro: 'Não entendi as polegadas em "' + texto + '"' };
+    else if (b && /"/.test(b)) return { erro: tr('Não entendi as polegadas em "{texto}"', { texto }) };
     const v = lerPolegadas(b);
-    if (v == null) return { erro: 'Não entendi as polegadas em "' + texto + '"' };
+    if (v == null) return { erro: tr('Não entendi as polegadas em "{texto}"', { texto }) };
     pol = v;
   } else if (t.endsWith('"')) {
     const v = lerPolegadas(t.slice(0, -1));
-    if (v == null) return { erro: 'Não entendi as polegadas em "' + texto + '"' };
+    if (v == null) return { erro: tr('Não entendi as polegadas em "{texto}"', { texto }) };
     pol = v;
   } else {
     const v = lerPolegadas(t);
-    if (v == null) return { erro: 'Não entendi "' + texto + '". Use, por exemplo, 12\'-6 1/2"' };
+    if (v == null) return { erro: tr('Não entendi "{texto}". Use, por exemplo, 12\'-6 1/2"', { texto }) };
     if (semUnidade === 'pol') pol = v; else pes = v;
   }
-  if (pes && pol >= POL_POR_PE) return { erro: 'Com pés, as polegadas precisam ser menores que 12 (ex.: 13\'-2" em vez de 12\'-14")' };
+  if (pes && pol >= POL_POR_PE) return { erro: tr('Com pés, as polegadas precisam ser menores que 12 (ex.: 13\'-2" em vez de 12\'-14")') };
   const total = pes * POL_POR_PE + pol;
   return { pol: neg ? -total : total };
 }
@@ -115,7 +115,7 @@ export function interpretarInclinacao(texto) {
   if (m && Number(m[2]) > 0) return { razao: Number(m[1]) / Number(m[2]) };
   m = /^(\d+(?:\.\d+)?)$/.exec(t);
   if (m) return { razao: Number(m[1]) / 12 };
-  return { erro: 'Use a inclinação como 6/12' };
+  return { erro: tr('Use a inclinação como 6/12') };
 }
 export function formatarInclinacao(razao) { return numero(razao * 12, razao * 12 % 1 ? 1 : 0) + '/12'; }
 /* Fator para converter medida em planta para a medida real na água do telhado: √(1 + razão²). */
@@ -125,24 +125,24 @@ export function fatorInclinacao(razao) { return Math.sqrt(1 + (razao || 0) * (ra
 
 /* razao = polegadas reais por polegada de papel (1/4" = 1'-0" → 48). */
 export const ESCALAS = [
-  { grupo: 'Arquitetônica', nome: '1/16" = 1\'-0"', razao: 192 },
-  { grupo: 'Arquitetônica', nome: '3/32" = 1\'-0"', razao: 128 },
-  { grupo: 'Arquitetônica', nome: '1/8" = 1\'-0"', razao: 96 },
-  { grupo: 'Arquitetônica', nome: '3/16" = 1\'-0"', razao: 64 },
-  { grupo: 'Arquitetônica', nome: '1/4" = 1\'-0"', razao: 48 },
-  { grupo: 'Arquitetônica', nome: '3/8" = 1\'-0"', razao: 32 },
-  { grupo: 'Arquitetônica', nome: '1/2" = 1\'-0"', razao: 24 },
-  { grupo: 'Arquitetônica', nome: '3/4" = 1\'-0"', razao: 16 },
-  { grupo: 'Arquitetônica', nome: '1" = 1\'-0"', razao: 12 },
-  { grupo: 'Arquitetônica', nome: '1-1/2" = 1\'-0"', razao: 8 },
-  { grupo: 'Arquitetônica', nome: '3" = 1\'-0"', razao: 4 },
-  { grupo: 'Engenharia', nome: '1" = 10\'', razao: 120 },
-  { grupo: 'Engenharia', nome: '1" = 20\'', razao: 240 },
-  { grupo: 'Engenharia', nome: '1" = 30\'', razao: 360 },
-  { grupo: 'Engenharia', nome: '1" = 40\'', razao: 480 },
-  { grupo: 'Engenharia', nome: '1" = 50\'', razao: 600 },
-  { grupo: 'Engenharia', nome: '1" = 60\'', razao: 720 },
-  { grupo: 'Engenharia', nome: '1" = 100\'', razao: 1200 },
+  { grupo: tr('Arquitetônica'), nome: '1/16" = 1\'-0"', razao: 192 },
+  { grupo: tr('Arquitetônica'), nome: '3/32" = 1\'-0"', razao: 128 },
+  { grupo: tr('Arquitetônica'), nome: '1/8" = 1\'-0"', razao: 96 },
+  { grupo: tr('Arquitetônica'), nome: '3/16" = 1\'-0"', razao: 64 },
+  { grupo: tr('Arquitetônica'), nome: '1/4" = 1\'-0"', razao: 48 },
+  { grupo: tr('Arquitetônica'), nome: '3/8" = 1\'-0"', razao: 32 },
+  { grupo: tr('Arquitetônica'), nome: '1/2" = 1\'-0"', razao: 24 },
+  { grupo: tr('Arquitetônica'), nome: '3/4" = 1\'-0"', razao: 16 },
+  { grupo: tr('Arquitetônica'), nome: '1" = 1\'-0"', razao: 12 },
+  { grupo: tr('Arquitetônica'), nome: '1-1/2" = 1\'-0"', razao: 8 },
+  { grupo: tr('Arquitetônica'), nome: '3" = 1\'-0"', razao: 4 },
+  { grupo: tr('Engenharia'), nome: '1" = 10\'', razao: 120 },
+  { grupo: tr('Engenharia'), nome: '1" = 20\'', razao: 240 },
+  { grupo: tr('Engenharia'), nome: '1" = 30\'', razao: 360 },
+  { grupo: tr('Engenharia'), nome: '1" = 40\'', razao: 480 },
+  { grupo: tr('Engenharia'), nome: '1" = 50\'', razao: 600 },
+  { grupo: tr('Engenharia'), nome: '1" = 60\'', razao: 720 },
+  { grupo: tr('Engenharia'), nome: '1" = 100\'', razao: 1200 },
 ];
 /* Polegadas reais por point do PDF. */
 export function polPorPontoDaEscala(razao) { return razao / PONTOS_POR_POL; }

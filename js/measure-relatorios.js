@@ -6,6 +6,7 @@
  *    versão congelada e numerada: mudar o projeto depois não muda o que foi enviado. */
 
 import { esc, toast, hoje, somarDias, dataCurta, confirmar } from './util.js';
+import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
@@ -48,8 +49,8 @@ function htmlPara(rotulo, c) {
     (c.pessoa ? '<span>A/C ' + esc(c.pessoa) + '</span>' : '') + '<span>' + esc([c.email, c.telefone].filter(Boolean).join(' · ')) + '</span></div>';
 }
 function htmlObra(p) {
-  return '<div class="doc-bloco"><span class="doc-rotulo">Obra</span><b>' + esc(p.nome) + '</b><span>' + esc(enderecoDoProjeto(p)) + '</span>' +
-    (donoDe(p) && donoDe(p) !== contratanteDe(p) ? '<span>Dono da obra: ' + esc(donoDe(p).nome) + '</span>' : '') + '</div>';
+  return ('<div class="doc-bloco"><span class="doc-rotulo">' + tr('Obra') + '</span><b>') + esc(p.nome) + '</b><span>' + esc(enderecoDoProjeto(p)) + '</span>' +
+    (donoDe(p) && donoDe(p) !== contratanteDe(p) ? ('<span>' + tr('Dono da obra:') + ' ') + esc(donoDe(p).nome) + '</span>' : '') + '</div>';
 }
 
 /* ---------- Lista para cotação ---------- */
@@ -66,13 +67,13 @@ export function listaDeCotacao(projetoId) {
 }
 
 function htmlTabelaCotacao(itens) {
-  return '<table class="doc-tabela"><thead><tr><th>#</th><th>Código</th><th>Descrição</th><th class="num">Quantidade</th><th>Unidade</th><th class="num doc-branco">Preço unitário</th><th class="num doc-branco">Total</th></tr></thead><tbody>' +
+  return ('<table class="doc-tabela"><thead><tr><th>#</th><th>' + tr('Código') + '</th><th>' + tr('Descrição') + '</th><th class="num">' + tr('Quantidade') + '</th><th>' + tr('Unidade') + '</th><th class="num doc-branco">' + tr('Preço unitário') + '</th><th class="num doc-branco">' + tr('Total') + '</th></tr></thead><tbody>') +
     itens.map((g, i) => '<tr><td>' + (i + 1) + '</td><td>' + esc(g.item.codigo) + '</td><td><b>' + esc(g.item.nome) + '</b>' + (g.item.nota ? '<span class="doc-nota">' + esc(g.item.nota) + '</span>' : '') + '</td>' +
       '<td class="num"><b>' + qtd(g.total) + '</b></td><td>' + esc(g.item.unidade) + '</td><td class="doc-branco"></td><td class="doc-branco"></td></tr>').join('') + '</tbody></table>';
 }
 
 function prazoResposta(p) { return (p.cotacao && p.cotacao.responderAte) || somarDias(hoje(), 3); }
-function obsCotacao(p) { return (p.cotacao && p.cotacao.observacoes) != null ? p.cotacao.observacoes : 'Entrega na obra. Informe o prazo de entrega e se o preço inclui o frete.'; }
+function obsCotacao(p) { return (p.cotacao && p.cotacao.observacoes) != null ? p.cotacao.observacoes : tr('Entrega na obra. Informe o prazo de entrega e se o preço inclui o frete.'); }
 const respostas = (p, fornecedorId) => ((p.cotacao && p.cotacao.respostas) || []).filter((x) => x.fornecedorId === fornecedorId);
 const envios = (p, fornecedorId) => ((p.cotacao && p.cotacao.envios) || []).filter((x) => x.fornecedorId === fornecedorId);
 
@@ -85,24 +86,24 @@ export function telaCotacao(id, moldura) {
     return '<section class="cartao cot-fornecedor"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + esc(f.nome) + '</h2>' +
         '<span class="mudo pequeno">' + esc([f.pessoa, f.email].filter(Boolean).join(' · ') || 'sem e-mail cadastrado') + ' · ' + g.itens.length + (g.itens.length === 1 ? ' item' : ' itens') + '</span>' +
         (ultimos.length ? '<span class="etiqueta etiqueta-verde">e-mail preparado em ' + dataCurta(ultimos[ultimos.length - 1].em.slice(0, 10)) + '</span>' : '') +
-        (respostas(p, f.id).length ? '<span class="etiqueta etiqueta-azul">preços recebidos em ' + dataCurta(respostas(p, f.id).slice(-1)[0].em.slice(0, 10)) + '</span>' : '') + '</div>' +
-        '<div class="btn-linha">' + (pode(usuarioAtual(), 'measure.catalogo') ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="cot-resposta" data-projeto="' + id + '" data-fornecedor="' + f.id + '">Registrar preços recebidos</button>' : '') +
+        (respostas(p, f.id).length ? ('<span class="etiqueta etiqueta-azul">' + tr('preços recebidos em') + ' ') + dataCurta(respostas(p, f.id).slice(-1)[0].em.slice(0, 10)) + '</span>' : '') + '</div>' +
+        '<div class="btn-linha">' + (pode(usuarioAtual(), 'measure.catalogo') ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="cot-resposta" data-projeto="' + id + '" data-fornecedor="' + f.id + ('">' + tr('Registrar preços recebidos') + '</button>') : '') +
         '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/cotacao/' + f.id + '/imprimir">' + icone('baixar', 16) + 'PDF</a>' +
-        '<button type="button" class="btn btn-primario btn-pequeno" data-acao="cot-email" data-projeto="' + id + '" data-fornecedor="' + f.id + '"' + (f.email ? '' : ' disabled title="Cadastre o e-mail do fornecedor"') + '>' + icone('link', 16) + 'Enviar por e-mail</button></div></div>' +
+        '<button type="button" class="btn btn-primario btn-pequeno" data-acao="cot-email" data-projeto="' + id + '" data-fornecedor="' + f.id + '"' + (f.email ? '' : (' disabled title="' + tr('Cadastre o e-mail do fornecedor') + '"')) + '>' + icone('link', 16) + (tr('Enviar por e-mail') + '</button></div></div>') +
       '<div class="tabela-rolagem">' + htmlTabelaCotacao(g.itens) + '</div></section>';
   };
   return moldura({
-    ativo: 'projetos', largura: 'larga', titulo: 'Lista para cotação', subtitulo: p.nome + ' · materiais na unidade de compra, sem preço, separados por fornecedor',
+    ativo: 'projetos', largura: 'larga', titulo: tr('Lista para cotação'), subtitulo: p.nome + (' ' + tr('· materiais na unidade de compra, sem preço, separados por fornecedor')),
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
-    conteudo: (l.total ? '' : '<p class="aviso-info">' + icone('measure', 16) + 'Ainda não há materiais: meça as condições que têm assemblies.</p>') +
+    conteudo: (l.total ? '' : '<p class="aviso-info">' + icone('measure', 16) + (tr('Ainda não há materiais: meça as condições que têm assemblies.') + '</p>')) +
       '<section class="cartao"><form id="form-cotacao" class="form-settings" data-projeto="' + id + '" onsubmit="return false"><div class="grade-campos">' +
-        '<div class="campo"><label class="rotulo-pequeno" for="cot-ate">Responder até</label><input type="date" id="cot-ate" name="responderAte" value="' + prazoResposta(p) + '"></div>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="cot-entrega">Entregar em</label><input type="text" id="cot-entrega" value="' + esc(enderecoDoProjeto(p)) + '" disabled></div></div>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="cot-obs">Observações para o fornecedor</label><textarea id="cot-obs" name="observacoes" rows="2">' + esc(obsCotacao(p)) + '</textarea></div></form>' +
-        '<p class="mudo pequeno">Cada fornecedor recebe só os itens das etapas que ele fornece (Settings › Contatos). Quantidades já com perda e arredondadas para a compra.</p></section>' +
+        ('<div class="campo"><label class="rotulo-pequeno" for="cot-ate">' + tr('Responder até') + '</label><input type="date" id="cot-ate" name="responderAte" value="') + prazoResposta(p) + '"></div>' +
+        ('<div class="campo"><label class="rotulo-pequeno" for="cot-entrega">' + tr('Entregar em') + '</label><input type="text" id="cot-entrega" value="') + esc(enderecoDoProjeto(p)) + '" disabled></div></div>' +
+        ('<div class="campo"><label class="rotulo-pequeno" for="cot-obs">' + tr('Observações para o fornecedor') + '</label><textarea id="cot-obs" name="observacoes" rows="2">') + esc(obsCotacao(p)) + '</textarea></div></form>' +
+        ('<p class="mudo pequeno">' + tr('Cada fornecedor recebe só os itens das etapas que ele fornece (Settings › Contatos). Quantidades já com perda e arredondadas para a compra.') + '</p></section>') +
       l.grupos.map(grupo).join('') +
-      (l.sem.length ? '<section class="cartao cot-sem"><h2 class="cartao-titulo">Sem fornecedor</h2><p class="mudo pequeno">Nenhum fornecedor cadastrado fornece estas etapas: ' +
-        esc(Array.from(new Set(l.sem.map((g) => g.item.etapa))).join(', ')) + '. Marque as etapas no fornecedor, em <a href="#/settings/contatos/fornecedor">Settings › Contatos</a>.</p>' +
+      (l.sem.length ? ('<section class="cartao cot-sem"><h2 class="cartao-titulo">' + tr('Sem fornecedor') + '</h2><p class="mudo pequeno">' + tr('Nenhum fornecedor cadastrado fornece estas etapas:') + ' ') +
+        esc(Array.from(new Set(l.sem.map((g) => g.item.etapa))).join(', ')) + (tr('. Marque as etapas no fornecedor, em') + ' <a href="#/settings/contatos/fornecedor">' + tr('Settings › Contatos') + '</a>.</p>') +
         '<div class="tabela-rolagem">' + htmlTabelaCotacao(l.sem) + '</div></section>' : ''),
   });
 }
@@ -112,15 +113,15 @@ export function telaImpressaoCotacao(id, fornecedorId) {
   const p = projeto(id);
   const f = contato(fornecedorId);
   const g = listaDeCotacao(id).grupos.find((x) => x.fornecedor.id === fornecedorId);
-  return barraImpressao('#/measure/projeto/' + id + '/cotacao', 'Pedido de cotação · ' + f.nome) +
+  return barraImpressao('#/measure/projeto/' + id + '/cotacao', (tr('Pedido de cotação ·') + ' ') + f.nome) +
     '<div class="pdf-folha"><article class="doc">' +
-      htmlCabecalho('Pedido de cotação', ['Data: ' + dataCurta(hoje()), 'Responder até: <b>' + dataCurta(prazoResposta(p)) + '</b>']) +
-      '<section class="doc-partes">' + htmlPara('Para', f) + htmlObra(p) + '</section>' +
-      '<p class="doc-texto">Pedimos o seu preço para os materiais abaixo, na unidade indicada. Por favor, preencha o preço unitário e o total de cada item.</p>' +
+      htmlCabecalho(tr('Pedido de cotação'), [(tr('Data:') + ' ') + dataCurta(hoje()), (tr('Responder até:') + ' <b>') + dataCurta(prazoResposta(p)) + '</b>']) +
+      '<section class="doc-partes">' + htmlPara(tr('Para'), f) + htmlObra(p) + '</section>' +
+      ('<p class="doc-texto">' + tr('Pedimos o seu preço para os materiais abaixo, na unidade indicada. Por favor, preencha o preço unitário e o total de cada item.') + '</p>') +
       htmlTabelaCotacao(g ? g.itens : []) +
-      '<div class="doc-rodape-tabela"><span>Subtotal</span><span class="doc-branco"></span><span>Frete</span><span class="doc-branco"></span><span>Total</span><span class="doc-branco"></span></div>' +
-      (obsCotacao(p) ? '<section class="doc-secao"><h2>Observações</h2><p class="doc-pre">' + esc(obsCotacao(p)) + '</p></section>' : '') +
-      '<footer class="doc-fim"><span>Contato: ' + esc(quem()) + ' · ' + esc(empresa().email || '') + '</span><span>Gerado no KORbuild Measure</span></footer>' +
+      ('<div class="doc-rodape-tabela"><span>' + tr('Subtotal') + '</span><span class="doc-branco"></span><span>' + tr('Frete') + '</span><span class="doc-branco"></span><span>' + tr('Total') + '</span><span class="doc-branco"></span></div>') +
+      (obsCotacao(p) ? ('<section class="doc-secao"><h2>' + tr('Observações') + '</h2><p class="doc-pre">') + esc(obsCotacao(p)) + '</p></section>' : '') +
+      ('<footer class="doc-fim"><span>' + tr('Contato:') + ' ') + esc(quem()) + ' · ' + esc(empresa().email || '') + ('</span><span>' + tr('Gerado no KORbuild Measure') + '</span></footer>') +
     '</article></div>';
 }
 
@@ -128,11 +129,11 @@ export function telaImpressaoCotacao(id, fornecedorId) {
 function emailCotacao(p, f, g) {
   const e = empresa();
   const linhas = g.itens.map((x) => '- ' + qtd(x.total) + ' ' + x.item.unidade + ' · ' + x.item.nome + (x.item.codigo ? ' (' + x.item.codigo + ')' : ''));
-  const corpo = ['Olá' + (f.pessoa ? ', ' + f.pessoa : '') + ',', '',
-    'Pedimos o seu preço para os materiais abaixo, da obra ' + p.nome + ' (' + enderecoDoProjeto(p) + '):', '', ...linhas, '',
-    'Por favor, responda até ' + dataCurta(prazoResposta(p)) + ' com o preço unitário, o prazo de entrega e se inclui o frete.',
-    obsCotacao(p) ? '' : null, obsCotacao(p) || null, '', 'Obrigado,', quem(), e.nome, e.telefone || ''].filter((x) => x !== null);
-  return 'mailto:' + encodeURIComponent(f.email) + '?subject=' + encodeURIComponent('Pedido de cotação · ' + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n'));
+  const corpo = [tr('Olá') + (f.pessoa ? ', ' + f.pessoa : '') + ',', '',
+    (tr('Pedimos o seu preço para os materiais abaixo, da obra') + ' ') + p.nome + ' (' + enderecoDoProjeto(p) + '):', '', ...linhas, '',
+    (tr('Por favor, responda até') + ' ') + dataCurta(prazoResposta(p)) + (' ' + tr('com o preço unitário, o prazo de entrega e se inclui o frete.')),
+    obsCotacao(p) ? '' : null, obsCotacao(p) || null, '', tr('Obrigado,'), quem(), e.nome, e.telefone || ''].filter((x) => x !== null);
+  return 'mailto:' + encodeURIComponent(f.email) + tr('?subject=') + encodeURIComponent((tr('Pedido de cotação ·') + ' ') + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n'));
 }
 
 /* ---------- Proposta ---------- */
@@ -144,7 +145,7 @@ export function linhasDaProposta(p) {
   const salvas = (p.proposta && p.proposta.linhas) || {};
   const etapas = new Map();
   for (const g of q.porItem) {
-    const e = g.item.etapa || 'Outros';
+    const e = g.item.etapa || tr('Outros');
     if (!etapas.has(e)) etapas.set(e, { etapa: e, materiais: [], horas: 0, grupos: [] });
     etapas.get(e).grupos.push(g);
     if (g.item.categoria === 'material') etapas.get(e).materiais.push(g);
@@ -185,49 +186,49 @@ export function telaProposta(id, moldura) {
   const t = totais(p);
   const ct = contratanteDe(p);
   const versoes = p.propostas || [];
-  const campoValor = (nome, valor, sugerido) => '<span class="campo-dinheiro">US$<input type="text" inputmode="decimal" name="' + nome + '" value="' + (valor != null ? esc(numero(valor, 2)) : '') + '" placeholder="' + (sugerido != null ? esc(numero(sugerido, 2)) : '0,00') + '"></span>';
+  const campoValor = (nome, valor, sugerido) => ('<span class="campo-dinheiro">' + tr('US$') + '<input type="text" inputmode="decimal" name="') + nome + '" value="' + (valor != null ? esc(numero(valor, 2)) : '') + '" placeholder="' + (sugerido != null ? esc(numero(sugerido, 2)) : '0,00') + '"></span>';
   const m = margensEm();
   const base = (l) => {
     const c = l.custo;
-    const partes = [c.material ? 'material ' + dinheiro(c.material) : '', c.imposto ? 'imposto ' + dinheiro(c.imposto) : '', c.maoDeObra ? 'mão de obra ' + dinheiro(c.maoDeObra) : '', c.outros ? 'outros ' + dinheiro(c.outros) : ''].filter(Boolean);
-    return '<span class="prop-custo">' + (partes.length ? 'Custo ' + dinheiro(c.custo) + ' = ' + partes.join(' + ') : 'Sem custo calculado') + '</span>' +
-      (c.semPreco.length ? '<span class="prop-sem-preco">Sem preço: ' + esc(c.semPreco.map((i) => i.nome).join(', ')) + '</span>' : '');
+    const partes = [c.material ? 'material ' + dinheiro(c.material) : '', c.imposto ? 'imposto ' + dinheiro(c.imposto) : '', c.maoDeObra ? (tr('mão de obra') + ' ') + dinheiro(c.maoDeObra) : '', c.outros ? 'outros ' + dinheiro(c.outros) : ''].filter(Boolean);
+    return '<span class="prop-custo">' + (partes.length ? (tr('Custo') + ' ') + dinheiro(c.custo) + ' = ' + partes.join(' + ') : tr('Sem custo calculado')) + '</span>' +
+      (c.semPreco.length ? ('<span class="prop-sem-preco">' + tr('Sem preço:') + ' ') + esc(c.semPreco.map((i) => i.nome).join(', ')) + '</span>' : '');
   };
   return moldura({
-    ativo: 'projetos', largura: 'larga', titulo: 'Proposta', subtitulo: p.nome + (ct ? ' · para ' + ct.nome : ''),
+    ativo: 'projetos', largura: 'larga', titulo: tr('Proposta'), subtitulo: p.nome + (ct ? (' ' + tr('· para') + ' ') + ct.nome : ''),
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
-    acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/proposta/imprimir">' + icone('olho', 16) + 'Ver o documento</a>' +
-      '<button type="button" class="btn btn-primario btn-pequeno" data-acao="prop-emitir" data-projeto="' + id + '">' + icone('aprovacoes', 16) + 'Emitir proposta</button></div>',
+    acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/proposta/imprimir">' + icone('olho', 16) + (tr('Ver o documento') + '</a>') +
+      '<button type="button" class="btn btn-primario btn-pequeno" data-acao="prop-emitir" data-projeto="' + id + '">' + icone('aprovacoes', 16) + (tr('Emitir proposta') + '</button></div>'),
     conteudo: '<form id="form-proposta" class="form-settings" data-projeto="' + id + '" onsubmit="return false">' +
-      (ct ? '' : '<p class="aviso-info">' + icone('conta', 16) + 'O projeto ainda não tem contratante: escolha em Editar projeto.</p>') +
-      '<section class="cartao"><h2 class="cartao-titulo">Escopo</h2><textarea name="escopo" rows="2" aria-label="Escopo">' + esc(r.escopo) + '</textarea></section>' +
-      '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Itens da proposta</h2>' +
-        '<label class="check pequeno"><input type="checkbox" name="mostrarQuantidades"' + (r.mostrarQuantidades ? ' checked' : '') + '> Mostrar as quantidades de material no documento</label></div>' +
-        '<p class="mudo pequeno">Uma linha por etapa (material e mão de obra juntos). O preço é <b>calculado</b>: quantidades × preços do catálogo (com vigência) + ' + esc(textoMargens(m)) +
-          ' (<a href="#/measure/precos">Preços</a>). Digite outro valor quando quiser; apagar o que foi digitado volta ao calculado.</p>' +
-        (linhas.some((l) => l.digitado != null) ? '<button type="button" class="link-botao pequeno" data-acao="prop-recalcular">Usar os preços calculados em todas as linhas</button>' : '') +
-        (linhas.length ? '<div class="tabela-rolagem"><table class="tabela prop-linhas"><thead><tr><th></th><th>Etapa</th><th>Base do cálculo</th><th class="num">Preço</th></tr></thead><tbody>' +
-          linhas.map((l) => '<tr class="' + (l.incluir ? '' : 'prop-fora') + '"><td><input type="checkbox" name="incluir" data-etapa="' + esc(l.etapa) + '"' + (l.incluir ? ' checked' : '') + ' aria-label="Incluir ' + esc(l.titulo) + '"></td>' +
-            '<td><input type="text" name="titulo" data-etapa="' + esc(l.etapa) + '" value="' + esc(l.titulo) + '" aria-label="Título da linha"><span class="mudo pequeno bloco">' + esc(codigoEtapa(l.etapa)) + '</span></td>' +
-            '<td class="pequeno">' + (l.materiais.map((g) => qtd(g.total) + ' ' + esc(g.item.unidade) + ' ' + esc(g.item.nome)).join('<br>') || '<span class="mudo">sem material</span>') +
-              (l.horas ? '<span class="bloco mudo">Mão de obra estimada: ' + qtd(l.horas) + ' h</span>' : '') + base(l) + '</td>' +
+      (ct ? '' : '<p class="aviso-info">' + icone('conta', 16) + (tr('O projeto ainda não tem contratante: escolha em Editar projeto.') + '</p>')) +
+      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><textarea name="escopo" rows="2" aria-label="' + tr('Escopo') + '">') + esc(r.escopo) + '</textarea></section>' +
+      ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Itens da proposta') + '</h2>') +
+        '<label class="check pequeno"><input type="checkbox" name="mostrarQuantidades"' + (r.mostrarQuantidades ? ' checked' : '') + ('> ' + tr('Mostrar as quantidades de material no documento') + '</label></div>') +
+        ('<p class="mudo pequeno">' + tr('Uma linha por etapa (material e mão de obra juntos). O preço é') + ' <b>calculado</b>' + tr(': quantidades × preços do catálogo (com vigência) +') + ' ') + esc(textoMargens(m)) +
+          (' (<a href="#/measure/precos">' + tr('Preços') + '</a>' + tr('). Digite outro valor quando quiser; apagar o que foi digitado volta ao calculado.') + '</p>') +
+        (linhas.some((l) => l.digitado != null) ? ('<button type="button" class="link-botao pequeno" data-acao="prop-recalcular">' + tr('Usar os preços calculados em todas as linhas') + '</button>') : '') +
+        (linhas.length ? ('<div class="tabela-rolagem"><table class="tabela prop-linhas"><thead><tr><th></th><th>' + tr('Etapa') + '</th><th>' + tr('Base do cálculo') + '</th><th class="num">' + tr('Preço') + '</th></tr></thead><tbody>') +
+          linhas.map((l) => '<tr class="' + (l.incluir ? '' : 'prop-fora') + '"><td><input type="checkbox" name="incluir" data-etapa="' + esc(l.etapa) + '"' + (l.incluir ? ' checked' : '') + (' aria-label="' + tr('Incluir') + ' ') + esc(l.titulo) + '"></td>' +
+            '<td><input type="text" name="titulo" data-etapa="' + esc(l.etapa) + '" value="' + esc(l.titulo) + ('" aria-label="' + tr('Título da linha') + '"><span class="mudo pequeno bloco">') + esc(codigoEtapa(l.etapa)) + '</span></td>' +
+            '<td class="pequeno">' + (l.materiais.map((g) => qtd(g.total) + ' ' + esc(g.item.unidade) + ' ' + esc(g.item.nome)).join('<br>') || ('<span class="mudo">' + tr('sem material') + '</span>')) +
+              (l.horas ? ('<span class="bloco mudo">' + tr('Mão de obra estimada:') + ' ') + qtd(l.horas) + ' h</span>' : '') + base(l) + '</td>' +
             '<td class="num">' + campoValor('valor', l.digitado, l.calculado).replace('name="valor"', 'name="valor" data-etapa="' + esc(l.etapa) + '"') +
-              '<span class="prop-origem" data-etapa="' + esc(l.etapa) + '">' + (l.digitado != null ? 'digitado' + (l.calculado ? ' · calculado ' + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : 'sem preço') + '</span></td></tr>').join('') + '</tbody></table></div>'
-          : '<p class="vazio">Meça as condições com assemblies para gerar as linhas.</p>') + '</section>' +
-      '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">Outros itens</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-extra">' + icone('mais', 14) + 'Linha</button></div>' +
-        '<p class="mudo pequeno">O que não vem da planta: mobilização, caçamba, andaime, licença…</p>' +
-        '<div id="prop-extras">' + r.extras.map((x, i) => '<div class="prop-extra"><input type="text" name="extra-descricao" data-i="' + i + '" value="' + esc(x.descricao) + '" placeholder="Descrição" aria-label="Descrição">' +
-          campoValor('extra-valor', x.valor).replace('name="extra-valor"', 'name="extra-valor" data-i="' + i + '"') + '<button type="button" class="link-botao" data-acao="prop-tirar-extra" data-i="' + i + '" aria-label="Tirar a linha">✕</button></div>').join('') + '</div></section>' +
-      '<section class="cartao prop-total"><span>Total da proposta</span><b id="prop-total">' + dinheiro(t.total) + '</b>' +
-        (t.semPreco.length ? '<span class="etiqueta etiqueta-ambar">' + t.semPreco.length + (t.semPreco.length === 1 ? ' linha sem preço' : ' linhas sem preço') + '</span>' : '') +
+              '<span class="prop-origem" data-etapa="' + esc(l.etapa) + '">' + (l.digitado != null ? 'digitado' + (l.calculado ? (' ' + tr('· calculado') + ' ') + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : tr('sem preço')) + '</span></td></tr>').join('') + '</tbody></table></div>'
+          : ('<p class="vazio">' + tr('Meça as condições com assemblies para gerar as linhas.') + '</p>')) + '</section>' +
+      ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Outros itens') + '</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-extra">') + icone('mais', 14) + (tr('Linha') + '</button></div>') +
+        ('<p class="mudo pequeno">' + tr('O que não vem da planta: mobilização, caçamba, andaime, licença…') + '</p>') +
+        '<div id="prop-extras">' + r.extras.map((x, i) => '<div class="prop-extra"><input type="text" name="extra-descricao" data-i="' + i + '" value="' + esc(x.descricao) + ('" placeholder="' + tr('Descrição') + '" aria-label="' + tr('Descrição') + '">') +
+          campoValor('extra-valor', x.valor).replace('name="extra-valor"', 'name="extra-valor" data-i="' + i + '"') + '<button type="button" class="link-botao" data-acao="prop-tirar-extra" data-i="' + i + ('" aria-label="' + tr('Tirar a linha') + '">✕</button></div>')).join('') + '</div></section>' +
+      ('<section class="cartao prop-total"><span>' + tr('Total da proposta') + '</span><b id="prop-total">') + dinheiro(t.total) + '</b>' +
+        (t.semPreco.length ? '<span class="etiqueta etiqueta-ambar">' + t.semPreco.length + (t.semPreco.length === 1 ? (' ' + tr('linha sem preço')) : (' ' + tr('linhas sem preço'))) + '</span>' : '') +
         '<span class="prop-resumo" id="prop-resumo">' + htmlResumo(t) + '</span></section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">Condições</h2><div class="grade-campos">' +
-        '<div class="campo"><label class="rotulo-pequeno" for="prop-validade">Validade (dias)</label><input type="number" id="prop-validade" name="validadeDias" min="1" max="365" value="' + r.validadeDias + '"></div></div>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="prop-termos">Termos (vêm do perfil da empresa; ajuste para esta proposta)</label><textarea id="prop-termos" name="termos" rows="5">' + esc(r.termos) + '</textarea></div></section>' +
-      (versoes.length ? '<section class="cartao"><h2 class="cartao-titulo">Propostas emitidas</h2><ul class="prop-versoes">' + versoes.slice().reverse().map((v) =>
+      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Condições') + '</h2><div class="grade-campos">') +
+        ('<div class="campo"><label class="rotulo-pequeno" for="prop-validade">' + tr('Validade (dias)') + '</label><input type="number" id="prop-validade" name="validadeDias" min="1" max="365" value="') + r.validadeDias + '"></div></div>' +
+        ('<div class="campo"><label class="rotulo-pequeno" for="prop-termos">' + tr('Termos (vêm do perfil da empresa; ajuste para esta proposta)') + '</label><textarea id="prop-termos" name="termos" rows="5">') + esc(r.termos) + '</textarea></div></section>' +
+      (versoes.length ? ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Propostas emitidas') + '</h2><ul class="prop-versoes">') + versoes.slice().reverse().map((v) =>
         '<li><span><b>' + esc(v.numero) + '</b> · ' + dataCurta(v.emitidaEm.slice(0, 10)) + ' · ' + esc(v.por) + ' · <b>' + dinheiro(v.total) + '</b></span>' +
         '<span class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/proposta/imprimir/' + encodeURIComponent(v.numero) + '">PDF</a>' +
-        '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-email" data-projeto="' + id + '" data-numero="' + esc(v.numero) + '"' + (ct && ct.email ? '' : ' disabled') + '>Enviar por e-mail</button></span></li>').join('') + '</ul></section>' : '') +
+        '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-email" data-projeto="' + id + '" data-numero="' + esc(v.numero) + '"' + (ct && ct.email ? '' : ' disabled') + ('>' + tr('Enviar por e-mail') + '</button></span></li>')).join('') + '</ul></section>' : '') +
     '</form>',
   });
 }
@@ -237,8 +238,8 @@ function htmlResumo(t) {
   const extras = t.extras.reduce((s, x) => s + (x.valor || 0), 0);
   const venda = t.total - extras;
   const margem = venda > 0 ? (venda - t.custo) / venda * 100 : 0;
-  return 'Custo dos itens medidos <b>' + dinheiro(t.custo) + '</b> · resultado sobre a venda <b class="' + (margem < 0 ? 'negativo' : '') + '">' + numero(margem, 1) + '%</b>' +
-    (t.itensSemPreco.length ? ' · <span class="prop-sem-preco">' + t.itensSemPreco.length + (t.itensSemPreco.length === 1 ? ' item sem preço' : ' itens sem preço') + ' no catálogo</span>' : '');
+  return (tr('Custo dos itens medidos') + ' <b>') + dinheiro(t.custo) + ('</b> ' + tr('· resultado sobre a venda') + ' <b class="') + (margem < 0 ? 'negativo' : '') + '">' + numero(margem, 1) + '%</b>' +
+    (t.itensSemPreco.length ? ' · <span class="prop-sem-preco">' + t.itensSemPreco.length + (t.itensSemPreco.length === 1 ? (' ' + tr('item sem preço')) : (' ' + tr('itens sem preço'))) + (' ' + tr('no catálogo') + '</span>') : '');
 }
 
 /* O conteúdo congelado (ou o rascunho, para pré-visualizar). */
@@ -267,34 +268,34 @@ function htmlProposta(d, numeroDoc, data) {
   };
   const subtotalLinhas = d.linhas.reduce((t, l) => t + l.valor, 0), subtotalExtras = d.extras.reduce((t, x) => t + x.valor, 0);
   return '<article class="doc doc-proposta">' +
-    cab('Proposta', [numeroDoc ? 'Nº <b>' + esc(numeroDoc) + '</b>' : '<b class="doc-rascunho">Rascunho</b>', 'Data: ' + dataCurta(data), 'Válida até: ' + dataCurta(somarDias(data, d.validadeDias))]) +
-    '<section class="doc-partes">' + (d.contratante ? '<div class="doc-bloco"><span class="doc-rotulo">Para</span><b>' + esc(d.contratante.nome) + '</b>' + (d.contratante.pessoa ? '<span>A/C ' + esc(d.contratante.pessoa) + '</span>' : '') +
+    cab(tr('Proposta'), [numeroDoc ? (tr('Nº') + ' <b>') + esc(numeroDoc) + '</b>' : ('<b class="doc-rascunho">' + tr('Rascunho') + '</b>'), (tr('Data:') + ' ') + dataCurta(data), (tr('Válida até:') + ' ') + dataCurta(somarDias(data, d.validadeDias))]) +
+    '<section class="doc-partes">' + (d.contratante ? ('<div class="doc-bloco"><span class="doc-rotulo">' + tr('Para') + '</span><b>') + esc(d.contratante.nome) + '</b>' + (d.contratante.pessoa ? '<span>A/C ' + esc(d.contratante.pessoa) + '</span>' : '') +
       '<span>' + esc([d.contratante.email, d.contratante.telefone].filter(Boolean).join(' · ')) + '</span></div>' : '') +
-      '<div class="doc-bloco"><span class="doc-rotulo">Obra</span><b>' + esc(d.obra.nome) + '</b><span>' + esc(d.obra.endereco) + '</span>' + (d.dono ? '<span>Dono da obra: ' + esc(d.dono.nome) + '</span>' : '') + '</div></section>' +
-    (d.escopo ? '<section class="doc-secao"><h2>Escopo</h2><p class="doc-pre">' + esc(d.escopo) + '</p></section>' : '') +
-    '<table class="doc-tabela doc-tabela-proposta"><thead><tr><th>#</th><th>Item</th><th class="num">Valor</th></tr></thead><tbody>' +
+      ('<div class="doc-bloco"><span class="doc-rotulo">' + tr('Obra') + '</span><b>') + esc(d.obra.nome) + '</b><span>' + esc(d.obra.endereco) + '</span>' + (d.dono ? ('<span>' + tr('Dono da obra:') + ' ') + esc(d.dono.nome) + '</span>' : '') + '</div></section>' +
+    (d.escopo ? ('<section class="doc-secao"><h2>' + tr('Escopo') + '</h2><p class="doc-pre">') + esc(d.escopo) + '</p></section>' : '') +
+    ('<table class="doc-tabela doc-tabela-proposta"><thead><tr><th>#</th><th>' + tr('Item') + '</th><th class="num">' + tr('Valor') + '</th></tr></thead><tbody>') +
       d.linhas.map((l, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(l.titulo) + '</b>' + (l.codigo ? ' <span class="doc-nota-inline">' + esc(l.codigo) + '</span>' : '') +
-        (d.mostrarQuantidades && l.materiais.length ? '<span class="doc-nota">' + l.materiais.map(esc).join(' · ') + '</span>' : '') + '<span class="doc-nota">Material e mão de obra</span></td><td class="num">' + dinheiro(l.valor) + '</td></tr>').join('') +
-      (d.linhas.length ? '<tr class="doc-subtotal"><td></td><td>Subtotal dos itens medidos</td><td class="num">' + dinheiro(subtotalLinhas) + '</td></tr>' : '') +
+        (d.mostrarQuantidades && l.materiais.length ? '<span class="doc-nota">' + l.materiais.map(esc).join(' · ') + '</span>' : '') + ('<span class="doc-nota">' + tr('Material e mão de obra') + '</span></td><td class="num">') + dinheiro(l.valor) + '</td></tr>').join('') +
+      (d.linhas.length ? ('<tr class="doc-subtotal"><td></td><td>' + tr('Subtotal dos itens medidos') + '</td><td class="num">') + dinheiro(subtotalLinhas) + '</td></tr>' : '') +
       d.extras.map((x, i) => '<tr><td>' + (d.linhas.length + i + 1) + '</td><td><b>' + esc(x.descricao) + '</b></td><td class="num">' + dinheiro(x.valor) + '</td></tr>').join('') +
-      (d.extras.length ? '<tr class="doc-subtotal"><td></td><td>Subtotal de outros itens</td><td class="num">' + dinheiro(subtotalExtras) + '</td></tr>' : '') +
-      '<tr class="doc-total"><td></td><td>Total</td><td class="num">' + dinheiro(d.total) + '</td></tr></tbody></table>' +
-    (d.termos ? '<section class="doc-secao"><h2>Termos e condições</h2><p class="doc-pre">' + esc(d.termos) + '</p></section>' : '') +
-    ((d.empresa.licencas || d.empresa.seguros) ? '<section class="doc-secao doc-duas"><div><h2>Licenças e registros</h2><p class="doc-pre">' + esc(d.empresa.licencas || '—') + '</p></div><div><h2>Seguros</h2><p class="doc-pre">' + esc(d.empresa.seguros || '—') + '</p></div></section>' : '') +
-    '<section class="doc-assinaturas"><div><span></span>' + esc(d.empresa.nome) + '<small>' + esc(d.por) + '</small></div><div><span></span>Aceite' + (d.contratante ? ': ' + esc(d.contratante.nome) : '') + '<small>Nome, assinatura e data</small></div></section>' +
-    '<footer class="doc-fim"><span>' + esc(d.empresa.nome) + '</span><span>Gerado no KORbuild Measure</span></footer></article>';
+      (d.extras.length ? ('<tr class="doc-subtotal"><td></td><td>' + tr('Subtotal de outros itens') + '</td><td class="num">') + dinheiro(subtotalExtras) + '</td></tr>' : '') +
+      ('<tr class="doc-total"><td></td><td>' + tr('Total') + '</td><td class="num">') + dinheiro(d.total) + '</td></tr></tbody></table>' +
+    (d.termos ? ('<section class="doc-secao"><h2>' + tr('Termos e condições') + '</h2><p class="doc-pre">') + esc(d.termos) + '</p></section>' : '') +
+    ((d.empresa.licencas || d.empresa.seguros) ? ('<section class="doc-secao doc-duas"><div><h2>' + tr('Licenças e registros') + '</h2><p class="doc-pre">') + esc(d.empresa.licencas || '—') + ('</p></div><div><h2>' + tr('Seguros') + '</h2><p class="doc-pre">') + esc(d.empresa.seguros || '—') + '</p></div></section>' : '') +
+    '<section class="doc-assinaturas"><div><span></span>' + esc(d.empresa.nome) + '<small>' + esc(d.por) + ('</small></div><div><span></span>' + tr('Aceite')) + (d.contratante ? ': ' + esc(d.contratante.nome) : '') + ('<small>' + tr('Nome, assinatura e data') + '</small></div></section>') +
+    '<footer class="doc-fim"><span>' + esc(d.empresa.nome) + ('</span><span>' + tr('Gerado no KORbuild Measure') + '</span></footer></article>');
 }
 
 export function telaImpressaoProposta(id, numeroDoc) {
   const p = projeto(id);
   const v = numeroDoc ? (p.propostas || []).find((x) => x.numero === numeroDoc) : null;
   const html = v ? htmlProposta(v.dados, v.numero, v.emitidaEm.slice(0, 10)) : htmlProposta(dadosDaProposta(p), null, hoje());
-  return barraImpressao('#/measure/projeto/' + id + '/proposta', v ? 'Proposta ' + v.numero : 'Proposta (rascunho)') + '<div class="pdf-folha">' + html + '</div>';
+  return barraImpressao('#/measure/projeto/' + id + '/proposta', v ? (tr('Proposta') + ' ') + v.numero : tr('Proposta (rascunho)')) + '<div class="pdf-folha">' + html + '</div>';
 }
 
 function barraImpressao(voltar, titulo) {
-  return '<div class="pdf-barra nao-imprimir"><a class="btn btn-escuro btn-pequeno" href="' + voltar + '">' + icone('voltar', 16) + 'Voltar</a><span>' + esc(titulo) + ' · A4</span>' +
-    '<button type="button" class="btn btn-primario btn-pequeno" data-acao="doc-imprimir" data-titulo="' + esc(titulo) + '">' + icone('baixar', 16) + 'Baixar PDF</button></div>';
+  return '<div class="pdf-barra nao-imprimir"><a class="btn btn-escuro btn-pequeno" href="' + voltar + '">' + icone('voltar', 16) + (tr('Voltar') + '</a><span>') + esc(titulo) + (' ' + tr('· A4') + '</span>') +
+    '<button type="button" class="btn btn-primario btn-pequeno" data-acao="doc-imprimir" data-titulo="' + esc(titulo) + '">' + icone('baixar', 16) + (tr('Baixar PDF') + '</button></div>');
 }
 
 /* Guarda o rascunho a cada mudança no formulário. */
@@ -332,7 +333,7 @@ document.addEventListener('change', (ev) => {
   if (resumo) resumo.innerHTML = htmlResumo(t);
   for (const l of linhasDaProposta(p)) {
     const el = document.querySelector('.prop-origem[data-etapa="' + CSS.escape(l.etapa) + '"]');
-    if (el) el.textContent = l.digitado != null ? 'digitado' + (l.calculado ? ' · calculado ' + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : 'sem preço';
+    if (el) el.textContent = l.digitado != null ? 'digitado' + (l.calculado ? (' ' + tr('· calculado') + ' ') + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : tr('sem preço');
   }
   if (ev.target.name === 'incluir') ev.target.closest('tr').classList.toggle('prop-fora', !ev.target.checked);
   // o valor digitado volta formatado
@@ -356,14 +357,14 @@ export const acoesRelatorios = {
     p.cotacao = p.cotacao || {};
     p.cotacao.envios = (p.cotacao.envios || []).concat([{ fornecedorId: g.fornecedor.id, em: new Date().toISOString(), por: quem(), itens: g.itens.map((x) => ({ itemId: x.item.id, quantidade: x.total })) }]);
     salvar();
-    toast('E-mail para ' + g.fornecedor.nome + ' aberto no seu programa de e-mail. Se quiser, anexe o PDF.');
+    toast((tr('E-mail para') + ' ') + g.fornecedor.nome + (' ' + tr('aberto no seu programa de e-mail. Se quiser, anexe o PDF.')));
     app.desenhar();
   },
   'prop-recalcular'() {
     const p = lerFormProposta();
     for (const v of Object.values(rascunho(p).linhas)) v.valor = null;
     salvar();
-    toast('Preços calculados em todas as linhas.');
+    toast(tr('Preços calculados em todas as linhas.'));
     app.desenhar();
   },
   'prop-extra'() {
@@ -381,18 +382,18 @@ export const acoesRelatorios = {
   async 'prop-emitir'(el) {
     const p = lerFormProposta() || projeto(el.dataset.projeto);
     const t = totais(p);
-    if (!contratanteDe(p)) { toast('Escolha o contratante do projeto antes de emitir.'); return; }
-    if (!t.linhas.length && !t.extras.length) { toast('A proposta não tem itens.'); return; }
-    if (t.semPreco.length) { toast('Falta o preço de: ' + t.semPreco.map((l) => l.titulo).join(', ') + '. Ou tire a linha da proposta.'); return; }
-    if (t.extras.some((x) => !x.valor)) { toast('Falta o valor de um dos outros itens.'); return; }
-    if (!(await confirmar('Emitir a proposta de ' + dinheiro(t.total) + '?', 'Ela recebe um número e fica congelada: mudanças no projeto depois não alteram o que foi enviado.', 'Emitir'))) return;
+    if (!contratanteDe(p)) { toast(tr('Escolha o contratante do projeto antes de emitir.')); return; }
+    if (!t.linhas.length && !t.extras.length) { toast(tr('A proposta não tem itens.')); return; }
+    if (t.semPreco.length) { toast((tr('Falta o preço de:') + ' ') + t.semPreco.map((l) => l.titulo).join(', ') + tr('. Ou tire a linha da proposta.')); return; }
+    if (t.extras.some((x) => !x.valor)) { toast(tr('Falta o valor de um dos outros itens.')); return; }
+    if (!(await confirmar((tr('Emitir a proposta de') + ' ') + dinheiro(t.total) + '?', tr('Ela recebe um número e fica congelada: mudanças no projeto depois não alteram o que foi enviado.'), tr('Emitir')))) return;
     const m = estado().measure;
     m.seqPropostas = (m.seqPropostas || 0) + 1;
     const numeroDoc = 'P-' + hoje().slice(0, 4) + '-' + String(m.seqPropostas).padStart(3, '0');
     p.propostas = (p.propostas || []).concat([{ numero: numeroDoc, emitidaEm: new Date().toISOString(), por: quem(), total: t.total, dados: dadosDaProposta(p) }]);
     if (p.situacao === 'orcamento') p.situacao = 'enviada';
     salvar();
-    toast('Proposta ' + numeroDoc + ' emitida. Baixe o PDF ou envie por e-mail.');
+    toast((tr('Proposta') + ' ') + numeroDoc + (' ' + tr('emitida. Baixe o PDF ou envie por e-mail.')));
     app.desenhar();
   },
   'prop-email'(el) {
@@ -401,10 +402,10 @@ export const acoesRelatorios = {
     const ct = contratanteDe(p);
     if (!v || !ct || !ct.email) return;
     const e = empresa();
-    const corpo = ['Olá' + (ct.pessoa ? ', ' + ct.pessoa : '') + ',', '', 'Segue a nossa proposta ' + v.numero + ' para ' + p.nome + ' (' + enderecoDoProjeto(p) + '):',
-      'Total: ' + dinheiro(v.total) + ', válida por ' + v.dados.validadeDias + ' dias.', '', 'O PDF vai em anexo. Ficamos à disposição.', '', quem(), e.nome, e.telefone || ''];
-    abrirEmail('mailto:' + encodeURIComponent(ct.email) + '?subject=' + encodeURIComponent('Proposta ' + v.numero + ' · ' + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n')));
-    toast('E-mail para ' + ct.nome + ' aberto. Anexe o PDF da proposta.');
+    const corpo = [tr('Olá') + (ct.pessoa ? ', ' + ct.pessoa : '') + ',', '', (tr('Segue a nossa proposta') + ' ') + v.numero + ' para ' + p.nome + ' (' + enderecoDoProjeto(p) + '):',
+      (tr('Total:') + ' ') + dinheiro(v.total) + (tr(', válida por') + ' ') + v.dados.validadeDias + ' dias.', '', tr('O PDF vai em anexo. Ficamos à disposição.'), '', quem(), e.nome, e.telefone || ''];
+    abrirEmail('mailto:' + encodeURIComponent(ct.email) + tr('?subject=') + encodeURIComponent((tr('Proposta') + ' ') + v.numero + ' · ' + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n')));
+    toast((tr('E-mail para') + ' ') + ct.nome + (' ' + tr('aberto. Anexe o PDF da proposta.')));
   },
   'doc-imprimir'(el) {
     const antes = document.title;

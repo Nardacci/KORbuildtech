@@ -20,6 +20,8 @@ const context = await browser.newContext({
   viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
   geolocation: { latitude: 43.00411, longitude: -71.46353, accuracy: 8 }, permissions: ['geolocation'],
 });
+// Os testes conferem os textos em português (o padrão do app é inglês).
+await context.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); } catch { /* sem armazenamento */ } });
 const page = await context.newPage();
 // Horário fixo (quarta-feira, 16h30): os alertas do prazo do RDO dependem do dia e da hora.
 await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));

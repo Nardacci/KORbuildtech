@@ -1,7 +1,9 @@
 /* KORbuild Daily — clima automático pela coordenada da obra (Open-Meteo, gratuito e sem chave).
  * Manhã = 7h às 12h; tarde = 13h às 17h. Chuva acima de 2 mm no turno = impraticável. */
 
-export const TEMPOS = { sol: 'Sol', nublado: 'Nublado', chuva: 'Chuva' };
+import { tr } from './i18n.js';
+
+export const TEMPOS = { sol: tr('Sol'), nublado: tr('Nublado'), chuva: tr('Chuva') };
 
 function classificar(codigos, chuvaMm) {
   if (chuvaMm >= 0.5 || codigos.some((c) => c >= 51)) return 'chuva';

@@ -1,4 +1,7 @@
-/* KORbuild — utilidades de texto, datas, ids, hash e interface (toast e diálogo). */
+/* KORbuild — utilidades de texto, datas, ids, hash e interface (toast e diálogo).
+ * Datas, horas e números saem no formato do idioma escolhido (js/i18n.js). */
+
+import { tr, emIngles } from './i18n.js';
 
 export function esc(valor) {
   return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -30,42 +33,75 @@ export function diasEntre(isoA, isoB) {
 
 const SEMANA = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
 const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+const WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 function dataDeIso(iso) {
   const [a, m, d] = iso.split('-').map(Number);
   return new Date(a, m - 1, d);
 }
 
+/* 07/10/2026 (pt) · 10/07/2026 (en) */
 export function dataCurta(iso) {
   const [a, m, d] = iso.split('-');
-  return d + '/' + m + '/' + a;
+  return emIngles() ? m + '/' + d + '/' + a : d + '/' + m + '/' + a;
 }
 
+/* Dia e mês sem o ano: 07/10 (pt) · 10/07 (en) */
+export function diaMes(iso) {
+  const [, m, d] = iso.split('-');
+  return emIngles() ? m + '/' + d : d + '/' + m;
+}
+
+/* quarta-feira, 7 de outubro (pt) · Wednesday, October 7 (en) */
 export function dataLonga(iso) {
   const d = dataDeIso(iso);
-  return SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+  return emIngles() ? WEEK[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() : SEMANA[d.getDay()] + ', ' + d.getDate() + ' de ' + MESES[d.getMonth()];
 }
 
-export function diaDaSemana(iso) { return SEMANA[dataDeIso(iso).getDay()]; }
+export function diaDaSemana(iso) { return (emIngles() ? WEEK : SEMANA)[dataDeIso(iso).getDay()]; }
+export function nomeDoMes(m) { return (emIngles() ? MONTHS : MESES)[m]; }
 
 export function dataRelativa(iso) {
   const n = diasEntre(iso, hoje());
-  if (n === 0) return 'Hoje';
-  if (n === 1) return 'Ontem';
+  if (n === 0) return tr('Hoje');
+  if (n === 1) return tr('Ontem');
   return dataCurta(iso);
 }
 
+/* 16:30 (pt) · 4:30 PM (en) */
 export function horaCurta(ts) {
+  const d = new Date(ts);
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  if (emIngles()) return ((d.getHours() + 11) % 12 + 1) + ':' + mm + ' ' + (d.getHours() < 12 ? 'AM' : 'PM');
+  return String(d.getHours()).padStart(2, '0') + ':' + mm;
+}
+
+/* Hora cheia: 18h (pt) · 6 PM (en) */
+export function horaCheia(h) { return emIngles() ? ((h + 11) % 12 + 1) + (h < 12 ? ' AM' : ' PM') : h + 'h'; }
+
+/* Sempre 24 h (arquivos para outros sistemas, como o CSV da folha). */
+export function hora24(ts) {
   const d = new Date(ts);
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
 export function dataHora(ts) {
-  return dataCurta(isoDoDia(new Date(ts))) + ' às ' + horaCurta(ts);
+  return tr('{data} às {hora}', { data: dataCurta(isoDoDia(new Date(ts))), hora: horaCurta(ts) });
 }
 
+/* Número decimal no formato do idioma: 1,5 (pt) · 1.5 (en) */
+export function decimal(v, casas) {
+  const s = Number(v).toFixed(casas);
+  return emIngles() ? s : s.replace('.', ',');
+}
+
+/* Clima: guardado em °C e mm (Open-Meteo); nos EUA, mostrado em °F e polegadas. */
+export function temperatura(c) { return emIngles() ? Math.round(c * 9 / 5 + 32) + ' °F' : c + ' °C'; }
+export function chuva(mm) { return emIngles() ? (mm / 25.4).toFixed(2) + ' in' : String(mm).replace('.', ',') + ' mm'; }
+
 export function tamanho(bytes) {
-  if (bytes >= 1048576) return (bytes / 1048576).toFixed(1).replace('.', ',') + ' MB';
+  if (bytes >= 1048576) return decimal(bytes / 1048576, 1) + ' MB';
   return Math.max(1, Math.round(bytes / 1024)) + ' KB';
 }
 
@@ -145,7 +181,7 @@ export async function confirmar(titulo, texto, rotuloSim, classeSim) {
   const r = await abrirDialogo({
     titulo,
     corpo: '<p>' + esc(texto) + '</p>',
-    acoes: [{ rotulo: 'Voltar', valor: false }, { rotulo: rotuloSim, valor: true, classe: classeSim || 'btn-primario' }],
+    acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: rotuloSim, valor: true, classe: classeSim || 'btn-primario' }],
   });
   return !!(r && r.valor);
 }

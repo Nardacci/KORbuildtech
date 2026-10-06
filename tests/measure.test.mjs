@@ -15,6 +15,8 @@ function verificar(cond, texto) {
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+// Os testes conferem os textos em português (o padrão do app é inglês).
+await context.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); } catch { /* sem armazenamento */ } });
 const page = await context.newPage();
 await page.clock.setFixedTime(new Date('2026-10-07T10:30:00'));
 const erros = [];

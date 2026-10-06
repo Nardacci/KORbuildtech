@@ -8,19 +8,20 @@
  *  - Em cada projeto/obra: o CONTRATANTE (quem recebe a proposta e o diário) e, se for outro, o DONO. */
 
 import { novoId } from './util.js';
+import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
 import { auditar } from './settings.js';
 
 export const PAPEIS = {
-  construtora: { nome: 'Construtora', plural: 'Construtoras', dica: 'General contractor: contrata a empresa para um serviço da obra' },
-  cliente: { nome: 'Cliente', plural: 'Clientes', dica: 'Dono da obra (owner): contrata direto ou por uma construtora' },
-  fornecedor: { nome: 'Fornecedor', plural: 'Fornecedores', dica: 'Recebe a lista de materiais para cotação' },
-  prestadora: { nome: 'Prestadora', plural: 'Prestadoras', dica: 'Subcontractor: a empresa de serviço (framing, drywall…) que a construtora contrata' },
+  construtora: { nome: tr('Construtora'), plural: tr('Construtoras'), dica: tr('General contractor: contrata a empresa para um serviço da obra') },
+  cliente: { nome: tr('Cliente'), plural: tr('Clientes'), dica: tr('Dono da obra (owner): contrata direto ou por uma construtora') },
+  fornecedor: { nome: tr('Fornecedor'), plural: tr('Fornecedores'), dica: tr('Recebe a lista de materiais para cotação') },
+  prestadora: { nome: tr('Prestadora'), plural: tr('Prestadoras'), dica: tr('Subcontractor: a empresa de serviço (framing, drywall…) que a construtora contrata') },
 };
 export const ATUACOES = {
-  prestadora: 'Prestadora de serviço (subcontractor)',
-  construtora: 'Construtora / empreiteira (general contractor)',
-  ambas: 'As duas: contrata e executa',
+  prestadora: tr('Prestadora de serviço (subcontractor)'),
+  construtora: tr('Construtora / empreiteira (general contractor)'),
+  ambas: tr('As duas: contrata e executa'),
 };
 
 const t = (v) => String(v == null ? '' : v).trim();
@@ -36,16 +37,16 @@ export function salvarEmpresa(dados, por) {
     especialidades: t(dados.especialidades), endereco: t(dados.endereco), cidade: t(dados.cidade), estado: t(dados.estado).toUpperCase(), zip: t(dados.zip),
     telefone: t(dados.telefone), email: t(dados.email), site: t(dados.site), licencas: t(dados.licencas), seguros: t(dados.seguros), termosProposta: t(dados.termosProposta),
   };
-  if (!d.nome) return { erro: 'Informe o nome da empresa (como aparece para o cliente).' };
-  if (!ATUACOES[d.atuacao]) return { erro: 'Escolha como a empresa atua.' };
-  if (d.estado && !/^[A-Z]{2}$/.test(d.estado)) return { erro: 'Estado com 2 letras (ex.: NH).' };
-  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: 'ZIP code com 5 dígitos (ex.: 03101).' };
-  if (d.email && !EMAIL.test(d.email)) return { erro: 'E-mail inválido.' };
+  if (!d.nome) return { erro: tr('Informe o nome da empresa (como aparece para o cliente).') };
+  if (!ATUACOES[d.atuacao]) return { erro: tr('Escolha como a empresa atua.') };
+  if (d.estado && !/^[A-Z]{2}$/.test(d.estado)) return { erro: tr('Estado com 2 letras (ex.: NH).') };
+  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: tr('ZIP code com 5 dígitos (ex.: 03101).') };
+  if (d.email && !EMAIL.test(d.email)) return { erro: tr('E-mail inválido.') };
   if (!d.sigla) d.sigla = d.nome.split(/\s+/).map((p) => p[0]).join('').slice(0, 3).toUpperCase();
   const e = empresa();
   const mudou = Object.keys(d).filter((k) => (e[k] || '') !== d[k]);
   Object.assign(e, d);
-  if (mudou.length) auditar('Empresa', 'Perfil da empresa alterado: ' + mudou.join(', '), '', '', '', por);
+  if (mudou.length) auditar(tr('Empresa'), (tr('Perfil da empresa alterado:') + ' ') + mudou.join(', '), '', '', '', por);
   salvar();
   return { ok: true };
 }
@@ -53,7 +54,7 @@ export function salvarEmpresa(dados, por) {
 /* Logo já reduzida (data URL). null tira a logo. */
 export function definirLogo(dataUrl, por) {
   empresa().logo = dataUrl || null;
-  auditar('Empresa', dataUrl ? 'Logo da empresa trocada' : 'Logo da empresa removida', '', '', '', por);
+  auditar(tr('Empresa'), dataUrl ? tr('Logo da empresa trocada') : tr('Logo da empresa removida'), '', '', '', por);
   salvar();
 }
 
@@ -75,24 +76,24 @@ export function salvarContato(id, dados, por) {
     papeis: Object.keys(PAPEIS).filter((p) => (dados.papeis || []).includes(p)),
     etapas: (dados.etapas || []).map(t).filter(Boolean), notas: t(dados.notas),
   };
-  if (!d.nome) return { erro: 'Informe o nome (empresa ou pessoa).' };
-  if (!d.papeis.length) return { erro: 'Marque pelo menos um: construtora, cliente ou fornecedor.' };
-  if (d.email && !EMAIL.test(d.email)) return { erro: 'E-mail inválido.' };
-  if (d.estado && !/^[A-Z]{2}$/.test(d.estado)) return { erro: 'Estado com 2 letras (ex.: NH).' };
-  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: 'ZIP code com 5 dígitos.' };
+  if (!d.nome) return { erro: tr('Informe o nome (empresa ou pessoa).') };
+  if (!d.papeis.length) return { erro: tr('Marque pelo menos um: construtora, cliente ou fornecedor.') };
+  if (d.email && !EMAIL.test(d.email)) return { erro: tr('E-mail inválido.') };
+  if (d.estado && !/^[A-Z]{2}$/.test(d.estado)) return { erro: tr('Estado com 2 letras (ex.: NH).') };
+  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: tr('ZIP code com 5 dígitos.') };
   if (!d.papeis.includes('fornecedor')) d.etapas = [];
-  if (contatos().some((c) => c.id !== id && c.nome.toLowerCase() === d.nome.toLowerCase())) return { erro: 'Já existe um contato com esse nome.' };
+  if (contatos().some((c) => c.id !== id && c.nome.toLowerCase() === d.nome.toLowerCase())) return { erro: tr('Já existe um contato com esse nome.') };
   estado().contatos = estado().contatos || [];
   if (id) {
     const c = contato(id);
     Object.assign(c, d);
-    auditar('Contatos', 'Contato alterado: ' + d.nome, '', d.papeis.join(', '), '', por);
+    auditar(tr('Contatos'), (tr('Contato alterado:') + ' ') + d.nome, '', d.papeis.join(', '), '', por);
     salvar();
     return { ok: true, id };
   }
   const novo = { id: novoId('ct'), ...d, criadoEm: Date.now() };
   estado().contatos.push(novo);
-  auditar('Contatos', 'Contato criado: ' + d.nome, '', d.papeis.join(', '), '', por);
+  auditar(tr('Contatos'), (tr('Contato criado:') + ' ') + d.nome, '', d.papeis.join(', '), '', por);
   salvar();
   return { ok: true, id: novo.id };
 }
@@ -107,10 +108,10 @@ export function usosDoContato(id) {
 
 export function excluirContato(id, por) {
   const usos = usosDoContato(id);
-  if (usos.length) return { erro: 'Em uso: ' + usos.join(', ') + '. Troque antes de excluir.' };
+  if (usos.length) return { erro: (tr('Em uso:') + ' ') + usos.join(', ') + tr('. Troque antes de excluir.') };
   const c = contato(id);
   estado().contatos = contatos().filter((x) => x.id !== id);
-  auditar('Contatos', 'Contato excluído: ' + c.nome, '', '', '', por);
+  auditar(tr('Contatos'), (tr('Contato excluído:') + ' ') + c.nome, '', '', '', por);
   salvar();
   return { ok: true };
 }

@@ -15,6 +15,7 @@ const P = {
   recomecar: '<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
   instalar: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>',
   voltar: '<path d="M15 18l-6-6 6-6"/>',
+  idioma: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18z"/>',
   seta: '<path d="M9 18l6-6-6-6"/>',
   mais: '<path d="M12 5v14M5 12h14"/>',
   repetir: '<rect x="3" y="3" width="12" height="12" rx="2"/><path d="M19 8v10a1 1 0 0 1-1 1H8"/><path d="M22 11v10a1 1 0 0 1-1 1H11" opacity=".6"/>',

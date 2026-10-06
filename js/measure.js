@@ -6,6 +6,7 @@
  *  - Guardado: polegadas, polegadas², polegadas³. Na tela: ft-in, lin ft, sq ft, cu yd (js/imperial.js). */
 
 import { novoId, hoje, somarDias } from './util.js';
+import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
 import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2_POR_PE2 } from './imperial.js';
 import { calcularLinha, validar } from './formulas.js';
@@ -44,9 +45,9 @@ export function folhasDaCondicao(c) {
 }
 
 export const TIPOS = {
-  linear: { nome: 'Linear', unidade: 'lin ft', icone: 'measure' },
-  area: { nome: 'Área', unidade: 'sq ft', icone: 'obras' },
-  contagem: { nome: 'Contagem', unidade: 'each', icone: 'mais' },
+  linear: { nome: tr('Linear'), unidade: tr('lin ft'), icone: 'measure' },
+  area: { nome: tr('Área'), unidade: tr('sq ft'), icone: 'obras' },
+  contagem: { nome: tr('Contagem'), unidade: 'each', icone: 'mais' },
 };
 // Cores das condições, na ordem (bem distintas entre si e da planta em preto e branco)
 export const CORES = ['#2563EB', '#C2410C', '#0F766E', '#7C3AED', '#B45309', '#DB2777', '#0891B2', '#4D7C0F'];
@@ -57,34 +58,34 @@ const COR_VALIDA = /^#[0-9a-f]{6}$/i;
 /* ---------- Projetos ---------- */
 
 export const TIPOS_PROJETO = {
-  'residencial-uni': 'Residencial unifamiliar', 'residencial-multi': 'Residencial multifamiliar',
-  comercial: 'Comercial', industrial: 'Industrial', reforma: 'Reforma / ampliação', outro: 'Outro',
+  'residencial-uni': tr('Residencial unifamiliar'), 'residencial-multi': tr('Residencial multifamiliar'),
+  comercial: tr('Comercial'), industrial: tr('Industrial'), reforma: tr('Reforma / ampliação'), outro: tr('Outro'),
 };
 export const SITUACOES = {
-  orcamento: { nome: 'Em orçamento', classe: 'etiqueta-azul' },
-  enviada: { nome: 'Proposta enviada', classe: 'etiqueta-ambar' },
-  ganha: { nome: 'Ganha', classe: 'etiqueta-verde' },
-  perdida: { nome: 'Perdida', classe: 'etiqueta-neutro' },
+  orcamento: { nome: tr('Em orçamento'), classe: 'etiqueta-azul' },
+  enviada: { nome: tr('Proposta enviada'), classe: 'etiqueta-ambar' },
+  ganha: { nome: tr('Ganha'), classe: 'etiqueta-verde' },
+  perdida: { nome: tr('Perdida'), classe: 'etiqueta-neutro' },
 };
 export function enderecoDoProjeto(p) {
   return [p.endereco, p.cidade, [p.estado, p.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 }
 
 export function salvarProjeto(id, dados) {
-  const t = (k) => String(dados[k] || '').trim();
+  const campo = (k) => String(dados[k] || '').trim();
   const d = {
-    nome: t('nome'), contratanteId: t('contratanteId') || null, donoId: t('donoId') || null, endereco: t('endereco'), cidade: t('cidade'), estado: t('estado').toUpperCase(), zip: t('zip'),
-    tipo: dados.tipo, situacao: dados.situacao, descricao: t('descricao'), obraId: t('obraId') || null, estimadorId: t('estimadorId') || null, prazoProposta: t('prazoProposta') || null,
+    nome: campo('nome'), contratanteId: campo('contratanteId') || null, donoId: campo('donoId') || null, endereco: campo('endereco'), cidade: campo('cidade'), estado: campo('estado').toUpperCase(), zip: campo('zip'),
+    tipo: dados.tipo, situacao: dados.situacao, descricao: campo('descricao'), obraId: campo('obraId') || null, estimadorId: campo('estimadorId') || null, prazoProposta: campo('prazoProposta') || null,
   };
-  if (!d.nome) return { erro: 'Dê um nome ao projeto.' };
-  if (!d.contratanteId || !contato(d.contratanteId)) return { erro: 'Escolha o contratante: a construtora que pediu a proposta, ou o próprio cliente quando contrata direto.' };
+  if (!d.nome) return { erro: tr('Dê um nome ao projeto.') };
+  if (!d.contratanteId || !contato(d.contratanteId)) return { erro: tr('Escolha o contratante: a construtora que pediu a proposta, ou o próprio cliente quando contrata direto.') };
   if (d.donoId === d.contratanteId) d.donoId = null;
-  if (!d.cidade || !d.estado) return { erro: 'Informe a cidade e o estado da obra.' };
-  if (!/^[A-Z]{2}$/.test(d.estado)) return { erro: 'Estado com 2 letras (ex.: NH).' };
-  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: 'ZIP code com 5 dígitos (ex.: 03104).' };
-  if (!TIPOS_PROJETO[d.tipo]) return { erro: 'Escolha o tipo de obra.' };
-  if (!SITUACOES[d.situacao]) return { erro: 'Escolha a situação.' };
-  if (d.prazoProposta && !/^\d{4}-\d{2}-\d{2}$/.test(d.prazoProposta)) return { erro: 'Prazo da proposta inválido.' };
+  if (!d.cidade || !d.estado) return { erro: tr('Informe a cidade e o estado da obra.') };
+  if (!/^[A-Z]{2}$/.test(d.estado)) return { erro: tr('Estado com 2 letras (ex.: NH).') };
+  if (d.zip && !/^\d{5}(-\d{4})?$/.test(d.zip)) return { erro: tr('ZIP code com 5 dígitos (ex.: 03104).') };
+  if (!TIPOS_PROJETO[d.tipo]) return { erro: tr('Escolha o tipo de obra.') };
+  if (!SITUACOES[d.situacao]) return { erro: tr('Escolha a situação.') };
+  if (d.prazoProposta && !/^\d{4}-\d{2}-\d{2}$/.test(d.prazoProposta)) return { erro: tr('Prazo da proposta inválido.') };
   if (id) { Object.assign(projeto(id), d, { alteradoEm: Date.now() }); salvar(); return { ok: true, id }; }
   const novo = { id: novoId('pj'), ...d, criadoEm: Date.now() };
   mz().projetos.push(novo);
@@ -120,10 +121,10 @@ export function registrarConferencia(folhaId, esperadoPol, medidoPol) {
 /* ---------- Condições e medições ---------- */
 
 export function salvarCondicao(id, dados) {
-  if (!dados.nome || !dados.nome.trim()) return { erro: 'Dê um nome à condição (ex.: Paredes externas).' };
-  if (!TIPOS[dados.tipo]) return { erro: 'Escolha o tipo.' };
+  if (!dados.nome || !dados.nome.trim()) return { erro: tr('Dê um nome à condição (ex.: Paredes externas).') };
+  if (!TIPOS[dados.tipo]) return { erro: tr('Escolha o tipo.') };
   const cor = String(dados.cor || '').trim().toUpperCase();
-  if (cor && !COR_VALIDA.test(cor)) return { erro: 'Cor inválida.' };
+  if (cor && !COR_VALIDA.test(cor)) return { erro: tr('Cor inválida.') };
   if (id) {
     const c = condicao(id);
     Object.assign(c, { nome: dados.nome.trim(), props: dados.props || {} }, cor ? { cor } : {});
@@ -171,19 +172,19 @@ export function fatorDaMedicao(m) { const t = typicalDaMedicao(m); return t ? re
 
 export function salvarTypical(id, dados, por) {
   const nome = String(dados.nome || '').trim();
-  if (!nome) return { erro: 'Dê um nome ao typical (ex.: Apartamento tipo A).' };
+  if (!nome) return { erro: tr('Dê um nome ao typical (ex.: Apartamento tipo A).') };
   const ocorrencias = (dados.ocorrencias || []).map((o) => ({ rotulo: String(o.rotulo || '').trim(), quantidade: Number(o.quantidade) }))
     .filter((o) => o.rotulo || o.quantidade);
-  if (!ocorrencias.length) return { erro: 'Informe onde ele se repete e quantas vezes.' };
-  if (ocorrencias.some((o) => !o.rotulo || !(Number.isInteger(o.quantidade) && o.quantidade >= 1))) return { erro: 'Cada ocorrência precisa de um nome (ex.: 2º pavimento) e de uma quantidade inteira a partir de 1.' };
+  if (!ocorrencias.length) return { erro: tr('Informe onde ele se repete e quantas vezes.') };
+  if (ocorrencias.some((o) => !o.rotulo || !(Number.isInteger(o.quantidade) && o.quantidade >= 1))) return { erro: tr('Cada ocorrência precisa de um nome (ex.: 2º pavimento) e de uma quantidade inteira a partir de 1.') };
   const atual = id ? typical(id) : null;
   const folhaId = atual ? atual.folhaId : dados.folhaId;
   const regiao = atual ? atual.regiao : (dados.regiao ? [Math.min(dados.regiao[0][0], dados.regiao[1][0]), Math.min(dados.regiao[0][1], dados.regiao[1][1]), Math.max(dados.regiao[0][0], dados.regiao[1][0]), Math.max(dados.regiao[0][1], dados.regiao[1][1])] : null);
   // folha inteira não convive com outros typicals na mesma folha (seria multiplicar duas vezes)
   const outros = typicaisDaFolha(folhaId).filter((t) => t.id !== id);
-  if (!regiao && outros.length) return { erro: 'Esta folha já tem typical por região. Para a folha inteira, tire os outros antes.' };
-  if (outros.some((t) => !t.regiao)) return { erro: 'Esta folha inteira já é um typical. Edite as ocorrências dele.' };
-  if (regiao && outros.some((t) => !(regiao[2] < t.regiao[0] || regiao[0] > t.regiao[2] || regiao[3] < t.regiao[1] || regiao[1] > t.regiao[3]))) return { erro: 'A região encosta em outro typical. Typicals não podem se sobrepor.' };
+  if (!regiao && outros.length) return { erro: tr('Esta folha já tem typical por região. Para a folha inteira, tire os outros antes.') };
+  if (outros.some((t) => !t.regiao)) return { erro: tr('Esta folha inteira já é um typical. Edite as ocorrências dele.') };
+  if (regiao && outros.some((t) => !(regiao[2] < t.regiao[0] || regiao[0] > t.regiao[2] || regiao[3] < t.regiao[1] || regiao[1] > t.regiao[3]))) return { erro: tr('A região encosta em outro typical. Typicals não podem se sobrepor.') };
   mz().typicais = mz().typicais || [];
   if (atual) { Object.assign(atual, { nome, ocorrencias, alteradoPor: por, alteradoEm: Date.now() }); salvar(); return { ok: true, id }; }
   const novo = { id: novoId('ty'), projetoId: folha(folhaId).projetoId, folhaId, nome, regiao, ocorrencias, por, em: Date.now() };
@@ -282,12 +283,12 @@ export function totaisDaCondicao(c) {
   const p = c.props || {};
   const derivados = [];
   if (c.tipo === 'linear') {
-    if (p.alturaPol) derivados.push({ id: 'superficie', nome: 'Superfície (× altura)', pol2: base * p.alturaPol });
-    if (p.inclinacao) derivados.push({ id: 'linearInclinado', nome: 'Linear inclinado', pol: base * fatorInclinacao(p.inclinacao) });
+    if (p.alturaPol) derivados.push({ id: 'superficie', nome: tr('Superfície (× altura)'), pol2: base * p.alturaPol });
+    if (p.inclinacao) derivados.push({ id: 'linearInclinado', nome: tr('Linear inclinado'), pol: base * fatorInclinacao(p.inclinacao) });
   }
   if (c.tipo === 'area') {
-    if (p.inclinacao) derivados.push({ id: 'areaInclinada', nome: 'Área inclinada (telhado)', pol2: base * fatorInclinacao(p.inclinacao) });
-    if (p.profundidadePol) derivados.push({ id: 'volume', nome: 'Volume (× espessura)', pol3: base * p.profundidadePol });
+    if (p.inclinacao) derivados.push({ id: 'areaInclinada', nome: tr('Área inclinada (telhado)'), pol2: base * fatorInclinacao(p.inclinacao) });
+    if (p.profundidadePol) derivados.push({ id: 'volume', nome: tr('Volume (× espessura)'), pol3: base * p.profundidadePol });
   }
   return { base, semEscala, derivados, medicoes: c.medicoes.length };
 }
@@ -373,15 +374,15 @@ export function vaosDesenhados(c) {
 
 /* ---------- Catálogo de itens ---------- */
 
-export const CATEGORIAS = { material: 'Material', 'mao-de-obra': 'Mão de obra', equipamento: 'Equipamento', subempreiteiro: 'Subempreiteiro' };
+export const CATEGORIAS = { material: tr('Material'), 'mao-de-obra': tr('Mão de obra'), equipamento: tr('Equipamento'), subempreiteiro: tr('Subempreiteiro') };
 export function itens() { return mz().itens || []; }
 export function item(id) { return itens().find((i) => i.id === id); }
 
 export function salvarItem(id, dados) {
   const d = { codigo: (dados.codigo || '').trim(), nome: (dados.nome || '').trim(), categoria: dados.categoria, unidade: (dados.unidade || '').trim(), etapa: (dados.etapa || '').trim(), nota: (dados.nota || '').trim() };
-  if (!d.nome || !d.unidade) return { erro: 'Informe o nome e a unidade de compra (ex.: chapa, caixa, cu yd, hora).' };
-  if (!CATEGORIAS[d.categoria]) return { erro: 'Escolha a categoria.' };
-  if (d.codigo && itens().some((i) => i.codigo.toLowerCase() === d.codigo.toLowerCase() && i.id !== id)) return { erro: 'Já existe um item com esse código.' };
+  if (!d.nome || !d.unidade) return { erro: tr('Informe o nome e a unidade de compra (ex.: chapa, caixa, cu yd, hora).') };
+  if (!CATEGORIAS[d.categoria]) return { erro: tr('Escolha a categoria.') };
+  if (d.codigo && itens().some((i) => i.codigo.toLowerCase() === d.codigo.toLowerCase() && i.id !== id)) return { erro: tr('Já existe um item com esse código.') };
   if (id) { Object.assign(item(id), d); salvar(); return { ok: true, id }; }
   const novo = { id: novoId('it'), ...d };
   mz().itens.push(novo);
@@ -391,7 +392,7 @@ export function salvarItem(id, dados) {
 
 export function excluirItem(id) {
   const usado = assemblies().filter((a) => a.linhas.some((l) => l.itemId === id));
-  if (usado.length) return { erro: 'Item usado em: ' + usado.map((a) => a.nome).join(', ') + '. Tire do assembly antes.' };
+  if (usado.length) return { erro: (tr('Item usado em:') + ' ') + usado.map((a) => a.nome).join(', ') + tr('. Tire do assembly antes.') };
   mz().itens = itens().filter((i) => i.id !== id);
   salvar();
   return { ok: true };
@@ -405,20 +406,20 @@ export function assembly(id) { return assemblies().find((a) => a.id === id); }
 /* Cada linha: item + fórmula + perda (%) + arredondamento (passo: 0 = não arredonda, 1 = inteiro para cima…). */
 export function salvarAssembly(id, dados) {
   const nome = (dados.nome || '').trim();
-  if (!nome) return { erro: 'Dê um nome ao assembly.' };
+  if (!nome) return { erro: tr('Dê um nome ao assembly.') };
   const tipo = id ? assembly(id).tipo : dados.tipo;
-  if (!TIPOS[tipo]) return { erro: 'Escolha o tipo de condição.' };
+  if (!TIPOS[tipo]) return { erro: tr('Escolha o tipo de condição.') };
   const linhas = [];
   for (const [i, l] of (dados.linhas || []).entries()) {
     if (!l.itemId && !String(l.formula || '').trim()) continue; // linha vazia
-    if (!item(l.itemId)) return { erro: 'Linha ' + (i + 1) + ': escolha o item.' };
+    if (!item(l.itemId)) return { erro: (tr('Linha') + ' ') + (i + 1) + tr(': escolha o item.') };
     const v = validar(l.formula, tipo);
-    if (v.erro) return { erro: 'Linha ' + (i + 1) + ' (' + item(l.itemId).nome + '): ' + v.erro };
+    if (v.erro) return { erro: (tr('Linha') + ' ') + (i + 1) + ' (' + item(l.itemId).nome + '): ' + v.erro };
     const perda = Number(String(l.perda || 0).replace(',', '.'));
-    if (!(perda >= 0 && perda <= 100)) return { erro: 'Linha ' + (i + 1) + ': a perda deve ficar entre 0 e 100%.' };
+    if (!(perda >= 0 && perda <= 100)) return { erro: (tr('Linha') + ' ') + (i + 1) + tr(': a perda deve ficar entre 0 e 100%.') };
     linhas.push({ id: l.id || novoId('ln'), itemId: l.itemId, formula: String(l.formula).trim(), perda, passo: Number(l.passo) || 0 });
   }
-  if (!linhas.length) return { erro: 'O assembly precisa de pelo menos uma linha.' };
+  if (!linhas.length) return { erro: tr('O assembly precisa de pelo menos uma linha.') };
   const dadosOk = { nome, tipo, descricao: (dados.descricao || '').trim(), linhas };
   if (id) { Object.assign(assembly(id), dadosOk); salvar(); return { ok: true, id }; }
   const novo = { id: novoId('as'), ...dadosOk };
@@ -436,7 +437,7 @@ export function excluirAssembly(id) {
 export function aplicarAssembly(condicaoId, assemblyId) {
   const c = condicao(condicaoId);
   const a = assembly(assemblyId);
-  if (!a || a.tipo !== c.tipo) return { erro: 'Esse assembly é para outro tipo de condição.' };
+  if (!a || a.tipo !== c.tipo) return { erro: tr('Esse assembly é para outro tipo de condição.') };
   c.assemblies = c.assemblies || [];
   if (!c.assemblies.includes(assemblyId)) c.assemblies.push(assemblyId);
   salvar();
@@ -460,7 +461,7 @@ export function quantidadesDoProjeto(projetoId) {
       const a = assembly(aid);
       if (!a) continue;
       for (const l of a.linhas) {
-        const r = t.medicoes ? calcularLinha(l, c.tipo, vars) : { erro: 'nada medido ainda' };
+        const r = t.medicoes ? calcularLinha(l, c.tipo, vars) : { erro: tr('nada medido ainda') };
         linhas.push({ condicao: c, assembly: a, linha: l, item: item(l.itemId), vars, ...r });
       }
     }
@@ -482,7 +483,7 @@ export function quantidadesDoProjeto(projetoId) {
 export function criarFolhas(projetoId, arquivoId, nomeArquivo, paginas) {
   const novas = [];
   for (let i = 1; i <= paginas; i++) {
-    const f = { id: novoId('fl'), projetoId, nome: nomeArquivo.replace(/\.pdf$/i, '') + (paginas > 1 ? ' · página ' + i : ''), arquivo: { tipo: 'idb', id: arquivoId, nome: nomeArquivo }, pagina: i, escala: null, criadaEm: Date.now() };
+    const f = { id: novoId('fl'), projetoId, nome: nomeArquivo.replace(/\.pdf$/i, '') + (paginas > 1 ? (' ' + tr('· página') + ' ') + i : ''), arquivo: { tipo: 'idb', id: arquivoId, nome: nomeArquivo }, pagina: i, escala: null, criadaEm: Date.now() };
     mz().folhas.push(f);
     novas.push(f);
   }
@@ -495,34 +496,34 @@ export function criarFolhas(projetoId, arquivoId, nomeArquivo, paginas) {
 /* Catálogo e assemblies de exemplo (wood framing residencial). Coberturas, produtividades e perdas são
  * EXEMPLOS para a demonstração, não referência de mercado: cada empresa cadastra os seus. */
 const ITENS_EXEMPLO = [
-  ['it-stud', 'FR-2x6-9', 'Montante 2x6 × 9\' (stud)', 'material', 'peça', '06 11 00 · Wood framing'],
-  ['it-plate', 'FR-2x6-16', 'Guia 2x6 × 16\' (plate)', 'material', 'peça', '06 11 00 · Wood framing'],
-  ['it-osb', 'SH-OSB-716', 'OSB 7/16" 4\'×8\'', 'material', 'chapa', '06 16 00 · Sheathing', 'cobre 32 sq ft'],
-  ['it-wrap', 'WR-HOUSE', 'House wrap 9\'×150\'', 'material', 'rolo', '07 25 00 · Weather barriers', 'cobre 1.350 sq ft'],
-  ['it-r21', 'IN-R21', 'Isolamento R-21 (2x6)', 'material', 'pacote', '07 21 00 · Thermal insulation', 'cobre 40 sq ft (exemplo)'],
-  ['it-dw', 'DW-12-48', 'Drywall 1/2" 4\'×8\'', 'material', 'chapa', '09 29 00 · Gypsum board', 'cobre 32 sq ft'],
-  ['it-lvp', 'FL-LVP', 'Piso vinílico LVP', 'material', 'caixa', '09 65 00 · Resilient flooring', 'cobre 20 sq ft (exemplo)'],
-  ['it-manta', 'FL-UL', 'Manta para piso', 'material', 'rolo', '09 65 00 · Resilient flooring', 'cobre 100 sq ft'],
-  ['it-conc', 'CN-3000', 'Concreto usinado 3.000 psi', 'material', 'cu yd', '03 30 00 · Cast-in-place concrete'],
-  ['it-tela', 'CN-MESH', 'Tela soldada 5\'×150\'', 'material', 'rolo', '03 21 00 · Reinforcement', 'cobre 750 sq ft'],
-  ['it-porta', 'DR-30-PH', 'Porta interna 30" pré-montada', 'material', 'each', '08 14 00 · Wood doors'],
-  ['it-fechadura', 'DR-HW', 'Fechadura de passagem', 'material', 'each', '08 71 00 · Door hardware'],
-  ['it-guarnicao', 'TR-CASE', 'Guarnição 7\'', 'material', 'peça', '06 22 00 · Millwork'],
-  ['it-mo-estrutura', 'MO-FRAME', 'Carpinteiro de estrutura', 'mao-de-obra', 'hora', '06 11 00 · Wood framing'],
-  ['it-mo-drywall', 'MO-DW', 'Drywall: fixar e acabar', 'mao-de-obra', 'hora', '09 29 00 · Gypsum board'],
-  ['it-mo-piso', 'MO-FLOOR', 'Instalação de piso', 'mao-de-obra', 'hora', '09 65 00 · Resilient flooring'],
-  ['it-mo-concreto', 'MO-CONC', 'Concretagem', 'mao-de-obra', 'hora', '03 30 00 · Cast-in-place concrete'],
-  ['it-mo-porta', 'MO-DOOR', 'Instalação de porta', 'mao-de-obra', 'hora', '08 14 00 · Wood doors'],
-  ['it-jan-w1', 'WN-5040', 'Janela vinil 5\'-0" × 4\'-0" (W1)', 'material', 'each', '08 53 00 · Plastic windows'],
-  ['it-jan-w2', 'WN-4040', 'Janela vinil 4\'-0" × 4\'-0" (W2)', 'material', 'each', '08 53 00 · Plastic windows'],
-  ['it-flash', 'WN-FLASH', 'Fita de flashing 4" × 75\'', 'material', 'rolo', '07 65 00 · Flexible flashing', 'cobre 75 lin ft'],
-  ['it-trim-ext', 'TR-PVC-1X4', 'Guarnição externa PVC 1x4 × 12\'', 'material', 'peça', '06 22 00 · Millwork'],
-  ['it-porta-ext', 'DR-36-EXT', 'Porta de entrada 36" × 80" pré-montada', 'material', 'each', '08 14 00 · Wood doors'],
-  ['it-fech-ext', 'DR-HW-KEY', 'Fechadura com chave (entrada)', 'material', 'each', '08 71 00 · Door hardware'],
-  ['it-siding', 'SD-VINYL', 'Siding vinil (square)', 'material', 'square', '07 46 33 · Plastic siding', '1 square = 100 sq ft'],
-  ['it-jchannel', 'SD-JCH', 'J-channel 12\'6"', 'material', 'peça', '07 46 33 · Plastic siding', 'contorna janelas e portas'],
-  ['it-mo-janela', 'MO-WIN', 'Instalação de janela', 'mao-de-obra', 'hora', '08 53 00 · Plastic windows'],
-  ['it-mo-siding', 'MO-SID', 'Instalação de siding', 'mao-de-obra', 'hora', '07 46 33 · Plastic siding'],
+  ['it-stud', tr('FR-2x6-9'), 'Montante 2x6 × 9\' (stud)', 'material', tr('peça'), tr('06 11 00 · Wood framing')],
+  ['it-plate', tr('FR-2x6-16'), 'Guia 2x6 × 16\' (plate)', 'material', tr('peça'), tr('06 11 00 · Wood framing')],
+  ['it-osb', tr('SH-OSB-716'), 'OSB 7/16" 4\'×8\'', 'material', 'chapa', tr('06 16 00 · Sheathing'), tr('cobre 32 sq ft')],
+  ['it-wrap', tr('WR-HOUSE'), 'House wrap 9\'×150\'', 'material', 'rolo', tr('07 25 00 · Weather barriers'), tr('cobre 1.350 sq ft')],
+  ['it-r21', tr('IN-R21'), tr('Isolamento R-21 (2x6)'), 'material', 'pacote', tr('07 21 00 · Thermal insulation'), tr('cobre 40 sq ft (exemplo)')],
+  ['it-dw', tr('DW-12-48'), 'Drywall 1/2" 4\'×8\'', 'material', 'chapa', tr('09 29 00 · Gypsum board'), tr('cobre 32 sq ft')],
+  ['it-lvp', tr('FL-LVP'), tr('Piso vinílico LVP'), 'material', 'caixa', tr('09 65 00 · Resilient flooring'), tr('cobre 20 sq ft (exemplo)')],
+  ['it-manta', 'FL-UL', tr('Manta para piso'), 'material', 'rolo', tr('09 65 00 · Resilient flooring'), tr('cobre 100 sq ft')],
+  ['it-conc', tr('CN-3000'), tr('Concreto usinado 3.000 psi'), 'material', tr('cu yd'), tr('03 30 00 · Cast-in-place concrete')],
+  ['it-tela', tr('CN-MESH'), 'Tela soldada 5\'×150\'', 'material', 'rolo', tr('03 21 00 · Reinforcement'), tr('cobre 750 sq ft')],
+  ['it-porta', tr('DR-30-PH'), tr('Porta interna 30" pré-montada'), 'material', 'each', tr('08 14 00 · Wood doors')],
+  ['it-fechadura', 'DR-HW', tr('Fechadura de passagem'), 'material', 'each', tr('08 71 00 · Door hardware')],
+  ['it-guarnicao', tr('TR-CASE'), 'Guarnição 7\'', 'material', tr('peça'), tr('06 22 00 · Millwork')],
+  ['it-mo-estrutura', tr('MO-FRAME'), tr('Carpinteiro de estrutura'), 'mao-de-obra', 'hora', tr('06 11 00 · Wood framing')],
+  ['it-mo-drywall', 'MO-DW', tr('Drywall: fixar e acabar'), 'mao-de-obra', 'hora', tr('09 29 00 · Gypsum board')],
+  ['it-mo-piso', tr('MO-FLOOR'), tr('Instalação de piso'), 'mao-de-obra', 'hora', tr('09 65 00 · Resilient flooring')],
+  ['it-mo-concreto', tr('MO-CONC'), tr('Concretagem'), 'mao-de-obra', 'hora', tr('03 30 00 · Cast-in-place concrete')],
+  ['it-mo-porta', tr('MO-DOOR'), tr('Instalação de porta'), 'mao-de-obra', 'hora', tr('08 14 00 · Wood doors')],
+  ['it-jan-w1', tr('WN-5040'), 'Janela vinil 5\'-0" × 4\'-0" (W1)', 'material', 'each', tr('08 53 00 · Plastic windows')],
+  ['it-jan-w2', tr('WN-4040'), 'Janela vinil 4\'-0" × 4\'-0" (W2)', 'material', 'each', tr('08 53 00 · Plastic windows')],
+  ['it-flash', tr('WN-FLASH'), 'Fita de flashing 4" × 75\'', 'material', 'rolo', tr('07 65 00 · Flexible flashing'), tr('cobre 75 lin ft')],
+  ['it-trim-ext', tr('TR-PVC-1X4'), 'Guarnição externa PVC 1x4 × 12\'', 'material', tr('peça'), tr('06 22 00 · Millwork')],
+  ['it-porta-ext', tr('DR-36-EXT'), tr('Porta de entrada 36" × 80" pré-montada'), 'material', 'each', tr('08 14 00 · Wood doors')],
+  ['it-fech-ext', tr('DR-HW-KEY'), tr('Fechadura com chave (entrada)'), 'material', 'each', tr('08 71 00 · Door hardware')],
+  ['it-siding', tr('SD-VINYL'), tr('Siding vinil (square)'), 'material', 'square', tr('07 46 33 · Plastic siding'), tr('1 square = 100 sq ft')],
+  ['it-jchannel', tr('SD-JCH'), 'J-channel 12\'6"', 'material', tr('peça'), tr('07 46 33 · Plastic siding'), tr('contorna janelas e portas')],
+  ['it-mo-janela', tr('MO-WIN'), tr('Instalação de janela'), 'mao-de-obra', 'hora', tr('08 53 00 · Plastic windows')],
+  ['it-mo-siding', tr('MO-SID'), tr('Instalação de siding'), 'mao-de-obra', 'hora', tr('07 46 33 · Plastic siding')],
 ];
 /* Preços de exemplo (US$, na unidade de compra; mão de obra em US$/hora de custo). EXEMPLOS para a
  * demonstração, não referência de mercado: cada empresa registra os seus (cotação ou digitado). */
@@ -534,51 +535,51 @@ const PRECOS_EXEMPLO = {
 };
 const ln = (id, itemId, formula, perda, passo) => ({ id, itemId, formula, perda, passo });
 const linhasJanela = (unidade) => [
-  ln('l1', unidade, 'MeasuredCount', 0, 1),
-  ln('l2', 'it-flash', 'OpeningPerimeter / 75', 10, 1),
-  ln('l3', 'it-trim-ext', 'OpeningPerimeter / 12', 15, 1),
-  ln('l4', 'it-guarnicao', 'OpeningPerimeter / 7', 10, 1),
-  ln('l5', 'it-mo-janela', 'MeasuredCount * 2.5', 0, 0),
+  ln('l1', unidade, tr('MeasuredCount'), 0, 1),
+  ln('l2', 'it-flash', tr('OpeningPerimeter / 75'), 10, 1),
+  ln('l3', 'it-trim-ext', tr('OpeningPerimeter / 12'), 15, 1),
+  ln('l4', 'it-guarnicao', tr('OpeningPerimeter / 7'), 10, 1),
+  ln('l5', 'it-mo-janela', tr('MeasuredCount * 2.5'), 0, 0),
 ];
 const ASSEMBLIES_EXEMPLO = [
-  { id: 'as-parede', nome: 'Parede externa 2x6 @ 16" (com altura)', tipo: 'linear', descricao: 'Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.', linhas: [
-    ln('l1', 'it-stud', 'MeasuredLinear * 12 / 16', 15, 1),
-    ln('l2', 'it-plate', 'MeasuredLinear * 3 / 16', 10, 1),
-    ln('l3', 'it-osb', 'NetSurfaceArea / 32', 10, 1),
-    ln('l4', 'it-wrap', 'NetSurfaceArea / 1350', 10, 1),
-    ln('l5', 'it-r21', 'NetSurfaceArea / 40', 5, 1),
-    ln('l6', 'it-dw', 'NetSurfaceArea / 32', 12, 1),
-    ln('l7', 'it-mo-estrutura', 'MeasuredLinear * 0.35', 0, 0),
-    ln('l8', 'it-mo-drywall', 'SurfaceArea * 0.02', 0, 0),
+  { id: 'as-parede', nome: tr('Parede externa 2x6 @ 16" (com altura)'), tipo: 'linear', descricao: tr('Estrutura, OSB, house wrap, isolamento e drywall do lado interno, descontando os vãos ligados. Precisa da altura na condição.'), linhas: [
+    ln('l1', 'it-stud', tr('MeasuredLinear * 12 / 16'), 15, 1),
+    ln('l2', 'it-plate', tr('MeasuredLinear * 3 / 16'), 10, 1),
+    ln('l3', 'it-osb', tr('NetSurfaceArea / 32'), 10, 1),
+    ln('l4', 'it-wrap', tr('NetSurfaceArea / 1350'), 10, 1),
+    ln('l5', 'it-r21', tr('NetSurfaceArea / 40'), 5, 1),
+    ln('l6', 'it-dw', tr('NetSurfaceArea / 32'), 12, 1),
+    ln('l7', 'it-mo-estrutura', tr('MeasuredLinear * 0.35'), 0, 0),
+    ln('l8', 'it-mo-drywall', tr('SurfaceArea * 0.02'), 0, 0),
   ] },
-  { id: 'as-lvp', nome: 'Piso LVP com manta', tipo: 'area', descricao: 'Piso vinílico flutuante sobre manta.', linhas: [
-    ln('l1', 'it-lvp', 'MeasuredArea / 20', 8, 1),
-    ln('l2', 'it-manta', 'MeasuredArea / 100', 5, 1),
-    ln('l3', 'it-mo-piso', 'MeasuredArea * 0.03', 0, 0),
+  { id: 'as-lvp', nome: tr('Piso LVP com manta'), tipo: 'area', descricao: tr('Piso vinílico flutuante sobre manta.'), linhas: [
+    ln('l1', 'it-lvp', tr('MeasuredArea / 20'), 8, 1),
+    ln('l2', 'it-manta', tr('MeasuredArea / 100'), 5, 1),
+    ln('l3', 'it-mo-piso', tr('MeasuredArea * 0.03'), 0, 0),
   ] },
-  { id: 'as-laje', nome: 'Laje de concreto com tela (com espessura)', tipo: 'area', descricao: 'Concreto usinado pedido de meia em meia jarda. Precisa da espessura na condição.', linhas: [
-    ln('l1', 'it-conc', 'VolumeCY', 5, 0.5),
-    ln('l2', 'it-tela', 'MeasuredArea / 750', 10, 1),
-    ln('l3', 'it-mo-concreto', 'MeasuredArea * 0.02', 0, 0),
+  { id: 'as-laje', nome: tr('Laje de concreto com tela (com espessura)'), tipo: 'area', descricao: tr('Concreto usinado pedido de meia em meia jarda. Precisa da espessura na condição.'), linhas: [
+    ln('l1', 'it-conc', tr('VolumeCY'), 5, 0.5),
+    ln('l2', 'it-tela', tr('MeasuredArea / 750'), 10, 1),
+    ln('l3', 'it-mo-concreto', tr('MeasuredArea * 0.02'), 0, 0),
   ] },
-  { id: 'as-porta', nome: 'Porta interna 30" pré-montada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição dos dois lados.', linhas: [
-    ln('l1', 'it-porta', 'MeasuredCount', 0, 1),
-    ln('l2', 'it-fechadura', 'MeasuredCount', 0, 1),
-    ln('l3', 'it-guarnicao', 'MeasuredCount * 2 * (2 * OpeningHeight + OpeningWidth) / 7', 10, 1),
-    ln('l4', 'it-mo-porta', 'MeasuredCount * 1.5', 0, 0),
+  { id: 'as-porta', nome: tr('Porta interna 30" pré-montada'), tipo: 'contagem', descricao: tr('Porta, fechadura e guarnição dos dois lados.'), linhas: [
+    ln('l1', 'it-porta', tr('MeasuredCount'), 0, 1),
+    ln('l2', 'it-fechadura', tr('MeasuredCount'), 0, 1),
+    ln('l3', 'it-guarnicao', tr('MeasuredCount * 2 * (2 * OpeningHeight + OpeningWidth) / 7'), 10, 1),
+    ln('l4', 'it-mo-porta', tr('MeasuredCount * 1.5'), 0, 0),
   ] },
-  { id: 'as-jan-w1', nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: 'Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.', linhas: linhasJanela('it-jan-w1') },
+  { id: 'as-jan-w1', nome: 'Janela W1 5\'×4\' instalada', tipo: 'contagem', descricao: tr('Janela, flashing e guarnições pelo perímetro do vão: 2 × (largura + altura) × quantidade. Precisa de largura e altura na condição.'), linhas: linhasJanela('it-jan-w1') },
   { id: 'as-jan-w2', nome: 'Janela W2 4\'×4\' instalada', tipo: 'contagem', descricao: 'Igual à W1, com a janela 4\'×4\'.', linhas: linhasJanela('it-jan-w2') },
-  { id: 'as-porta-ext', nome: 'Porta de entrada instalada', tipo: 'contagem', descricao: 'Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).', linhas: [
-    ln('l1', 'it-porta-ext', 'MeasuredCount', 0, 1),
-    ln('l2', 'it-fech-ext', 'MeasuredCount', 0, 1),
-    ln('l3', 'it-trim-ext', 'MeasuredCount * (2 * OpeningHeight + OpeningWidth) / 12', 15, 1),
-    ln('l4', 'it-mo-porta', 'MeasuredCount * 3', 0, 0),
+  { id: 'as-porta-ext', nome: tr('Porta de entrada instalada'), tipo: 'contagem', descricao: tr('Porta, fechadura e guarnição externa em 3 lados (2 × altura + largura).'), linhas: [
+    ln('l1', 'it-porta-ext', tr('MeasuredCount'), 0, 1),
+    ln('l2', 'it-fech-ext', tr('MeasuredCount'), 0, 1),
+    ln('l3', 'it-trim-ext', tr('MeasuredCount * (2 * OpeningHeight + OpeningWidth) / 12'), 15, 1),
+    ln('l4', 'it-mo-porta', tr('MeasuredCount * 3'), 0, 0),
   ] },
-  { id: 'as-siding', nome: 'Siding vinil com J-channel', tipo: 'area', descricao: 'Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.', linhas: [
-    ln('l1', 'it-siding', 'NetArea / 100', 10, 1),
-    ln('l2', 'it-jchannel', 'OpeningPerimeter / 12.5', 10, 1),
-    ln('l3', 'it-mo-siding', 'NetArea * 0.025', 0, 0),
+  { id: 'as-siding', nome: tr('Siding vinil com J-channel'), tipo: 'area', descricao: tr('Medido na fachada (inclusive a empena), descontando os vãos ligados. J-channel pelo perímetro dos vãos.'), linhas: [
+    ln('l1', 'it-siding', tr('NetArea / 100'), 10, 1),
+    ln('l2', 'it-jchannel', tr('OpeningPerimeter / 12.5'), 10, 1),
+    ln('l3', 'it-mo-siding', tr('NetArea * 0.025'), 0, 0),
   ] },
 ];
 
@@ -587,29 +588,29 @@ export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = 
   const projetoId = 'pj-casa';
   const dados = {
     projetos: [
-      { id: projetoId, nome: 'Casa modelo', contratanteId: 'ct-thompson', donoId: null, endereco: '88 Bridge St', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
+      { id: projetoId, nome: tr('Casa modelo'), contratanteId: 'ct-thompson', donoId: null, endereco: tr('88 Bridge St'), cidade: tr('Manchester'), estado: 'NH', zip: '03104', tipo: 'residencial-uni', situacao: 'orcamento',
         descricao: 'Residência térrea de 40\'-0" × 28\'-0", wood framing, siding vinil', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), 6), criadoEm: Date.now() },
-      { id: 'pj-galpao', nome: 'Galpão Logístico · ampliação do mezanino', contratanteId: galpao.contratanteId, donoId: galpao.donoId, endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
-        descricao: 'Mezanino metálico de 2.400 sq ft com piso de concreto', obraId: galpao.obraId, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
-      { id: 'pj-cozinha', nome: 'Reforma de cozinha · Mitchell', contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
-        descricao: 'Troca de armários, piso LVP e drywall', obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
+      { id: 'pj-galpao', nome: tr('Galpão Logístico · ampliação do mezanino'), contratanteId: galpao.contratanteId, donoId: galpao.donoId, endereco: tr('45 Northeastern Blvd'), cidade: tr('Nashua'), estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
+        descricao: tr('Mezanino metálico de 2.400 sq ft com piso de concreto'), obraId: galpao.obraId, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
+      { id: 'pj-cozinha', nome: tr('Reforma de cozinha · Mitchell'), contratanteId: 'ct-mitchell', donoId: null, endereco: tr('22 Pleasant St'), cidade: tr('Concord'), estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
+        descricao: tr('Troca de armários, piso LVP e drywall'), obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
       // repetição: a mesma casa seis vezes (dois blocos de três) — a planta é medida uma vez e vale × 6
-      { id: 'pj-townhouses', nome: 'Townhouses Elm Row · 6 unidades', contratanteId: 'ct-merrimack', donoId: 'ct-horizonte', endereco: '300 Elm Row', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-multi', situacao: 'orcamento',
-        descricao: 'Seis casas iguais em dois blocos: framing e siding', obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), 12), criadoEm: Date.now() },
+      { id: 'pj-townhouses', nome: tr('Townhouses Elm Row · 6 unidades'), contratanteId: 'ct-merrimack', donoId: 'ct-horizonte', endereco: tr('300 Elm Row'), cidade: tr('Manchester'), estado: 'NH', zip: '03104', tipo: 'residencial-multi', situacao: 'orcamento',
+        descricao: tr('Seis casas iguais em dois blocos: framing e siding'), obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), 12), criadoEm: Date.now() },
     ],
     folhas: [
-      ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],
+      ['fl-a101', tr('A-101 · First Floor Plan'), 1], ['fl-a201', tr('A-201 · Elevations'), 2], ['fl-a301', tr('A-301 · Section A'), 3],
     ].map(([id, nome, pagina]) => ({ id, projetoId, nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null }))
-      .concat([['fl-th-a101', 'A-101 · Unit Plan (typical)', 1], ['fl-th-a201', 'A-201 · Elevations', 2]].map(([id, nome, pagina]) =>
+      .concat([['fl-th-a101', tr('A-101 · Unit Plan (typical)'), 1], ['fl-th-a201', tr('A-201 · Elevations'), 2]].map(([id, nome, pagina]) =>
         ({ id, projetoId: 'pj-townhouses', nome, arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina, escala: null }))),
-    typicais: [{ id: 'ty-unidade', projetoId: 'pj-townhouses', folhaId: 'fl-th-a101', nome: 'Unidade tipo (a planta inteira)', regiao: null,
-      ocorrencias: [{ rotulo: 'Bloco A', quantidade: 3 }, { rotulo: 'Bloco B', quantidade: 3 }], por: 'Configuração inicial', em: Date.now() }],
+    typicais: [{ id: 'ty-unidade', projetoId: 'pj-townhouses', folhaId: 'fl-th-a101', nome: tr('Unidade tipo (a planta inteira)'), regiao: null,
+      ocorrencias: [{ rotulo: tr('Bloco A'), quantidade: 3 }, { rotulo: tr('Bloco B'), quantidade: 3 }], por: tr('Configuração inicial'), em: Date.now() }],
     condicoes: [], // o desenho abre vazio: cada assembly é incluído pelo visor
     itens: ITENS_EXEMPLO.map(([id, codigo, nome, categoria, unidade, etapa, nota]) => ({
       id, codigo, nome, categoria, unidade, etapa, nota: nota || '',
-      precos: PRECOS_EXEMPLO[id] ? [{ valor: PRECOS_EXEMPLO[id], desde: somarDias(hoje(), -60), fonte: 'Tabela de exemplo', fornecedorId: null, por: 'Configuração inicial', em: Date.now() }] : [],
+      precos: PRECOS_EXEMPLO[id] ? [{ valor: PRECOS_EXEMPLO[id], desde: somarDias(hoje(), -60), fonte: tr('Tabela de exemplo'), fornecedorId: null, por: tr('Configuração inicial'), em: Date.now() }] : [],
     })),
-    margens: [{ overheadPct: 12, lucroPct: 10, modo: 'markup', impostoMaterialPct: 0, desde: somarDias(hoje(), -60), motivo: 'Configuração inicial (exemplo)', por: 'Configuração inicial', em: Date.now() }],
+    margens: [{ overheadPct: 12, lucroPct: 10, modo: 'markup', impostoMaterialPct: 0, desde: somarDias(hoje(), -60), motivo: tr('Configuração inicial (exemplo)'), por: tr('Configuração inicial'), em: Date.now() }],
     assemblies: ASSEMBLIES_EXEMPLO,
   };
   if (!comProjetos) { dados.projetos = []; dados.folhas = []; dados.typicais = []; }

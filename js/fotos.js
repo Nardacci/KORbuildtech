@@ -1,6 +1,7 @@
 /* KORbuild Daily — fotos: GPS, carimbo de evidência e compressão no próprio aparelho. */
 
 import { sha256, coordenadas, dataHora } from './util.js';
+import { tr } from './i18n.js';
 
 const LADO_MAXIMO = 1600;      // px no lado maior
 const ALVO_BYTES = 320 * 1024; // ~300 KB por foto
@@ -43,7 +44,7 @@ export function carimbar(ctx, largura, altura, { obraNome, quando, lat, lon, fon
   ctx.fillText(obraNome + '  ·  ' + dataHora(quando), x, altura - faixa + Math.round(base * 1.45));
   ctx.font = '500 ' + Math.round(base * 0.82) + 'px Inter, system-ui, sans-serif';
   ctx.fillStyle = '#C9D1E0';
-  const local = fonte === 'gps' ? 'GPS ' + coordenadas(lat, lon) : 'Local da obra ' + coordenadas(lat, lon) + ' (GPS indisponível)';
+  const local = fonte === 'gps' ? 'GPS ' + coordenadas(lat, lon) : tr('Local da obra {coord} (GPS indisponível)', { coord: coordenadas(lat, lon) });
   ctx.fillText(local + '  ·  KORbuild Daily', x, altura - faixa + Math.round(base * 2.65));
 }
 
@@ -198,7 +199,7 @@ export async function fotoDeExemplo({ cena, obra, quando, semente }) {
   }
   ctx.fillStyle = 'rgba(255,255,255,0.85)';
   ctx.font = '600 22px system-ui, sans-serif';
-  ctx.fillText('Foto de exemplo', 24, 40);
+  ctx.fillText(tr('Foto de exemplo'), 24, 40);
 
   carimbar(ctx, largura, altura, { obraNome: obra.nome, quando, lat: obra.lat + (rnd() - 0.5) * 0.0004, lon: obra.lon + (rnd() - 0.5) * 0.0004, fonte: 'gps' });
   const [blob, mini] = await Promise.all([comprimir(canvas), miniatura(canvas)]);

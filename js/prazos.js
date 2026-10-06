@@ -7,6 +7,7 @@
 
 import { hoje, somarDias, diaDaSemana } from './util.js';
 import { estado, rdoDoDia } from './armazem.js';
+import { tr, emIngles } from './i18n.js';
 
 export const PRAZO_HORA = 18;          // prazo padrão do RDO
 export const LEMBRETE_HORA = 16;       // lembrete 2h antes
@@ -14,7 +15,7 @@ export const ESCALADA_HORA = 8;        // resumo para o escritório na manhã se
 export const DIAS_TRABALHO = [1, 2, 3, 4, 5, 6]; // segunda a sábado (0 = domingo)
 const DIAS_ATRAS = 3;                  // quantos dias de trabalho para trás são cobrados
 
-export const NOMES_DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+export const NOMES_DIAS = emIngles() ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
 
 function dataDeIso(iso, hora) {
   const [a, m, d] = iso.split('-').map(Number);
@@ -29,7 +30,7 @@ export function ehDiaDeTrabalho(obra, iso) {
 
 export function descreverDias(obra) {
   const dias = obra.diasTrabalho || DIAS_TRABALHO;
-  const seq = dias.join(',') === '1,2,3,4,5,6' ? 'segunda a sábado' : dias.join(',') === '1,2,3,4,5' ? 'segunda a sexta' : dias.map((d) => NOMES_DIAS[d]).join(', ');
+  const seq = dias.join(',') === '1,2,3,4,5,6' ? tr('segunda a sábado') : dias.join(',') === '1,2,3,4,5' ? tr('segunda a sexta') : dias.map((d) => NOMES_DIAS[d]).join(', ');
   return seq;
 }
 
@@ -79,7 +80,8 @@ export function enviadoComAtraso(r) {
 }
 
 export function textoPrazo(iso) {
-  return (iso === hoje() ? 'hoje' : diaDaSemana(iso)) + ' às ' + PRAZO_HORA + 'h';
+  const hora = emIngles() ? ((PRAZO_HORA + 11) % 12 + 1) + (PRAZO_HORA < 12 ? ' AM' : ' PM') : PRAZO_HORA + 'h';
+  return tr('{dia} às {hora}', { dia: iso === hoje() ? tr('hoje') : diaDaSemana(iso), hora });
 }
 
 /* Pendências do responsável: dias atrasados de todas as obras + obras sem RDO hoje. */

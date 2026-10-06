@@ -14,9 +14,10 @@
 
 import { hoje, somarDias, diasEntre, novoId, isoDoDia } from './util.js';
 import { estado, salvar } from './armazem.js';
+import { tr, tn, emIngles } from './i18n.js';
 import { regraEm, encargosEm, extrasDaSemana, funcionarios as listaFuncionarios, ativos, auditar, ENCARGOS_INICIAIS, segundaDe } from './settings.js';
 
-export const ETAPAS = ['Fundação', 'Estrutura', 'Alvenaria', 'Instalações elétricas', 'Instalações hidráulicas', 'Acabamento', 'Piso', 'Limpeza e apoio'];
+export const ETAPAS = [tr('Fundação'), tr('Estrutura'), tr('Alvenaria'), tr('Instalações elétricas'), tr('Instalações hidráulicas'), tr('Acabamento'), tr('Piso'), tr('Limpeza e apoio')];
 export const RAIO_CERCA = 150; // metros
 
 /* ---------- Utilidades ---------- */
@@ -45,8 +46,12 @@ export function horas(min) {
   return h + 'h' + String(m).padStart(2, '0');
 }
 
+/* US$ 1.234,56 (pt) · $1,234.56 (en) */
 export function dinheiro(valor) {
-  return 'US$ ' + valor.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const [int, dec] = Math.abs(valor).toFixed(2).split('.');
+  const sinal = valor < 0 ? '-' : '';
+  if (emIngles()) return sinal + '$' + int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
+  return sinal + (tr('US$') + ' ') + int.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + dec;
 }
 
 function crew() { return estado().crew; }
@@ -89,11 +94,11 @@ export function jornada(funcId, iso, agora) {
   const pago = trabalho + deslocamento;
   const maiorIntervalo = Math.max(0, ...segs.filter((s) => s.tipo === 'intervalo' && s.fim).map((s) => (s.fim - s.ini) / 60000));
   const alertas = [];
-  if (semSaida) alertas.push({ tipo: 'sem-saida', texto: 'Sem saída' });
+  if (semSaida) alertas.push({ tipo: 'sem-saida', texto: tr('Sem saída') });
   const fora = lista.filter((b) => b.dentroCerca === false && !b.conferida);
-  if (fora.length) alertas.push({ tipo: 'fora', texto: fora.length === 1 ? '1 batida fora da obra' : fora.length + ' batidas fora da obra' });
+  if (fora.length) alertas.push({ tipo: 'fora', texto: fora.length === 1 ? tr('1 batida fora da obra') : fora.length + (' ' + tr('batidas fora da obra')) });
   const regra = regraEm(iso);
-  if (!ehHoje && pago > regra.intervalo.apos * 60 && maiorIntervalo < regra.intervalo.minimo) alertas.push({ tipo: 'intervalo', texto: 'Sem intervalo de ' + regra.intervalo.minimo + ' min' });
+  if (!ehHoje && pago > regra.intervalo.apos * 60 && maiorIntervalo < regra.intervalo.minimo) alertas.push({ tipo: 'intervalo', texto: (tr('Sem intervalo de') + ' ') + regra.intervalo.minimo + ' min' });
   return {
     batidas: lista, segmentos: segs, trabalho, deslocamento, intervalo, pago, alertas,
     estado: !atual ? (lista.length ? 'saiu' : 'fora') : (atual.aberto ? atual.tipo : 'sem-saida'),
@@ -146,16 +151,16 @@ export function historicoDeValores(f) { return (f.valores || []).slice().sort((a
 /* Muda o valor hora a partir de uma data. Não vale dentro de semana já aprovada (já foi para a folha). */
 export function alterarValorHora(funcId, valor, desde, motivo, por) {
   const f = funcionario(funcId);
-  if (!(valor > 0)) return { erro: 'Informe um valor hora maior que zero.' };
-  if (!motivo || !motivo.trim()) return { erro: 'O motivo é obrigatório: fica no histórico.' };
+  if (!(valor > 0)) return { erro: tr('Informe um valor hora maior que zero.') };
+  if (!motivo || !motivo.trim()) return { erro: tr('O motivo é obrigatório: fica no histórico.') };
   const segunda = inicioDaSemana(desde);
-  if (statusSemana(funcId, segunda) === 'aprovado') return { erro: 'A semana de ' + segunda.split('-').reverse().join('/') + ' já foi aprovada e enviada para a folha. Escolha uma data a partir da próxima semana aberta.' };
-  if ((f.valores || []).some((x) => x.desde === desde)) return { erro: 'Já existe um valor a partir dessa data.' };
+  if (statusSemana(funcId, segunda) === 'aprovado') return { erro: (tr('A semana de') + ' ') + segunda.split('-').reverse().join('/') + (' ' + tr('já foi aprovada e enviada para a folha. Escolha uma data a partir da próxima semana aberta.')) };
+  if ((f.valores || []).some((x) => x.desde === desde)) return { erro: tr('Já existe um valor a partir dessa data.') };
   f.valores = f.valores || [];
   const antes = valorHoraEm(f, desde);
   f.valores.push({ desde, valor: Math.round(valor * 100) / 100, motivo: motivo.trim(), por, em: Date.now() });
-  const us = (v) => 'US$ ' + v.toFixed(2).replace('.', ',') + '/h';
-  auditar('Funcionários', 'Valor hora de ' + f.nome + ' a partir de ' + desde.split('-').reverse().join('/'), us(antes), us(Math.round(valor * 100) / 100), motivo.trim(), por);
+  const us = (v) => (tr('US$') + ' ') + v.toFixed(2).replace('.', ',') + '/h';
+  auditar(tr('Funcionários'), (tr('Valor hora de') + ' ') + f.nome + (' ' + tr('a partir de') + ' ') + desde.split('-').reverse().join('/'), us(antes), us(Math.round(valor * 100) / 100), motivo.trim(), por);
   salvar();
   return { ok: true };
 }
@@ -204,7 +209,7 @@ function horasDaSemana(funcId, segunda, agora) {
     for (const seg of jornada(funcId, iso, agora).segmentos) {
       if (seg.tipo === 'intervalo' || (!seg.fim && !seg.aberto)) continue;
       const min = Math.max(0, (seg.fim || agora || Date.now()) - seg.ini) / 60000;
-      if (min) out.push({ iso, obraId: seg.obraId, etapa: seg.tipo === 'deslocamento' ? 'Deslocamento entre obras' : seg.etapa, min });
+      if (min) out.push({ iso, obraId: seg.obraId, etapa: seg.tipo === 'deslocamento' ? tr('Deslocamento entre obras') : seg.etapa, min });
     }
   }
   return out;
@@ -342,44 +347,44 @@ export function decidirSemana(funcIds, segunda, status, por, motivo) {
 
 const PESSOAS = [
   // equipe A: base no Residencial Jardim das Flores, encarregado Carlos
-  ['f-carlos', 'Carlos Mendes', 'Mestre de obras', 42, 'eq-a'],
-  ['f-joao', 'João Pereira', 'Pedreiro', 30, 'eq-a'],
-  ['f-diego', 'Diego Santos', 'Pedreiro', 30, 'eq-a'],
-  ['f-marcos', 'Marcos Lima', 'Servente', 22, 'eq-a'],
-  ['f-rafael', 'Rafael Costa', 'Servente', 22, 'eq-a'],
-  ['f-lucas', 'Lucas Oliveira', 'Eletricista', 38, 'eq-a'],
+  ['f-carlos', tr('Carlos Mendes'), tr('Mestre de obras'), 42, 'eq-a'],
+  ['f-joao', tr('João Pereira'), tr('Pedreiro'), 30, 'eq-a'],
+  ['f-diego', tr('Diego Santos'), tr('Pedreiro'), 30, 'eq-a'],
+  ['f-marcos', tr('Marcos Lima'), tr('Servente'), 22, 'eq-a'],
+  ['f-rafael', tr('Rafael Costa'), tr('Servente'), 22, 'eq-a'],
+  ['f-lucas', tr('Lucas Oliveira'), tr('Eletricista'), 38, 'eq-a'],
   // equipe B: base no Edifício Atlântico, encarregado Roberto
-  ['f-roberto', 'Roberto Lima', 'Encarregado', 40, 'eq-b'],
-  ['f-antonio', 'Antônio Souza', 'Carpinteiro', 32, 'eq-b'],
-  ['f-felipe', 'Felipe Rocha', 'Carpinteiro', 32, 'eq-b'],
-  ['f-bruno', 'Bruno Alves', 'Armador', 31, 'eq-b'],
-  ['f-thiago', 'Thiago Martins', 'Armador', 31, 'eq-b'],
-  ['f-gustavo', 'Gustavo Ribeiro', 'Servente', 22, 'eq-b'],
+  ['f-roberto', tr('Roberto Lima'), tr('Encarregado'), 40, 'eq-b'],
+  ['f-antonio', tr('Antônio Souza'), tr('Carpinteiro'), 32, 'eq-b'],
+  ['f-felipe', tr('Felipe Rocha'), tr('Carpinteiro'), 32, 'eq-b'],
+  ['f-bruno', tr('Bruno Alves'), tr('Armador'), 31, 'eq-b'],
+  ['f-thiago', tr('Thiago Martins'), tr('Armador'), 31, 'eq-b'],
+  ['f-gustavo', tr('Gustavo Ribeiro'), tr('Servente'), 22, 'eq-b'],
 ];
 
-const ETAPA_PADRAO = { jardim: 'Alvenaria', atlantico: 'Estrutura', galpao: 'Piso' };
+const ETAPA_PADRAO = { jardim: tr('Alvenaria'), atlantico: tr('Estrutura'), galpao: tr('Piso') };
 
 // Reajustes de exemplo: [dias a partir da segunda desta semana, aumento em US$/h, motivo]
 const REAJUSTES = {
-  'f-carlos': [-91, 2, 'Reajuste anual'],
-  'f-lucas': [-56, 3, 'Licença de eletricista (journeyman)'],
-  'f-diego': [-28, 2, 'Aumento por desempenho'],
-  'f-antonio': [-119, 2, 'Reajuste anual'],
+  'f-carlos': [-91, 2, tr('Reajuste anual')],
+  'f-lucas': [-56, 3, tr('Licença de eletricista (journeyman)')],
+  'f-diego': [-28, 2, tr('Aumento por desempenho')],
+  'f-antonio': [-119, 2, tr('Reajuste anual')],
 };
 
 // Certificações de exemplo: [nome, validade em dias a partir de hoje] (a do Carlos vence logo: aparece o aviso)
 const CERTIFICACOES = {
-  'f-carlos': [['OSHA 30 (construção)', 18], ['Primeiros socorros / CPR', 240]],
-  'f-roberto': [['OSHA 30 (construção)', 400]],
-  'f-lucas': [['Licença de eletricista (journeyman)', 610], ['OSHA 10', 300]],
-  'f-bruno': [['OSHA 10', 150]],
-  'f-thiago': [['OSHA 10', -12]],
+  'f-carlos': [[tr('OSHA 30 (construção)'), 18], [tr('Primeiros socorros / CPR'), 240]],
+  'f-roberto': [[tr('OSHA 30 (construção)'), 400]],
+  'f-lucas': [[tr('Licença de eletricista (journeyman)'), 610], [tr('OSHA 10'), 300]],
+  'f-bruno': [[tr('OSHA 10'), 150]],
+  'f-thiago': [[tr('OSHA 10'), -12]],
 };
 
 // Etapas da obra ao longo do tempo (fração do prazo decorrida → etapa), para o histórico de horas
 const FASES = {
-  jardim: [[0, 'Fundação'], [0.12, 'Estrutura'], [0.24, 'Alvenaria']],
-  atlantico: [[0, 'Fundação'], [0.1, 'Estrutura']],
+  jardim: [[0, tr('Fundação')], [0.12, tr('Estrutura')], [0.24, tr('Alvenaria')]],
+  atlantico: [[0, tr('Fundação')], [0.1, tr('Estrutura')]],
 };
 
 // Orçamento de mão de obra (fatia de cada etapa) e como cada obra está, para a demonstração:
@@ -407,9 +412,9 @@ export function criarDadosCrew(obras) {
     const admissao = somarDias(equipeBase.inicio, -(10 + (id.length * 7) % 40));
     const r = REAJUSTES[id];
     const valores = r
-      ? [{ desde: admissao, valor: valorHora - r[1], motivo: 'Admissão', por: 'Ana Ribeiro', em: quando(admissao, 9, 0) },
-        { desde: somarDias(inicioDaSemana(dia0), r[0]), valor: valorHora, motivo: r[2], por: 'Ana Ribeiro', em: quando(somarDias(inicioDaSemana(dia0), r[0] - 3), 10, 0) }]
-      : [{ desde: admissao, valor: valorHora, motivo: 'Admissão', por: 'Ana Ribeiro', em: quando(admissao, 9, 0) }];
+      ? [{ desde: admissao, valor: valorHora - r[1], motivo: tr('Admissão'), por: tr('Ana Ribeiro'), em: quando(admissao, 9, 0) },
+        { desde: somarDias(inicioDaSemana(dia0), r[0]), valor: valorHora, motivo: r[2], por: tr('Ana Ribeiro'), em: quando(somarDias(inicioDaSemana(dia0), r[0] - 3), 10, 0) }]
+      : [{ desde: admissao, valor: valorHora, motivo: tr('Admissão'), por: tr('Ana Ribeiro'), em: quando(admissao, 9, 0) }];
     const n = PESSOAS.findIndex((p) => p[0] === id);
     return {
       id, nome, funcao, equipeId, admissao, valores, usuarioId: id === 'f-carlos' ? 'u-carlos' : id === 'f-roberto' ? 'u-roberto' : null,
@@ -418,8 +423,8 @@ export function criarDadosCrew(obras) {
     };
   });
   const equipes = [
-    { id: 'eq-a', nome: 'Equipe do Carlos', encarregadoUsuarioId: 'u-carlos', obraBaseId: 'jardim' },
-    { id: 'eq-b', nome: 'Equipe do Roberto', encarregadoUsuarioId: 'u-roberto', obraBaseId: 'atlantico' },
+    { id: 'eq-a', nome: tr('Equipe do Carlos'), encarregadoUsuarioId: 'u-carlos', obraBaseId: 'jardim' },
+    { id: 'eq-b', nome: tr('Equipe do Roberto'), encarregadoUsuarioId: 'u-roberto', obraBaseId: 'atlantico' },
   ];
   const batidas = [];
   const excursoes = [];
@@ -457,7 +462,7 @@ export function criarDadosCrew(obras) {
       if (ehHoje && f.equipeId === 'eq-a') continue; // a equipe do Carlos bate a entrada ao vivo na demonstração
       if (sabado && f.equipeId === 'eq-a') continue; // equipe do Carlos trabalha de segunda a sexta
       if (f.id === 'f-thiago' && indice === 3) continue; // faltou na quinta da semana anterior
-      const etapa = f.funcao === 'Eletricista' ? 'Instalações elétricas' : f.funcao === 'Mestre de obras' || f.funcao === 'Encarregado' ? 'Limpeza e apoio' : ETAPA_PADRAO[base];
+      const etapa = f.funcao === 'Eletricista' ? tr('Instalações elétricas') : f.funcao === 'Mestre de obras' || f.funcao === 'Encarregado' ? tr('Limpeza e apoio') : ETAPA_PADRAO[base];
       const eventos = [];
       // Equipe do Carlos: 7h às 16h. Equipe do Roberto: 8h às 17h. Uma hora de almoço.
       const h0 = f.equipeId === 'eq-a' ? 6 : 7;
@@ -470,8 +475,8 @@ export function criarDadosCrew(obras) {
         // Lucas troca de obra depois do almoço em dias alternados: Jardim → Galpão (deslocamento conta como hora)
         if (f.id === 'f-lucas' && indice % 2 === 1) {
           eventos.push(['troca', 'galpao', null, quando(d, 13, 10 + min(5)), { em: base }]);
-          eventos.push(['chegada', 'galpao', 'Instalações elétricas', quando(d, 13, 55 + min(5))]);
-          eventos.push(['saida', 'galpao', 'Instalações elétricas', quando(d, 17, min(10))]);
+          eventos.push(['chegada', 'galpao', tr('Instalações elétricas'), quando(d, 13, 55 + min(5))]);
+          eventos.push(['saida', 'galpao', tr('Instalações elétricas'), quando(d, 17, min(10))]);
         } else {
           // equipe B faz hora extra na semana anterior (concretagem): sai às 18h40 de terça a sexta
           const extra = f.equipeId === 'eq-b' && d < segundaAtual && indice >= 1 && indice <= 4;
@@ -481,7 +486,7 @@ export function criarDadosCrew(obras) {
       }
       for (const [tipo, obraId, et, em, extra] of eventos) if (em <= agora) b(f, tipo, obraId, et, em, extra);
       // Diego saiu da obra com o ponto aberto na terça da semana anterior (aparece no mapa do dia)
-      if (f.id === 'f-diego' && indice === 1) excursoes.push({ funcionarioId: f.id, data: d, ini: quando(d, 9, 40), fim: quando(d, 10, 5), lat: obra(base).lat + 0.0042, lon: obra(base).lon + 0.0031, local: 'Posto de combustível a 550 m' });
+      if (f.id === 'f-diego' && indice === 1) excursoes.push({ funcionarioId: f.id, data: d, ini: quando(d, 9, 40), fim: quando(d, 10, 5), lat: obra(base).lat + 0.0042, lon: obra(base).lon + 0.0031, local: tr('Posto de combustível a 550 m') });
     }
   }
 
@@ -497,12 +502,12 @@ export function criarDadosCrew(obras) {
       if (dia === 0 || (dia === 6 && f.equipeId === 'eq-a')) continue;
       if (rh() < 0.03) continue; // faltas
       const fase = FASES[base].filter(([x]) => diasEntre(o.inicio, d) / diasEntre(o.inicio, o.prazo) >= x).pop()[1];
-      const etapa = f.funcao === 'Eletricista' ? 'Instalações elétricas' : f.funcao === 'Mestre de obras' || f.funcao === 'Encarregado' ? 'Limpeza e apoio' : fase;
+      const etapa = f.funcao === 'Eletricista' ? tr('Instalações elétricas') : f.funcao === 'Mestre de obras' || f.funcao === 'Encarregado' ? tr('Limpeza e apoio') : fase;
       const jornadaMin = dia === 6 ? 210 + Math.round(rh() * 30) : 480 + Math.round(rh() * 25);
       // concretagem do Atlântico: hora extra de terça a sexta em semanas alternadas
       const extra = f.equipeId === 'eq-b' && dia >= 2 && dia <= 5 && Math.floor(diasEntre(o.inicio, d) / 7) % 2 === 0 ? 120 + Math.round(rh() * 40) : 0;
       if (f.id === 'f-lucas' && dia % 2 === 0 && d >= obra('galpao').inicio) {
-        historico.push([d, f.id, 'jardim', etapa, 300], [d, f.id, 'galpao', 'Deslocamento entre obras', 45], [d, f.id, 'galpao', 'Instalações elétricas', jornadaMin - 345]);
+        historico.push([d, f.id, 'jardim', etapa, 300], [d, f.id, 'galpao', tr('Deslocamento entre obras'), 45], [d, f.id, 'galpao', tr('Instalações elétricas'), jornadaMin - 345]);
       } else historico.push([d, f.id, base, etapa, jornadaMin + extra]);
     }
   }
@@ -525,12 +530,12 @@ export function criarDadosCrew(obras) {
     orcamentos[id] = {
       valor, avanco: Math.round(pct * CENARIO[id].ritmoAvanco * 100),
       porEtapa: Object.fromEntries(Object.entries(ORCAMENTO_ETAPAS[id]).map(([e, f]) => [e, Math.round(valor * f / 100) * 100])),
-      por: 'Ana Ribeiro', em: quando(o.inicio, 9, 0),
+      por: tr('Ana Ribeiro'), em: quando(o.inicio, 9, 0),
     };
   }
 
   // A semana anterior da equipe A já foi aprovada; a da equipe B espera aprovação.
-  const aprovacoes = funcionarios.filter((f) => f.equipeId === 'eq-a').map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: 'Ana Ribeiro', motivo: '', em: quando(segundaAtual, 9, 10) }));
+  const aprovacoes = funcionarios.filter((f) => f.equipeId === 'eq-a').map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: tr('Ana Ribeiro'), motivo: '', em: quando(segundaAtual, 9, 10) }));
 
   return { funcionarios, equipes, batidas, excursoes, aprovacoes, historico, orcamentos };
 }
