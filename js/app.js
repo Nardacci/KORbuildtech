@@ -2,7 +2,7 @@
 
 import {
   esc, novoId, hoje, somarDias, diasEntre, dataCurta, dataLonga, dataRelativa, diaDaSemana, horaCurta, dataHora, tamanho,
-  toast, abrirDialogo, confirmar,
+  toast, abrirDialogo, confirmar, horaCheia, temperatura, chuva,
 } from './util.js';
 import {
   estado, bancoDeDados, todasAsEmpresas, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
@@ -24,7 +24,7 @@ import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
-  PRAZO_HORA, ESCALADA_HORA, prazoDe, situacaoDeHoje, diasAtrasados, pendenciasDoCampo, semRdoOntem, enviadoComAtraso, descreverDias,
+  PRAZO_HORA, LEMBRETE_HORA, ESCALADA_HORA, prazoDe, situacaoDeHoje, diasAtrasados, pendenciasDoCampo, semRdoOntem, enviadoComAtraso, descreverDias,
 } from './prazos.js';
 import { processarFoto } from './fotos.js';
 import { buscarClima, TEMPOS } from './clima.js';
@@ -79,7 +79,7 @@ async function sincronizar() {
   let enviados = 0;
   for (const r of fila) {
     const o = acharObra(r.obraId);
-    sincronizando = { feito: 0, total: r.fotos.length + 1, nome: (tr('RDO nº') + ' ') + r.numero };
+    sincronizando = { feito: 0, total: r.fotos.length + 1, nome: tr('RDO nº {n}', { n: r.numero }) };
     r.sync = 'enviando';
     atualizarConexao();
     let interrompido = false;
@@ -98,7 +98,7 @@ async function sincronizar() {
     registrar(r, (tr('Aparelho de') + ' ') + r.autor, tr('Recebido no escritório (') + r.fotos.length + (' ' + tr('fotos,') + ' ') + tamanho(r.fotos.reduce((s, f) => s + f.tamanho, 0)) + ')');
     salvar();
     enviados++;
-    toast((tr('RDO nº') + ' ') + r.numero + ' (' + o.nome + tr(') chegou ao escritório.'));
+    toast(tr('RDO nº {n}', { n: r.numero }) + ' (' + o.nome + tr(') chegou ao escritório.'));
   }
   sincronizando = null;
   if (enviados) desenhar(); else atualizarConexao();
@@ -108,7 +108,7 @@ async function sincronizar() {
 
 /* Mostra uma notificação de verdade (pelo service worker, para funcionar no Android instalado). */
 async function notificar(titulo, corpo, tag) {
-  if (!(tr('Notification') in window)) return false;
+  if (!('Notification' in window)) return false;
   let permissao = Notification.permission;
   if (permissao === 'default') permissao = await Notification.requestPermission();
   if (permissao !== 'granted') return false;
@@ -130,14 +130,14 @@ function conferirLembretes() {
   if (!u || !pode(u, 'daily.preencher')) { atualizarBadge(0); return; }
   const p = pendenciasDoCampo();
   atualizarBadge(p.total);
-  if (!(tr('Notification') in window) || Notification.permission !== 'granted') return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
   for (const o of estado().obras) {
     const s = situacaoDeHoje(o);
     if (s !== 'lembrete' && s !== 'atrasado') continue;
     const chave = 'kbt.lembrete.' + o.id + '.' + hoje() + '.' + s;
     try { if (sessionStorage.getItem(chave)) continue; sessionStorage.setItem(chave, '1'); } catch (e) { continue; }
     notificar(s === 'lembrete' ? tr('Falta o RDO de hoje') : tr('RDO de hoje atrasado'),
-      o.nome + (s === 'lembrete' ? (' ' + tr('· prazo') + ' ') + PRAZO_HORA + 'h.' : (' ' + tr('· o prazo venceu às') + ' ') + PRAZO_HORA + 'h.') + (' ' + tr('Toque para preencher.')), o.id + '-' + s);
+      o.nome + ' · ' + (s === 'lembrete' ? tr('prazo {hora}.', { hora: horaCheia(PRAZO_HORA) }) : tr('o prazo venceu às {hora}.', { hora: horaCheia(PRAZO_HORA) })) + ' ' + tr('Toque para preencher.'), o.id + '-' + s);
   }
 }
 
@@ -299,14 +299,14 @@ function situacaoHoje(o) {
   if (r && r.semAtividade) return { classe: 'neutro', texto: (tr('Sem atividade hoje ·') + ' ') + r.semAtividade.motivo };
   if (r && r.status === 'rascunho') {
     const s = situacaoDeHoje(o);
-    return s === 'atrasado' ? { classe: 'alerta', texto: (tr('Rascunho · prazo venceu às') + ' ') + PRAZO_HORA + 'h' } : { classe: 'neutro', texto: (tr('RDO de hoje em rascunho · prazo') + ' ') + PRAZO_HORA + 'h' };
+    return s === 'atrasado' ? { classe: 'alerta', texto: tr('Rascunho · prazo venceu às {hora}', { hora: horaCheia(PRAZO_HORA) }) } : { classe: 'neutro', texto: tr('RDO de hoje em rascunho · prazo {hora}', { hora: horaCheia(PRAZO_HORA) }) };
   }
   if (!r) {
     const s = situacaoDeHoje(o);
     if (s === 'folga') return { classe: 'neutro', texto: tr('Hoje não é dia de trabalho') };
-    if (s === 'atrasado') return { classe: 'alerta', texto: (tr('RDO de hoje atrasado · prazo era') + ' ') + PRAZO_HORA + 'h' };
-    if (s === 'lembrete') return { classe: 'ambar', texto: (tr('Falta o RDO de hoje · prazo') + ' ') + PRAZO_HORA + 'h' };
-    return { classe: 'ambar', texto: (tr('RDO de hoje não iniciado · prazo') + ' ') + PRAZO_HORA + 'h' };
+    if (s === 'atrasado') return { classe: 'alerta', texto: tr('RDO de hoje atrasado · prazo era {hora}', { hora: horaCheia(PRAZO_HORA) }) };
+    if (s === 'lembrete') return { classe: 'ambar', texto: tr('Falta o RDO de hoje · prazo {hora}', { hora: horaCheia(PRAZO_HORA) }) };
+    return { classe: 'ambar', texto: tr('RDO de hoje não iniciado · prazo {hora}', { hora: horaCheia(PRAZO_HORA) }) };
   }
   if (r.sync !== 'enviado') return { classe: 'ambar', texto: tr('Guardado no aparelho · sobe quando houver internet') };
   if (r.status === 'enviado') return { classe: 'azul', texto: tr('Enviado · aguardando aprovação') };
@@ -327,14 +327,14 @@ function avisosDePrazo() {
     html += '<section class="aviso aviso-alerta aviso-atraso"><b>' + (p.atrasados.length === 1 ? tr('1 RDO atrasado') : p.atrasados.length + (' ' + tr('RDOs atrasados'))) + '</b>' +
       ('<span>' + tr('O RDO é obrigatório em todo dia de trabalho. Preencha agora; ele fica registrado como enviado com atraso.') + '</span>') +
       '<ul class="lista-atrasos">' + p.atrasados.map(({ obra, data }) =>
-        '<li><a href="#/daily/campo/obra/' + obra.id + '"><b>' + esc(obra.nome) + '</b><span>' + primeiraMaiuscula(dataRelativa(data) === 'Hoje' ? (tr('hoje (prazo era') + ' ') + PRAZO_HORA + tr('h)') : dataRelativa(data) === 'Ontem' ? (tr('ontem,') + ' ') + dataCurta(data) : diaDaSemana(data) + ', ' + dataCurta(data)) + '</span>' + icone('seta', 18) + '</a></li>').join('') +
+        '<li><a href="#/daily/campo/obra/' + obra.id + '"><b>' + esc(obra.nome) + '</b><span>' + primeiraMaiuscula(data === hoje() ? tr('hoje (prazo era {hora})', { hora: horaCheia(PRAZO_HORA) }) : data === somarDias(hoje(), -1) ? tr('ontem, {data}', { data: dataCurta(data) }) : diaDaSemana(data) + ', ' + dataCurta(data)) + '</span>' + icone('seta', 18) + '</a></li>').join('') +
       '</ul></section>';
   }
   if (p.hojeSemRdo.length) {
     const lembrete = p.hojeSemRdo.some((x) => x.situacao === 'lembrete');
     html += '<section class="aviso ' + (lembrete ? 'aviso-ambar' : 'aviso-azul') + ' aviso-prazo"><b>' +
-      (p.hojeSemRdo.length === 1 ? tr('Falta o RDO de hoje em 1 obra') : (tr('Falta o RDO de hoje em') + ' ') + p.hojeSemRdo.length + ' obras') + '</b>' +
-      ('<span>' + tr('Prazo: hoje às') + ' ') + PRAZO_HORA + 'h' + (lembrete ? (' ' + tr('· faltam') + ' ') + tempoAte(prazoDe(hoje())) : '') + (tr('. Se não houver trabalho na obra, registre "sem atividade".') + '</span></section>');
+      tn(p.hojeSemRdo.length, 'Falta o RDO de hoje em {n} obra', 'Falta o RDO de hoje em {n} obras') + '</b>' +
+      '<span>' + tr('Prazo: hoje às {hora}', { hora: horaCheia(PRAZO_HORA) }) + (lembrete ? ' · ' + tr('faltam {tempo}', { tempo: tempoAte(prazoDe(hoje())) }) : '') + (tr('. Se não houver trabalho na obra, registre "sem atividade".') + '</span></section>');
   }
   return html;
 }
@@ -405,13 +405,13 @@ function telaObraCampo(id) {
   }
   const prazoHoje = situacao === 'folga' || (deHoje && deHoje.status !== 'rascunho') ? '' :
     '<span class="prazo-dia' + (situacao === 'atrasado' ? ' vencido' : situacao === 'lembrete' ? ' perto' : '') + '">' +
-      (situacao === 'atrasado' ? (tr('Prazo venceu às') + ' ') + PRAZO_HORA + 'h' : (tr('Prazo:') + ' ') + PRAZO_HORA + 'h' + (situacao === 'lembrete' ? (' ' + tr('· faltam') + ' ') + tempoAte(prazoDe(hoje())) : '')) + '</span>';
+      (situacao === 'atrasado' ? tr('Prazo venceu às {hora}', { hora: horaCheia(PRAZO_HORA) }) : tr('Prazo: {hora}', { hora: horaCheia(PRAZO_HORA) }) + (situacao === 'lembrete' ? ' · ' + tr('faltam {tempo}', { tempo: tempoAte(prazoDe(hoje())) }) : '')) + '</span>';
   return moldura({
     ativo: 'hoje', titulo: o.nome, subtitulo: o.cidade, voltar: { href: '#/daily/campo', rotulo: tr('Hoje') },
     conteudo:
       atrasos.map((d) =>
         ('<section class="cartao atrasado"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO de') + ' ') + diaDaSemana(d) + ', ' + dataCurta(d) + ('</h2><span class="etiqueta etiqueta-alerta">' + tr('Atrasado') + '</span></div>') +
-          ('<p class="mudo pequeno">' + tr('O prazo era') + ' ') + dataCurta(d) + (' ' + tr('às') + ' ') + PRAZO_HORA + (tr('h. Preencha agora: o relatório fica marcado como enviado com atraso.') + '</p>') +
+          '<p class="mudo pequeno">' + tr('O prazo era {data} às {hora}. Preencha agora: o relatório fica marcado como enviado com atraso.', { data: dataCurta(d), hora: horaCheia(PRAZO_HORA) }) + '</p>' +
           '<div class="acoes-obra">' + acoesDoDia(o, d, lista) + '</div></section>').join('') +
       '<section class="acoes-obra acoes-hoje"><div class="titulo-com-prazo"><h2 class="titulo-secao">' + primeiraMaiuscula(dataLonga(hoje())) + '</h2>' + prazoHoje + '</div>' + acoes + '</section>' +
       resumoObra(o) +
@@ -447,12 +447,12 @@ function itemRdo(r, opcoes) {
   const restantes = r.fotos.length - fotos.length;
   if (r.semAtividade) {
     return '<a class="item-rdo" href="' + (op.href || '#/daily/campo/rdo/' + r.id) + '">' +
-      ('<div class="item-rdo-topo"><b>' + tr('RDO nº') + ' ') + r.numero + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
+      ('<div class="item-rdo-topo"><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
       (op.comObra ? '<span class="item-rdo-obra">' + esc(acharObra(r.obraId).nome) + '</span>' : '') +
       ('<p class="item-rdo-trecho mudo">' + tr('Dia sem atividade:') + ' ') + esc(r.semAtividade.motivo) + '</p></a>';
   }
   return '<a class="item-rdo" href="' + (op.href || '#/daily/campo/rdo/' + r.id) + '">' +
-    ('<div class="item-rdo-topo"><b>' + tr('RDO nº') + ' ') + r.numero + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
+    ('<div class="item-rdo-topo"><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + dataRelativa(r.data) + '</b>' + seloStatus(r) + '</div>' +
     (enviadoComAtraso(r) ? ('<span class="item-rdo-atraso">' + tr('Enviado com atraso') + '</span>') : '') +
     (op.comObra ? '<span class="item-rdo-obra">' + esc(acharObra(r.obraId).nome) + '</span>' : '') +
 
@@ -460,9 +460,9 @@ function itemRdo(r, opcoes) {
     (fotos.length
       ? '<div class="item-rdo-fotos">' + fotos.map((f, i) =>
           '<img data-foto="' + esc(idMiniatura(f.id)) + '" data-foto-reserva="' + esc(f.id) + ('" alt="' + tr('Foto') + ' ') + (i + 1) + (f.legenda ? ': ' + esc(f.legenda) : '') + '" width="96" height="72" loading="lazy">').join('') +
-        (restantes > 0 ? '<span class="item-rdo-mais" aria-label="mais ' + restantes + ' fotos">+' + restantes + '</span>' : '') + '</div>'
+        (restantes > 0 ? '<span class="item-rdo-mais" aria-label="' + tn(restantes, 'mais {n} foto', 'mais {n} fotos') + '">+' + restantes + '</span>' : '') + '</div>'
       : '') +
-    '<span class="mudo item-rdo-meta">' + pessoas + (' ' + tr('pessoas ·') + ' ') + r.atividades.length + (' ' + tr('atividades ·') + ' ') + r.fotos.length + ' fotos</span></a>';
+    '<span class="mudo item-rdo-meta">' + tn(pessoas, '{n} pessoa', '{n} pessoas') + ' · ' + tn(r.atividades.length, '{n} atividade', '{n} atividades') + ' · ' + tn(r.fotos.length, '{n} foto', '{n} fotos') + '</span></a>';
 }
 
 /* Cria o RDO de hoje, em branco ou copiando um RDO anterior escolhido (baseId). */
@@ -524,7 +524,7 @@ function telaRdoCampo(id) {
     [tr('Fotos'), r.fotos.length > 0],
   ];
   return moldura({
-    ativo: 'hoje', semAbas: true, titulo: (tr('RDO nº') + ' ') + r.numero, subtitulo: dataRelativa(r.data) + ' · ' + o.nome,
+    ativo: 'hoje', semAbas: true, titulo: tr('RDO nº {n}', { n: r.numero }), subtitulo: dataRelativa(r.data) + ' · ' + o.nome,
     voltar: { href: '#/daily/campo/obra/' + o.id, rotulo: o.nome },
     conteudo:
       (r.status !== 'ajustes' && Date.now() > prazoDe(r.data)
@@ -553,7 +553,7 @@ function secaoClima(r, o) {
   const fonte = { automatico: tr('Buscado automaticamente pela localização da obra'), ajustado: tr('Automático, com ajuste seu'), manual: tr('Marcado à mão') }[r.clima.fonte] || tr('Ainda não informado');
   const turno = (chave, nome) => {
     const t = r.clima[chave] || {};
-    return '<div class="turno"><div class="turno-nome"><b>' + nome + '</b>' + (t.temperatura != null ? '<span class="mudo">' + t.temperatura + (' ' + tr('°C')) + (t.chuvaMm ? ' · ' + String(t.chuvaMm).replace('.', ',') + ' mm' : '') + '</span>' : '') + '</div>' +
+    return '<div class="turno"><div class="turno-nome"><b>' + nome + '</b>' + (t.temperatura != null ? '<span class="mudo">' + temperatura(t.temperatura) + (t.chuvaMm ? ' · ' + chuva(t.chuvaMm) : '') + '</span>' : '') + '</div>' +
       ('<div class="opcoes" role="group" aria-label="' + tr('Tempo de') + ' ') + nome.toLowerCase() + '">' + Object.entries(TEMPOS).map(([v, rot]) =>
         '<button type="button" class="opcao tempo-' + v + '" data-acao="clima-tempo" data-turno="' + chave + '" data-valor="' + v + '" aria-pressed="' + (t.tempo === v) + '">' + iconeTempo(v) + rot + '</button>').join('') + '</div>' +
       ('<div class="opcoes opcoes-texto" role="group" aria-label="' + tr('Condição do canteiro de') + ' ') + nome.toLowerCase() + '">' +
@@ -580,7 +580,7 @@ function secaoEquipe(r) {
   const faltas = r.equipe.reduce((s, e) => s + Number(e.faltas || 0), 0);
   const usadas = new Set(r.equipe.map((e) => e.funcao));
   const temCrew = estado().empresa.modulos.includes('crew');
-  return '<section class="secao" id="s-equipe">' + cabecalhoSecao('equipe', tr('Equipe'), total > 0, '<span class="secao-total">' + total + ' presentes' + (faltas ? ' · ' + faltas + (faltas === 1 ? ' falta' : ' faltas') : '') + '</span>') +
+  return '<section class="secao" id="s-equipe">' + cabecalhoSecao('equipe', tr('Equipe'), total > 0, '<span class="secao-total">' + tn(total, '{n} presente', '{n} presentes') + (faltas ? ' · ' + tn(faltas, '{n} falta', '{n} faltas') : '') + '</span>') +
     (r.equipeFonte === 'crew' ? '<p class="fonte-crew">' + icone('crew', 16) + (tr('Preenchida pelo ponto do KORbuild Crew: quem bateu entrada nesta obra. Ajuste se precisar.') + '</p>') : '') +
     (temCrew ? ('<button type="button" class="link-sutil alinhado-esquerda" data-acao="equipe-do-ponto">' + tr('Atualizar pela equipe que bateu ponto') + '</button>') : '') +
     (r.equipe.length ? ('<div class="tabela-edicao"><div class="tabela-cab"><span>' + tr('Função') + '</span><span>' + tr('Presentes') + '</span><span>' + tr('Faltas') + '</span><span></span></div>') +
@@ -659,7 +659,7 @@ function secaoFotos(r) {
       ('<label class="btn btn-contorno"><input type="file" accept="image/*" multiple data-fotos="galeria" class="visualmente-oculto">' + tr('Da galeria') + '</label>') +
     '</div>' +
     (fotosProcessando ? '<p class="secao-nota"><span class="girando"></span>' + esc(fotosProcessando) + '</p>' : '') +
-    (r.fotos.length ? ('<p class="secao-nota">' + tr('Cada foto recebe o carimbo de data, hora e GPS e é reduzida no próprio celular:') + ' ') + tamanho(totalOriginal) + ' viraram ' + tamanho(total) + '.</p>' : ('<p class="vazio">' + tr('Fotos do antes, do durante e do depois. O carimbo de data, hora e GPS entra na própria imagem.') + '</p>')) +
+    (r.fotos.length ? ('<p class="secao-nota">' + tr('Cada foto recebe o carimbo de data, hora e GPS e é reduzida no próprio celular:') + ' ') + tr('{antes} viraram {depois}.', { antes: tamanho(totalOriginal), depois: tamanho(total) }) + '</p>' : ('<p class="vazio">' + tr('Fotos do antes, do durante e do depois. O carimbo de data, hora e GPS entra na própria imagem.') + '</p>')) +
     '<div class="fotos-grade">' + r.fotos.map((f, i) =>
       '<figure class="foto"><img data-foto="' + esc(f.id) + ('" alt="' + tr('Foto') + ' ') + (i + 1) + '">' +
         '<figcaption><input type="text" data-bind="fotos.' + i + '.legenda" value="' + esc(f.legenda) + ('" placeholder="' + tr('Legenda (ex.: armação antes da concretagem)') + '" aria-label="' + tr('Legenda da foto') + ' ') + (i + 1) + '">' +
@@ -687,7 +687,7 @@ function telaRdoLeitura(r, o) {
       '<a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + ('">' + tr('Ver PDF') + '</a></div>');
   }
   return moldura({
-    ativo: r.data === hoje() ? 'hoje' : 'historico', titulo: (tr('RDO nº') + ' ') + r.numero, subtitulo: dataRelativa(r.data) + ' · ' + o.nome,
+    ativo: r.data === hoje() ? 'hoje' : 'historico', titulo: tr('RDO nº {n}', { n: r.numero }), subtitulo: dataRelativa(r.data) + ' · ' + o.nome,
     voltar: { href: '#/daily/campo/obra/' + o.id, rotulo: o.nome },
     conteudo: aviso + '<div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>',
   });
@@ -702,7 +702,7 @@ function farol(o) {
   const dias = diasEntre(ultimo.data, hoje());
   if (dias <= 0) return { cor: 'verde', texto: tr('RDO de hoje recebido'), ultimo };
   if (dias === 1) return { cor: 'amarelo', texto: tr('Último RDO ontem · 1 dia de atraso'), ultimo };
-  return { cor: 'vermelho', texto: (tr('Último RDO há') + ' ') + dias + ' dias', ultimo };
+  return { cor: 'vermelho', texto: tr('Último RDO há {n} dias', { n: dias }), ultimo };
 }
 
 const NOME_FAROL = { verde: tr('em dia'), amarelo: tr('1 dia de atraso'), vermelho: tr('2 dias ou mais de atraso') };
@@ -724,7 +724,7 @@ function telaPainel() {
     ativo: 'painel', largo: true, titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
       '<div class="kpis">' +
-        kpi(tr('RDOs de hoje'), deHoje.length + ' de ' + obras.length, deHoje.length === obras.length ? 'verde' : '') +
+        kpi(tr('RDOs de hoje'), tr('{n} de {total}', { n: deHoje.length, total: obras.length }), deHoje.length === obras.length ? 'verde' : '') +
         kpi(tr('Aguardando aprovação'), aguardando.length, aguardando.length ? 'azul' : '') +
         kpi(tr('Obras com RDO atrasado'), atrasadas, atrasadas ? 'alerta' : 'verde') +
         kpi(tr('Fotos recebidas hoje'), fotosHoje, '') +
@@ -765,7 +765,7 @@ function kpi(rotulo, valor, cor) {
 function itemPainel(r, acao) {
   const o = acharObra(r.obraId);
   const pessoas = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
-  return ('<li><div><b>' + tr('RDO nº') + ' ') + r.numero + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataRelativa(r.data) + ' · ' + esc(r.autor) + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + r.fotos.length + ' fotos' +
+  return ('<li><div><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataRelativa(r.data) + ' · ' + esc(r.autor) + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + tn(r.fotos.length, '{n} foto', '{n} fotos') +
     (r.ocorrencias.length ? ' · <span class="texto-alerta">' + r.ocorrencias.length + (r.ocorrencias.length === 1 ? (' ' + tr('ocorrência')) : (' ' + tr('ocorrências'))) + '</span>' : '') + '</span></div>' +
     '<a class="btn ' + (acao === 'Revisar' ? 'btn-primario' : 'btn-contorno') + ' btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">' + acao + '</a></li>';
 }
@@ -787,7 +787,7 @@ function telaAprovacoes() {
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Aprovados recentemente') + '</h2>') +
         '<ul class="fila">' + aprovados.map((r) => {
           const o = acharObra(r.obraId);
-          return ('<li><div><b>' + tr('RDO nº') + ' ') + r.numero + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataCurta(r.data) + (' ' + tr('· aprovado') + ' ') + dataHora(r.aprovadoEm) + (' ' + tr('· código') + ' ') + esc(r.codigo) + '</span></div>' +
+          return ('<li><div><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataCurta(r.data) + (' ' + tr('· aprovado') + ' ') + dataHora(r.aprovadoEm) + (' ' + tr('· código') + ' ') + esc(r.codigo) + '</span></div>' +
             '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + r.id + ('">' + tr('Abrir') + '</a><a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/') + r.id + '">PDF</a></div></li>';
         }).join('') + '</ul>' +
       '</section>',
@@ -823,7 +823,7 @@ function telaObraAdmin(id) {
       ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
         ('<button type="button" class="link" data-acao="em-breve" data-texto="' + tr('Editar responsável, prazo e calendário vem na próxima etapa.') + '">' + tr('Editar') + '</button></div>') +
         ('<div class="linha-info"><span>' + tr('Responsável') + '</span><b>') + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
-        ('<div class="linha-info"><span>' + tr('Prazo diário') + '</span><b>') + PRAZO_HORA + (tr('h · lembrete às 16h e alerta às 18h (sininho e celular)') + '</b></div>') +
+        ('<div class="linha-info"><span>' + tr('Prazo diário') + '</span><b>') + tr('{prazo} · lembrete às {lembrete} e alerta às {prazo} (sininho e celular)', { prazo: horaCheia(PRAZO_HORA), lembrete: horaCheia(LEMBRETE_HORA) }) + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Dias de trabalho') + '</span><b>') + primeiraMaiuscula(descreverDias(o)) + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Escritório é avisado') + '</span><b>' + tr('No dia seguinte, às') + ' ') + ESCALADA_HORA + 'h</b></div>' +
       '</section>' +
@@ -862,7 +862,7 @@ function telaRdoPainel(id) {
   const voltar = r.status === 'enviado' ? { href: '#/daily/aprovacoes', rotulo: tr('Aprovações') } : { href: '#/daily/obras/' + o.id, rotulo: o.nome };
   return moldura({
     ativo: r.status === 'enviado' ? 'aprovacoes' : 'obras', largo: true,
-    titulo: (tr('RDO nº') + ' ') + r.numero, subtitulo: o.nome + ' · ' + primeiraMaiuscula(dataLonga(r.data)), voltar,
+    titulo: tr('RDO nº {n}', { n: r.numero }), subtitulo: o.nome + ' · ' + primeiraMaiuscula(dataLonga(r.data)), voltar,
     conteudo: '<div class="revisao"><div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>' +
       '<aside class="revisao-lado"><div class="cartao fixo">' + painelAcoes + historico + '</div></aside></div>',
   });
@@ -918,7 +918,7 @@ async function verificarLacreNaTela(codigo) {
   if (!el) return;
   el.className = 'aviso ' + (ok ? 'aviso-verde' : 'aviso-alerta');
   el.innerHTML = ok
-    ? ('<b>' + tr('Documento autêntico') + '</b><span>' + tr('O conteúdo é idêntico ao aprovado por') + ' ') + esc(r.aprovadoPor) + ' em ' + dataHora(r.aprovadoEm) + (tr('. Código') + ' ') + esc(r.codigo) + '.</span>'
+    ? ('<b>' + tr('Documento autêntico') + '</b><span>' + tr('O conteúdo é idêntico ao aprovado por') + ' ') + esc(r.aprovadoPor) + ' ' + tr('em') + ' ' + dataHora(r.aprovadoEm) + (tr('. Código') + ' ') + esc(r.codigo) + '.</span>'
     : ('<b>' + tr('Atenção: o conteúdo mudou depois da aprovação') + '</b><span>' + tr('O hash atual não bate com o lacre. Peça à construtora o PDF original.') + '</span>');
   if (!ok) {
     const rel = document.getElementById('cliente-relatorio');
@@ -1008,21 +1008,17 @@ const acoes = {
     if (!(await confirmar(tr('Recomeçar a demonstração?'), tr('Tudo o que foi feito neste aparelho é apagado e os dados de exemplo voltam ao início.'), tr('Recomeçar')))) return;
     await apagarTudo();
     app.innerHTML = carregando();
-    definirEstado(await criarDemonstracao());
+    definirEstado({ ...(await criarDemonstracao()), idioma: idioma() });
     sair();
     toast(tr('Demonstração recomeçada.'));
     ir('#/entrar');
   },
   /* PT/EN. Na tela de entrada, os dados de demonstração são recriados no idioma escolhido;
    * com alguém logado, só a interface muda (os dados ficam como estão). */
-  async idioma(el) {
+  idioma(el) {
     if (el.dataset.idioma === idioma()) return;
     definirIdioma(el.dataset.idioma);
-    if (!usuarioAtual()) {
-      app.innerHTML = carregando();
-      await apagarTudo();
-      definirEstado(await criarDemonstracao());
-    }
+    app.innerHTML = carregando();
     location.reload();
   },
   'preencher-email'(el) {
@@ -1061,7 +1057,7 @@ const acoes = {
           const emAndamento = r.atividades.filter((a) => a.situacao !== 'concluida').length;
           return '<label class="opcao-rdo"><input type="radio" name="base" value="' + esc(r.id) + '"' + (i === 0 ? ' checked' : '') + '>' +
             '<span><b>' + dataRelativa(r.data) + (dataRelativa(r.data) === dataCurta(r.data) ? '' : ' · ' + dataCurta(r.data)) + '</b>' +
-            ('<span class="mudo">' + tr('RDO nº') + ' ') + r.numero + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + r.equipamentos.length + (' ' + tr('equipamentos ·') + ' ') + emAndamento + (' ' + tr('em andamento') + '</span></span></label>');
+            ('<span class="mudo">' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + r.equipamentos.length + (' ' + tr('equipamentos ·') + ' ') + emAndamento + (' ' + tr('em andamento') + '</span></span></label>');
         }).join('') + '</div>',
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Copiar'), valor: true, classe: 'btn-primario' }],
     });
@@ -1072,7 +1068,7 @@ const acoes = {
     const o = acharObra(el.dataset.obra);
     const MOTIVOS = [tr('Chuva / tempo impraticável'), tr('Feriado ou folga'), tr('Obra paralisada pelo cliente'), tr('Falta de material'), tr('Greve ou paralisação'), tr('Outro motivo')];
     const res = await abrirDialogo({
-      titulo: (tr('Sem atividade') + ' ') + (data === hoje() ? 'hoje' : 'em ' + dataCurta(data)),
+      titulo: (tr('Sem atividade') + ' ') + (data === hoje() ? tr('hoje') : tr('em {data}', { data: dataCurta(data) })),
       corpo: '<p class="mudo pequeno">' + esc(o.nome) + (tr('. Fica registrado como o RDO do dia e vai para o escritório. Os lembretes deste dia param.') + '</p>') +
         ('<div class="escolha-rdo" role="radiogroup" aria-label="' + tr('Motivo') + '">') + MOTIVOS.map((m, i) =>
           '<label class="opcao-rdo"><input type="radio" name="motivo" value="' + esc(m) + '"' + (i === 0 ? ' checked' : '') + '><span><b>' + esc(m) + '</b></span></label>').join('') + '</div>' +
@@ -1121,7 +1117,7 @@ const acoes = {
       acoes: [{ rotulo: tr('Fechar'), valor: false }, { rotulo: tr('Enviar notificação de teste'), valor: true, classe: 'btn-primario' }],
     });
     if (res && res.valor) {
-      const ok = await notificar(tr('Falta o RDO de hoje'), exemplo.obra.nome + (' ' + tr('· prazo') + ' ') + PRAZO_HORA + tr('h. Toque para preencher.'), 'teste');
+      const ok = await notificar(tr('Falta o RDO de hoje'), exemplo.obra.nome + ' · ' + tr('prazo {hora}.', { hora: horaCheia(PRAZO_HORA) }) + ' ' + tr('Toque para preencher.'), 'teste');
       toast(ok ? tr('Notificação enviada. Veja na barra do celular.') : tr('Este navegador não permitiu notificações. No celular, instale o app e permita as notificações.'));
     }
   },
@@ -1380,7 +1376,7 @@ app.addEventListener('change', async (ev) => {
   const daCamera = el.dataset.fotos === 'camera';
   let ultimo;
   for (let i = 0; i < arquivos.length; i++) {
-    fotosProcessando = tr('Carimbando e reduzindo a foto') + (arquivos.length > 1 ? ' ' + (i + 1) + ' de ' + arquivos.length : '') + '…';
+    fotosProcessando = tr('Carimbando e reduzindo a foto') + (arquivos.length > 1 ? ' ' + tr('{n} de {total}', { n: i + 1, total: arquivos.length }) : '') + '…';
     desenhar();
     try {
       const { blob, mini, meta } = await processarFoto(arquivos[i], o, daCamera);
@@ -1424,12 +1420,12 @@ function notificacoesDaily(u) {
       lista.push({ id: 'd-semrdo-' + obra.id + data, em: new Date(hoje() + 'T08:00:00').getTime(), modulo: 'daily', titulo: obra.nome + (' ' + tr('ficou sem RDO em') + ' ') + dataCurta(data).slice(0, 5) + (resp ? ' (' + resp.nome + ')' : ''), href: '#/daily/obras/' + obra.id });
     }
     for (const r of rdos.filter((x) => pode(u, 'daily.aprovar') && recebido(x) && x.status === 'enviado')) {
-      lista.push({ id: 'd-recebido-' + r.id, em: r.enviadoEm, modulo: 'daily', titulo: (tr('RDO nº') + ' ') + r.numero + ' de ' + acharObra(r.obraId).nome + (' ' + tr('aguardando aprovação')), href: '#/daily/painel/rdo/' + r.id });
+      lista.push({ id: 'd-recebido-' + r.id, em: r.enviadoEm, modulo: 'daily', titulo: tr('RDO nº {numero} de {obra} aguardando aprovação', { numero: r.numero, obra: acharObra(r.obraId).nome }), href: '#/daily/painel/rdo/' + r.id });
     }
   } else if (pode(u, 'daily.preencher')) {
     const p = pendenciasDoCampo();
     for (const { obra, situacao } of p.hojeSemRdo) if (situacao === 'lembrete') {
-      lista.push({ id: 'd-lembrete-' + obra.id + hoje(), em: new Date(hoje() + 'T16:00:00').getTime(), modulo: 'daily', titulo: (tr('Falta o RDO de hoje de') + ' ') + obra.nome + (' ' + tr('· prazo') + ' ') + PRAZO_HORA + 'h', href: '#/daily/campo/obra/' + obra.id });
+      lista.push({ id: 'd-lembrete-' + obra.id + hoje(), em: new Date(hoje() + 'T16:00:00').getTime(), modulo: 'daily', titulo: tr('Falta o RDO de hoje de {obra} · prazo {hora}', { obra: obra.nome, hora: horaCheia(PRAZO_HORA) }), href: '#/daily/campo/obra/' + obra.id });
     }
     for (const { obra, data } of p.atrasados) {
       lista.push({ id: 'd-atraso-' + obra.id + data, em: prazoDe(data), modulo: 'daily', titulo: (tr('RDO de') + ' ') + dataCurta(data).slice(0, 5) + ' atrasado: ' + obra.nome, href: '#/daily/campo/obra/' + obra.id });
@@ -1439,7 +1435,7 @@ function notificacoesDaily(u) {
       lista.push({ id: 'd-ajuste-' + r.id + (h ? h.em : ''), em: h ? h.em : r.enviadoEm, modulo: 'daily', titulo: (tr('O escritório pediu ajustes no RDO nº') + ' ') + r.numero, href: '#/daily/campo/rdo/' + r.id });
     }
     for (const r of rdos.filter((x) => x.status === 'aprovado' && x.aprovadoEm > Date.now() - 3 * 86400000)) {
-      lista.push({ id: 'd-aprovado-' + r.id, em: r.aprovadoEm, modulo: 'daily', titulo: (tr('RDO nº') + ' ') + r.numero + ' de ' + acharObra(r.obraId).nome + ' aprovado', href: '#/daily/campo/rdo/' + r.id });
+      lista.push({ id: 'd-aprovado-' + r.id, em: r.aprovadoEm, modulo: 'daily', titulo: tr('RDO nº {numero} de {obra} aprovado', { numero: r.numero, obra: acharObra(r.obraId).nome }), href: '#/daily/campo/rdo/' + r.id });
     }
   }
   return lista;
@@ -1465,12 +1461,14 @@ async function iniciar() {
     pedidoInstalar = ev;
     definirPodeInstalar(true);
   });
-  // Dados de uma versão antiga do protótipo são recriados no formato novo.
-  if (!bancoDeDados() || bancoDeDados().versao !== VERSAO_DADOS) {
+  // Dados de uma versão antiga do protótipo são recriados no formato novo. Na tela de entrada (ninguém
+  // logado), a demonstração também é recriada quando foi gerada em outro idioma (botão PT/EN).
+  const ninguemLogado = (() => { try { return !localStorage.getItem('kbt.sessao'); } catch { return true; } })();
+  if (!bancoDeDados() || bancoDeDados().versao !== VERSAO_DADOS || (ninguemLogado && (bancoDeDados().idioma || 'pt') !== idioma())) {
     app.innerHTML = carregando();
     await apagarTudo();
     sair();
-    definirEstado(await criarDemonstracao());
+    definirEstado({ ...(await criarDemonstracao()), idioma: idioma() });
   }
   // Envio interrompido (app fechado no meio): volta para a fila.
   estado().rdos.forEach((r) => { if (r.sync === 'enviando') r.sync = 'pendente'; });

@@ -22,7 +22,7 @@ FUNCOES_PULAR = {
     'getElementById', 'getItem', 'setItem', 'removeItem', 'icone', 'addEventListener', 'removeEventListener', 'closest',
     'matches', 'getAttribute', 'setAttribute', 'removeAttribute', 'toggle', 'contains', 'indexOf', 'lastIndexOf',
     'import', 'require', 'open', 'createElement', 'route', 'fetch', 'normalize', 'padStart', 'padEnd', 'RegExp',
-    'test', 'match', 'search', 'execCommand', 'postMessage', 'go', 'hasOwnProperty', 't', 'tn', 'obra', 'item',
+    'test', 'match', 'search', 'execCommand', 'postMessage', 'go', 'hasOwnProperty', 't', 'tr', 'tn', 'campo', 'obra', 'item',
     'contato', 'projeto', 'funcionario', 'modulo', 'perfil', 'pode', 'auditarDado', 'dispatchEvent', 'Event',
 }
 
@@ -115,7 +115,7 @@ def parece_frase(s):
     t = s.strip()
     if not LETRA.search(t) or t in NAO_TRADUZIR:
         return False
-    if re.search(r'(^#|\\|^&|rgba?\(|\dpx|sans-serif|^\[|^\$\d|\.js$|\.css$|\.png$|\.pdf$|^https?:|^kbt\.|^data:|^\./|=>|\$\{)', t):
+    if re.search(r'(^#|\\[dswbDSWnp(.\[]|^&|rgba?\(|\dpx|sans-serif|^\[|^\$\d|\.js$|\.css$|\.png$|\.pdf$|^https?:|^kbt\.|^data:|^\./|=>|\$\{)', t):
         return False
     if ' ' not in t and not ACENTO.search(t):
         if re.fullmatch(r'[a-z0-9_./:-]+', t):  # id, classe, rota, chave

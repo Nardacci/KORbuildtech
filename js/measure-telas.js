@@ -89,15 +89,15 @@ function textoPrincipal(c, t) {
   return formatarArea(t.base);
 }
 function textoDerivado(d) {
-  if (d.pol3 != null) return formatarVolume(d.pol3) + ' · ' + numero(d.pol3 / 1728, 0) + (' ' + tr('cu ft'));
+  if (d.pol3 != null) return formatarVolume(d.pol3) + ' · ' + numero(d.pol3 / 1728, 0) + (' ' + 'cu ft');
   if (d.pol2 != null) return formatarArea(d.pol2);
   return formatarLinear(d.pol);
 }
 function textoProps(c) {
   const p = c.props || {};
   const vao = c.tipo === 'contagem' && p.larguraPol && p.alturaPol ? (tr('vão') + ' ') + formatarPesPolegadas(p.larguraPol) + (' ' + tr('×') + ' ') + formatarPesPolegadas(p.alturaPol) : '';
-  const vaos = (p.vaos || []).length ? 'desconta ' + p.vaos.map((id) => (condicao(id) || {}).nome).filter(Boolean).map((n) => n.split(' (')[0]).join(', ') : '';
-  return [vao, c.tipo !== 'contagem' && p.alturaPol ? 'altura ' + formatarPesPolegadas(p.alturaPol) : '', p.inclinacao ? (tr('inclinação') + ' ') + formatarInclinacao(p.inclinacao) : '', p.profundidadePol ? 'espessura ' + formatarPesPolegadas(p.profundidadePol) : '', vaos].filter(Boolean).join(' · ');
+  const vaos = (p.vaos || []).length ? tr('desconta') + ' ' + p.vaos.map((id) => (condicao(id) || {}).nome).filter(Boolean).map((n) => n.split(' (')[0]).join(', ') : '';
+  return [vao, c.tipo !== 'contagem' && p.alturaPol ? tr('altura') + ' ' + formatarPesPolegadas(p.alturaPol) : '', p.inclinacao ? (tr('inclinação') + ' ') + formatarInclinacao(p.inclinacao) : '', p.profundidadePol ? tr('espessura') + ' ' + formatarPesPolegadas(p.profundidadePol) : '', vaos].filter(Boolean).join(' · ');
 }
 
 /* ---------- Projetos: lista e cadastro ---------- */
@@ -110,7 +110,7 @@ function textoPrazo(p) {
   if (!p.prazoProposta) return '<span class="mudo">—</span>';
   const n = diasEntre(hoje(), p.prazoProposta);
   const aberto = p.situacao === 'orcamento';
-  const nota = !aberto ? '' : n < 0 ? '<span class="etiqueta etiqueta-alerta">vencido</span>' : n === 0 ? '<span class="etiqueta etiqueta-ambar">hoje</span>' : n <= 3 ? '<span class="etiqueta etiqueta-ambar">em ' + n + (n === 1 ? ' dia' : ' dias') + '</span>' : '<span class="mudo pequeno">em ' + n + ' dias</span>';
+  const nota = !aberto ? '' : n < 0 ? '<span class="etiqueta etiqueta-alerta">' + tr('vencido') + '</span>' : n === 0 ? '<span class="etiqueta etiqueta-ambar">' + tr('hoje') + '</span>' : n <= 3 ? '<span class="etiqueta etiqueta-ambar">' + tn(n, 'em {n} dia', 'em {n} dias') + '</span>' : '<span class="mudo pequeno">' + tn(n, 'em {n} dia', 'em {n} dias') + '</span>';
   return dataCurta(p.prazoProposta) + ' ' + nota;
 }
 
@@ -150,7 +150,7 @@ function telaFormProjeto(id) {
         campo('situacao', tr('Situação'), '<select id="pj-situacao" name="situacao">' + opcoes(Object.entries(SITUACOES).map(([k, x]) => [k, x.nome]), p.situacao) + '</select>') +
       '</div>' + campo('descricao', tr('Escopo'), ('<textarea id="pj-descricao" name="descricao" rows="2" placeholder="' + tr('Ex.: Residência térrea, wood framing, siding vinil') + '">') + v('descricao') + '</textarea>') + '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Para quem é a proposta') + '</h2><div class="grade-campos">') +
-        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Contratante * (recebe a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
+        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: 'Contratante * (recebe a proposta)', papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
         htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: tr('Dono da obra (se não for o contratante)'), papeis: ['cliente'], atual: p.donoId, vazio: tr('O próprio contratante') }) +
       ('</div><p class="mudo pequeno">' + tr('Trabalhando para uma construtora, ela é a contratante e o cliente final é o dono. Contratado direto pelo dono do imóvel, ele é o contratante.') + '</p></section>') +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
@@ -173,7 +173,7 @@ function telaProjeto(id) {
   const fs = folhasDo(id);
   const cs = condicoesDo(id);
   const escalaTxt = (f) => !f.escala ? ('<span class="etiqueta etiqueta-ambar">' + tr('sem escala') + '</span>')
-    : esc(f.escala.nome) + (f.escala.conferencia ? (f.escala.conferencia.ok ? ' <span class="etiqueta etiqueta-verde">conferida</span>' : (' <span class="etiqueta etiqueta-alerta">' + tr('conferência com diferença') + '</span>')) : (' <span class="etiqueta etiqueta-neutro">' + tr('não conferida') + '</span>'));
+    : esc(f.escala.nome) + (f.escala.conferencia ? (f.escala.conferencia.ok ? ' <span class="etiqueta etiqueta-verde">' + tr('conferida') + '</span>' : (' <span class="etiqueta etiqueta-alerta">' + tr('conferência com diferença') + '</span>')) : (' <span class="etiqueta etiqueta-neutro">' + tr('não conferida') + '</span>'));
   const dado = (rot, html) => html ? '<div><dt>' + rot + '</dt><dd>' + html + '</dd></div>' : '';
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: textoPartes(p) + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: tr('Projetos') },
@@ -387,7 +387,7 @@ function htmlBarra() {
   const semArea = !ativa || ativa.tipo !== 'area';
   // botão de um grupo (segmentado): ícone + rótulo; o ativo fica em destaque
   const ferr = (id, rot, ic, motivo, dica) => '<button type="button" class="mz-seg' + (visor.ferramenta === id ? ' ativo' : '') + '" data-acao="mz-ferramenta" data-ferramenta="' + id + '" aria-pressed="' + (visor.ferramenta === id) + '"' +
-    (motivo ? (' ' + tr('disabled title=') + '"') + motivo + '"' : ' title="' + dica + '"') + '>' + icone(ic, 16) + '<span>' + rot + '</span></button>';
+    (motivo ? ' disabled title="' + motivo + '"' : ' title="' + dica + '"') + '>' + icone(ic, 16) + '<span>' + rot + '</span></button>';
   const precisaEscala = semEscala ? tr('Defina a escala primeiro') : '';
   const conf = f.escala && f.escala.conferencia;
   const estado = !f.escala ? '' : !conf ? 'pendente' : conf.ok ? 'ok' : 'erro';
@@ -405,12 +405,12 @@ function htmlBarra() {
       ? '<button type="button" class="mz-chamada" data-acao="mz-escala">' + icone('measure', 16) + (tr('Definir escala') + '</button>')
       : ('<div class="mz-grupo-barra" aria-label="' + tr('Escala') + '"><button type="button" class="mz-seg" data-acao="mz-escala" title="' + tr('Trocar a escala ou calibrar') + '"><span class="mz-ponto ') + estado + '" aria-hidden="true"></span>' + esc(f.escala.nome) + '</button>' +
           ferr('conferir', tr('Conferir'), 'aprovacoes', '', tr('Medir outra cota conhecida para conferir a escala')) + '</div>' +
-        '<span class="mz-estado-escala ' + estado + '">' + (conf ? (conf.ok ? 'conferida ' : (tr('diferença') + ' ')) + numero(conf.diferenca * 100, 1) + '%' : tr('não conferida')) + '</span>') +
+        '<span class="mz-estado-escala ' + estado + '">' + (conf ? (conf.ok ? tr('conferida') + ' ' : (tr('diferença') + ' ')) + numero(conf.diferenca * 100, 1) + '%' : tr('não conferida')) + '</span>') +
     '<div class="mz-barra-fim">' +
       ('<div class="mz-grupo-barra" aria-label="' + tr('Zoom') + '"><button type="button" class="mz-seg mz-seg-quadrado" data-acao="mz-zoom" data-passo="-1" aria-label="' + tr('Diminuir o zoom') + '" title="' + tr('Diminuir o zoom') + '">−</button>') +
         '<span class="mz-zoom" id="mz-zoom">' + Math.round(visor.zoom * 100) + '%</span>' +
         ('<button type="button" class="mz-seg mz-seg-quadrado" data-acao="mz-zoom" data-passo="1" aria-label="' + tr('Aumentar o zoom') + '" title="' + tr('Aumentar o zoom') + '">+</button>') +
-        ('<button type="button" class="mz-seg" data-acao="mz-zoom" data-passo="0" title="' + tr('Caber a folha inteira') + '">' + tr('Ajustar') + '</button></div>') +
+        ('<button type="button" class="mz-seg" data-acao="mz-zoom" data-passo="0" title="' + tr('Caber a folha inteira') + '">' + tr('Ajustar à tela') + '</button></div>') +
       '<button type="button" class="mz-seg mz-seg-solto" data-acao="mz-tela-cheia" aria-pressed="' + !!document.fullscreenElement + '" aria-label="' + (document.fullscreenElement ? tr('Sair da tela cheia') : tr('Tela cheia')) + '" title="' + (document.fullscreenElement ? tr('Sair da tela cheia') : tr('Tela cheia')) + '">' +
         icone(document.fullscreenElement ? 'recolher' : 'expandir', 16) + '</button></div>';
 }
@@ -456,7 +456,7 @@ function htmlNoCondicao(c, f, caret) {
     '<div class="mz-cond-cabeca"><button type="button" class="mz-abrir" data-acao="mz-abrir" data-id="' + c.id + '" aria-label="' + (aberta ? (tr('Recolher') + ' ') : (tr('Abrir') + ' ')) + esc(c.nome) + '">' + caret(aberta) + '</button>' +
       '<input type="checkbox" class="mz-visivel" data-acao="mz-visivel" data-id="' + c.id + '"' + (visivel ? ' checked' : '') + (' aria-label="' + tr('Mostrar') + ' ') + esc(c.nome) + (' ' + tr('no desenho') + '" title="' + tr('Mostrar no desenho') + '">') +
       '<button type="button" class="mz-cond-topo" data-acao="mz-condicao" data-id="' + c.id + '" aria-pressed="' + ativa + '"><span class="mz-cor" style="background:' + c.cor + '"></span>' +
-        '<span class="mz-cond-nome"><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">oculta</span>') +
+        '<span class="mz-cond-nome"><b>' + esc(c.nome) + '</b>' + (visivel ? '' : ' <span class="etiqueta etiqueta-neutro">' + tr('oculta') + '</span>') +
         (textoProps(c) ? '<span class="mudo pequeno bloco">' + esc(textoProps(c)) + '</span>' : '') + '</span></button>' +
       '<span class="mz-total">' + (tf.medicoes ? textoCurto(c, tf) : '<span class="mudo">—</span>') + '</span></div>' +
     (aberta ? '<div class="mz-filhos">' +
@@ -493,14 +493,14 @@ function htmlTypicais(f) {
 function dica() {
   const f = folha(visor.folhaId);
   const c = condicao(visor.condicaoId);
-  if (visor.ferramenta === 'calibrar') return visor.cal.length ? tr('Agora clique na outra ponta da cota.') : 'Calibrar: clique nas duas pontas de uma cota conhecida (ex.: a de 40\'-0"). Shift deixa a linha reta.';
+  if (visor.ferramenta === 'calibrar') return visor.cal.length ? tr('Agora clique na outra ponta da cota.') : tr('Calibrar: clique nas duas pontas de uma cota conhecida (ex.: a de 40\'-0"). Shift deixa a linha reta.');
   if (visor.ferramenta === 'conferir') return visor.cal.length ? tr('Agora clique na outra ponta da cota.') : tr('Conferir: meça OUTRA cota conhecida, de preferência na outra direção. O sistema mostra a diferença.');
   if (!f.escala) return tr('Primeiro, defina a escala da folha: escolha da lista (a escala está no carimbo) ou calibre por uma cota.');
   if (visor.ferramenta === 'typical') return visor.pontos.length ? tr('Agora clique no canto oposto da região que se repete.') : tr('Typical: clique num canto da unidade que se repete (ex.: o apartamento tipo) e depois no canto oposto. Tudo o que for medido dentro vale × as repetições.');
   if (visor.ferramenta === 'vao') return visor.pontos.length ? tr('Agora clique no canto oposto da janela ou porta.') : tr('Vão: clique num canto da janela ou porta e depois no canto oposto. Ela é contada e a área sai do siding (ou de outra área) que estiver por trás.');
   if (visor.ferramenta === 'mover') return tr('Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.');
   if (!c) return tr('Inclua um assembly no painel ao lado (parede, piso, janela…) para começar a medir.');
-  if (!condicaoVisivel(c)) return tr('As marcações de "') + c.nome + '" estão ocultas: marque a caixa ao lado do nome para vê-las.';
+  if (!condicaoVisivel(c)) return tr('As marcações de "{nome}" estão ocultas: marque a caixa ao lado do nome para vê-las.', { nome: c.nome });
   if (c.tipo === 'contagem') return tr('Contagem: clique em cada item de "') + c.nome + '".';
   if (c.tipo === 'linear') return tr('Linear: clique nos pontos. Duplo clique ou Enter conclui, Esc cancela, Backspace desfaz o último ponto. Shift: linha reta. Perto de um ponto já medido, o clique gruda nele (Alt desliga). Para mais precisão, aumente o zoom.');
   if (visor.ferramenta === 'recortar') return tr('Recortar (borracha): clique nos cantos do que sai de "') + c.nome + '" (escada, chaminé, recorte). Duplo clique, Enter ou clique no primeiro ponto fecha.';
@@ -694,8 +694,8 @@ async function cliqueCalibracao(p) {
   const dPts = distancia(visor.cal[0], visor.cal[1]);
   const res = await abrirDialogo({
     titulo: conferir ? tr('Conferir a escala') : tr('Calibrar a escala'),
-    corpo: ('<label class="rotulo-pequeno" for="mz-real">' + tr('Qual a medida real dessa cota (está escrita na planta)?') + '</label><input type="text" id="mz-real" name="real" placeholder="Ex.: 40\'-0&quot;" autocomplete="off">') +
-      '<p class="mudo pequeno">Aceita 40\'-0", 40\', 12\'-6 1/2", 150" ou 12-6-1/2.</p>',
+    corpo: ('<label class="rotulo-pequeno" for="mz-real">' + tr('Qual a medida real dessa cota (está escrita na planta)?') + ('</label><input type="text" id="mz-real" name="real" placeholder="' + tr('Ex.: 40\'-0&quot;') + '" autocomplete="off">')) +
+      ('<p class="mudo pequeno">' + tr('Aceita 40\'-0", 40\', 12\'-6 1/2", 150" ou 12-6-1/2.') + '</p>'),
     acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: conferir ? tr('Conferir') : tr('Calibrar'), valor: true, classe: 'btn-primario' }],
   });
   visor.cal = [];
@@ -704,8 +704,8 @@ async function cliqueCalibracao(p) {
   if (r.erro || !(r.pol > 0)) { toast(r.erro || tr('Informe uma medida maior que zero.')); atualizarInterface(); return; }
   if (conferir) {
     const k = registrarConferencia(f.id, r.pol, dPts * f.escala.polPorPonto);
-    toast(k.ok ? (tr('Escala conferida ✓ medido') + ' ') + formatarPesPolegadas(k.medidoPol) + ' para ' + formatarPesPolegadas(r.pol) + ' (' + numero(k.diferenca * 100, 1) + '%).'
-      : (tr('Atenção: a medida deu') + ' ') + formatarPesPolegadas(k.medidoPol) + ' para ' + formatarPesPolegadas(r.pol) + ' (' + numero(k.diferenca * 100, 1) + tr('%). Confira a escala ou recalibre.'));
+    toast(k.ok ? (tr('Escala conferida ✓ medido') + ' ') + tr('{medido} para {real}', { medido: formatarPesPolegadas(k.medidoPol), real: formatarPesPolegadas(r.pol) }) + ' (' + numero(k.diferenca * 100, 1) + '%).'
+      : (tr('Atenção: a medida deu') + ' ') + tr('{medido} para {real}', { medido: formatarPesPolegadas(k.medidoPol), real: formatarPesPolegadas(r.pol) }) + ' (' + numero(k.diferenca * 100, 1) + tr('%). Confira a escala ou recalibre.'));
     visor.ferramenta = 'medir';
   } else {
     definirEscala(f.id, { polPorPonto: r.pol / dPts, nome: (tr('calibrada em') + ' ') + formatarPesPolegadas(r.pol), origem: 'calibrada' });
@@ -864,7 +864,7 @@ async function dialogoIncluir() {
     incluirNaFolha(id, f.id);
     visor.condicaoId = id; visor.pontos = [];
     if (f.escala) visor.ferramenta = 'medir';
-    toast('"' + condicao(id).nome + '" incluída nesta folha: as medições daqui somam no mesmo total.');
+    toast(tr('"{nome}" incluída nesta folha: as medições daqui somam no mesmo total.', { nome: condicao(id).nome }));
     atualizarInterface();
     return;
   }
@@ -892,13 +892,13 @@ async function dialogoCondicao(c, comAssembly) {
       htmlEscolhaCor(c ? c.cor : PALETA.find((x) => !condicoesDo(projetoId).some((o) => o.cor === x)) || PALETA[0]) +
       ('<label class="rotulo-pequeno" for="mz-tipo">' + tr('Tipo') + '</label><select id="mz-tipo" name="tipo"') + (c || comAssembly ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([id, t]) => '<option value="' + id + '"' + (id === tipoInicial ? ' selected' : '') + '>' + t.nome + ' (' + t.unidade + ')</option>').join('') + '</select>' +
       ('<p class="mudo pequeno">' + tr('Propriedades (geram as medidas derivadas e as variáveis das fórmulas):') + '</p>') +
-      grupo('linear', '<label class="rotulo-pequeno" for="mz-altura">Altura da parede. Ex.: 9\'-0"</label><input type="text" id="mz-altura" name="altura" value="' + (c && c.tipo === 'linear' ? ft(p.alturaPol) : '') + '">') +
-      grupo('contagem', '<div class="grade-campos"><div class="campo"><label class="rotulo-pequeno" for="mz-vlarg">Largura do vão. Ex.: 3\'-0"</label><input type="text" id="mz-vlarg" name="vaoLargura" value="' + ft(p.larguraPol) + '"></div>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="mz-valt">Altura do vão. Ex.: 6\'-8"</label><input type="text" id="mz-valt" name="vaoAltura" value="' + (c && c.tipo === 'contagem' ? ft(p.alturaPol) : '') + '"></div></div>' +
+      grupo('linear', ('<label class="rotulo-pequeno" for="mz-altura">' + tr('Altura da parede. Ex.: 9\'-0"') + '</label><input type="text" id="mz-altura" name="altura" value="') + (c && c.tipo === 'linear' ? ft(p.alturaPol) : '') + '">') +
+      grupo('contagem', ('<div class="grade-campos"><div class="campo"><label class="rotulo-pequeno" for="mz-vlarg">' + tr('Largura do vão. Ex.: 3\'-0"') + '</label><input type="text" id="mz-vlarg" name="vaoLargura" value="') + ft(p.larguraPol) + '"></div>' +
+        ('<div class="campo"><label class="rotulo-pequeno" for="mz-valt">' + tr('Altura do vão. Ex.: 6\'-8"') + '</label><input type="text" id="mz-valt" name="vaoAltura" value="') + (c && c.tipo === 'contagem' ? ft(p.alturaPol) : '') + '"></div></div>' +
         ('<p class="mudo pequeno">' + tr('Janela ou porta: com largura e altura, a contagem gera a área e o perímetro dos vãos (guarnição, flashing) e pode ser descontada da parede e do siding.') + '</p>')) +
-      grupo(tr('linear area'), ('<label class="rotulo-pequeno" for="mz-inclinacao">' + tr('Inclinação (telhado). Ex.: 6/12') + '</label><input type="text" id="mz-inclinacao" name="inclinacao" value="') + (p.inclinacao ? formatarInclinacao(p.inclinacao) : '') + '">') +
+      grupo('linear area', ('<label class="rotulo-pequeno" for="mz-inclinacao">' + tr('Inclinação (telhado). Ex.: 6/12') + '</label><input type="text" id="mz-inclinacao" name="inclinacao" value="') + (p.inclinacao ? formatarInclinacao(p.inclinacao) : '') + '">') +
       grupo('area', ('<label class="rotulo-pequeno" for="mz-espessura">' + tr('Espessura (área → volume). Ex.: 4"') + '</label><input type="text" id="mz-espessura" name="espessura" value="') + ft(p.profundidadePol) + '">') +
-      grupo(tr('linear area'), ('<fieldset class="mz-vaos"><legend class="rotulo-pequeno">' + tr('Descontar os vãos de') + '</legend>') +
+      grupo('linear area', ('<fieldset class="mz-vaos"><legend class="rotulo-pequeno">' + tr('Descontar os vãos de') + '</legend>') +
         (vaosPossiveis.length ? vaosPossiveis.map((x) => '<label class="check pequeno"><input type="checkbox" name="vao-' + x.id + '" value="1"' + ((p.vaos || []).includes(x.id) ? ' checked' : '') + '> ' + esc(x.nome) +
           (x.props && x.props.larguraPol && x.props.alturaPol ? '' : (' <span class="mudo">' + tr('(sem tamanho)') + '</span>')) + ondeEsta(x) + '</label>').join('') : ('<p class="mudo pequeno">' + tr('Crie as contagens de janelas e portas com largura e altura.') + '</p>')) + '</fieldset>'),
     acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: c ? tr('Salvar') : comAssembly ? tr('Incluir no desenho') : tr('Criar condição'), valor: true, classe: 'btn-primario' }],
@@ -1017,7 +1017,7 @@ async function dialogoItem(it) {
   const v = it || { categoria: 'material' };
   const res = await abrirDialogo({
     titulo: it ? tr('Editar item') : tr('Novo item'),
-    corpo: ('<label class="rotulo-pequeno" for="it-nome">' + tr('Nome') + '</label><input type="text" id="it-nome" name="nome" value="') + esc(v.nome || '') + '" placeholder="Ex.: Drywall 5/8&quot; tipo X 4\'×8\'">' +
+    corpo: ('<label class="rotulo-pequeno" for="it-nome">' + tr('Nome') + '</label><input type="text" id="it-nome" name="nome" value="') + esc(v.nome || '') + ('" placeholder="' + tr('Ex.: Drywall 5/8&quot; tipo X 4\'×8\'') + '">') +
       ('<label class="rotulo-pequeno" for="it-codigo">' + tr('Código') + '</label><input type="text" id="it-codigo" name="codigo" value="') + esc(v.codigo || '') + '">' +
       ('<label class="rotulo-pequeno" for="it-cat">' + tr('Categoria') + '</label><select id="it-cat" name="categoria">') + Object.entries(CATEGORIAS).map(([c, n]) => '<option value="' + c + '"' + (c === v.categoria ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
       ('<label class="rotulo-pequeno" for="it-un">' + tr('Unidade de compra') + '</label><input type="text" id="it-un" name="unidade" value="') + esc(v.unidade || '') + ('" placeholder="' + tr('chapa, caixa, rolo, peça, cu yd, hora…') + '">') +
@@ -1111,7 +1111,7 @@ export const acoesMeasure = {
     const grupos = [tr('Arquitetônica'), tr('Engenharia')];
     const res = await abrirDialogo({
       titulo: tr('Escala da folha'),
-      corpo: '<p class="mudo pequeno">A escala está no carimbo ou embaixo do desenho (ex.: SCALE: 1/4" = 1\'-0"). Se a planta foi impressa ou digitalizada fora de escala, calibre por uma cota.</p>' +
+      corpo: ('<p class="mudo pequeno">' + tr('A escala está no carimbo ou embaixo do desenho (ex.: SCALE: 1/4" = 1\'-0"). Se a planta foi impressa ou digitalizada fora de escala, calibre por uma cota.') + '</p>') +
         ('<label class="rotulo-pequeno" for="mz-esc">' + tr('Escala') + '</label><select id="mz-esc" name="razao">') + grupos.map((g) => '<optgroup label="' + g + '">' + ESCALAS.filter((e) => e.grupo === g).map((e) => '<option value="' + e.razao + '"' + (e.razao === atual ? ' selected' : '') + '>' + esc(e.nome) + '</option>').join('') + '</optgroup>').join('') + '</select>',
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Calibrar por uma cota'), valor: 'calibrar' }, { rotulo: tr('Usar esta escala'), valor: 'lista', classe: 'btn-primario' }],
     });
@@ -1142,7 +1142,7 @@ export const acoesMeasure = {
   async 'mz-tirar-da-folha'(el) {
     const c = condicao(el.dataset.id);
     const n = c.medicoes.filter((m) => m.folhaId === visor.folhaId).length;
-    if (!(await confirmar(tr('Tirar "') + c.nome + '" desta folha?', (n ? (tr('As') + ' ') + n + (' ' + tr('medições dela nesta folha serão apagadas.') + ' ') : '') + tr('Nas outras folhas ela continua.'), tr('Tirar')))) return;
+    if (!(await confirmar(tr('Tirar "{nome}" desta folha?', { nome: c.nome }), (n ? (tr('As') + ' ') + n + (' ' + tr('medições dela nesta folha serão apagadas.') + ' ') : '') + tr('Nas outras folhas ela continua.'), tr('Tirar')))) return;
     tirarDaFolha(c.id, visor.folhaId);
     visor.condicaoId = (condicoesDaFolha(visor.folhaId)[0] || {}).id || null;
     atualizarInterface();

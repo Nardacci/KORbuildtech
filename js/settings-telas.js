@@ -1,7 +1,7 @@
 /* KORbuild Settings — telas: funcionários, encargos, regras de jornada e auditoria.
  * Só o escritório (administrador) entra. */
 
-import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast, abrirDialogo } from './util.js';
+import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast, abrirDialogo, decimal, numTexto } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado } from './armazem.js';
 import { casca, usuarioAtual, pode, MODULOS } from './plataforma.js';
@@ -36,8 +36,8 @@ function moldura(o) {
   return casca({ modulo: 'settings', nav: nav(), largura: o.largo === false ? 'estreita' : 'larga', topoExtra: app.topoExtra(), ...o });
 }
 
-const pct = (v, casas) => (v * 100).toFixed(casas == null ? 2 : casas).replace('.', ',').replace(/,00$/, '') + '%';
-const num = (v) => String(v).replace('.', ',');
+const pct = (v, casas) => decimal(v * 100, casas == null ? 2 : casas).replace(/[.,]00$/, '') + '%';
+const num = (v) => numTexto(v);
 const proximaSegunda = () => somarDias(segundaDe(hoje()), 7);
 
 /* Rotas #/settings/... */
@@ -71,8 +71,8 @@ export function telaSettings(q) {
 function situacaoCert(c) {
   if (!c.validade) return ('<span class="etiqueta etiqueta-neutro">' + tr('sem validade') + '</span>');
   const d = diasEntre(hoje(), c.validade);
-  if (d < 0) return ('<span class="etiqueta etiqueta-alerta">' + tr('vencida há') + ' ') + -d + ' dias</span>';
-  if (d <= 30) return ('<span class="etiqueta etiqueta-ambar">' + tr('vence em') + ' ') + d + ' dias</span>';
+  if (d < 0) return '<span class="etiqueta etiqueta-alerta">' + tn(-d, 'vencida há {n} dia', 'vencida há {n} dias') + '</span>';
+  if (d <= 30) return '<span class="etiqueta etiqueta-ambar">' + tn(d, 'vence em {n} dia', 'vence em {n} dias') + '</span>';
   return ('<span class="etiqueta etiqueta-verde">' + tr('válida até') + ' ') + dataCurta(c.validade) + '</span>';
 }
 
@@ -113,8 +113,8 @@ function telaFuncionario(id) {
     const ant = hist[i + 1];
     const variacao = ant ? (x.valor - ant.valor) / ant.valor : null;
     const vigente = x.desde <= hoje() && (!ate || ate >= hoje());
-    return '<tr' + (vigente ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + ' → ' + (ate ? dataCurta(ate) : (x.desde > hoje() ? '…' : 'hoje')) +
-      (vigente ? ' <span class="etiqueta etiqueta-verde">vigente</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">futuro</span>' : '') + '</td>' +
+    return '<tr' + (vigente ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + ' → ' + (ate ? dataCurta(ate) : (x.desde > hoje() ? '…' : tr('hoje'))) +
+      (vigente ? ' <span class="etiqueta etiqueta-verde">' + tr('vigente') + '</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">' + tr('futuro') + '</span>' : '') + '</td>' +
       '<td class="num"><b>' + dinheiro(x.valor) + '</b></td>' +
       '<td class="num">' + (variacao == null ? '—' : (variacao >= 0 ? '+' : '') + pct(variacao, 1)) + '</td>' +
       '<td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>';
@@ -132,11 +132,11 @@ function telaFuncionario(id) {
         ('<div class="kpi"><span>' + tr('Custo carregado')) + (autonomo ? (' ' + tr('(sem encargos: 1099)')) : ' (+' + pct(encargosEm(hoje())) + (' ' + tr('encargos)'))) + '</span><b>' + dinheiro(custoCarregado(f)) + '</b></div>' +
       '</div>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Cadastro') + '</h2><dl class="dados-func">') +
-        dado(tr('Código'), esc(f.codigo)) + dado(tr('Situação'), SITUACOES_FUNC[f.situacao] + (f.desligamento ? ' em ' + dataCurta(f.desligamento) : '')) +
+        dado(tr('Código'), esc(f.codigo)) + dado(tr('Situação'), SITUACOES_FUNC[f.situacao] + (f.desligamento ? ' ' + tr('em') + ' ' + dataCurta(f.desligamento) : '')) +
         dado(tr('Função'), esc(f.funcao)) + dado(tr('Equipe'), esc((equipe(f.equipeId) || {}).nome || '')) +
         dado(tr('Classificação'), CLASSIFICACOES[f.classificacao]) + dado('FLSA', FLSA[f.flsa]) +
         dado(tr('Admissão'), f.admissao ? dataCurta(f.admissao) : '') + dado(tr('Telefone'), esc(f.telefone)) +
-        dado(tr('Contato de emergência'), esc(f.emergencia)) + dado(tr('Aviso de localização aceito em'), f.avisoGps ? dataCurta(f.avisoGps) : '<span class="etiqueta etiqueta-ambar">pendente</span>') +
+        dado(tr('Contato de emergência'), esc(f.emergencia)) + dado(tr('Aviso de localização aceito em'), f.avisoGps ? dataCurta(f.avisoGps) : '<span class="etiqueta etiqueta-ambar">' + tr('pendente') + '</span>') +
       ('</dl><p class="mudo pequeno">' + tr('SSN e documentos de imigração não ficam no KORbuild: ficam no sistema de folha. Aqui fica só o código para o cruzamento.') + '</p></section>') +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Certificações') + '</h2>') +
         ((f.certificacoes || []).length ? '<ul class="lista-cert">' + f.certificacoes.map((c) => '<li><b>' + esc(c.nome) + '</b>' + situacaoCert(c) + '</li>').join('') + '</ul>' : ('<p class="vazio">' + tr('Nenhuma certificação cadastrada.') + '</p>')) +
@@ -212,7 +212,7 @@ function telaEncargos() {
         ('<tr class="linha-total"><td>' + tr('Total sobre o salário') + '</td><td class="num"><b>') + pct(total) + '</b></td></tr></tbody></table>' +
         ('<p class="mudo pequeno">' + tr('Exemplo: quem ganha') + ' ') + dinheiro(exemplo) + (tr('/h custa') + ' ') + dinheiro(exemplo * (1 + total)) + (tr('/h para a empresa. Autônomos (1099) não têm encargos.') + '</p></section>') +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Histórico de versões') + '</h2><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('A partir de') + '</th><th class="num">' + tr('Total') + '</th><th>' + tr('Motivo') + '</th><th>' + tr('Registrado por') + '</th></tr></thead><tbody>') +
-        historicoEncargos().map((x) => '<tr' + (x === v ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + (x === v ? ' <span class="etiqueta etiqueta-verde">vigente</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">futuro</span>' : '') + '</td><td class="num">' + pct(x.itens.reduce((t, i) => t + i.pct, 0) / 100) + '</td><td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>').join('') +
+        historicoEncargos().map((x) => '<tr' + (x === v ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + (x === v ? ' <span class="etiqueta etiqueta-verde">' + tr('vigente') + '</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">' + tr('futuro') + '</span>' : '') + '</td><td class="num">' + pct(x.itens.reduce((t, i) => t + i.pct, 0) / 100) + '</td><td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>').join('') +
       '</tbody></table></div></section>' +
       ('<p class="dica">' + tr('Os % dependem do estado e da seguradora: confira com o contador. Simplificação do protótipo: FUTA e SUTA incidem sobre todo o salário (na prática, só até o teto anual de cada um).') + '</p>'),
   });
@@ -228,7 +228,7 @@ function telaFormEncargos() {
       linhas.map((i, n) => '<div class="linha-encargo"><input type="text" name="nome-' + n + ('" aria-label="' + tr('Encargo') + ' ') + (n + 1) + ('" placeholder="' + tr('Novo encargo') + '" value="') + esc(i.nome) + '">' +
         '<span class="campo-pct"><input type="number" name="pct-' + n + ('" aria-label="' + tr('Percentual do encargo') + ' ') + (n + 1) + '" min="0" max="100" step="0.01" value="' + esc(String(i.pct)) + '" inputmode="decimal">%</span></div>').join('') +
       ('<div class="grade-campos"><div class="campo"><label class="rotulo-pequeno" for="enc-desde">' + tr('Vale a partir de') + '</label><input type="date" id="enc-desde" name="desde" value="') + proximaSegunda() + ('"><span class="mudo pequeno">' + tr('A partir da semana atual; semanas fechadas não mudam') + '</span></div>') +
-      ('<div class="campo"><label class="rotulo-pequeno" for="enc-motivo">' + tr('Motivo') + '</label><input type="text" id="enc-motivo" name="motivo" placeholder="Ex.: nova taxa do workers\' comp na renovação da apólice"></div></div>') +
+      ('<div class="campo"><label class="rotulo-pequeno" for="enc-motivo">' + tr('Motivo') + ('</label><input type="text" id="enc-motivo" name="motivo" placeholder="' + tr('Ex.: nova taxa do workers\' comp na renovação da apólice') + '"></div></div>')) +
       ('</section><div class="rodape-form"><a class="btn btn-contorno" href="#/settings/encargos">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="settings-salvar-encargos">' + tr('Salvar nova versão') + '</button></div></form>'),
   });
 }
@@ -246,13 +246,13 @@ function telaRegras() {
       (futura ? '<p class="aviso-info">' + icone('relogio', 16) + (tr('Há uma regra programada a partir da semana de') + ' ') + dataCurta(futura.desde) + ': ' + esc(futura.nome) + '.</p>' : '') +
       '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(r.nome) + ('</h2><span class="etiqueta etiqueta-verde">' + tr('vigente desde') + ' ') + dataCurta(r.desde) + '</span></div>' +
         '<ul class="lista-regras">' +
-          item('Hora extra semanal', 'Acima de ' + num(r.semanal.limite) + (' ' + tr('h na semana (segunda a domingo):') + ' ') + num(r.semanal.fator) + tr('×')) +
-          item('Hora extra diária', r.diaria.ativo ? (tr('Acima de') + ' ') + num(r.diaria.limite) + (' ' + tr('h no dia:') + ' ') + num(r.diaria.fator) + (tr('×; acima de') + ' ') + num(r.diaria.dobra) + ' h: ' + num(r.diaria.fatorDobra) + tr('×') : tr('Não se aplica')) +
-          item('Intervalo', num(r.intervalo.minimo) + (' ' + tr('min depois de') + ' ') + num(r.intervalo.apos) + (' ' + tr('h de trabalho (gera alerta se faltar)'))) +
-          item('Arredondamento', 'Nenhum: paga-se o minuto (princípio do produto)') +
+          item(tr('Hora extra semanal'), tr('Acima de') + ' ' + num(r.semanal.limite) + (' ' + tr('h na semana (segunda a domingo):') + ' ') + num(r.semanal.fator) + tr('×')) +
+          item(tr('Hora extra diária'), r.diaria.ativo ? (tr('Acima de') + ' ') + num(r.diaria.limite) + (' ' + tr('h no dia:') + ' ') + num(r.diaria.fator) + (tr('×; acima de') + ' ') + num(r.diaria.dobra) + ' h: ' + num(r.diaria.fatorDobra) + tr('×') : tr('Não se aplica')) +
+          item(tr('Intervalo'), num(r.intervalo.minimo) + (' ' + tr('min depois de') + ' ') + num(r.intervalo.apos) + (' ' + tr('h de trabalho (gera alerta se faltar)'))) +
+          item(tr('Arredondamento'), tr('Nenhum: paga-se o minuto (princípio do produto)')) +
         '</ul>' + (r.nota ? '<p class="mudo pequeno">' + esc(r.nota) + '</p>' : '') + '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Histórico de versões') + '</h2><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Semana de') + '</th><th>' + tr('Regra') + '</th><th>' + tr('Motivo') + '</th><th>' + tr('Registrado por') + '</th></tr></thead><tbody>') +
-        historicoRegras().map((x) => '<tr' + (x === r ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + (x === r ? ' <span class="etiqueta etiqueta-verde">vigente</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">futura</span>' : '') + '</td><td><b>' + esc(x.nome) + '</b><span class="mudo pequeno bloco">' + esc(resumoRegra(x)) + '</span></td><td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>').join('') +
+        historicoRegras().map((x) => '<tr' + (x === r ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + (x === r ? ' <span class="etiqueta etiqueta-verde">' + tr('vigente') + '</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">' + tr('futura') + '</span>' : '') + '</td><td><b>' + esc(x.nome) + '</b><span class="mudo pequeno bloco">' + esc(resumoRegra(x)) + '</span></td><td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(x.por) + ' · ' + dataHora(x.em) + '</td></tr>').join('') +
       '</tbody></table></div></section>' +
       ('<p class="dica">' + tr('A regra não fica presa a um estado: os modelos só preenchem o formulário, e a empresa ajusta (acordo sindical, política interna). Próximo passo: regra por obra, para quem trabalha em mais de um estado.') + '</p>'),
   });
@@ -342,7 +342,7 @@ function telaPerfis() {
   const ps = perfis();
   const usando = (p) => estado().usuarios.filter((u) => u.perfilId === p.id && u.ativo).length;
   const cab = ('<tr><th>' + tr('Permissão') + '</th>') + ps.map((p) => '<th class="col-perfil"><b>' + esc(p.nome) + '</b><span class="mudo pequeno bloco">' + usando(p) + (usando(p) === 1 ? (' ' + tr('usuário')) : (' ' + tr('usuários'))) + (p.sistema ? (' ' + tr('· fixo')) : '') + '</span>' +
-    (!p.sistema && !usando(p) ? '<button type="button" class="link-botao pequeno" data-acao="settings-excluir-perfil" data-id="' + p.id + '">excluir</button>' : '') + '</th>').join('') + '</tr>';
+    (!p.sistema && !usando(p) ? '<button type="button" class="link-botao pequeno" data-acao="settings-excluir-perfil" data-id="' + p.id + '">' + tr('excluir') + '</button>' : '') + '</th>').join('') + '</tr>';
   const linhas = PERMISSOES.map((g) => '<tr class="grupo"><th colspan="' + (ps.length + 1) + '">' + esc(g.grupo) + '</th></tr>' +
     g.itens.map((i) => '<tr><th class="nome-perm"><b>' + esc(i.nome) + '</b><span class="mudo pequeno bloco">' + esc(i.descricao) + (i.requer ? (' ' + tr('· inclui "')) + esc(i.requer.map((r) => PERMISSOES.flatMap((x) => x.itens).find((y) => y.id === r).nome).join(', ')) + '"' : '') + '</span></th>' +
       ps.map((p) => '<td class="celula-perm"><input type="checkbox" name="' + p.id + '|' + i.id + '" aria-label="' + esc(p.nome + ': ' + i.nome) + '"' + (p.permissoes.includes(i.id) ? ' checked' : '') + (p.sistema ? ' disabled' : '') + '></td>').join('') + '</tr>').join('')).join('') +

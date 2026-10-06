@@ -8,7 +8,7 @@ const arquivos = process.argv.slice(2).length ? process.argv.slice(2)
 const LIT = "'((?:\\\\.|[^'\\\\])*)'";
 const reT = new RegExp('\\btr\\(\\s*' + LIT, 'g');
 const reTn = new RegExp('\\btn\\([^,]+,\\s*' + LIT + '\\s*,\\s*' + LIT, 'g');
-const des = (s) => s.replace(/\\(.)/g, '$1');
+const des = (s) => s.replace(/\\(.)/g, (m, c) => (c === 'n' ? '\n' : c));
 const faltando = new Map();
 for (const arq of arquivos) {
   const src = readFileSync(arq, 'utf8');

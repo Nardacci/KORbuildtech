@@ -51,7 +51,7 @@ export function dinheiro(valor) {
   const [int, dec] = Math.abs(valor).toFixed(2).split('.');
   const sinal = valor < 0 ? '-' : '';
   if (emIngles()) return sinal + '$' + int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + dec;
-  return sinal + (tr('US$') + ' ') + int.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + dec;
+  return sinal + 'US$ ' + int.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ',' + dec;
 }
 
 function crew() { return estado().crew; }
@@ -159,7 +159,7 @@ export function alterarValorHora(funcId, valor, desde, motivo, por) {
   f.valores = f.valores || [];
   const antes = valorHoraEm(f, desde);
   f.valores.push({ desde, valor: Math.round(valor * 100) / 100, motivo: motivo.trim(), por, em: Date.now() });
-  const us = (v) => (tr('US$') + ' ') + v.toFixed(2).replace('.', ',') + '/h';
+  const us = (v) => dinheiro(v) + '/h';
   auditar(tr('Funcionários'), (tr('Valor hora de') + ' ') + f.nome + (' ' + tr('a partir de') + ' ') + desde.split('-').reverse().join('/'), us(antes), us(Math.round(valor * 100) / 100), motivo.trim(), por);
   salvar();
   return { ok: true };

@@ -2,7 +2,7 @@
 
 import { contratanteDe, donoDe } from './contatos.js';
 import { tr, tn } from './i18n.js';
-import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre } from './util.js';
+import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre, temperatura } from './util.js';
 import { estado } from './armazem.js';
 import { enviadoComAtraso, prazoDe } from './prazos.js';
 
@@ -34,7 +34,7 @@ function turnoClima(nome, t) {
   if (!t || !t.tempo) return '<div class="rel-clima-turno"><b>' + nome + ('</b><span class="mudo">' + tr('Não informado') + '</span></div>');
   return '<div class="rel-clima-turno tempo-' + t.tempo + '">' + iconeTempo(t.tempo) +
     '<div><b>' + nome + '</b><span>' + ({ sol: tr('Sol'), nublado: tr('Nublado'), chuva: tr('Chuva') })[t.tempo] +
-    (t.temperatura != null ? ' · ' + t.temperatura + (' ' + tr('°C')) : '') + '</span>' +
+    (t.temperatura != null ? ' · ' + temperatura(t.temperatura) : '') + '</span>' +
     '<span class="' + (t.praticavel ? 'ok' : 'nao') + '">' + (t.praticavel ? tr('Praticável') : tr('Impraticável')) + '</span></div></div>';
 }
 
@@ -49,14 +49,14 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
   return '<article class="relatorio">' +
     '<header class="rel-topo">' +
       '<div class="rel-marca">' + (empresa.logo ? '<img class="rel-logo-img" src="' + empresa.logo + '" alt="' + esc(empresa.nome) + '">' : '<span class="rel-logo">' + esc(empresa.sigla) + '</span>') + '<div><b>' + esc(empresa.nome) + '</b><small>EIN ' + esc(empresa.ein) + '</small></div></div>' +
-      ('<div class="rel-titulo"><h1>' + tr('Relatório Diário de Obra') + '</h1><p>' + tr('RDO nº') + ' ') + r.numero + ' · ' + diaDaSemana(r.data) + ', ' + dataCurta(r.data) + '</p></div>' +
+      ('<div class="rel-titulo"><h1>' + tr('Relatório Diário de Obra') + '</h1><p>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + diaDaSemana(r.data) + ', ' + dataCurta(r.data) + '</p></div>' +
       '<div class="rel-status">' + seloStatus(r) + '</div>' +
     '</header>' +
 
     '<section class="rel-obra">' +
       campo(tr('Obra'), obra.nome) + campo(tr('Contratante'), (contratanteDe(obra) || {}).nome || '—') + (obra.donoId && obra.donoId !== obra.contratanteId ? campo(tr('Dono da obra'), (donoDe(obra) || {}).nome || '') : '') + campo(tr('Endereço'), obra.endereco + ' · ' + obra.cidade) +
       campo(tr('Preenchido por'), r.autor + (' ' + tr('· Mestre de obras'))) + campo(tr('Etapa atual'), obra.etapa) +
-      campo(tr('Prazo'), decorridos + (' ' + tr('dias decorridos ·') + ' ') + Math.max(0, restantes) + ' restantes') +
+      campo(tr('Prazo'), decorridos + (' ' + tr('dias decorridos ·') + ' ') + tn(Math.max(0, restantes), '{n} restante', '{n} restantes')) +
     '</section>' +
     (enviadoComAtraso(r)
       ? ('<p class="rel-atraso">' + tr('Enviado com atraso:') + ' ') + dataHora(r.primeiroEnvioEm || r.enviadoEm) + (' ' + tr('· prazo era') + ' ') + dataHora(prazoDe(r.data)) + '</p>'
@@ -102,7 +102,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
 
     (r.observacoes ? ('<section class="rel-bloco"><h2>' + tr('Observações') + '</h2><p class="rel-texto">') + esc(r.observacoes) + '</p></section>' : '') +
 
-    ('<section class="rel-bloco rel-fotos-bloco"><h2>' + tr('Registro fotográfico') + ' <small>') + r.fotos.length + (r.fotos.length === 1 ? ' foto' : ' fotos') + '</small></h2>' +
+    ('<section class="rel-bloco rel-fotos-bloco"><h2>' + tr('Registro fotográfico') + ' <small>') + tn(r.fotos.length, '{n} foto', '{n} fotos') + '</small></h2>' +
       (r.fotos.length ? '<div class="rel-fotos">' + r.fotos.map((f, i) =>
         '<figure><img data-foto="' + esc(f.id) + ('" alt="' + tr('Foto') + ' ') + (i + 1) + ': ' + esc(f.legenda || tr('sem legenda')) + '" width="' + f.largura + '" height="' + f.altura + '">' +
         ('<figcaption><b>' + tr('Foto') + ' ') + (i + 1) + (f.legenda ? ' — ' + esc(f.legenda) : '') + '</b>' +
@@ -116,7 +116,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
         ? '<div class="rel-lacre' + (verificado === false ? ' alterado' : '') + '">' +
             '<div class="rel-lacre-selo">' + (verificado === false ? '!' : '✓') + '</div>' +
             '<div><b>' + (verificado === false ? tr('Conteúdo diferente do aprovado') : tr('Aprovado e lacrado')) + '</b>' +
-            ('<span>' + tr('Aprovado por') + ' ') + esc(r.aprovadoPor) + ' em ' + dataHora(r.aprovadoEm) + '</span>' +
+            ('<span>' + tr('Aprovado por') + ' ') + esc(r.aprovadoPor) + ' ' + tr('em') + ' ' + dataHora(r.aprovadoEm) + '</span>' +
             ('<span>' + tr('Código de verificação') + ' <b class="codigo">') + esc(r.codigo) + '</b></span>' +
             ('<span class="hash">' + tr('SHA-256') + ' ') + esc(r.hashDocumento) + '</span></div></div>'
         : ('<div class="rel-lacre pendente"><div class="rel-lacre-selo">…</div><div><b>' + tr('Ainda não aprovado') + '</b><span>' + tr('Este relatório pode mudar até ser aprovado pelo escritório.') + '</span></div></div>')) +

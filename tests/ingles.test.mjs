@@ -15,8 +15,8 @@ function verificar(cond, texto) {
 }
 
 // Palavras e grafias que não existem em inglês. Nomes próprios de exemplo ficam de fora (PERMITIDO).
-const PORTUGUES = /[ãõçâêôáéíóú]|\b(de|do|da|dos|das|não|para|com|que|em|no|na|nos|nas|um|uma|ou|obra|obras|hoje|ontem|semana|horas|equipe|ponto|preço|preços|projeto|projetos|você|está|são|até|sem|por|pelo|pela|ao|aos|novo|nova|salvar|editar|excluir|voltar|enviar|entrada|saída|intervalo|funcionário|funcionários|usuário|usuários|perfil|relatório|relatórios|aprovar|ajustes|etapa|mês|dia|dias)\b/i;
-const PERMITIDO = /Márcia|KORbuild|Northfield|São Paulo/;
+const PORTUGUES = /[ãõçâêôáéíóú]|\b(de|da|dos|das|não|para|com|que|em|nos|nas|uma|ou|obra|obras|hoje|ontem|semana|horas|equipe|ponto|preço|preços|projeto|projetos|você|está|são|até|sem|por|pelo|pela|ao|aos|novo|nova|salvar|editar|excluir|voltar|enviar|entrada|saída|intervalo|funcionário|funcionários|usuário|usuários|perfil|relatório|relatórios|aprovar|ajustes|etapa|mês|dia|dias|pessoa|pessoas|trabalhando|fora|ainda|desde|cada|quando|também|aqui|agora|então|foto|fotos|faltam|falta|feito|feita|nenhum|nenhuma|todos|todas|está|estão|ser|tem|vai|após|antes|depois|sobre|entre|seu|sua|seus|suas|isso|este|esta|esse|essa|mais|menos|muito|só|já|outro|outra|valor|custo|prazo|lista|folha|escala|medida|condição|tirar|incluir|criar|ver|abrir|fechar|salvo|salva|registrado|registrada|aguardando|pendente|aberto|fechado)\b/i;
+const PERMITIDO = /\S+@\S+|to-dos|Márcia|Antônio|João|José|André|Português|KORbuild|Northfield/g;
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const context = await browser.newContext({

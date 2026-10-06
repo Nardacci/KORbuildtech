@@ -301,7 +301,7 @@ export function telaConta(u) {
           ('<div class="linha-info"><span>' + tr('Identificador da conta') + '</span><b class="codigo">') + esc(d.empresa.id) + '</b></div>' +
         '</section>' +
         ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Assinatura') + '</h2>') +
-          '<div class="plano"><b>' + tr('Plano {nome}', { nome: esc(tr(p.nome)) }) + '</b><span class="etiqueta ' + (p.status === 'teste' ? 'etiqueta-azul' : 'etiqueta-verde') + '">' + (p.status === 'teste' ? tn(dias, 'Teste grátis · {n} dia', 'Teste grátis · {n} dias') : tr('Ativa')) + '</span></div>' +
+          '<div class="plano"><b>' + tr('Plano {nome}', { nome: esc(p.nome) }) + '</b><span class="etiqueta ' + (p.status === 'teste' ? 'etiqueta-azul' : 'etiqueta-verde') + '">' + (p.status === 'teste' ? tn(dias, 'Teste grátis · {n} dia', 'Teste grátis · {n} dias') : tr('Ativa')) + '</span></div>' +
           ('<div class="uso"><div class="uso-topo"><span>' + tr('Obras ativas') + '</span><b>') + tr('{n} de {total}', { n: obrasAtivas, total: p.limiteObras }) + '</b></div>' +
             ('<div class="uso-barra" role="progressbar" aria-label="' + tr('Obras ativas') + '" aria-valuemin="0" aria-valuemax="') + p.limiteObras + '" aria-valuenow="' + obrasAtivas + '"><span style="width:' + Math.min(100, Math.round(obrasAtivas / p.limiteObras * 100)) + '%"></span></div></div>' +
           ('<div class="linha-info"><span>' + tr('Usuários') + '</span><b>' + tr('Ilimitados') + '</b></div>') +

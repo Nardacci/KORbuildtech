@@ -5,6 +5,7 @@
  *  - Galpão Logístico Rodovia: último RDO há 2 dias, com ajustes pedidos (vermelho). */
 
 import { hoje, somarDias, diasEntre, novoId, sha256 } from './util.js';
+import { tr } from './i18n.js';
 import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
 import { criarDadosCrew, RAIO_CERCA } from './crew.js';
 import { criarSettings } from './settings.js';
@@ -15,43 +16,43 @@ import { fotoDeExemplo } from './fotos.js';
 /* Duas empresas assinam o KORbuild na demonstração, cada uma com os seus dados (docs/saas.md §Atores):
  *  - a CONSTRUTORA (general contractor que também executa): Ana é a administradora;
  *  - a PRESTADORA (subcontractor de framing e siding): mede e orça no Measure e trabalha para a construtora. */
-const TERMOS = 'Proposta válida por 30 dias.\nPagamento: 30% na assinatura, 40% na metade do serviço e 30% na conclusão.\nNão inclui licenças, caçamba e reparos ocultos, salvo quando listados no escopo.\nAlterações de escopo só por escrito (change order), com preço e prazo combinados antes.';
-const SEGUROS = 'General liability: US$ 1.000.000 por ocorrência / US$ 2.000.000 agregado\nWorkers\' compensation\nCommercial auto';
+const TERMOS = tr('Proposta válida por 30 dias.\nPagamento: 30% na assinatura, 40% na metade do serviço e 30% na conclusão.\nNão inclui licenças, caçamba e reparos ocultos, salvo quando listados no escopo.\nAlterações de escopo só por escrito (change order), com preço e prazo combinados antes.');
+const SEGUROS = tr('General liability: US$ 1.000.000 por ocorrência / US$ 2.000.000 agregado\nWorkers\' compensation\nCommercial auto');
 export const CONSTRUTORA = {
-  id: 'construtora-exemplo', nome: 'Construtora Exemplo', razaoSocial: 'Construtora Exemplo LLC', sigla: 'CE', ein: '00-0000000', atuacao: 'construtora',
-  especialidades: 'Obras residenciais, comerciais e industriais: estrutura, alvenaria e gestão de obra', endereco: '900 Elm St', cidade: 'Manchester', estado: 'NH', zip: '03101',
+  id: 'construtora-exemplo', nome: tr('Construtora Exemplo'), razaoSocial: tr('Construtora Exemplo LLC'), sigla: 'CE', ein: '00-0000000', atuacao: 'construtora',
+  especialidades: tr('Obras residenciais, comerciais e industriais: estrutura, alvenaria e gestão de obra'), endereco: '900 Elm St', cidade: 'Manchester', estado: 'NH', zip: '03101',
   telefone: '(603) 555-0180', email: 'office@construtoraexemplo.com', site: 'construtoraexemplo.com',
-  licencas: 'Registro de contractor na cidade de Manchester', seguros: SEGUROS, termosProposta: TERMOS, logo: null,
+  licencas: tr('Registro de contractor na cidade de Manchester'), seguros: SEGUROS, termosProposta: TERMOS, logo: null,
 };
 export const PRESTADORA = {
-  id: 'prestadora-exemplo', nome: 'Northfield Framing & Siding', razaoSocial: 'Northfield Framing & Siding LLC', sigla: 'NFS', ein: '00-0000001', atuacao: 'prestadora',
-  especialidades: 'Framing, siding, janelas e acabamento externo', endereco: '210 Canal St', cidade: 'Manchester', estado: 'NH', zip: '03101',
+  id: 'prestadora-exemplo', nome: tr('Northfield Framing & Siding'), razaoSocial: tr('Northfield Framing & Siding LLC'), sigla: 'NFS', ein: '00-0000001', atuacao: 'prestadora',
+  especialidades: tr('Framing, siding, janelas e acabamento externo'), endereco: '210 Canal St', cidade: 'Manchester', estado: 'NH', zip: '03101',
   telefone: '(603) 555-0100', email: 'office@prestadoraexemplo.com', site: 'prestadoraexemplo.com',
-  licencas: 'Registro de contractor na cidade de Manchester\nEPA Lead-Safe Certified Firm (RRP)', seguros: SEGUROS, termosProposta: TERMOS, logo: null,
+  licencas: tr('Registro de contractor na cidade de Manchester\nEPA Lead-Safe Certified Firm (RRP)'), seguros: SEGUROS, termosProposta: TERMOS, logo: null,
 };
 /* Os de fora: um diretório só, com marcadores (docs/saas.md §Atores). Cada empresa tem o seu. */
 const CONTATOS_COMUNS = [
-  ['ct-horizonte', 'Incorporadora Horizonte', 'Renata Alves', 'cliente', 'Manchester'],
-  ['ct-atlantico', 'Condomínio Atlântico', 'Síndico Jorge Prado', 'cliente', 'Portsmouth'],
-  ['ct-logsul', 'LogSul Armazéns', 'Fernanda Rocha', 'cliente', 'Nashua'],
-  ['ct-thompson', 'Thompson Family', 'David Thompson', 'cliente', 'Manchester'],
-  ['ct-mitchell', 'Sarah Mitchell', '', 'cliente', 'Concord'],
-  ['ct-pinewood', 'Pinewood Lumber Co.', 'Balcão de vendas', 'fornecedor', 'Manchester', ['06 11 00 · Wood framing', '06 16 00 · Sheathing', '07 25 00 · Weather barriers', '07 21 00 · Thermal insulation', '09 29 00 · Gypsum board']],
-  ['ct-clearview', 'ClearView Windows & Doors', 'Kevin Walsh', 'fornecedor', 'Bedford', ['08 53 00 · Plastic windows', '08 14 00 · Wood doors', '08 71 00 · Door hardware']],
-  ['ct-summit', 'Summit Siding Supply', 'Orçamentos', 'fornecedor', 'Concord', ['07 46 33 · Plastic siding', '07 65 00 · Flexible flashing', '06 22 00 · Millwork']],
-  ['ct-readymix', 'Merrimack Ready-Mix', 'Despacho', 'fornecedor', 'Hooksett', ['03 30 00 · Cast-in-place concrete', '03 21 00 · Reinforcement']],
-  ['ct-floor', 'Floor Center NH', 'Vendas', 'fornecedor', 'Manchester', ['09 65 00 · Resilient flooring']],
+  ['ct-horizonte', tr('Incorporadora Horizonte'), tr('Renata Alves'), 'cliente', 'Manchester'],
+  ['ct-atlantico', tr('Condomínio Atlântico'), tr('Síndico Jorge Prado'), 'cliente', 'Portsmouth'],
+  ['ct-logsul', tr('LogSul Armazéns'), tr('Fernanda Rocha'), 'cliente', 'Nashua'],
+  ['ct-thompson', tr('Thompson Family'), tr('David Thompson'), 'cliente', 'Manchester'],
+  ['ct-mitchell', tr('Sarah Mitchell'), '', 'cliente', 'Concord'],
+  ['ct-pinewood', tr('Pinewood Lumber Co.'), tr('Balcão de vendas'), 'fornecedor', 'Manchester', ['06 11 00 · Wood framing', '06 16 00 · Sheathing', '07 25 00 · Weather barriers', '07 21 00 · Thermal insulation', '09 29 00 · Gypsum board']],
+  ['ct-clearview', tr('ClearView Windows & Doors'), tr('Kevin Walsh'), 'fornecedor', 'Bedford', ['08 53 00 · Plastic windows', '08 14 00 · Wood doors', '08 71 00 · Door hardware']],
+  ['ct-summit', tr('Summit Siding Supply'), tr('Orçamentos'), 'fornecedor', 'Concord', ['07 46 33 · Plastic siding', '07 65 00 · Flexible flashing', '06 22 00 · Millwork']],
+  ['ct-readymix', tr('Merrimack Ready-Mix'), tr('Despacho'), 'fornecedor', 'Hooksett', ['03 30 00 · Cast-in-place concrete', '03 21 00 · Reinforcement']],
+  ['ct-floor', tr('Floor Center NH'), tr('Vendas'), 'fornecedor', 'Manchester', ['09 65 00 · Resilient flooring']],
 ];
 // só da construtora: as prestadoras que ela contrata
 const CONTATOS_CONSTRUTORA = [
-  ['ct-northfield', 'Northfield Framing & Siding', 'Tom Reilly', 'prestadora', 'Manchester'],
-  ['ct-bayside', 'Bayside Drywall', 'Ellen Price', 'prestadora', 'Manchester'],
+  ['ct-northfield', tr('Northfield Framing & Siding'), tr('Tom Reilly'), 'prestadora', 'Manchester'],
+  ['ct-bayside', tr('Bayside Drywall'), tr('Ellen Price'), 'prestadora', 'Manchester'],
 ];
 // só da prestadora: as construtoras que a contratam
 const CONTATOS_PRESTADORA = [
-  ['ct-construtora', 'Construtora Exemplo', 'Ana Ribeiro', 'construtora', 'Manchester'],
-  ['ct-merrimack', 'Merrimack Valley Builders', 'Paul Bennett', 'construtora', 'Manchester'],
-  ['ct-granite', 'Granite Industrial Construction', 'Mark Sullivan', 'construtora', 'Nashua'],
+  ['ct-construtora', tr('Construtora Exemplo'), tr('Ana Ribeiro'), 'construtora', 'Manchester'],
+  ['ct-merrimack', tr('Merrimack Valley Builders'), tr('Paul Bennett'), 'construtora', 'Manchester'],
+  ['ct-granite', tr('Granite Industrial Construction'), tr('Mark Sullivan'), 'construtora', 'Nashua'],
 ];
 function criarContatos(proprios) {
   return proprios.concat(CONTATOS_COMUNS).map(([id, nome, pessoa, papel, cidade, etapas], i) => ({
@@ -61,98 +62,98 @@ function criarContatos(proprios) {
   }));
 }
 export const PESSOAS = {
-  campo: { nome: 'Carlos Mendes', papel: 'Mestre de obras' },
-  escritorio: { nome: 'Ana Ribeiro', papel: 'Engenheira responsável · PE, NH nº 00000' },
+  campo: { nome: tr('Carlos Mendes'), papel: tr('Mestre de obras') },
+  escritorio: { nome: tr('Ana Ribeiro'), papel: tr('Engenheira responsável · PE, NH nº 00000') },
 };
 
 /* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
 // perfilId: perfil de acesso do Settings (Administrador, Gestor de obras, Encarregado, Trabalhador)
 const USUARIOS = [
-  { id: 'u-carlos', nome: 'Carlos Mendes', email: 'carlos@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: 'Mestre de obras', telefone: '(603) 555-0142' },
-  { id: 'u-ana', nome: 'Ana Ribeiro', email: 'ana@construtoraexemplo.com', perfilId: 'administrador', cargo: 'Engenheira responsável', telefone: '(603) 555-0187' },
-  { id: 'u-roberto', nome: 'Roberto Lima', email: 'roberto@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: 'Encarregado', telefone: '(603) 555-0163' },
-  { id: 'u-marcia', nome: 'Márcia Souza', email: 'marcia@construtoraexemplo.com', perfilId: 'gestor', cargo: 'Diretora de obras', telefone: '(603) 555-0119' },
-  { id: 'u-diego', nome: 'Diego Santos', email: 'diego@construtoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: 'Pedreiro', telefone: '(603) 555-0175' },
+  { id: 'u-carlos', nome: tr('Carlos Mendes'), email: 'carlos@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: tr('Mestre de obras'), telefone: '(603) 555-0142' },
+  { id: 'u-ana', nome: tr('Ana Ribeiro'), email: 'ana@construtoraexemplo.com', perfilId: 'administrador', cargo: tr('Engenheira responsável'), telefone: '(603) 555-0187' },
+  { id: 'u-roberto', nome: tr('Roberto Lima'), email: 'roberto@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: tr('Encarregado'), telefone: '(603) 555-0163' },
+  { id: 'u-marcia', nome: tr('Márcia Souza'), email: 'marcia@construtoraexemplo.com', perfilId: 'gestor', cargo: tr('Diretora de obras'), telefone: '(603) 555-0119' },
+  { id: 'u-diego', nome: tr('Diego Santos'), email: 'diego@construtoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: tr('Pedreiro'), telefone: '(603) 555-0175' },
 ];
 // Contas da tela de login: uma de cada jeito de usar (só ponto, campo, escritório)
 export const CONTAS_DEMO = ['u-diego', 'u-carlos', 'u-ana'];
 
 const OBRAS = [
   {
-    id: 'jardim', nome: 'Residencial Jardim das Flores', contratanteId: 'ct-horizonte', donoId: null,
+    id: 'jardim', nome: tr('Residencial Jardim das Flores'), contratanteId: 'ct-horizonte', donoId: null,
     endereco: '1450 Elm St · North End', cidade: 'Manchester, NH 03104',
-    lat: 43.0040, lon: -71.4635, etapa: 'Alvenaria do 3º pavimento', inicio: -120, prazo: 240,
+    lat: 43.0040, lon: -71.4635, etapa: tr('Alvenaria do 3º pavimento'), inicio: -120, prazo: 240,
   },
   {
-    id: 'atlantico', nome: 'Edifício Atlântico', contratanteId: 'ct-atlantico', donoId: null,
+    id: 'atlantico', nome: tr('Edifício Atlântico'), contratanteId: 'ct-atlantico', donoId: null,
     endereco: '120 Market St · Downtown', cidade: 'Portsmouth, NH 03801',
-    lat: 43.0757, lon: -70.7568, etapa: 'Estrutura do 7º pavimento', inicio: -200, prazo: 400,
+    lat: 43.0757, lon: -70.7568, etapa: tr('Estrutura do 7º pavimento'), inicio: -200, prazo: 400,
   },
   {
-    id: 'galpao', nome: 'Galpão Logístico Rodovia', contratanteId: 'ct-logsul', donoId: null,
+    id: 'galpao', nome: tr('Galpão Logístico Rodovia'), contratanteId: 'ct-logsul', donoId: null,
     endereco: '45 Northeastern Blvd · Industrial Park', cidade: 'Nashua, NH 03062',
-    lat: 42.7268, lon: -71.4402, etapa: 'Piso industrial', inicio: -60, prazo: 150,
+    lat: 42.7268, lon: -71.4402, etapa: tr('Piso industrial'), inicio: -60, prazo: 150,
   },
 ];
 
 const EQUIPES = {
-  jardim: [['Mestre de obras', 1, 0], ['Pedreiro', 6, 1], ['Servente', 5, 0], ['Armador', 2, 0], ['Eletricista', 1, 0]],
-  atlantico: [['Mestre de obras', 1, 0], ['Carpinteiro', 8, 0], ['Armador', 6, 1], ['Pedreiro', 3, 0], ['Servente', 7, 0], ['Operador de grua', 1, 0]],
-  galpao: [['Encarregado', 1, 0], ['Pedreiro', 4, 0], ['Servente', 6, 2], ['Operador de máquinas', 2, 0]],
+  jardim: [[tr('Mestre de obras'), 1, 0], [tr('Pedreiro'), 6, 1], [tr('Servente'), 5, 0], [tr('Armador'), 2, 0], [tr('Eletricista'), 1, 0]],
+  atlantico: [[tr('Mestre de obras'), 1, 0], [tr('Carpinteiro'), 8, 0], [tr('Armador'), 6, 1], [tr('Pedreiro'), 3, 0], [tr('Servente'), 7, 0], [tr('Operador de grua'), 1, 0]],
+  galpao: [[tr('Encarregado'), 1, 0], [tr('Pedreiro'), 4, 0], [tr('Servente'), 6, 2], [tr('Operador de máquinas'), 2, 0]],
 };
 
 const EQUIPAMENTOS = {
-  jardim: [['Betoneira 400 L', 1, 'operando'], ['Andaime fachadeiro', 4, 'operando'], ['Guincho de coluna', 1, 'operando']],
-  atlantico: [['Grua', 1, 'operando'], ['Vibrador de concreto', 3, 'operando'], ['Serra circular de bancada', 1, 'operando']],
-  galpao: [['Retroescavadeira', 1, 'operando'], ['Rolo compactador', 1, 'manutencao'], ['Caminhão betoneira', 2, 'operando']],
+  jardim: [[tr('Betoneira 400 L'), 1, 'operando'], [tr('Andaime fachadeiro'), 4, 'operando'], [tr('Guincho de coluna'), 1, 'operando']],
+  atlantico: [[tr('Grua'), 1, 'operando'], [tr('Vibrador de concreto'), 3, 'operando'], [tr('Serra circular de bancada'), 1, 'operando']],
+  galpao: [[tr('Retroescavadeira'), 1, 'operando'], [tr('Rolo compactador'), 1, 'manutencao'], [tr('Caminhão betoneira'), 2, 'operando']],
 };
 
 const ATIVIDADES = {
   jardim: [
-    ['Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D.', '3º pavimento · Bloco A', 'andamento'],
-    ['Chumbamento de caixinhas elétricas e passagem de eletrodutos.', '2º pavimento', 'andamento'],
-    ['Limpeza geral e organização do canteiro.', 'Canteiro', 'concluida'],
+    [tr('Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D.'), tr('3º pavimento · Bloco A'), 'andamento'],
+    [tr('Chumbamento de caixinhas elétricas e passagem de eletrodutos.'), tr('2º pavimento'), 'andamento'],
+    [tr('Limpeza geral e organização do canteiro.'), tr('Canteiro'), 'concluida'],
   ],
   atlantico: [
-    ['Montagem de fôrmas das vigas e da laje do 7º pavimento.', '7º pavimento', 'andamento'],
-    ['Armação dos pilares P12 a P20 conferida pelo engenheiro.', '7º pavimento', 'concluida'],
-    ['Desforma das lajes do 5º pavimento e reescoramento.', '5º pavimento', 'andamento'],
+    [tr('Montagem de fôrmas das vigas e da laje do 7º pavimento.'), tr('7º pavimento'), 'andamento'],
+    [tr('Armação dos pilares P12 a P20 conferida pelo engenheiro.'), tr('7º pavimento'), 'concluida'],
+    [tr('Desforma das lajes do 5º pavimento e reescoramento.'), tr('5º pavimento'), 'andamento'],
   ],
   galpao: [
-    ['Compactação da sub-base do piso, quadrantes 3 e 4.', 'Área de armazenagem', 'andamento'],
-    ['Lançamento de concreto do piso industrial, 180 m².', 'Quadrante 2', 'concluida'],
+    [tr('Compactação da sub-base do piso, quadrantes 3 e 4.'), tr('Área de armazenagem'), 'andamento'],
+    [tr('Lançamento de concreto do piso industrial, 180 m².'), tr('Quadrante 2'), 'concluida'],
   ],
 };
 
 /* Primeira atividade de cada dia, para os RDOs não parecerem cópias na lista. */
 const ATIVIDADE_DO_DIA = {
   jardim: [
-    'Marcação da primeira fiada de alvenaria do 3º pavimento, eixos A a D.',
-    'Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A e B.',
-    'Execução de vergas e contravergas das janelas do 2º pavimento.',
-    'Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos C e D.',
-    'Encunhamento da alvenaria do 2º pavimento e conferência de prumo.',
-    'Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D.',
+    tr('Marcação da primeira fiada de alvenaria do 3º pavimento, eixos A a D.'),
+    tr('Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A e B.'),
+    tr('Execução de vergas e contravergas das janelas do 2º pavimento.'),
+    tr('Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos C e D.'),
+    tr('Encunhamento da alvenaria do 2º pavimento e conferência de prumo.'),
+    tr('Assentamento de bloco cerâmico nas paredes do 3º pavimento, eixos A a D.'),
   ],
   atlantico: [
-    'Concretagem dos pilares do 6º pavimento, 18 m³, com caminhão-bomba.',
-    'Montagem de fôrmas dos pilares do 7º pavimento.',
-    'Armação dos pilares P1 a P11 do 7º pavimento.',
-    'Escoramento e montagem de fôrmas das vigas do 7º pavimento.',
-    'Montagem de fôrmas das vigas e da laje do 7º pavimento.',
+    tr('Concretagem dos pilares do 6º pavimento, 18 m³, com caminhão-bomba.'),
+    tr('Montagem de fôrmas dos pilares do 7º pavimento.'),
+    tr('Armação dos pilares P1 a P11 do 7º pavimento.'),
+    tr('Escoramento e montagem de fôrmas das vigas do 7º pavimento.'),
+    tr('Montagem de fôrmas das vigas e da laje do 7º pavimento.'),
   ],
   galpao: [
-    'Regularização e nivelamento da base do piso, quadrantes 1 e 2.',
-    'Instalação de barras de transferência nas juntas do quadrante 2.',
-    'Armação em tela soldada do quadrante 2 do piso industrial.',
-    'Compactação da sub-base do piso, quadrantes 3 e 4.',
+    tr('Regularização e nivelamento da base do piso, quadrantes 1 e 2.'),
+    tr('Instalação de barras de transferência nas juntas do quadrante 2.'),
+    tr('Armação em tela soldada do quadrante 2 do piso industrial.'),
+    tr('Compactação da sub-base do piso, quadrantes 3 e 4.'),
   ],
 };
 
 const OCORRENCIAS = {
-  'jardim:-1': [['material', 'Entrega de cimento atrasou 3 horas; assentamento começou às 10h.']],
-  'atlantico:0': [['visita', 'Visita do fiscal do cliente às 10h; sem apontamentos.']],
-  'galpao:ajustes': [['equipamento', 'Rolo compactador parado por vazamento hidráulico; técnico agendado para amanhã.'], ['chuva', 'Chuva forte das 14h às 16h; lançamento de concreto suspenso.']],
+  'jardim:-1': [['material', tr('Entrega de cimento atrasou 3 horas; assentamento começou às 10h.')]],
+  'atlantico:0': [['visita', tr('Visita do fiscal do cliente às 10h; sem apontamentos.')]],
+  'galpao:ajustes': [['equipamento', tr('Rolo compactador parado por vazamento hidráulico; técnico agendado para amanhã.')], ['chuva', tr('Chuva forte das 14h às 16h; lançamento de concreto suspenso.')]],
 };
 
 const CLIMA_DIAS = [
@@ -217,7 +218,7 @@ export async function criarDemonstracao() {
         const id = novoId('foto');
         await guardarFoto(id, blob, mini);
         fotos.push({
-          id, legenda: ['Vista geral da frente de serviço', 'Detalhe da execução', 'Chegada de material'][f],
+          id, legenda: [tr('Vista geral da frente de serviço'), tr('Detalhe da execução'), tr('Chegada de material')][f],
           tiradaEm: quando, origem: 'camera', lat: obra.lat, lon: obra.lon, fonteGps: 'gps', precisao: 6,
           tamanhoOriginal: 4200000 + f * 731000, tamanho: blob.size, largura, altura,
           hashOriginal: await sha256(id + data),
@@ -249,8 +250,8 @@ export async function criarDemonstracao() {
         fotos,
         observacoes: '',
         historico: [
-          { em: momento(data, 7, 40), quem: PESSOAS.campo.nome, acao: 'Começou o RDO' },
-          { em: enviadoEm, quem: PESSOAS.campo.nome, acao: 'Enviou para aprovação' },
+          { em: momento(data, 7, 40), quem: PESSOAS.campo.nome, acao: tr('Começou o RDO') },
+          { em: enviadoEm, quem: PESSOAS.campo.nome, acao: tr('Enviou para aprovação') },
         ],
       };
       if (status === 'aprovado') {
@@ -258,8 +259,8 @@ export async function criarDemonstracao() {
         r.aprovadoPor = PESSOAS.escritorio.nome;
       }
       if (status === 'ajustes') {
-        r.motivoAjuste = 'Faltou a foto da armação do quadrante 2 antes do lançamento do concreto. Inclua e reenvie, por favor.';
-        r.historico.push({ em: momento(somarDias(data, 1), 8, 30), quem: PESSOAS.escritorio.nome, acao: 'Pediu ajustes: ' + r.motivoAjuste });
+        r.motivoAjuste = tr('Faltou a foto da armação do quadrante 2 antes do lançamento do concreto. Inclua e reenvie, por favor.');
+        r.historico.push({ em: momento(somarDias(data, 1), 8, 30), quem: PESSOAS.escritorio.nome, acao: (tr('Pediu ajustes:') + ' ') + r.motivoAjuste });
       }
       rdos.push(r);
     }
@@ -270,13 +271,13 @@ export async function criarDemonstracao() {
   for (const r of rdos) {
     if (r.status === 'aprovado') {
       await lacrar(r, obras.find((o) => o.id === r.obraId));
-      r.historico.push({ em: r.aprovadoEm, quem: PESSOAS.escritorio.nome, acao: 'Aprovou · código ' + r.codigo });
+      r.historico.push({ em: r.aprovadoEm, quem: PESSOAS.escritorio.nome, acao: (tr('Aprovou · código') + ' ') + r.codigo });
     }
   }
 
   const empresa = {
     ...CONSTRUTORA, desde: somarDias(dia0, -2),
-    plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
+    plano: { nome: tr('Profissional'), status: 'teste', testeAte: somarDias(dia0, 12), limiteObras: 5 },
     modulos: ['daily', 'crew'], // o Measure é das prestadoras
   };
   const usuarios = USUARIOS.map((u, i) => ({ ...u, ativo: true, ultimoAcesso: i < 2 ? null : momento(somarDias(dia0, -i), 17, 5) }));
@@ -291,16 +292,16 @@ export async function criarDemonstracao() {
 /* ---------- A prestadora de serviço (subcontractor) ---------- */
 
 const USUARIOS_PRESTADORA = [
-  { id: 'u-tom', nome: 'Tom Reilly', email: 'tom@prestadoraexemplo.com', perfilId: 'administrador', cargo: 'Sócio e estimador', telefone: '(603) 555-0101' },
-  { id: 'u-rita', nome: 'Rita Gomes', email: 'rita@prestadoraexemplo.com', perfilId: 'gestor', cargo: 'Estimadora', telefone: '(603) 555-0102' },
-  { id: 'u-jose', nome: 'José Pereira', email: 'jose@prestadoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-jose', cargo: 'Encarregado de framing', telefone: '(603) 555-0103' },
-  { id: 'u-luis', nome: 'Luis Ortega', email: 'luis@prestadoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-luis', cargo: 'Carpinteiro', telefone: '(603) 555-0104' },
+  { id: 'u-tom', nome: tr('Tom Reilly'), email: 'tom@prestadoraexemplo.com', perfilId: 'administrador', cargo: tr('Sócio e estimador'), telefone: '(603) 555-0101' },
+  { id: 'u-rita', nome: tr('Rita Gomes'), email: 'rita@prestadoraexemplo.com', perfilId: 'gestor', cargo: tr('Estimadora'), telefone: '(603) 555-0102' },
+  { id: 'u-jose', nome: tr('José Pereira'), email: 'jose@prestadoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-jose', cargo: tr('Encarregado de framing'), telefone: '(603) 555-0103' },
+  { id: 'u-luis', nome: tr('Luis Ortega'), email: 'luis@prestadoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-luis', cargo: tr('Carpinteiro'), telefone: '(603) 555-0104' },
 ];
 const FUNCIONARIOS_PRESTADORA = [
-  ['f-jose', 'José Pereira', 'Encarregado', 34, 'u-jose'],
-  ['f-luis', 'Luis Ortega', 'Carpinteiro', 27, 'u-luis'],
-  ['f-kevin', 'Kevin Dunn', 'Carpinteiro', 26, null],
-  ['f-andre', 'André Lima', 'Ajudante', 19, null],
+  ['f-jose', tr('José Pereira'), tr('Encarregado'), 34, 'u-jose'],
+  ['f-luis', tr('Luis Ortega'), tr('Carpinteiro'), 27, 'u-luis'],
+  ['f-kevin', tr('Kevin Dunn'), tr('Carpinteiro'), 26, null],
+  ['f-andre', tr('André Lima'), tr('Ajudante'), 19, null],
 ];
 
 function criarPrestadora(dia0) {
@@ -309,25 +310,25 @@ function criarPrestadora(dia0) {
   const jardim = OBRAS.find((o) => o.id === 'jardim');
   // a mesma obra da construtora, vista pela prestadora: aqui é um serviço (framing e siding) contratado pela construtora
   const obras = [{
-    ...jardim, id: 'nf-jardim', nome: 'Residencial Jardim das Flores · framing e siding', contratanteId: 'ct-construtora', donoId: 'ct-horizonte',
-    etapa: 'Framing do 2º pavimento', inicio: somarDias(dia0, -30), prazo: somarDias(dia0, 60), responsavelId: 'u-jose', diasTrabalho: DIAS_TRABALHO,
+    ...jardim, id: 'nf-jardim', nome: tr('Residencial Jardim das Flores · framing e siding'), contratanteId: 'ct-construtora', donoId: 'ct-horizonte',
+    etapa: tr('Framing do 2º pavimento'), inicio: somarDias(dia0, -30), prazo: somarDias(dia0, 60), responsavelId: 'u-jose', diasTrabalho: DIAS_TRABALHO,
     cerca: { lat: jardim.lat, lon: jardim.lon, raio: RAIO_CERCA },
   }];
   const funcionarios = FUNCIONARIOS_PRESTADORA.map(([id, nome, funcao, valor, usuarioId], n) => {
     const admissao = somarDias(dia0, -(120 + n * 35));
     return {
-      id, nome, funcao, equipeId: 'eq-nf', admissao, valores: [{ desde: admissao, valor, motivo: 'Admissão', por: 'Tom Reilly', em: new Date(admissao + 'T09:00:00').getTime() }],
+      id, nome, funcao, equipeId: 'eq-nf', admissao, valores: [{ desde: admissao, valor, motivo: tr('Admissão'), por: tr('Tom Reilly'), em: new Date(admissao + 'T09:00:00').getTime() }],
       usuarioId, codigo: 'N-' + String(11 + n), telefone: '(603) 555-02' + String(10 + n), emergencia: '', classificacao: 'w2', flsa: 'nao-isento', situacao: 'ativo',
       desligamento: '', avisoGps: admissao, certificacoes: n === 0 ? [{ nome: 'OSHA 10', validade: somarDias(dia0, 400) }] : [],
     };
   });
   return {
     criadoEm: Date.now(), offlineSimulado: false,
-    empresa: { ...PRESTADORA, desde: somarDias(dia0, -5), plano: { nome: 'Profissional', status: 'teste', testeAte: somarDias(dia0, 9), limiteObras: 5 }, modulos: ['daily', 'crew', 'measure'] },
+    empresa: { ...PRESTADORA, desde: somarDias(dia0, -5), plano: { nome: tr('Profissional'), status: 'teste', testeAte: somarDias(dia0, 9), limiteObras: 5 }, modulos: ['daily', 'crew', 'measure'] },
     usuarios: USUARIOS_PRESTADORA.map((u) => ({ ...u, ativo: true, ultimoAcesso: null })), contasDemo: USUARIOS_PRESTADORA.map((u) => u.id),
     interesses: [], contatos: criarContatos(CONTATOS_PRESTADORA), obras, rdos: [], funcionarios,
-    settings: criarSettings(inicio, registro, 'Tom Reilly'),
-    crew: { equipes: [{ id: 'eq-nf', nome: 'Equipe do José', encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
+    settings: criarSettings(inicio, registro, tr('Tom Reilly')),
+    crew: { equipes: [{ id: 'eq-nf', nome: tr('Equipe do José'), encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
     measure: criarDadosMeasure({ projetos: true, estimadores: ['u-tom', 'u-rita'] }),
   };
 }

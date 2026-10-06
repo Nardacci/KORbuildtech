@@ -84,7 +84,7 @@ export function telaCotacao(id, moldura) {
     const f = g.fornecedor;
     const ultimos = envios(p, f.id);
     return '<section class="cartao cot-fornecedor"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + esc(f.nome) + '</h2>' +
-        '<span class="mudo pequeno">' + esc([f.pessoa, f.email].filter(Boolean).join(' · ') || 'sem e-mail cadastrado') + ' · ' + g.itens.length + (g.itens.length === 1 ? ' item' : ' itens') + '</span>' +
+        '<span class="mudo pequeno">' + esc([f.pessoa, f.email].filter(Boolean).join(' · ') || tr('sem e-mail cadastrado')) + ' · ' + tn(g.itens.length, '{n} item', '{n} itens') + '</span>' +
         (ultimos.length ? '<span class="etiqueta etiqueta-verde">e-mail preparado em ' + dataCurta(ultimos[ultimos.length - 1].em.slice(0, 10)) + '</span>' : '') +
         (respostas(p, f.id).length ? ('<span class="etiqueta etiqueta-azul">' + tr('preços recebidos em') + ' ') + dataCurta(respostas(p, f.id).slice(-1)[0].em.slice(0, 10)) + '</span>' : '') + '</div>' +
         '<div class="btn-linha">' + (pode(usuarioAtual(), 'measure.catalogo') ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="cot-resposta" data-projeto="' + id + '" data-fornecedor="' + f.id + ('">' + tr('Registrar preços recebidos') + '</button>') : '') +
@@ -133,7 +133,7 @@ function emailCotacao(p, f, g) {
     (tr('Pedimos o seu preço para os materiais abaixo, da obra') + ' ') + p.nome + ' (' + enderecoDoProjeto(p) + '):', '', ...linhas, '',
     (tr('Por favor, responda até') + ' ') + dataCurta(prazoResposta(p)) + (' ' + tr('com o preço unitário, o prazo de entrega e se inclui o frete.')),
     obsCotacao(p) ? '' : null, obsCotacao(p) || null, '', tr('Obrigado,'), quem(), e.nome, e.telefone || ''].filter((x) => x !== null);
-  return 'mailto:' + encodeURIComponent(f.email) + tr('?subject=') + encodeURIComponent((tr('Pedido de cotação ·') + ' ') + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n'));
+  return 'mailto:' + encodeURIComponent(f.email) + '?subject=' + encodeURIComponent((tr('Pedido de cotação ·') + ' ') + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n'));
 }
 
 /* ---------- Proposta ---------- */
@@ -190,7 +190,7 @@ export function telaProposta(id, moldura) {
   const m = margensEm();
   const base = (l) => {
     const c = l.custo;
-    const partes = [c.material ? 'material ' + dinheiro(c.material) : '', c.imposto ? 'imposto ' + dinheiro(c.imposto) : '', c.maoDeObra ? (tr('mão de obra') + ' ') + dinheiro(c.maoDeObra) : '', c.outros ? 'outros ' + dinheiro(c.outros) : ''].filter(Boolean);
+    const partes = [c.material ? tr('material') + ' ' + dinheiro(c.material) : '', c.imposto ? tr('imposto') + ' ' + dinheiro(c.imposto) : '', c.maoDeObra ? (tr('mão de obra') + ' ') + dinheiro(c.maoDeObra) : '', c.outros ? tr('outros') + ' ' + dinheiro(c.outros) : ''].filter(Boolean);
     return '<span class="prop-custo">' + (partes.length ? (tr('Custo') + ' ') + dinheiro(c.custo) + ' = ' + partes.join(' + ') : tr('Sem custo calculado')) + '</span>' +
       (c.semPreco.length ? ('<span class="prop-sem-preco">' + tr('Sem preço:') + ' ') + esc(c.semPreco.map((i) => i.nome).join(', ')) + '</span>' : '');
   };
@@ -204,7 +204,7 @@ export function telaProposta(id, moldura) {
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><textarea name="escopo" rows="2" aria-label="' + tr('Escopo') + '">') + esc(r.escopo) + '</textarea></section>' +
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Itens da proposta') + '</h2>') +
         '<label class="check pequeno"><input type="checkbox" name="mostrarQuantidades"' + (r.mostrarQuantidades ? ' checked' : '') + ('> ' + tr('Mostrar as quantidades de material no documento') + '</label></div>') +
-        ('<p class="mudo pequeno">' + tr('Uma linha por etapa (material e mão de obra juntos). O preço é') + ' <b>calculado</b>' + tr(': quantidades × preços do catálogo (com vigência) +') + ' ') + esc(textoMargens(m)) +
+        ('<p class="mudo pequeno">' + tr('Uma linha por etapa (material e mão de obra juntos). O preço é') + ' <b>' + tr('calculado') + '</b>' + tr(': quantidades × preços do catálogo (com vigência) +') + ' ') + esc(textoMargens(m)) +
           (' (<a href="#/measure/precos">' + tr('Preços') + '</a>' + tr('). Digite outro valor quando quiser; apagar o que foi digitado volta ao calculado.') + '</p>') +
         (linhas.some((l) => l.digitado != null) ? ('<button type="button" class="link-botao pequeno" data-acao="prop-recalcular">' + tr('Usar os preços calculados em todas as linhas') + '</button>') : '') +
         (linhas.length ? ('<div class="tabela-rolagem"><table class="tabela prop-linhas"><thead><tr><th></th><th>' + tr('Etapa') + '</th><th>' + tr('Base do cálculo') + '</th><th class="num">' + tr('Preço') + '</th></tr></thead><tbody>') +
@@ -222,7 +222,7 @@ export function telaProposta(id, moldura) {
       ('<section class="cartao prop-total"><span>' + tr('Total da proposta') + '</span><b id="prop-total">') + dinheiro(t.total) + '</b>' +
         (t.semPreco.length ? '<span class="etiqueta etiqueta-ambar">' + t.semPreco.length + (t.semPreco.length === 1 ? (' ' + tr('linha sem preço')) : (' ' + tr('linhas sem preço'))) + '</span>' : '') +
         '<span class="prop-resumo" id="prop-resumo">' + htmlResumo(t) + '</span></section>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Condições') + '</h2><div class="grade-campos">') +
+      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Condições da proposta') + '</h2><div class="grade-campos">') +
         ('<div class="campo"><label class="rotulo-pequeno" for="prop-validade">' + tr('Validade (dias)') + '</label><input type="number" id="prop-validade" name="validadeDias" min="1" max="365" value="') + r.validadeDias + '"></div></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="prop-termos">' + tr('Termos (vêm do perfil da empresa; ajuste para esta proposta)') + '</label><textarea id="prop-termos" name="termos" rows="5">') + esc(r.termos) + '</textarea></div></section>' +
       (versoes.length ? ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Propostas emitidas') + '</h2><ul class="prop-versoes">') + versoes.slice().reverse().map((v) =>
@@ -402,9 +402,9 @@ export const acoesRelatorios = {
     const ct = contratanteDe(p);
     if (!v || !ct || !ct.email) return;
     const e = empresa();
-    const corpo = [tr('Olá') + (ct.pessoa ? ', ' + ct.pessoa : '') + ',', '', (tr('Segue a nossa proposta') + ' ') + v.numero + ' para ' + p.nome + ' (' + enderecoDoProjeto(p) + '):',
-      (tr('Total:') + ' ') + dinheiro(v.total) + (tr(', válida por') + ' ') + v.dados.validadeDias + ' dias.', '', tr('O PDF vai em anexo. Ficamos à disposição.'), '', quem(), e.nome, e.telefone || ''];
-    abrirEmail('mailto:' + encodeURIComponent(ct.email) + tr('?subject=') + encodeURIComponent((tr('Proposta') + ' ') + v.numero + ' · ' + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n')));
+    const corpo = [tr('Olá') + (ct.pessoa ? ', ' + ct.pessoa : '') + ',', '', (tr('Segue a nossa proposta') + ' ') + v.numero + ' ' + tr('para') + ' ' + p.nome + ' (' + enderecoDoProjeto(p) + '):',
+      (tr('Total:') + ' ') + dinheiro(v.total) + (tr(', válida por') + ' ') + tn(v.dados.validadeDias, '{n} dia.', '{n} dias.'), '', tr('O PDF vai em anexo. Ficamos à disposição.'), '', quem(), e.nome, e.telefone || ''];
+    abrirEmail('mailto:' + encodeURIComponent(ct.email) + '?subject=' + encodeURIComponent((tr('Proposta') + ' ') + v.numero + ' · ' + p.nome + ' · ' + e.nome) + '&body=' + encodeURIComponent(corpo.join('\n')));
     toast((tr('E-mail para') + ' ') + ct.nome + (' ' + tr('aberto. Anexe o PDF da proposta.')));
   },
   'doc-imprimir'(el) {

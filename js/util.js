@@ -96,6 +96,15 @@ export function decimal(v, casas) {
   return emIngles() ? s : s.replace('.', ',');
 }
 
+/* Número como está (sem casas fixas), com a vírgula ou o ponto do idioma: 1,5 (pt) · 1.5 (en) */
+export function numTexto(v) { return emIngles() ? String(v) : String(v).replace('.', ','); }
+
+/* Distância: 850 m / 1,2 km (pt) · 2,790 ft / 0.7 mi (en) */
+export function distancia(m) {
+  if (emIngles()) return m < 300 ? Math.round(m * 3.28084).toLocaleString('en-US') + ' ft' : (m / 1609.34).toFixed(1) + ' mi';
+  return m >= 1000 ? (m / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(m) + ' m';
+}
+
 /* Clima: guardado em °C e mm (Open-Meteo); nos EUA, mostrado em °F e polegadas. */
 export function temperatura(c) { return emIngles() ? Math.round(c * 9 / 5 + 32) + ' °F' : c + ' °C'; }
 export function chuva(mm) { return emIngles() ? (mm / 25.4).toFixed(2) + ' in' : String(mm).replace('.', ',') + ' mm'; }

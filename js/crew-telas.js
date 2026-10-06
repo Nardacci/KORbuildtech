@@ -3,9 +3,9 @@
  *   e vê as horas da semana.
  * Administrador: quem está trabalhando agora, timesheets com aprovação e ajustes, custo por obra e o mapa do dia. */
 
-import { esc, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
+import { esc, decimal, distancia, numTexto, diaMes, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
 import { estado, salvar, obra as acharObra } from './armazem.js';
-import { tr, tn, locale } from './i18n.js';
+import { tr, tn, locale, emIngles } from './i18n.js';
 import { casca, usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { obterPosicao } from './fotos.js';
@@ -87,7 +87,7 @@ function descricaoEstado(j) {
   const a = j.atual;
   if (j.estado === 'trabalho') return { classe: 'verde', texto: (tr('Trabalhando desde') + ' ') + horaCurta(a.ini) + ' · ' + nomeCurto(a.obraId) + ' · ' + a.etapa };
   if (j.estado === 'intervalo') return { classe: 'neutro', texto: (tr('Em intervalo desde') + ' ') + horaCurta(a.ini) };
-  if (j.estado === 'deslocamento') return { classe: 'azul', texto: (tr('Indo para') + ' ') + nomeCurto(a.obraId) + ' desde ' + horaCurta(a.ini) };
+  if (j.estado === 'deslocamento') return { classe: 'azul', texto: tr('Indo para {obra} desde {hora}', { obra: nomeCurto(a.obraId), hora: horaCurta(a.ini) }) };
   if (j.estado === 'saiu') return { classe: 'neutro', texto: (tr('Saiu às') + ' ') + horaCurta(j.batidas[j.batidas.length - 1].em) };
   return { classe: 'ambar', texto: tr('Ainda não bateu entrada') };
 }
@@ -122,9 +122,9 @@ function telaEquipe() {
     ativo: 'equipe', titulo: tr('Ponto da equipe'), subtitulo: eq.nome + ' · ' + primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
       ('<section class="cartao relogio-ponto"><div><span class="mudo pequeno">' + tr('Hora oficial do ponto') + '</span><b id="relogio-crew">') + horaComSegundos() + '</b></div>' +
-        '<div class="resumo-ponto"><span><b>' + conta('trabalho') + '</b> trabalhando</span><span><b>' + conta('intervalo') + ('</b> ' + tr('em intervalo') + '</span>') +
-        '<span><b>' + conta('deslocamento') + ('</b> ' + tr('em deslocamento') + '</span><span><b>') + (conta('fora') + conta('saiu')) + '</b> fora</span></div></section>' +
-      '<div class="lista-equipe-topo"><h2 class="titulo-secao">' + lista.length + ' pessoas</h2>' +
+        '<div class="resumo-ponto"><span><b>' + conta('trabalho') + '</b> ' + tr('trabalhando') + '</span><span><b>' + conta('intervalo') + ('</b> ' + tr('em intervalo') + '</span>') +
+        '<span><b>' + conta('deslocamento') + ('</b> ' + tr('em deslocamento') + '</span><span><b>') + (conta('fora') + conta('saiu')) + '</b> ' + tr('fora') + '</span></div></section>' +
+      '<div class="lista-equipe-topo"><h2 class="titulo-secao">' + tn(lista.length, '{n} pessoa', '{n} pessoas') + '</h2>' +
         '<button type="button" class="link" data-acao="crew-todos">' + (selecionados.size === lista.length ? tr('Limpar seleção') : tr('Selecionar todos')) + '</button></div>' +
       '<ul class="lista-equipe">' + js.map(({ f, j }) => {
         const d = descricaoEstado(j);
@@ -139,7 +139,7 @@ function telaEquipe() {
       ('<p class="dica centro">' + tr('Marque as pessoas e use os botões abaixo. Cada batida guarda a hora, o GPS do seu celular e quem registrou. Funciona sem internet.') + '</p>'),
     rodape:
       '<div class="rodape-envio barra-ponto"><div class="rodape-dentro">' +
-        (selecionados.size ? '<span class="rodape-status">' + selecionados.size + ' selecionada' + (selecionados.size > 1 ? 's' : '') + '</span>' : ('<span class="rodape-status">' + tr('Selecione quem vai bater o ponto') + '</span>')) +
+        (selecionados.size ? '<span class="rodape-status">' + tn(selecionados.size, '{n} selecionada', '{n} selecionadas') + '</span>' : ('<span class="rodape-status">' + tr('Selecione quem vai bater o ponto') + '</span>')) +
         '<div class="botoes-ponto">' +
           botao('entrada', tr('Entrada'), 'entrar', ap.entrada, 'btn-primario') +
           botao('intervalo', tr('Intervalo'), 'cafe', ap.intervalo) +
@@ -182,14 +182,16 @@ function telaMeuPonto() {
       '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Minha semana') + '</h2><ul class="minha-semana">') +
         s.dias.filter((x) => x.pago || x.iso === hoje()).map((x) => '<li><span>' + primeiraMaiuscula(diaDaSemana(x.iso)).slice(0, 3) + ' ' + dataCurta(x.iso).slice(0, 5) + '</span><b>' + (x.pago ? horas(x.pago) : '–') + '</b></li>').join('') +
-        ('<li class="total"><span>' + tr('Total') + '</span><b>') + horas(s.total) + (s.extra + s.dobra ? ' · ' + horas(s.extra + s.dobra) + ' extras' : '') + '</b></li></ul></section>' +
+        ('<li class="total"><span>' + tr('Total') + '</span><b>') + horas(s.total) + (s.extra + s.dobra ? ' · ' + tr('{horas} extras', { horas: horas(s.extra + s.dobra) }) : '') + '</b></li></ul></section>' +
       ('<p class="dica centro">' + tr('Sua localização só é registrada com o ponto aberto: na batida e durante a jornada. Nada no intervalo nem depois da saída.') + '</p>'),
   });
 }
 
 function horaComSegundos() {
   const d = new Date();
-  return [d.getHours(), d.getMinutes(), d.getSeconds()].map((n) => String(n).padStart(2, '0')).join(':');
+  const p = (n) => String(n).padStart(2, '0');
+  if (emIngles()) return ((d.getHours() + 11) % 12 + 1) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()) + ' ' + (d.getHours() < 12 ? 'AM' : 'PM');
+  return [d.getHours(), d.getMinutes(), d.getSeconds()].map(p).join(':');
 }
 function iniciarRelogio() {
   pararRelogio();
@@ -210,7 +212,7 @@ async function localizar(obraId) {
 
 function textoDistancia(loc) {
   if (loc.fonte !== 'gps') return ('<span class="cerca-aviso ambar">' + tr('Não foi possível obter o GPS. A batida fica sem localização e vai para conferência.') + '</span>');
-  const d = loc.distancia >= 1000 ? (loc.distancia / 1000).toFixed(1).replace('.', ',') + ' km' : loc.distancia + ' m';
+  const d = distancia(loc.distancia);
   return loc.dentro
     ? '<span class="cerca-aviso verde">' + icone('pino', 16) + (tr('Você está a') + ' ') + d + (' ' + tr('da obra: dentro da cerca ✓') + '</span>')
     : '<span class="cerca-aviso vermelho">' + icone('pino', 16) + (tr('Você está a') + ' ') + d + (' ' + tr('da obra: fora da cerca. A batida fica marcada para o escritório conferir.') + '</span>');
@@ -328,14 +330,14 @@ export const acoesCrew = {
     const ids = aplicaveis(Array.from(selecionados)).entrada;
     const eq = equipeDoEncarregado(usuarioAtual().id) || equipe(funcionario(ids[0]).equipeId) || { obraBaseId: estado().obras[0].id };
     const r = await dialogoComLocal({
-      titulo: proprio(ids) ? tr('Sua entrada') : (tr('Entrada de') + ' ') + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas'), obraId: eq.obraBaseId, comObra: true, rotulo: tr('Bater entrada'),
+      titulo: proprio(ids) ? tr('Sua entrada') : tn(ids.length, 'Entrada de {n} pessoa', 'Entrada de {n} pessoas'), obraId: eq.obraBaseId, comObra: true, rotulo: tr('Bater entrada'),
       corpoDepois: ('<label class="rotulo-pequeno" for="crew-etapa">' + tr('Etapa (cost code)') + '</label><select id="crew-etapa" name="etapa">') + opcoesEtapas(acharObra(eq.obraBaseId).etapa.includes('Alvenaria') ? tr('Alvenaria') : ETAPAS[0]) + '</select>' +
         ('<label class="lembrar"><input type="checkbox" name="foto" value="1"> ' + tr('Foto da equipe (no celular, abre a câmera)') + '</label>'),
     });
     if (!r) return;
     aplicar(ids, 'entrada', r.obraId, r.campos.etapa, r.loc, { foto: !!r.campos.foto, nota: r.campos.nota });
     selecionados.clear();
-    toast(tr('Entrada registrada') + (proprio(ids) ? '' : ' para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas')) + (' ' + tr('às') + ' ') + horaCurta(Date.now()) + '.');
+    toast(tr('Entrada registrada') + (proprio(ids) ? '' : ' ' + tn(ids.length, 'para {n} pessoa', 'para {n} pessoas')) + (' ' + tr('às') + ' ') + horaCurta(Date.now()) + '.');
     app.desenhar();
   },
   async 'crew-intervalo'() { await batidaSimples('intervalo', 'intervalo-inicio', tr('Intervalo iniciado')); },
@@ -343,7 +345,7 @@ export const acoesCrew = {
   async 'crew-saida'() {
     const ids = aplicaveis(Array.from(selecionados)).saida;
     const res = await abrirDialogo({
-      titulo: proprio(ids) ? tr('Bater a sua saída?') : (tr('Bater a saída de') + ' ') + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas') + '?',
+      titulo: proprio(ids) ? tr('Bater a sua saída?') : tn(ids.length, 'Bater a saída de {n} pessoa?', 'Bater a saída de {n} pessoas?'),
       corpo: ('<p class="mudo">' + tr('A jornada de hoje é encerrada. Se alguém continuar trabalhando, deixe essa pessoa de fora.') + '</p>') + campoNota,
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Bater saída'), valor: true, classe: 'btn-primario' }],
     });
@@ -355,7 +357,7 @@ export const acoesCrew = {
     const atual = obraAtualDe(ids[0]);
     const res = await abrirDialogo({
       titulo: tr('Trocar de obra'),
-      corpo: '<p class="mudo pequeno">' + ids.length + (ids.length === 1 ? (' ' + tr('pessoa sai')) : (' ' + tr('pessoas saem'))) + ' de ' + esc(nomeObra(atual)) + (tr('. O tempo de deslocamento até a outra obra conta como hora trabalhada.') + '</p>') +
+      corpo: '<p class="mudo pequeno">' + tn(ids.length, '{n} pessoa sai de {obra}', '{n} pessoas saem de {obra}', { obra: esc(nomeObra(atual)) }) + (tr('. O tempo de deslocamento até a outra obra conta como hora trabalhada.') + '</p>') +
         ('<label class="rotulo-pequeno" for="crew-destino">' + tr('Para qual obra?') + '</label><select id="crew-destino" name="destino">') + opcoesObras(null, atual) + '</select>' + campoNota,
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Sair para a obra'), valor: true, classe: 'btn-primario' }],
     });
@@ -401,7 +403,7 @@ export const acoesCrew = {
       toast((tr('Antes de aprovar, ajuste as batidas sem saída de:') + ' ') + bloqueados.map((id) => funcionario(id).nome).join(', ') + '.');
       return;
     }
-    if (!(await confirmar((tr('Aprovar') + ' ') + ids.length + (ids.length === 1 ? ' timesheet' : ' timesheets') + '?', tr('As horas aprovadas ficam liberadas para a folha de pagamento.'), tr('Aprovar')))) return;
+    if (!(await confirmar(tn(ids.length, 'Aprovar {n} timesheet?', 'Aprovar {n} timesheets?'), tr('As horas aprovadas ficam liberadas para a folha de pagamento.'), tr('Aprovar')))) return;
     decidirSemana(ids, segunda, 'aprovado', usuarioAtual().nome);
     selecionados.clear();
     toast(tr('Aprovado. As horas já podem ser exportadas para a folha.'));
@@ -485,7 +487,7 @@ async function batidaSimples(acao, tipo, mensagem, saida, nota) {
     });
   }
   selecionados.clear();
-  toast(mensagem + (proprio(ids) ? '' : ' para ' + ids.length + (ids.length === 1 ? ' pessoa' : ' pessoas')) + (saida ? '.' : (' ' + tr('às') + ' ') + horaCurta(Date.now()) + '.'));
+  toast(mensagem + (proprio(ids) ? '' : ' ' + tn(ids.length, 'para {n} pessoa', 'para {n} pessoas')) + (saida ? '.' : (' ' + tr('às') + ' ') + horaCurta(Date.now()) + '.'));
   app.desenhar();
 }
 
@@ -495,7 +497,7 @@ function seletorSemana(base, segunda) {
   const atual = inicioDaSemana(hoje());
   const ant = somarDias(segunda, -7), prox = somarDias(segunda, 7);
   return '<div class="seletor-semana"><a class="btn btn-contorno btn-pequeno" href="' + base + '/' + ant + '">' + icone('voltar', 16) + (tr('Anterior') + '</a>') +
-    '<b>' + dataCurta(segunda).slice(0, 5) + ' a ' + dataCurta(somarDias(segunda, 6)).slice(0, 5) + (segunda === atual ? (' ' + tr('· semana atual')) : '') + '</b>' +
+    '<b>' + diaMes(segunda) + ' – ' + diaMes(somarDias(segunda, 6)) + (segunda === atual ? (' ' + tr('· semana atual')) : '') + '</b>' +
     (segunda < atual ? '<a class="btn btn-contorno btn-pequeno" href="' + base + '/' + prox + ('">' + tr('Próxima')) + icone('seta', 16) + '</a>' : '<span></span>') + '</div>';
 }
 
@@ -552,13 +554,13 @@ function telaAgora() {
           const o = acharObra(b.obraId);
           const dist = b.lat != null ? distanciaM(o.cerca.lat, o.cerca.lon, b.lat, b.lon) : null;
           return '<li><div><b>' + esc(f.nome) + ' · ' + ROTULO_BATIDA[b.tipo] + (' ' + tr('às') + ' ') + horaCurta(b.em) + '</b><span class="mudo">' + dataCurta(isoDoDia(new Date(b.em))) + ' · ' + esc(o.nome) +
-            (dist != null ? (' ' + tr('· a') + ' ') + (dist >= 1000 ? (dist / 1000).toFixed(1).replace('.', ',') + ' km' : dist + ' m') + (' ' + tr('da obra')) : (' ' + tr('· sem GPS'))) + '</span></div>' +
+            (dist != null ? (' ' + tr('· a') + ' ') + distancia(dist) + (' ' + tr('da obra')) : (' ' + tr('· sem GPS'))) + '</span></div>' +
             '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/crew/dia/' + f.id + '/' + isoDoDia(new Date(b.em)) + ('">' + tr('Ver dia') + '</a>') +
             '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-conferir" data-id="' + b.id + ('">' + tr('Conferido') + '</button></div></li>');
         }).join('') + '</ul></section>' : '') +
       '<div class="grade-obras-agora">' + obras.map((o) => {
         const aqui = js.filter((x) => x.j.atual && x.j.atual.obraId === o.id);
-        return '<section class="cartao obra-agora"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(o.nome) + '</h2><span class="etiqueta ' + (aqui.length ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + aqui.length + (aqui.length === 1 ? ' pessoa' : ' pessoas') + '</span></div>' +
+        return '<section class="cartao obra-agora"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(o.nome) + '</h2><span class="etiqueta ' + (aqui.length ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + tn(aqui.length, '{n} pessoa', '{n} pessoas') + '</span></div>' +
           '<p class="mudo pequeno">' + esc(o.cidade) + (' ' + tr('· cerca de') + ' ') + o.cerca.raio + ' m</p>' +
           (aqui.length ? '<ul class="pessoas-agora">' + aqui.map(({ f, j }) => {
             const d = descricaoEstado(j);
@@ -617,11 +619,11 @@ function telaSemanaFuncionario(funcId, segunda) {
         '<div class="kpi' + ((s.extra + s.dobra) ? ' kpi-alerta' : '') + ('"><span>' + tr('Horas extras') + '</span><b>') + horas(s.extra + s.dobra) + '</b></div>' +
         (verDinheiro ? ('<div class="kpi"><span>' + tr('Custo') + '</span><b>') + dinheiro(s.custo) + '</b></div>' : '') +
       '</div>' +
-      '<p><span class="etiqueta ' + cls + '">' + txt + '</span>' + (ap ? ' <span class="mudo pequeno">por ' + esc(ap.por) + ' em ' + dataHora(ap.em) + (ap.motivo ? ' · "' + esc(ap.motivo) + '"' : '') + '</span>' : '') + '</p>' +
+      '<p><span class="etiqueta ' + cls + '">' + txt + '</span>' + (ap ? ' <span class="mudo pequeno">' + tr('por {nome} em {quando}', { nome: esc(ap.por), quando: dataHora(ap.em) }) + (ap.motivo ? ' · "' + esc(ap.motivo) + '"' : '') + '</span>' : '') + '</p>' +
       '<div class="lista">' + s.dias.filter((d) => d.batidas.length).map((d) =>
         '<section class="cartao dia-semana"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + primeiraMaiuscula(diaDaSemana(d.iso)) + ', ' + dataCurta(d.iso) + '</h2><b>' + horas(d.pago) + '</b></div>' +
           (d.alertas.length ? '<p class="alertas-dia">' + d.alertas.map((a) => '<span class="etiqueta etiqueta-alerta">' + esc(a.texto) + '</span>').join('') + '</p>' : '') +
-          '<ul class="segmentos">' + d.segmentos.map((sg) => '<li class="seg-' + sg.tipo + '"><span>' + horaCurta(sg.ini) + '–' + (sg.fim ? horaCurta(sg.fim) : (sg.aberto ? 'agora' : '?')) + '</span><b>' +
+          '<ul class="segmentos">' + d.segmentos.map((sg) => '<li class="seg-' + sg.tipo + '"><span>' + horaCurta(sg.ini) + '–' + (sg.fim ? horaCurta(sg.fim) : (sg.aberto ? tr('agora') : '?')) + '</span><b>' +
             (sg.tipo === 'trabalho' ? esc(nomeObra(sg.obraId)) + ' · ' + esc(sg.etapa) : sg.tipo === 'intervalo' ? tr('Intervalo') : (tr('Deslocamento para') + ' ') + esc(nomeObra(sg.obraId))) + '</b></li>').join('') + '</ul>' +
           '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/crew/dia/' + f.id + '/' + d.iso + '">' + icone('pino', 16) + (tr('Mapa do dia') + '</a>') +
           (podeAprovar && s.status !== 'aprovado' ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-ajustar" data-id="' + f.id + '" data-dia="' + d.iso + ('">' + tr('Ajustar') + '</button>') : '') + '</div></section>').join('') + '</div>',
@@ -630,12 +632,16 @@ function telaSemanaFuncionario(funcId, segunda) {
 
 /* ---------- Formatação de valores ---------- */
 
-function pct(v, casas) { return (v * 100).toFixed(casas || 0).replace('.', ',') + '%'; }
-function dinheiroInteiro(v) { return (tr('US$') + ' ') + Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function pct(v, casas) { return decimal(v * 100, casas || 0) + '%'; }
+function dinheiroInteiro(v) {
+  const n = Math.round(Math.abs(v)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, emIngles() ? ',' : '.');
+  return (v < 0 ? '-' : '') + (emIngles() ? '$' + n : 'US$ ' + n);
+}
+/* US$ 12,5 mil (pt) · $12.5k (en) */
 function dinheiroCurto(v) {
   if (Math.abs(v) < 10000) return dinheiroInteiro(v);
-  if (Math.abs(v) < 100000) return (tr('US$') + ' ') + (v / 1000).toFixed(1).replace('.', ',').replace(',0', '') + ' mil';
-  return (tr('US$') + ' ') + (v / 1000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' mil';
+  const mil = Math.abs(v) < 100000 ? decimal(v / 1000, 1).replace(/[.,]0$/, '') : Math.round(v / 1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, emIngles() ? ',' : '.');
+  return emIngles() ? '$' + mil + 'k' : 'US$ ' + mil + ' mil';
 }
 
 /* ---------- Administrador: custos ---------- */
@@ -651,7 +657,7 @@ function abasCustos(ativa) {
 
 function blocoEncargos() {
   const v = encargosVersao(hoje());
-  return ('<p class="dica">' + tr('Custos com') + ' <b>') + pct(encargos(), 2).replace(',00', '') + (' ' + tr('de encargos sobre a folha') + '</b> (') + v.itens.map((i) => esc(i.nome.split(' (')[0]) + ' ' + String(i.pct).replace('.', ',') + '%').join(' · ') + (tr('), vigentes desde') + ' ') + dataCurta(v.desde) + '. ' +
+  return ('<p class="dica">' + tr('Custos com') + ' <b>') + pct(encargos(), 2).replace(/[.,]00%$/, '%') + (' ' + tr('de encargos sobre a folha') + '</b> (') + v.itens.map((i) => esc(i.nome.split(' (')[0]) + ' ' + String(i.pct).replace('.', ',') + '%').join(' · ') + (tr('), vigentes desde') + ' ') + dataCurta(v.desde) + '. ' +
     ('<a href="#/settings/encargos">' + tr('Configurar em Settings') + '</a></p>');
 }
 
@@ -678,7 +684,7 @@ function telaCustosObras() {
       '</div>' +
       resumos.sort((a, b) => (a.saldo == null ? 1 : b.saldo == null ? -1 : a.saldo / a.orcamento - b.saldo / b.orcamento)).map(cartaoObra).join('') +
       blocoEncargos() +
-      ('<p class="dica">' + tr('Como projetamos: com o') + ' <b>' + tr('avanço físico') + '</b> ' + tr('informado, projeção = realizado ÷ avanço (se gastou 31% e fez 30%, vai gastar ~3% a mais que o orçado). Sem avanço, usamos o') + ' <b>ritmo</b> ' + tr('das últimas 4 semanas até o fim do prazo. Só mão de obra: material, subempreiteiros e equipamentos ficam de fora (ver docs/crew.md).') + '</p>'),
+      ('<p class="dica">' + tr('Como projetamos: com o') + ' <b>' + tr('avanço físico') + '</b> ' + tr('informado, projeção = realizado ÷ avanço (se gastou 31% e fez 30%, vai gastar ~3% a mais que o orçado). Sem avanço, usamos o') + ' <b>' + tr('ritmo') + '</b> ' + tr('das últimas 4 semanas até o fim do prazo. Só mão de obra: material, subempreiteiros e equipamentos ficam de fora (ver docs/crew.md).') + '</p>'),
   });
 }
 
@@ -692,7 +698,7 @@ function cartaoObra(r) {
   }).join('');
   return '<section class="cartao custo-obra" id="obra-' + r.obra.id + '"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(r.obra.nome) + ' <span class="etiqueta ' + cls + '">' + rot + '</span></h2>' +
       '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-orcamento" data-obra="' + r.obra.id + ('">' + tr('Editar orçamento') + '</button></div>') +
-    '<p class="mudo pequeno">' + dataCurta(r.obra.inicio) + ' a ' + dataCurta(r.obra.prazo) + (' ' + tr('· faltam') + ' ') + Math.round(r.semanasRestantes) + ' semanas</p>' +
+    '<p class="mudo pequeno">' + dataCurta(r.obra.inicio) + ' – ' + dataCurta(r.obra.prazo) + ' · ' + tn(Math.round(r.semanasRestantes), 'falta {n} semana', 'faltam {n} semanas') + '</p>' +
     '<div class="numeros-obra">' +
       ('<div><span>' + tr('Orçamento') + '</span><b>') + (r.orcamento ? dinheiroInteiro(r.orcamento) : '—') + '</b></div>' +
       ('<div><span>' + tr('Realizado') + '</span><b>') + dinheiroInteiro(r.realizado) + '</b>' + (r.pctConsumido != null ? '<small>' + pct(r.pctConsumido) + (' ' + tr('do orçamento') + '</small>') : '') + '</div>' +
@@ -727,7 +733,7 @@ function graficoObra(r) {
   const grade = passoY.map((v) => '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + f1(y(v)) + '" y2="' + f1(y(v)) + '" class="g-grade"/><text x="' + (m.l - 8) + '" y="' + f1(y(v) + 4) + '" class="g-eixo" text-anchor="end">' + esc(dinheiroCurto(v)) + '</text>').join('');
   const hojeX = ultimo[0];
   const rotulosX = '<text x="' + m.l + '" y="' + (H - 8) + '" class="g-eixo">' + dataCurta(r.obra.inicio).slice(0, 5) + '</text>' +
-    '<text x="' + f1(hojeX) + '" y="' + (H - 8) + '" class="g-eixo" text-anchor="middle">hoje</text>' +
+    '<text x="' + f1(hojeX) + '" y="' + (H - 8) + '" class="g-eixo" text-anchor="middle">' + tr('hoje') + '</text>' +
     '<text x="' + (W - m.r) + '" y="' + (H - 8) + '" class="g-eixo" text-anchor="end">' + dataCurta(r.obra.prazo).slice(0, 5) + '</text>';
   // rótulos à direita (orçamento e projeção) afastados no mínimo 30 unidades para não encavalar
   let yOrc = r.orcamento ? y(r.orcamento) : null, yProj = y(r.projecao);
@@ -1014,7 +1020,7 @@ function dadosDoMapa(j, trilha, percurso, passos) {
 }
 
 function minutosEntre(a, b) { return Math.max(0, Math.round((b - a) / 60000)); }
-function formatarDistancia(m) { return m >= 1000 ? (m / 1000).toFixed(1).replace('.', ',') + ' km' : Math.round(m) + ' m'; }
+function formatarDistancia(m) { return distancia(m); }
 
 function htmlPercurso(percurso) {
   const itens = percurso.paradas.map((p) => ({ em: p.chegada, html:
@@ -1027,12 +1033,12 @@ function htmlPercurso(percurso) {
   percurso.pernas.forEach((p, i) => itens.push({ em: p.ini + 1, html:
     '<li class="perna perna-' + p.tipo + '" id="perna-' + i + '"><span class="perna-linha"></span><div>' +
       (p.tipo === 'deslocamento'
-        ? ('<b>' + tr('Deslocamento') + ' ') + horaCurta(p.ini) + '–' + (p.fim ? horaCurta(p.fim) : 'agora') + (p.fim ? ' (' + minutosEntre(p.ini, p.fim) + (' ' + tr('min)')) : '') + '</b><span class="mudo pequeno">' + esc(p.deNome) + ' → ' + esc(p.paraNome) + '</span>'
+        ? ('<b>' + tr('Deslocamento') + ' ') + horaCurta(p.ini) + '–' + (p.fim ? horaCurta(p.fim) : tr('agora')) + (p.fim ? ' (' + minutosEntre(p.ini, p.fim) + (' ' + tr('min)')) : '') + '</b><span class="mudo pequeno">' + esc(p.deNome) + ' → ' + esc(p.paraNome) + '</span>'
         : ('<b>' + tr('Saiu da cerca') + ' ') + horaCurta(p.ini) + '–' + horaCurta(p.fim) + ' (' + minutosEntre(p.ini, p.fim) + (' ' + tr('min)') + '</b><span class="mudo pequeno">') + esc(p.local) + (tr(', com o ponto aberto') + '</span>')) +
       '<span class="perna-dist">' + formatarDistancia(distanciaM(p.de[0], p.de[1], (p.via || p.para)[0], (p.via || p.para)[1]) * (p.via ? 2 : 1)) + (' ' + tr('em linha reta')) + (p.via ? (' ' + tr('(ida e volta)')) : '') + '</span>' +
     '</div></li>' }));
   itens.sort((a, b) => a.em - b.em);
-  return ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Percurso do dia') + '</h2><span class="mudo pequeno">') + percurso.paradas.length + (percurso.paradas.length === 1 ? ' obra' : ' obras') + '</span></div>' +
+  return ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Percurso do dia') + '</h2><span class="mudo pequeno">') + tn(percurso.paradas.length, '{n} obra', '{n} obras') + '</span></div>' +
     '<ol class="percurso">' + itens.map((x) => x.html).join('') + '</ol></section>';
 }
 
@@ -1048,7 +1054,7 @@ function carregarLeaflet() {
       const js = document.createElement('script');
       js.src = 'vendor/leaflet/leaflet.js';
       js.onload = () => ok(window.L);
-      js.onerror = () => { leafletPromessa = null; falha(new Error(tr('Leaflet indisponível'))); };
+      js.onerror = () => { leafletPromessa = null; falha(new Error('Leaflet indisponível')); };
       document.head.appendChild(js);
     });
   }
@@ -1061,7 +1067,7 @@ const rotasCache = new Map();
 function rotaPelasRuas(pontos) {
   const chave = pontos.map((p) => p[1].toFixed(5) + ',' + p[0].toFixed(5)).join(';');
   if (!rotasCache.has(chave)) {
-    const url = 'https://router.project-osrm.org/route/v1/driving/' + chave + tr('?overview=full&geometries=geojson');
+    const url = 'https://router.project-osrm.org/route/v1/driving/' + chave + '?overview=full&geometries=geojson';
     rotasCache.set(chave, fetch(url).then((r) => (r.ok ? r.json() : null)).then((j) => {
       const rota = j && j.code === 'Ok' && j.routes && j.routes[0];
       return rota ? { coords: rota.geometry.coordinates.map(([lon, lat]) => [lat, lon]), distancia: rota.distance, duracao: rota.duration } : null;
@@ -1101,7 +1107,7 @@ async function montarMapa() {
   area.innerHTML = '';
   area.classList.add('com-ruas');
   const m = L.map(area, { scrollWheelZoom: true, zoomControl: true, attributionControl: true });
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: tr('© OpenStreetMap') }).addTo(m);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(m);
   const limites = [];
   for (const c of d.cercas) {
     L.circle([c.lat, c.lon], { radius: c.raio, color: '#0F766E', weight: 2, dashArray: '6 5', fillColor: '#0F766E', fillOpacity: 0.12 }).addTo(m);
@@ -1150,7 +1156,7 @@ async function montarMapa() {
       if (comp < 40) return;
       for (const f of [0.5]) {
         const { pos, ang } = aoLongo(cam, f);
-        L.marker(pos, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'seta-rota', html: '<span style="transform:rotate(' + ang.toFixed(0) + tr('deg);background:') + corDoTrecho(passos[i - 1], p) + '"></span>', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(setas);
+        L.marker(pos, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'seta-rota', html: '<span style="transform:rotate(' + ang.toFixed(0) + 'deg);background:' + corDoTrecho(passos[i - 1], p) + '"></span>', iconSize: [14, 14], iconAnchor: [7, 7] }) }).addTo(setas);
       }
     });
   };
@@ -1348,7 +1354,7 @@ function telaDia(funcId, iso) {
   }))).sort((a, b) => a.em - b.em);
   const voltar = admin ? { href: '#/crew/semana/' + f.id + '/' + inicioDaSemana(iso), rotulo: (tr('Semana de') + ' ') + f.nome.split(' ')[0] } : { href: '#/crew/equipe', rotulo: tr('Ponto da equipe') };
   return moldura({
-    ativo: admin ? 'timesheets' : 'equipe', largo: admin, titulo: f.nome, subtitulo: primeiraMaiuscula(diaDaSemana(iso)) + ', ' + dataCurta(iso) + ' · ' + horas(j.pago) + ' pagas',
+    ativo: admin ? 'timesheets' : 'equipe', largo: admin, titulo: f.nome, subtitulo: primeiraMaiuscula(diaDaSemana(iso)) + ', ' + dataCurta(iso) + ' · ' + tr('{horas} pagas', { horas: horas(j.pago) }),
     voltar,
     conteudo:
       (j.alertas.length ? '<p class="alertas-dia">' + j.alertas.map((a) => '<span class="etiqueta etiqueta-alerta">' + esc(a.texto) + '</span>').join('') + '</p>' : '') +
@@ -1357,7 +1363,7 @@ function telaDia(funcId, iso) {
             (j.batidas.length ? '<div class="mapa-botoes"><button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-reproduzir">' + icone('play', 16) + ('<span>' + tr('Reproduzir') + '</span></button>') +
               '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-mapa-cheio">' + icone('olho', 16) + ('<span>' + tr('Tela cheia') + '</span></button></div>') : '') + '</div>' +
           (j.batidas.length ? resumoPassos(passos) + '<div class="mapa-area" id="mapa-dia" data-mapa="' + esc(JSON.stringify(dadosDoMapa(j, trilha, percurso, passos))) + '">' + mapaSvg(j, trilha) + '</div>' : ('<p class="vazio">' + tr('Sem batidas neste dia.') + '</p>')) +
-          ('<p class="legenda-mapa"><span><i class="lg-inicio"></i>entrada</span><span><i class="lg-fim"></i>' + tr('saída') + '</span><span><i class="lg-ponto"></i>' + tr('registro de localização') + '</span><span><i class="lg-seta"></i>' + tr('sentido do percurso') + '</span><span><i class="lg-parada">1</i>' + tr('obra (ordem da visita)') + '</span><span><i class="lg-cerca"></i>' + tr('cerca da obra') + '</span><span><i class="lg-desloc"></i>deslocamento</span><span><i class="lg-batida"></i>batida</span><span><i class="lg-fora"></i>' + tr('fora da cerca') + '</span></p>') +
+          ('<p class="legenda-mapa"><span><i class="lg-inicio"></i>' + tr('entrada') + '</span><span><i class="lg-fim"></i>' + tr('saída') + '</span><span><i class="lg-ponto"></i>' + tr('registro de localização') + '</span><span><i class="lg-seta"></i>' + tr('sentido do percurso') + '</span><span><i class="lg-parada">1</i>' + tr('obra (ordem da visita)') + '</span><span><i class="lg-cerca"></i>' + tr('cerca da obra') + '</span><span><i class="lg-desloc"></i>' + tr('deslocamento') + '</span><span><i class="lg-batida"></i>' + tr('batida') + '</span><span><i class="lg-fora"></i>' + tr('fora da cerca') + '</span></p>') +
           ('<p class="mudo pequeno">' + tr('A localização só é registrada com o ponto aberto: na entrada, na saída, na troca de obra, quando o app é aberto e a cada') + ' ') + REGISTRO_GPS_MIN + (' ' + tr('min (a cada') + ' ') + REGISTRO_MOVIMENTO_MIN + (' ' + tr('min em deslocamento). Nada é registrado no intervalo nem com o ponto fechado. O trabalhador é avisado e vê o próprio mapa. No protótipo, os registros são simulados; na versão real, vêm do GPS do app nativo.') + '</p></section>') +
           (j.batidas.length ? htmlPercurso(percurso) + htmlPassos(passos) : '') : '') +
         ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Linha do tempo') + '</h2>') +

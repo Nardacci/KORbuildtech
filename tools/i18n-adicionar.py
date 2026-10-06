@@ -9,7 +9,7 @@ novos = json.load(sys.stdin)
 existentes = set(json.loads('"' + m + '"') for m in re.findall(r"^\s*'((?:\\.|[^'\\])*)':", src, re.M) for _ in [0]) if False else None
 
 def lit(s):
-    return "'" + s.replace('\\', '\\\\').replace("'", "\\'") + "'"
+    return "'" + s.replace('\\', '\\\\').replace("'", "\\'").replace('\n', '\\n') + "'"
 
 chaves = set()
 for m in re.finditer(r"^  '((?:\\.|[^'\\])*)':", src, re.M):

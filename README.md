@@ -16,7 +16,7 @@ Todos entram pelo mesmo login. O que cada um vê vem do **perfil de acesso** (Se
 
 ## Idioma
 
-O protótipo é em português para a validação. **A versão final do produto será toda em inglês.** A tradução fica para quando o projeto estiver finalizado; até lá, tudo segue em português. As regras para não amarrar o código ao português estão em `CLAUDE.md`.
+O produto é em **inglês** (padrão), com formatos dos EUA (data MM/DD/YYYY, 4:30 PM, $1,234.56, °F, milhas). O **português** fica como opção: botão **PT | EN** na tela de entrada (recria a demonstração no idioma) e no menu do usuário. Detalhes, regras e glossário em [`docs/i18n.md`](docs/i18n.md).
 
 ## Como abrir
 

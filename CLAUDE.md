@@ -29,7 +29,7 @@ Protótipo de validação da plataforma KORbuild (veja o README). Site estático
 - **Custos do Crew:** valor hora com vigência (`f.valores`, `valorHoraEm`; nunca reescrever o passado; não começar em semana aprovada), encargos sobre a folha (Settings), orçamento por obra (`crew.orcamentos`, com avanço físico), semanas antigas em `crew.historico` ([data, pessoa, obra, etapa, minutos]). Motor: `lancamentosDaSemana` → `custosDoPeriodo` / `resumoDaObra` (projeção pelo avanço ou pelo ritmo; no rumo / atenção ≤ 5% / estouro).
 - **Mapa do dia:** Leaflet guardado em `vendor/leaflet/` (não usar CDN) com blocos do OpenStreetMap; se a biblioteca não carregar, fica o SVG de `mapaSvg()`. Endereços das obras e **Percurso do dia** (`percursoDoDia`): rotas pelas ruas via OSRM público e endereço das batidas fora da cerca via Nominatim; sem internet ficam as linhas retas tracejadas. Registros de localização (`trilhaDoDia` + `passosDoDia`): pontos na batida, na troca, na abertura do app e a cada 15 min (5 min em deslocamento), nunca no intervalo nem com o ponto fechado; reprodução (playback) em `montarMapa`. Requisito ainda provisório: ver docs/crew-analise.md §5.5. No teste, blocos de rua, OSRM e Nominatim são simulados.
 - **Notificações:** sininho na barra superior (`notificacoesDe` em `js/plataforma.js`); cada módulo informa as suas (`notificacoesDaily` em `js/app.js`, `notificacoesCrew` em `js/crew-telas.js`).
-- Testes: `tests/demo.test.mjs` (Daily), `tests/crew.test.mjs` (Crew), `tests/measure.test.mjs` (Measure, tela de computador) e `tests/imperial.test.mjs` (Node puro).
+- Testes: `tests/demo.test.mjs` (Daily), `tests/crew.test.mjs` (Crew), `tests/measure.test.mjs` (Measure, tela de computador), `tests/ingles.test.mjs` (telas em inglês) e `tests/imperial.test.mjs` (Node puro).
 - **Atores** (`docs/saas.md` §Atores, `js/contatos.js`): a empresa que assina é "a empresa" (prestadora ou construtora), nunca "a construtora" fixa. Construtoras, clientes e fornecedores são **contatos** de um diretório único com marcadores; projeto e obra têm **contratante** (recebe proposta e diário) e, se for outro, **dono**. A demonstração tem duas empresas isoladas (Construtora Exemplo, da Ana; Northfield Framing & Siding, a prestadora do Tom); `estado()` devolve só a empresa do usuário da sessão. **O Measure é da prestadora**: a construtora não abre os desenhos (só receberá relatórios).
 - **Measure** (`js/imperial.js`, `js/measure.js`, `js/measure-telas.js`, doc `docs/measure.md`): nunca calcular com texto ou fração; guardar polegadas/pol²/pol³ e pontos em coordenadas da página do PDF (nunca pixels); escala por folha com conferência; condição separada das medições; PDF.js em `vendor/pdfjs/` (sem CDN). Unidades imperiais na tela (ft-in, lin ft, sq ft, cu yd). Fórmulas só pelo `js/formulas.js` (mathjs restrita em `vendor/mathjs/`, lista branca; nunca `eval`); perda e arredondamento são campos da linha, não números na fórmula; toda quantidade mostra o rastro do cálculo.
 - Login é mockup: todos caem na página dos módulos. A distinção de papel acontece dentro do módulo.
@@ -38,14 +38,13 @@ Protótipo de validação da plataforma KORbuild (veja o README). Site estático
 
 A branch principal é a `main`: é a que o GitHub Pages publica e a que vai para a demonstração. Trabalhe e publique nela.
 
-## Idioma: o protótipo é em português, a versão final será toda em inglês
+## Idioma: inglês (padrão) e português
 
-- O protótipo e a demonstração continuam em português (pt-BR) por enquanto.
-- O produto final será em inglês. Ao criar ou mudar algo, evite amarrar o produto ao Brasil sem necessidade:
-  - texto que a pessoa vê fica perto do topo de cada módulo ou em constantes nomeadas (ex.: `SITUACOES`, `TIPOS_OCORRENCIA`, `STATUS_RDO` em `js/relatorio.js`), não espalhado em lógica;
-  - datas, números e unidades passam por funções de `js/util.js` (`dataCurta`, `tamanho`…), para trocar o formato num lugar só;
-  - termos e campos só do Brasil (RDO, CREA, CNPJ, "praticável/impraticável", m² e °C) ficam isolados em dados (`js/exemplo.js`) ou rótulos, nunca em regra de negócio.
-- **Não traduzir agora.** A tradução (textos, termos do setor como *Daily Report / Daily Log*, unidades e formatos dos EUA) acontece só quando o projeto estiver finalizado, como uma etapa própria. Até lá, tudo novo é escrito em português.
+- O produto é em inglês; o português fica como opção (botão PT | EN). Tudo está em [`docs/i18n.md`](docs/i18n.md).
+- **Todo texto que a pessoa vê passa por `tr()`/`tn()`** de `js/i18n.js`, com a frase inteira em português como chave e o inglês em `js/i18n-en.js`. Use variáveis (`{nome}`), não concatene pedaços de frase.
+- Datas, horas, dinheiro, distâncias e clima só pelas funções de `js/util.js` e `dinheiro()`.
+- Depois de mexer em texto: `node tools/i18n-faltando.mjs` (frases sem inglês) e `node tests/ingles.test.mjs` (português nas telas em inglês).
+- As suítes `demo`, `crew` e `measure` rodam em português (fixam `kbt.idioma = 'pt'`).
 
 ## Testes
 

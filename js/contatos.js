@@ -101,8 +101,8 @@ export function salvarContato(id, dados, por) {
 /* Onde o contato aparece (não se exclui quem está em uso). */
 export function usosDoContato(id) {
   const d = estado();
-  const projetos = ((d.measure && d.measure.projetos) || []).filter((p) => p.contratanteId === id || p.donoId === id).map((p) => 'projeto ' + p.nome);
-  const obras = d.obras.filter((o) => o.contratanteId === id || o.donoId === id).map((o) => 'obra ' + o.nome);
+  const projetos = ((d.measure && d.measure.projetos) || []).filter((p) => p.contratanteId === id || p.donoId === id).map((p) => tr('projeto {nome}', { nome: p.nome }));
+  const obras = d.obras.filter((o) => o.contratanteId === id || o.donoId === id).map((o) => tr('obra {nome}', { nome: o.nome }));
   return projetos.concat(obras);
 }
 
@@ -124,5 +124,5 @@ export function contratanteDe(x) { return contato(x.contratanteId) || null; }
 export function donoDe(x) { return contato(x.donoId) || contratanteDe(x); }
 export function textoPartes(x) {
   const c = contratanteDe(x), o = contato(x.donoId);
-  return [c ? c.nome : '', o && o.id !== (c && c.id) ? 'para ' + o.nome : ''].filter(Boolean).join(' · ');
+  return [c ? c.nome : '', o && o.id !== (c && c.id) ? tr('para {nome}', { nome: o.nome }) : ''].filter(Boolean).join(' · ');
 }

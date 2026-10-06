@@ -6,8 +6,10 @@
  *  - Toda mudança fica na auditoria: quem, quando, antes, depois e motivo.
  *  - Não amarra a um estado: os "modelos" só preenchem o formulário; a empresa ajusta. */
 
-import { hoje, somarDias, novoId } from './util.js';
-import { tr, tn } from './i18n.js';
+import { hoje, somarDias, novoId, numTexto, decimal } from './util.js';
+import { tr, tn, emIngles } from './i18n.js';
+
+const dinheiroHora = (v) => (emIngles() ? '$' + v.toFixed(2) : 'US$ ' + v.toFixed(2).replace('.', ',')) + '/h';
 import { estado, salvar } from './armazem.js';
 
 /* ---------- Utilidades de data ---------- */
@@ -105,14 +107,14 @@ export function novosEncargos(itens, desde, motivo, por) {
   if (!limpos.length || limpos.some((i) => !(i.pct >= 0 && i.pct <= 100))) return { erro: tr('Cada encargo precisa de um nome e de um % entre 0 e 100.') };
   const antes = encargosVersao(desde);
   cfg().encargos.push({ id: novoId('en'), desde, itens: limpos, motivo: motivo.trim(), por, em: Date.now() });
-  const fmt = (v) => v.itens.map((i) => i.nome + ' ' + String(i.pct).replace('.', ',') + '%').join(' · ') + ' = ' + (v.itens.reduce((t, i) => t + i.pct, 0)).toFixed(2).replace('.', ',') + '%';
+  const fmt = (v) => v.itens.map((i) => i.nome + ' ' + numTexto(i.pct) + '%').join(' · ') + ' = ' + decimal(v.itens.reduce((t, i) => t + i.pct, 0), 2) + '%';
   auditar(tr('Encargos'), (tr('Nova versão a partir de') + ' ') + desde.split('-').reverse().join('/'), fmt(antes), fmt({ itens: limpos }), motivo.trim(), por);
   salvar();
   return { ok: true };
 }
 
 export function resumoRegra(r) {
-  const f = (v) => String(v).replace('.', ',');
+  const f = (v) => numTexto(v);
   return (tr('Semanal: acima de') + ' ') + f(r.semanal.limite) + (' ' + tr('h →') + ' ') + f(r.semanal.fator) + tr('×') +
     (r.diaria.ativo ? (' ' + tr('· Diária: acima de') + ' ') + f(r.diaria.limite) + (' ' + tr('h →') + ' ') + f(r.diaria.fator) + (tr('×, acima de') + ' ') + f(r.diaria.dobra) + (' ' + tr('h →') + ' ') + f(r.diaria.fatorDobra) + tr('×') : (' ' + tr('· Sem hora extra diária'))) +
     (' ' + tr('· Intervalo:') + ' ') + f(r.intervalo.minimo) + (' ' + tr('min depois de') + ' ') + f(r.intervalo.apos) + ' h';
@@ -161,7 +163,7 @@ export function salvarFuncionario(id, dados, por) {
       valores: [{ desde: dados.admissao, valor: Math.round(valor * 100) / 100, motivo: tr('Admissão'), por, em: Date.now() }],
     };
     lista.push(f);
-    auditar(tr('Funcionários'), (tr('Cadastro de') + ' ') + f.nome, '', CLASSIFICACOES[f.classificacao] + ' · ' + f.funcao + (' ' + tr('· US$') + ' ') + valor.toFixed(2).replace('.', ',') + '/h', '', por);
+    auditar(tr('Funcionários'), (tr('Cadastro de') + ' ') + f.nome, '', CLASSIFICACOES[f.classificacao] + ' · ' + f.funcao + ' · ' + dinheiroHora(valor), '', por);
     salvar();
     return { ok: true, id: f.id };
   }
@@ -179,7 +181,7 @@ export function salvarFuncionario(id, dados, por) {
   const antes = mudou.map((k) => CAMPOS_FUNC[k] + ': ' + legivel(k, f[k])).join(' · ') + (certAntes !== certDepois ? (' ' + tr('· Certificações:') + ' ') + ((f.certificacoes || []).map((c) => c.nome).join(', ') || '—') : '');
   const depois = mudou.map((k) => CAMPOS_FUNC[k] + ': ' + legivel(k, novo[k])).join(' · ') + (certAntes !== certDepois ? (' ' + tr('· Certificações:') + ' ') + (certificacoes.map((c) => c.nome).join(', ') || '—') : '');
   Object.assign(f, novo, { certificacoes });
-  auditar(tr('Funcionários'), (tr('Cadastro de') + ' ') + f.nome + ' alterado', antes, depois, '', por);
+  auditar(tr('Funcionários'), tr('Cadastro de {nome} alterado', { nome: f.nome }), antes, depois, '', por);
   salvar();
   return { ok: true, id };
 }

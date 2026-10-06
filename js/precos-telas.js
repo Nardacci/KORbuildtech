@@ -31,16 +31,16 @@ export function telaPrecos(moldura) {
     const p = precoEm(it);
     const h = historicoDePrecos(it);
     return '<tr><td class="mudo">' + esc(it.codigo) + '</td><td><b>' + esc(it.nome) + '</b>' + (h.length > 1 ? '<details class="preco-historico"><summary>' + h.length + (' ' + tr('preços') + '</summary><ul>') +
-        h.map((x) => '<li>' + dinheiro(x.valor) + ' desde ' + dataCurta(x.desde) + ' · ' + esc(x.fonte) + '</li>').join('') + '</ul></details>' : '') + '</td>' +
+        h.map((x) => '<li>' + dinheiro(x.valor) + ' ' + tr('desde {data}', { data: dataCurta(x.desde) }) + ' · ' + esc(x.fonte) + '</li>').join('') + '</ul></details>' : '') + '</td>' +
       '<td class="num">' + (p ? '<b>' + dinheiro(p.valor) + '</b> / ' + esc(it.unidade) : ('<span class="etiqueta etiqueta-ambar">' + tr('sem preço') + '</span>')) + '</td>' +
-      '<td class="pequeno">' + (p ? 'desde ' + dataCurta(p.desde) + '<span class="mudo bloco">' + esc(p.fonte) + '</span>' : '') + '</td>' +
+      '<td class="pequeno">' + (p ? tr('desde {data}', { data: dataCurta(p.desde) }) + '<span class="mudo bloco">' + esc(p.fonte) + '</span>' : '') + '</td>' +
       '<td class="num">' + (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="preco-novo" data-id="' + it.id + ('">' + tr('Novo preço') + '</button>') : '') + '</td></tr>';
   };
   return moldura({
     ativo: 'precos', largura: 'larga', titulo: tr('Preços'), subtitulo: tr('Custo de cada item com vigência, e as margens que viram o preço de venda da proposta'),
     conteudo:
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Margens') + '</h2>') + (ed ? ('<button type="button" class="btn btn-contorno btn-pequeno" data-acao="margens-nova">' + tr('Nova versão') + '</button>') : '') + '</div>' +
-        '<p class="margens-atual"><b>' + esc(textoMargens(m)) + '</b> <span class="mudo pequeno">desde ' + dataCurta(m.desde) + '</span></p>' +
+        '<p class="margens-atual"><b>' + esc(textoMargens(m)) + '</b> <span class="mudo pequeno">' + tr('desde {data}', { data: dataCurta(m.desde) }) + '</span></p>' +
         ('<p class="mudo pequeno">' + tr('Exemplo: custo de US$ 1.000,00 → com overhead') + ' ') + dinheiro(exemplo.comOverhead) + (' ' + tr('→ preço de venda') + ' <b>') + dinheiro(exemplo.venda) + '</b>. ' +
           (tr('Markup: lucro sobre o custo com overhead. Margem: lucro como parte do preço de venda.') + '</p>') +
         (historicoDeMargens().length > 1 ? ('<details class="preco-historico"><summary>' + tr('Histórico') + '</summary><ul>') + historicoDeMargens().map((x) => '<li>' + dataCurta(x.desde) + ' · ' + esc(textoMargens(x)) + ' · ' + esc(x.motivo) + ' · ' + esc(x.por) + '</li>').join('') + '</ul></details>' : '') +
@@ -63,7 +63,7 @@ async function dialogoPreco(it) {
   const crew = it.categoria === 'mao-de-obra' ? custoHoraDoCrew() : null;
   const res = await abrirDialogo({
     titulo: (tr('Novo preço ·') + ' ') + it.nome,
-    corpo: (atual ? ('<p class="mudo pequeno">' + tr('Atual:') + ' ') + dinheiro(atual.valor) + ' / ' + esc(it.unidade) + ' desde ' + dataCurta(atual.desde) + ' (' + esc(atual.fonte) + ')</p>' : '') +
+    corpo: (atual ? ('<p class="mudo pequeno">' + tr('Atual:') + ' ') + dinheiro(atual.valor) + ' / ' + esc(it.unidade) + ' ' + tr('desde {data}', { data: dataCurta(atual.desde) }) + ' (' + esc(atual.fonte) + ')</p>' : '') +
       ('<label class="rotulo-pequeno" for="pr-valor">' + tr('Preço por') + ' ') + esc(it.unidade) + (' ' + tr('(US$)') + '</label><input type="text" inputmode="decimal" id="pr-valor" name="valor" value="') + (crew ? esc(numero(crew.custo, 2)) : '') + '">' +
       (crew ? ('<p class="mudo pequeno">' + tr('Sugestão do Crew:') + ' ') + dinheiro(crew.custo) + (' ' + tr('(valor hora médio + encargos).') + '</p>') : '') +
       ('<label class="rotulo-pequeno" for="pr-desde">' + tr('Vale a partir de') + '</label><input type="date" id="pr-desde" name="desde" value="') + hoje() + '">' +
@@ -120,7 +120,7 @@ async function dialogoRespostaCotacao(projetoId, fornecedorId) {
   p.cotacao = p.cotacao || {};
   p.cotacao.respostas = (p.cotacao.respostas || []).concat([{ fornecedorId, em: new Date().toISOString(), por: quem(), itens: n }]);
   salvar();
-  toast(n ? n + (n === 1 ? (' ' + tr('preço salvo')) : (' ' + tr('preços salvos'))) + ' de ' + f.nome + tr('. A proposta já usa os preços novos.') : tr('Nenhum preço digitado.'));
+  toast(n ? n + (n === 1 ? (' ' + tr('preço salvo')) : (' ' + tr('preços salvos'))) + ' ' + tr('de {nome}', { nome: f.nome }) + tr('. A proposta já usa os preços novos.') : tr('Nenhum preço digitado.'));
   app.desenhar();
 }
 
