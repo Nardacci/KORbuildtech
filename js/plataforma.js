@@ -233,6 +233,8 @@ export function telaLogin(grupos) {
         ('<button type="submit" class="btn btn-primario btn-bloco btn-grande">' + tr('Entrar') + '</button>') +
         ('<div class="usuarios-demo"><b>' + tr('Usuários de demonstração') + '</b>') + grupos.map((g) => '<p><span class="usuarios-demo-empresa">' + esc(g.empresa) + '</span>' +
           g.usuarios.map((x) => ' · ' + esc(x.perfil) + ': ' + email(x.u)).join('') + '</p>').join('') + '</div>' +
+        ('<p class="login-manual">' + icone('daily', 16) + '<span>' + tr('Manual de teste (em português):') + ' <a href="manual/manual-de-teste.html">' + tr('Abrir') + '</a> · ' +
+          '<a href="manual/KORbuild_Manual_de_teste.docx" download>' + tr('Baixar (Word)') + '</a></span></p>') +
       '</form>' +
     '</section>' +
   '</div>';

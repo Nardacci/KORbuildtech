@@ -147,6 +147,7 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 | `js/measure-telas.js` | Measure: lista para cotação por fornecedor e proposta (PDF e e-mail), preços com vigência e margens (preço calculado na proposta), typicals (o que se repete), lista e cadastro de projetos, assemblies incluídos no desenho pelo catálogo, borracha e vão desenhado, condições por folha, projeto, visor com PDF.js e canvas (calibrar, conferir, medir), envio de PDF |
 | `vendor/pdfjs/` | PDF.js 4.10 (Mozilla, Apache 2.0), carregado só no Measure |
 | `assets/plantas/`, `tools/gerar-planta.py` | Jogo de plantas de exemplo (PDF vetorial de 3 folhas: planta, fachadas e corte) e o script que o gera |
+| `manual/`, `tools/manual-html.py` | Manual de teste para quem vai testar (Word) e a versão para ler no navegador, gerada a partir do Word (`python3 tools/manual-html.py`). Os links ficam na tela de entrada |
 | `js/settings.js` | Settings: funcionários, regras de jornada e encargos com vigência, cálculo das horas extras pela regra, auditoria |
 | `js/settings-telas.js` | Settings: telas (funcionários, encargos, regras, auditoria) e avisos de certificação no sininho |
 | `js/crew-telas.js` | Crew: telas do encarregado e do escritório, mapa do dia e notificações |

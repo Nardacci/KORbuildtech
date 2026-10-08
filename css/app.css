@@ -1162,6 +1162,10 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .usuarios-demo p { margin: 4px 0 0; }
 .usuarios-demo-empresa { font-weight: 700; color: var(--texto); }
 
+.login-manual { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; font-size: 13px; color: var(--texto-2); }
+.login-manual svg { flex: none; margin-top: 2px; color: var(--mudo); }
+.login-manual a { font-weight: 600; }
+
 /* ---------- Measure: documentos (lista para cotação e proposta) ---------- */
 .doc { padding: 24px; display: flex; flex-direction: column; gap: 16px; font-size: 13px; color: #141B26; background: #fff; }
 .pdf-folha .doc { padding: 14mm 12mm; }

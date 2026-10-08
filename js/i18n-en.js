@@ -2159,4 +2159,8 @@ export const EN = {
 
   // ---------- Cronograma (2) ----------
   'Etapa da obra': 'Task',
+
+  // ---------- Tela de entrada — manual ----------
+  'Manual de teste (em português):': 'Test guide (in Portuguese):',
+  'Baixar (Word)': 'Download (Word)',
 };
