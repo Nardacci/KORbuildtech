@@ -100,6 +100,14 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 - **PDF A4** com o logo da empresa, os dados da obra, o clima, as tabelas, as fotos com legenda, data e GPS, o lacre e as assinaturas.
 - **Link do cliente** (somente leitura, sem conta) que confere o lacre: se o conteúdo mudar depois da aprovação, o link avisa.
 
+**Cronograma da obra** (documentação em [`docs/cronograma.md`](docs/cronograma.md))
+- **A prestadora monta** as etapas do serviço dela (início, fim, responsável, % concluído) e vê tudo num **Gantt**: barra pelo % concluído, linha de base embaixo, linha do hoje, situação (concluída, em andamento, em risco, atrasada, não iniciada) e o desvio em dias.
+- **Linha de base** salva com data, quem e motivo; uma nova só por decisão, e as anteriores ficam no histórico.
+- **% pelo Daily:** a atividade do RDO aponta uma etapa e o % concluído; quando o RDO é aprovado, o cronograma recebe o andamento (com o RDO de origem no histórico). A "etapa atual" da obra passa a sair do cronograma.
+- **Próximas 3 semanas** na tela da obra do encarregado e **sininho** para etapa atrasada.
+- **Publicar para o contratante:** a construtora vê a versão publicada (só leitura) na obra dela.
+- **Exportar Excel** (.xlsx de verdade, sem internet): logo e dados da empresa, obra e contratante, tabela das etapas e o Gantt semana a semana, com legenda e página pronta para imprimir.
+
 ## O que é simulado
 
 | No protótipo | Na versão real |
@@ -133,6 +141,8 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 | `js/imperial.js` | Measure: unidades imperiais (ft-in com frações ↔ polegadas), escalas de planta, inclinação, Shoelace |
 | `js/measure.js` | Measure: projetos, folhas com escala, condições e medições (pontos na página do PDF), totais e derivadas, itens, assemblies e quantidades |
 | `js/formulas.js` | Measure: motor de fórmulas (mathjs restrita, lista branca), variáveis, perda e arredondamento |
+| `js/cronograma.js`, `js/cronograma-telas.js`, `js/cronograma-excel.js` | Cronograma da obra: regras, telas (Gantt, linha de base, publicação) e exportação para Excel |
+| `vendor/exceljs/` | ExcelJS 4.4 (licença MIT), carregada só ao exportar o cronograma |
 | `vendor/mathjs/` | mathjs 14.9 (Apache 2.0), carregada só no Measure |
 | `js/measure-telas.js` | Measure: lista para cotação por fornecedor e proposta (PDF e e-mail), preços com vigência e margens (preço calculado na proposta), typicals (o que se repete), lista e cadastro de projetos, assemblies incluídos no desenho pelo catálogo, borracha e vão desenhado, condições por folha, projeto, visor com PDF.js e canvas (calibrar, conferir, medir), envio de PDF |
 | `vendor/pdfjs/` | PDF.js 4.10 (Mozilla, Apache 2.0), carregado só no Measure |
@@ -151,6 +161,8 @@ Rotas: `#/entrar`, `#/inicio` (módulos), `#/conta`, `#/measure` (projetos), `#/
 `tests/demo.test.mjs` percorre o roteiro inteiro num Chromium com tela de celular (87 verificações, com horário fixo para os alertas): login, módulos, menu do usuário, navegação e permissões por papel, módulos por perfil, conta da empresa, copiar o dia anterior, clima, equipe, texto melhorado, foto com GPS e compressão, envio sem internet e a subida automática, farol, aprovação e código, link do cliente, detecção de adulteração, PDF, ajustes, persistência e abertura sem internet. A API de clima é simulada no teste.
 
 `tests/measure.test.mjs` cobre o Measure (135 verificações, como a prestadora; inclui o isolamento entre as duas empresas; com fachadas, vãos e corte em outra escala, tela de computador): lista para cotação por fornecedor e proposta (PDF e e-mail), preços com vigência e margens (preço calculado na proposta), typicals (o que se repete), lista e cadastro de projetos, assemblies incluídos no desenho pelo catálogo, borracha e vão desenhado, condições por folha, visor maximizado, cor e visibilidade de cada condição no desenho, escala da lista e conferência, perímetro, área com desconto, contagem, zoom sem mudar a medida, volume por espessura, assemblies aplicados, materiais e horas com o rastro do cálculo, CSV, novo item e assembly com teste ao vivo, fórmula insegura recusada, envio de PDF com calibração e permissões. `tests/imperial.test.mjs` (50) e `tests/formulas.test.mjs` (31), sem navegador, cobrem o tradutor de pés e polegadas e o motor de fórmulas.
+
+`tests/cronograma.test.mjs` cobre o cronograma (47 verificações): Gantt, situações, avanço real × planejado, nova etapa, % manual com histórico, desvio contra a linha de base, nova linha de base, Excel (conteúdo e formato), publicação para a construtora (só leitura e Excel), próximas 3 semanas, % pelo RDO aprovado, sininho e permissões. `tests/ingles.test.mjs` percorre as telas de cada perfil em inglês e acusa texto em português.
 
 `tests/crew.test.mjs` cobre o Crew (105 verificações, quarta-feira às 16h30): ponto da equipe com GPS e cerca, nota na batida, troca de obra e chegada, intervalo, horas, permissões, equipe do RDO vinda do ponto, "Agora", batida para conferir, sininho, aprovação, CSV, ajuste de saída esquecida, custos por obra/mês/semana com projeção, orçamento e encargos, valor hora com histórico (inclusive a trava de semana aprovada), mapa do dia, percurso com endereços, registros de localização e reprodução, e o Settings (só o escritório entra; encargos e regra com vigência sem mexer no passado; hora extra diária; autônomo 1099; desligamento; certificações a vencer; auditoria) e as permissões (trabalhador direto no Meu ponto e barrado nas outras telas, gestor sem Settings, Administrador fixo, perfil novo, usuário ligado ao funcionário).
 

@@ -2,6 +2,7 @@
 
 import { contratanteDe, donoDe } from './contatos.js';
 import { tr, tn } from './i18n.js';
+import { etapaDoCronograma } from './cronograma.js';
 import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre, temperatura } from './util.js';
 import { estado } from './armazem.js';
 import { enviadoComAtraso, prazoDe } from './prazos.js';
@@ -90,7 +91,8 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
 
     ('<section class="rel-bloco"><h2>' + tr('Atividades executadas') + '</h2>') +
       (r.atividades.length ? '<ol class="rel-lista">' + r.atividades.map((a) =>
-        '<li><p>' + esc(a.descricao) + '</p><small>' + (a.local ? esc(a.local) + ' · ' : '') + SITUACOES[a.situacao] + '</small></li>').join('') + '</ol>'
+        '<li><p>' + esc(a.descricao) + '</p><small>' + (a.local ? esc(a.local) + ' · ' : '') + SITUACOES[a.situacao] +
+          (a.cronoEtapaId && etapaDoCronograma(r.obraId, a.cronoEtapaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(etapaDoCronograma(r.obraId, a.cronoEtapaId).nome) }) + (a.cronoPct !== '' && a.cronoPct != null ? ' → ' + esc(a.cronoPct) + '%' : '') : '') + '</small></li>').join('') + '</ol>'
         : ('<p class="mudo">' + tr('Nenhuma atividade registrada.') + '</p>')) +
     '</section>' +
 

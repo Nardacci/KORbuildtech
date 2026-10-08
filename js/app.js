@@ -2,7 +2,7 @@
 
 import {
   esc, novoId, hoje, somarDias, diasEntre, dataCurta, dataLonga, dataRelativa, diaDaSemana, horaCurta, dataHora, tamanho,
-  toast, abrirDialogo, confirmar, horaCheia, temperatura, chuva,
+  toast, abrirDialogo, confirmar, horaCheia, temperatura, chuva, diaMes,
 } from './util.js';
 import {
   estado, bancoDeDados, todasAsEmpresas, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
@@ -20,6 +20,8 @@ import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure } from './
 import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
+import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
+import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
@@ -193,6 +195,8 @@ function desenhar() {
     else if (q[0] === 'painel' && q[1] === 'rdo') html = telaRdoPainel(q[2]);
     else if (q[0] === 'painel') html = telaPainel();
     else if (q[0] === 'aprovacoes') html = telaAprovacoes();
+    else if (q[0] === 'obras' && q[1] && q[2] === 'cronograma' && q[3] === 'recebido') html = telaCronogramaRecebido(moldura, q[1], q[4]) || naoEncontrado('#/daily/obras/' + q[1]);
+    else if (q[0] === 'obras' && q[1] && q[2] === 'cronograma') html = telaCronograma(moldura, q[1]) || naoEncontrado('#/daily/obras');
     else if (q[0] === 'obras' && q[1]) html = telaObraAdmin(q[1]);
     else if (q[0] === 'obras') html = telaObrasAdmin();
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
@@ -367,11 +371,17 @@ function telaCampo() {
 
 /* ---------- Uma obra (campo: fazer o RDO; escritório: acompanhar) ---------- */
 
+/* Etapa atual: as etapas em andamento no cronograma; sem cronograma, o texto do cadastro da obra. */
+function etapaAtual(o) {
+  const atuais = etapasAtuais(o.id);
+  return atuais.length ? atuais.map((e) => e.nome).join(' · ') : o.etapa;
+}
+
 function resumoObra(o) {
   return '<section class="cartao obra-resumo">' +
     ('<div class="linha-info"><span>' + tr('Contratante') + '</span><b>') + esc((contratanteDe(o) || {}).nome || '—') + '</b></div>' +
     (o.donoId && o.donoId !== o.contratanteId ? ('<div class="linha-info"><span>' + tr('Dono da obra') + '</span><b>') + esc((donoDe(o) || {}).nome || '—') + '</b></div>' : '') +
-    ('<div class="linha-info"><span>' + tr('Etapa atual') + '</span><b>') + esc(o.etapa) + '</b></div>' +
+    ('<div class="linha-info"><span>' + tr('Etapa atual') + '</span><b>') + esc(etapaAtual(o)) + '</b></div>' +
     ('<div class="linha-info"><span>' + tr('Endereço') + '</span><b>') + esc(o.endereco) + ' · ' + esc(o.cidade) + '</b></div>' +
   '</section>';
 }
@@ -414,7 +424,7 @@ function telaObraCampo(id) {
           '<p class="mudo pequeno">' + tr('O prazo era {data} às {hora}. Preencha agora: o relatório fica marcado como enviado com atraso.', { data: dataCurta(d), hora: horaCheia(PRAZO_HORA) }) + '</p>' +
           '<div class="acoes-obra">' + acoesDoDia(o, d, lista) + '</div></section>').join('') +
       '<section class="acoes-obra acoes-hoje"><div class="titulo-com-prazo"><h2 class="titulo-secao">' + primeiraMaiuscula(dataLonga(hoje())) + '</h2>' + prazoHoje + '</div>' + acoes + '</section>' +
-      resumoObra(o) +
+      resumoObra(o) + htmlProximasSemanas(o.id) +
       ('<h2 class="titulo-secao">' + tr('RDOs anteriores') + '</h2>') +
       '<div class="lista">' + lista.filter((r) => r !== deHoje).map((r) => itemRdo(r)).join('') + '</div>',
   });
@@ -618,6 +628,21 @@ function ferramentasTexto(alvo) {
       (tr('Melhorar texto') + '</button></div>');
 }
 
+/* Atividade → etapa do cronograma e % concluído (vai para o cronograma quando o RDO é aprovado). */
+function campoCronograma(r, a, i) {
+  const c = cronogramaDe(r.obraId);
+  if (!c || !c.etapas.length) return '';
+  const abertas = c.etapas.filter((e) => (e.pct || 0) < 100 || e.id === a.cronoEtapaId);
+  const e = c.etapas.find((x) => x.id === a.cronoEtapaId);
+  return '<div class="atividade-crono">' +
+    '<label class="rotulo-pequeno" for="atc-' + i + '">' + tr('Etapa do cronograma') + '</label>' +
+    '<select id="atc-' + i + '" data-bind="atividades.' + i + '.cronoEtapaId"><option value="">' + tr('Nenhuma') + '</option>' +
+      abertas.map((x) => '<option value="' + x.id + '"' + (x.id === a.cronoEtapaId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + (x.pct || 0) + '%)</option>').join('') + '</select>' +
+    (e ? '<label class="rotulo-pequeno" for="atp-' + i + '">' + tr('% concluído da etapa (hoje: {n}%)', { n: e.pct || 0 }) + '</label>' +
+      '<input type="number" min="0" max="100" step="5" inputmode="numeric" id="atp-' + i + '" data-bind="atividades.' + i + '.cronoPct" value="' + esc(a.cronoPct == null ? '' : a.cronoPct) + '" placeholder="' + (e.pct || 0) + '">' : '') +
+  '</div>';
+}
+
 function secaoAtividades(r) {
   return '<section class="secao" id="s-atividades">' + cabecalhoSecao('atividades', tr('Atividades do dia'), r.atividades.some((a) => a.descricao.trim())) +
     r.atividades.map((a, i) =>
@@ -632,6 +657,7 @@ function secaoAtividades(r) {
           '<select data-bind="atividades.' + i + ('.situacao" aria-label="' + tr('Situação da atividade') + ' ') + (i + 1) + '">' +
             Object.entries(SITUACOES).map(([v, rot]) => '<option value="' + v + '"' + (a.situacao === v ? ' selected' : '') + '>' + rot + '</option>').join('') +
           '</select></div>' +
+        campoCronograma(r, a, i) +
       '</div>').join('') +
     ('<button type="button" class="btn btn-contorno btn-pequeno" data-acao="ativ-add">' + tr('+ Adicionar atividade') + '</button>') +
   '</section>';
@@ -806,7 +832,7 @@ function telaObrasAdmin() {
       return '<a class="cartao-obra" href="#/daily/obras/' + o.id + '">' +
         '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
         '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(textoPartes(o)) + '</span>' +
-        '<span class="mudo">' + esc(o.etapa) + '</span>' +
+        '<span class="mudo">' + esc(etapaAtual(o)) + '</span>' +
         '<span class="cartao-obra-rodape">' + f.texto + ' · ' + qtd + (' ' + tr('RDOs recebidos') + '</span></a>');
     }).join('') + '</div>',
   });
@@ -819,7 +845,7 @@ function telaObraAdmin(id) {
   const lista = rdosDaObra(o.id).filter(recebido);
   return moldura({
     ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
-    conteudo: resumoObra(o) +
+    conteudo: resumoObra(o) + htmlCartaoCronograma(o) +
       ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
         ('<button type="button" class="link" data-acao="em-breve" data-texto="' + tr('Editar responsável, prazo e calendário vem na próxima etapa.') + '">' + tr('Editar') + '</button></div>') +
         ('<div class="linha-info"><span>' + tr('Responsável') + '</span><b>') + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
@@ -1271,9 +1297,10 @@ const acoes = {
     r.aprovadoPor = usuarioAtual().nome;
     await lacrar(r, acharObra(r.obraId));
     registrar(r, usuarioAtual().nome, (tr('Aprovou · código') + ' ') + r.codigo);
+    const noCronograma = aplicarRdoAprovado(r, usuarioAtual().nome);
     salvar();
     desenhar();
-    toast((tr('RDO aprovado e lacrado. Código') + ' ') + r.codigo + '.');
+    toast((tr('RDO aprovado e lacrado. Código') + ' ') + r.codigo + '.' + (noCronograma ? ' ' + tn(noCronograma, 'O cronograma recebeu o andamento de {n} etapa.', 'O cronograma recebeu o andamento de {n} etapas.') : ''));
   },
   async 'pedir-ajustes'() {
     const r = rdoDaTela();
@@ -1415,6 +1442,9 @@ function notificacoesDaily(u) {
   const lista = [];
   const { rdos } = estado();
   if (pode(u, 'daily.acompanhar')) {
+    for (const obra of estado().obras) for (const e of (cronogramaDe(obra.id) || { etapas: [] }).etapas.filter((x) => situacaoDaEtapa(x) === 'atrasada')) {
+      lista.push({ id: 'cr-atraso-' + e.id + e.fim, em: new Date(somarDias(e.fim, 1) + 'T08:00:00').getTime(), modulo: 'daily', titulo: tr('Etapa atrasada: {etapa} · {obra}', { etapa: e.nome, obra: obra.nome }), href: '#/daily/obras/' + obra.id + '/cronograma' });
+    }
     for (const { obra, data } of semRdoOntem()) {
       const resp = estado().usuarios.find((x) => x.id === obra.responsavelId);
       lista.push({ id: 'd-semrdo-' + obra.id + data, em: new Date(hoje() + 'T08:00:00').getTime(), modulo: 'daily', titulo: obra.nome + (' ' + tr('ficou sem RDO em') + ' ') + dataCurta(data).slice(0, 5) + (resp ? ' (' + resp.nome + ')' : ''), href: '#/daily/obras/' + obra.id });
@@ -1428,7 +1458,7 @@ function notificacoesDaily(u) {
       lista.push({ id: 'd-lembrete-' + obra.id + hoje(), em: new Date(hoje() + 'T16:00:00').getTime(), modulo: 'daily', titulo: tr('Falta o RDO de hoje de {obra} · prazo {hora}', { obra: obra.nome, hora: horaCheia(PRAZO_HORA) }), href: '#/daily/campo/obra/' + obra.id });
     }
     for (const { obra, data } of p.atrasados) {
-      lista.push({ id: 'd-atraso-' + obra.id + data, em: prazoDe(data), modulo: 'daily', titulo: (tr('RDO de') + ' ') + dataCurta(data).slice(0, 5) + ' atrasado: ' + obra.nome, href: '#/daily/campo/obra/' + obra.id });
+      lista.push({ id: 'd-atraso-' + obra.id + data, em: prazoDe(data), modulo: 'daily', titulo: tr('RDO de {data} atrasado: {obra}', { data: diaMes(data), obra: obra.nome }), href: '#/daily/campo/obra/' + obra.id });
     }
     for (const r of p.ajustes) {
       const h = r.historico.filter((x) => x.acao.startsWith('Pediu ajustes')).slice(-1)[0];
@@ -1442,13 +1472,14 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
   ligarContatos({ desenhar, ir });
   ligarRelatorios({ desenhar, ir });
   ligarPrecos({ desenhar, ir });
+  ligarCronograma({ desenhar, ir });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
     return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));

@@ -35,6 +35,15 @@ export function estado() {
   const b = carregar();
   return b ? b.empresas[empresaAtualId()] : null;
 }
+/* O que uma empresa publica para outra (ex.: o cronograma que a prestadora publica para a construtora).
+ * No protótipo fica no aparelho, fora das empresas; na versão real, é o servidor que entrega. */
+export function compartilhados() {
+  const b = carregar();
+  if (!b) return [];
+  b.compartilhados = b.compartilhados || [];
+  return b.compartilhados;
+}
+export function empresaPorId(id) { const b = carregar(); return b ? b.empresas[id] || null : null; }
 /* Todas as empresas: só para achar o usuário pelo e-mail na entrada. */
 export function todasAsEmpresas() { const b = carregar(); return b ? Object.values(b.empresas) : []; }
 

@@ -10,6 +10,7 @@ import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
 import { criarDadosCrew, RAIO_CERCA } from './crew.js';
 import { criarSettings } from './settings.js';
 import { criarDadosMeasure } from './measure.js';
+import { retrato } from './cronograma.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
@@ -193,7 +194,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 22;
+export const VERSAO_DADOS = 23;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -286,7 +287,11 @@ export async function criarDemonstracao() {
   const settings = criarSettings(inicioEmpresa, new Date(inicioEmpresa + 'T09:00:00').getTime());
   const { funcionarios, ...crew } = criarDadosCrew(obras);
   const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ projetos: false }) };
-  return { versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [PRESTADORA.id]: criarPrestadora(dia0) } };
+  const prestadora = criarPrestadora(dia0);
+  // a prestadora já publicou uma versão do cronograma para a construtora (há 2 dias)
+  const pub = retrato(prestadora, prestadora.obras[0], tr('Tom Reilly'), new Date(somarDias(dia0, -2) + 'T16:00:00').getTime(), 1);
+  prestadora.cronogramas['nf-jardim'].publicacoes.push({ id: pub.id, versao: 1, em: pub.em, por: pub.por });
+  return { versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [PRESTADORA.id]: prestadora }, compartilhados: [pub] };
 }
 
 /* ---------- A prestadora de serviço (subcontractor) ---------- */
@@ -313,6 +318,8 @@ function criarPrestadora(dia0) {
     ...jardim, id: 'nf-jardim', nome: tr('Residencial Jardim das Flores · framing e siding'), contratanteId: 'ct-construtora', donoId: 'ct-horizonte',
     etapa: tr('Framing do 2º pavimento'), inicio: somarDias(dia0, -30), prazo: somarDias(dia0, 60), responsavelId: 'u-jose', diasTrabalho: DIAS_TRABALHO,
     cerca: { lat: jardim.lat, lon: jardim.lon, raio: RAIO_CERCA },
+    // ligada à obra da construtora: o cronograma publicado aqui aparece para ela (docs/cronograma.md CR-10)
+    vinculo: { empresaId: CONSTRUTORA.id, obraId: 'jardim' },
   }];
   const funcionarios = FUNCIONARIOS_PRESTADORA.map(([id, nome, funcao, valor, usuarioId], n) => {
     const admissao = somarDias(dia0, -(120 + n * 35));
@@ -330,5 +337,34 @@ function criarPrestadora(dia0) {
     settings: criarSettings(inicio, registro, tr('Tom Reilly')),
     crew: { equipes: [{ id: 'eq-nf', nome: tr('Equipe do José'), encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
     measure: criarDadosMeasure({ projetos: true, estimadores: ['u-tom', 'u-rita'] }),
+    cronogramas: { 'nf-jardim': criarCronogramaExemplo(dia0) },
+  };
+}
+
+/* Cronograma de exemplo do framing e siding (prestadora): uma etapa atrasada, uma em risco, linha de base
+ * de antes do início e uma publicação para a construtora. Dias relativos a hoje. */
+const ETAPAS_EXEMPLO = [
+  // [id, nome, início, fim, %, início na base, fim na base, responsável]
+  ['et-mob', tr('Mobilização e marcação'), -30, -27, 100, -30, -27, 'u-jose'],
+  ['et-fr1', tr('Framing do 1º pavimento'), -26, -12, 100, -26, -13, 'u-jose'],
+  ['et-blk', tr('Blocking e reforços'), -15, -3, 85, -15, -5, 'f-kevin'],
+  ['et-fr2', tr('Framing do 2º pavimento'), -11, 4, 65, -12, 0, 'u-jose'],
+  ['et-osb', tr('Sheathing (OSB) e house wrap'), -8, 2, 30, -8, 2, 'f-luis'],
+  ['et-jan', tr('Janelas e portas externas'), 5, 15, 0, 3, 12, 'f-luis'],
+  ['et-sid', tr('Siding vinil'), 14, 42, 0, 12, 38, 'u-jose'],
+  ['et-trim', tr('Trim e acabamento externo'), 40, 56, 0, 36, 52, 'f-andre'],
+];
+
+function criarCronogramaExemplo(dia0) {
+  const quando = (d, h) => new Date(somarDias(dia0, d) + 'T' + String(h).padStart(2, '0') + ':00:00').getTime();
+  const etapas = ETAPAS_EXEMPLO.map(([id, nome, ini, fim, pct, , , resp]) => ({
+    id, nome, inicio: somarDias(dia0, ini), fim: somarDias(dia0, fim), responsavelId: resp, pct,
+    historico: pct ? [{ em: quando(Math.min(-1, fim), 17), data: somarDias(dia0, Math.min(-1, fim)), antes: 0, pct, fonte: 'manual', por: tr('Tom Reilly') }] : [],
+  }));
+  return {
+    etapas,
+    bases: [{ id: 'lb-1', em: quando(-33, 10), por: tr('Tom Reilly'), motivo: tr('Cronograma assinado com a construtora'),
+      etapas: Object.fromEntries(ETAPAS_EXEMPLO.map(([id, , , , , bi, bf]) => [id, { inicio: somarDias(dia0, bi), fim: somarDias(dia0, bf) }])) }],
+    publicacoes: [],
   };
 }

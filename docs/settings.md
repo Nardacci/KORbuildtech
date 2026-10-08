@@ -108,6 +108,7 @@ A tela sempre mostra **de onde vem o valor** ("padrão da empresa" ou "definido 
 | Daily | Preencher o diário de obra | Criar e enviar o RDO |
 | Daily | Acompanhar todas as obras | Painel, obras e relatórios enviados |
 | Daily | Aprovar RDO e enviar ao contratante | Aprovar, pedir ajuste, PDF e link do contratante (inclui "acompanhar") |
+| Daily | Montar o cronograma da obra | Etapas, linha de base, publicar para o contratante e exportar Excel (inclui "acompanhar"; ver [`cronograma.md`](cronograma.md)) |
 | Settings | Cadastro de funcionários | Dados, certificações e valor hora |
 | Settings | Encargos e regras de jornada | Versões com vigência |
 | Settings | Usuários e perfis de acesso | Quem entra e o que cada perfil pode |

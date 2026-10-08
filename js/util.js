@@ -165,7 +165,7 @@ export function abrirDialogo({ titulo, corpo, acoes }) {
       '<h2>' + esc(titulo) + '</h2>' +
       '<div class="dialogo-corpo">' + corpo + '</div>' +
       '<div class="dialogo-acoes">' +
-      acoes.map((a, i) => '<button class="btn ' + (a.classe || 'btn-contorno') + '" value="' + i + '">' + esc(a.rotulo) + '</button>').join('') +
+      acoes.map((a, i) => '<button class="btn ' + (a.classe || 'btn-contorno') + '" value="' + i + '"' + (a.valor === false ? ' formnovalidate' : '') + '>' + esc(a.rotulo) + '</button>').join('') +
       '</div></form>';
     document.body.appendChild(dlg);
     let resultado = null;

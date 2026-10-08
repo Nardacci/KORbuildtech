@@ -220,6 +220,7 @@ export const PERMISSOES = [
     { id: 'daily.preencher', nome: tr('Preencher o diário de obra'), descricao: tr('Criar e enviar o RDO das suas obras') },
     { id: 'daily.acompanhar', nome: tr('Acompanhar todas as obras'), descricao: tr('Painel, obras e relatórios enviados') },
     { id: 'daily.aprovar', nome: tr('Aprovar RDO e enviar ao contratante'), descricao: tr('Aprovar, pedir ajuste, PDF e link do contratante'), requer: ['daily.acompanhar'] },
+    { id: 'daily.cronograma', nome: tr('Montar o cronograma da obra'), descricao: tr('Etapas, linha de base, publicar para o contratante e exportar Excel'), requer: ['daily.acompanhar'] },
   ] },
   { grupo: 'Measure', modulo: 'measure', itens: [
     { id: 'measure.medir', nome: tr('Medir plantas (takeoff)'), descricao: tr('Abrir plantas, definir a escala, medir e aplicar assemblies') },
@@ -238,7 +239,7 @@ export function permissao(id) { return PERMISSOES.flatMap((g) => g.itens).find((
 
 export const PERFIS_INICIAIS = [
   { id: 'administrador', nome: tr('Administrador'), descricao: tr('Escritório: tudo, inclusive o Settings'), sistema: true, permissoes: TODAS_PERMISSOES.filter((p) => p !== 'crew.ponto.proprio' && p !== 'crew.ponto.equipe' && p !== 'daily.preencher') },
-  { id: 'gestor', nome: tr('Gestor de obras'), descricao: tr('Vê tudo dos módulos e aprova, sem mexer nas configurações'), permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'measure.medir'] },
+  { id: 'gestor', nome: tr('Gestor de obras'), descricao: tr('Vê tudo dos módulos e aprova, sem mexer nas configurações'), permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'daily.cronograma', 'measure.medir'] },
   { id: 'encarregado', nome: tr('Encarregado'), descricao: tr('Campo: ponto da equipe e diário de obra'), permissoes: ['crew.ponto.proprio', 'crew.ponto.equipe', 'daily.preencher'] },
   { id: 'trabalhador', nome: tr('Trabalhador'), descricao: tr('Só bate o próprio ponto: entra direto no ponto, sem a tela de módulos'), permissoes: ['crew.ponto.proprio'] },
 ];
