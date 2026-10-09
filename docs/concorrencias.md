@@ -31,7 +31,7 @@ No mercado americano: *invitation to bid* (ITB), *bid package*, *bid leveling* (
 | CO-04 | Cada prestadora só vê **a própria proposta** e as respostas que foram mandadas para ela ou para todos. Nunca vê quem mais foi convidado nem os valores dos outros. |
 | CO-05 | Proposta enviada não se edita: uma nova é uma **revisão** (rev. 1, rev. 2…), com histórico. |
 | CO-06 | O fechamento fica registrado (quem, quando, valor, revisão aceita) e é o que **sela o vínculo**. |
-| CO-07 | Prestadora **sem conta no KORbuild**: decisão pendente (ver §6). |
+| CO-07 | Prestadora **sem conta no KORbuild** cota por um **link** (sem conta): vê o convite, os desenhos e o escopo, responde, pergunta no canal e envia a proposta (PDF e valores). Depois é convidada a criar a conta; ao criar, o histórico da concorrência vem junto. Decidido em outubro de 2026. |
 
 ## 4. Canal construtora ↔ prestadora
 
@@ -56,6 +56,9 @@ canal/mensagens: entre as duas empresas, por concorrência ou obra; para todos o
 publicacoes:     o que uma empresa entrega à outra (cronograma; depois, diários)
 ```
 
-## 6. Decisões pendentes
+## 6. Prestadora sem conta (CO-07)
 
-- **CO-07 — prestadora sem conta.** Opções: (a) cota por um **link**, sem conta, e é convidada a criar a conta depois; (b) precisa **criar conta** (pode haver um plano gratuito só para receber convites e responder). Sugestão: (a), porque tira o atrito da primeira vez e traz a prestadora para dentro aos poucos.
+- O link é pessoal (um por convite), com validade até o fim da concorrência, e não dá acesso a mais nada.
+- Pelo link, a prestadora não tem o Measure: ela anexa a proposta pronta (PDF) e informa o total e o prazo. Para medir no KORbuild, cria a conta.
+- Quando ela cria a conta com o mesmo e-mail, o convite, as mensagens e a proposta passam para a conta dela, e o projeto aparece no Measure.
+- A construtora vê do mesmo jeito as propostas de quem tem conta e de quem respondeu pelo link.
