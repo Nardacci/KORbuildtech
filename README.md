@@ -105,6 +105,7 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 - Nome, contratante e dono, endereço, **local no mapa** (clique ou localização atual) com o **raio da cerca** do ponto, início e prazo, quem preenche o diário, dias de trabalho e **situação** (em andamento, paralisada, concluída: só obra em andamento cobra diário e aparece no campo e no ponto).
 - **Modelos de etapas** (Settings › Obras › Modelos de etapas): ao criar a obra, o modelo vira o cronograma, dividindo o prazo entre as etapas; obra sem etapas também pode começar por um modelo.
 - **Do Measure:** projeto *Ganha* tem o botão **Criar obra a partir deste projeto**, com o cadastro já preenchido; projeto e obra ficam ligados.
+- **Próximo (com o banco de dados):** concorrência da construtora para as prestadoras, fechamento que liga as obras e canal entre as duas empresas ([`docs/concorrencias.md`](docs/concorrencias.md)).
 
 **Cronograma da obra** (documentação em [`docs/cronograma.md`](docs/cronograma.md))
 - **A prestadora monta** as etapas do serviço dela (início, fim, responsável, % concluído) e vê tudo num **Gantt**: barra pelo % concluído, linha de base embaixo, linha do hoje, situação (concluída, em andamento, em risco, atrasada, não iniciada) e o desvio em dias.

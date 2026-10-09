@@ -22,7 +22,7 @@
 | OB-05 | Toda criação e alteração vai para a **auditoria** (quem, quando, o quê). |
 | OB-06 | **Modelo de etapas**: lista de etapas com a **parte do prazo** (%) de cada uma. Ao criar a obra, escolhe-se um modelo (ou nenhum): as etapas entram em sequência, dividindo o período entre o início e o prazo, e a primeira linha de base é salva. Depois tudo se ajusta no cronograma. Obra sem etapas também pode aplicar um modelo pela tela do cronograma. |
 | OB-07 | **Do Measure**: em projeto *Ganha* sem obra ligada, o botão leva ao cadastro já preenchido (nome, endereço, contratante, dono). Ao salvar, projeto e obra ficam ligados (o projeto mostra a obra; a obra mostra o projeto). |
-| OB-08 | Obra recebida de uma construtora (ligada por convite, docs/cronograma.md CR-10) continua vindo pronta: o cadastro é para as obras da própria empresa. |
+| OB-08 | Obra ganha numa concorrência da construtora (docs/concorrencias.md) nasce ligada à obra dela (docs/cronograma.md CR-10). O cadastro manual é para as obras da própria empresa. |
 
 ## 3. Dados (por empresa)
 
@@ -39,4 +39,4 @@ modelosCronograma[]: { id, nome, etapas: [{ nome, pct }] }   // pct somam 100
 
 - Busca do endereço no mapa (geocodificação) — hoje: clique no mapa ou localização atual.
 - Orçamento de mão de obra da obra direto no cadastro (hoje fica em Crew › Custos).
-- Convite da construtora para a prestadora (obra ligada) — vem com o banco de dados.
+- Concorrência da construtora para as prestadoras, fechamento que sela o vínculo e canal entre as duas: [`concorrencias.md`](concorrencias.md) — vem com o banco de dados.
