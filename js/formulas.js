@@ -49,12 +49,12 @@ export function carregarMotor() {
 /* Catálogo das variáveis que o takeoff entrega ao motor, por tipo de condição. */
 export const VARIAVEIS = [
   { nome: 'MeasuredLinear', unidade: 'lin ft', tipos: ['linear'], descricao: tr('Comprimento medido') },
-  { nome: 'WallHeight', unidade: 'ft', tipos: ['linear'], descricao: tr('Altura da condição'), requer: 'altura' },
-  { nome: 'SurfaceArea', unidade: 'sq ft', tipos: ['linear'], descricao: tr('Comprimento × altura (superfície da parede)'), requer: 'altura' },
+  { nome: 'WallHeight', unidade: 'ft', tipos: ['linear'], descricao: tr('Altura da condição'), requer: tr('altura') },
+  { nome: 'SurfaceArea', unidade: 'sq ft', tipos: ['linear'], descricao: tr('Comprimento × altura (superfície da parede)'), requer: tr('altura') },
   { nome: 'MeasuredArea', unidade: 'sq ft', tipos: ['area'], descricao: tr('Área medida (já sem os descontos)') },
-  { nome: 'Thickness', unidade: 'in', tipos: ['area'], descricao: tr('Espessura da condição'), requer: 'espessura' },
-  { nome: 'VolumeCF', unidade: 'cu ft', tipos: ['area'], descricao: tr('Área × espessura'), requer: 'espessura' },
-  { nome: 'VolumeCY', unidade: 'cu yd', tipos: ['area'], descricao: tr('Área × espessura, em jardas cúbicas'), requer: 'espessura' },
+  { nome: 'Thickness', unidade: 'in', tipos: ['area'], descricao: tr('Espessura da condição'), requer: tr('espessura') },
+  { nome: 'VolumeCF', unidade: 'cu ft', tipos: ['area'], descricao: tr('Área × espessura'), requer: tr('espessura') },
+  { nome: 'VolumeCY', unidade: 'cu yd', tipos: ['area'], descricao: tr('Área × espessura, em jardas cúbicas'), requer: tr('espessura') },
   { nome: 'RoofPitch', unidade: 'in/12', tipos: ['linear', 'area'], descricao: tr('Inclinação (6 = 6/12)'), requer: tr('inclinação') },
   { nome: 'PitchFactor', unidade: tr('×'), tipos: ['linear', 'area'], descricao: tr('√(1 + (inclinação/12)²)'), requer: tr('inclinação') },
   { nome: 'PitchedArea', unidade: 'sq ft', tipos: ['area'], descricao: tr('Área real na água do telhado'), requer: tr('inclinação') },
@@ -65,7 +65,7 @@ export const VARIAVEIS = [
   { nome: 'OpeningArea', unidade: 'sq ft', tipos: ['contagem', 'linear', 'area'], descricao: tr('Área dos vãos: quantidade × largura × altura (na parede e no siding: soma dos vãos ligados)'), requer: tr('largura e altura do vão') },
   { nome: 'OpeningPerimeter', unidade: 'lin ft', tipos: ['contagem', 'linear', 'area'], descricao: tr('Perímetro dos vãos: 2 × (largura + altura) × quantidade (guarnição, flashing, J-channel)'), requer: tr('largura e altura do vão') },
   { nome: 'OpeningCount', unidade: 'each', tipos: ['linear', 'area'], descricao: tr('Quantidade de vãos ligados à condição') },
-  { nome: 'NetSurfaceArea', unidade: 'sq ft', tipos: ['linear'], descricao: tr('Superfície menos os vãos ligados'), requer: 'altura' },
+  { nome: 'NetSurfaceArea', unidade: 'sq ft', tipos: ['linear'], descricao: tr('Superfície menos os vãos ligados'), requer: tr('altura') },
   { nome: 'NetArea', unidade: 'sq ft', tipos: ['area'], descricao: tr('Área menos os vãos ligados (siding, pintura)') },
 ];
 export const FUNCOES = ['ceil', 'floor', 'round', 'min', 'max', 'sqrt', 'abs'];

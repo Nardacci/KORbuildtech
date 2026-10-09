@@ -57,7 +57,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
     '<section class="rel-obra">' +
       campo(tr('Obra'), obra.nome) + campo(tr('Contratante'), (contratanteDe(obra) || {}).nome || '—') + (obra.donoId && obra.donoId !== obra.contratanteId ? campo(tr('Dono da obra'), (donoDe(obra) || {}).nome || '') : '') + campo(tr('Endereço'), obra.endereco + ' · ' + obra.cidade) +
       campo(tr('Preenchido por'), r.autor + (' ' + tr('· Mestre de obras'))) + campo(tr('Etapa atual'), obra.etapa) +
-      campo(tr('Prazo'), decorridos + (' ' + tr('dias decorridos ·') + ' ') + tn(Math.max(0, restantes), '{n} restante', '{n} restantes')) +
+      campo(tr('Prazo'), tn(decorridos, '{n} dia decorrido', '{n} dias decorridos') + ' · ' + tn(Math.max(0, restantes), '{n} restante', '{n} restantes')) +
     '</section>' +
     (enviadoComAtraso(r)
       ? ('<p class="rel-atraso">' + tr('Enviado com atraso:') + ' ') + dataHora(r.primeiroEnvioEm || r.enviadoEm) + (' ' + tr('· prazo era') + ' ') + dataHora(prazoDe(r.data)) + '</p>'

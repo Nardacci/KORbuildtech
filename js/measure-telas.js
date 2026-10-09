@@ -150,7 +150,7 @@ function telaFormProjeto(id) {
         campo('situacao', tr('Situação'), '<select id="pj-situacao" name="situacao">' + opcoes(Object.entries(SITUACOES).map(([k, x]) => [k, x.nome]), p.situacao) + '</select>') +
       '</div>' + campo('descricao', tr('Escopo'), ('<textarea id="pj-descricao" name="descricao" rows="2" placeholder="' + tr('Ex.: Residência térrea, wood framing, siding vinil') + '">') + v('descricao') + '</textarea>') + '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Para quem é a proposta') + '</h2><div class="grade-campos">') +
-        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: 'Contratante * (recebe a proposta)', papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
+        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Contratante * (recebe a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
         htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: tr('Dono da obra (se não for o contratante)'), papeis: ['cliente'], atual: p.donoId, vazio: tr('O próprio contratante') }) +
       ('</div><p class="mudo pequeno">' + tr('Trabalhando para uma construtora, ela é a contratante e o cliente final é o dono. Contratado direto pelo dono do imóvel, ele é o contratante.') + '</p></section>') +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
@@ -299,7 +299,7 @@ function htmlLinhaAssembly(l, tipo, i, editavel) {
 
 function htmlAjudaVariaveis(tipo) {
   const teste = VALORES_DE_TESTE[tipo];
-  return ('<b>' + tr('Variáveis desta condição') + '</b><ul>') + variaveisDoTipo(tipo).map((v) => '<li><code>' + v.nome + '</code> <span class="mudo">' + esc(v.unidade) + ' · ' + esc(v.descricao) + (v.requer ? (' ' + tr('(precisa de') + ' ') + v.requer + ')' : '') + '</span></li>').join('') + '</ul>' +
+  return ('<b>' + tr('Variáveis desta condição') + '</b><ul>') + variaveisDoTipo(tipo).map((v) => '<li><code>' + v.nome + '</code> <span class="mudo">' + esc(v.unidade) + ' · ' + esc(v.descricao) + (v.requer ? ' ' + tr('(precisa de {campo})', { campo: v.requer }) : '') + '</span></li>').join('') + '</ul>' +
     ('<p class="pequeno">' + tr('Funções:') + ' ') + FUNCOES.map((f) => '<code>' + f + '()</code>').join(' ') + (tr('. Perda e arredondamento ficam nas colunas, fora da fórmula.') + '</p>') +
     ('<p class="pequeno mudo">' + tr('A coluna "Teste" usa:') + ' ') + esc(textoVariaveis(teste)) + '.</p>';
 }
@@ -501,9 +501,9 @@ function dica() {
   if (visor.ferramenta === 'mover') return tr('Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.');
   if (!c) return tr('Inclua um assembly no painel ao lado (parede, piso, janela…) para começar a medir.');
   if (!condicaoVisivel(c)) return tr('As marcações de "{nome}" estão ocultas: marque a caixa ao lado do nome para vê-las.', { nome: c.nome });
-  if (c.tipo === 'contagem') return tr('Contagem: clique em cada item de "') + c.nome + '".';
+  if (c.tipo === 'contagem') return tr('Contagem: clique em cada item de "{nome}".', { nome: c.nome });
   if (c.tipo === 'linear') return tr('Linear: clique nos pontos. Duplo clique ou Enter conclui, Esc cancela, Backspace desfaz o último ponto. Shift: linha reta. Perto de um ponto já medido, o clique gruda nele (Alt desliga). Para mais precisão, aumente o zoom.');
-  if (visor.ferramenta === 'recortar') return tr('Recortar (borracha): clique nos cantos do que sai de "') + c.nome + '" (escada, chaminé, recorte). Duplo clique, Enter ou clique no primeiro ponto fecha.';
+  if (visor.ferramenta === 'recortar') return tr('Recortar (borracha): clique nos cantos do que sai de "{nome}" (escada, chaminé, recorte). Duplo clique, Enter ou clique no primeiro ponto fecha.', { nome: c.nome });
   return tr('Área: clique nos cantos. Duplo clique, Enter ou clique no primeiro ponto fecha a área.');
 }
 
@@ -873,7 +873,7 @@ async function dialogoIncluir() {
 /* Resumo de um assembly: tipo, linhas e os primeiros itens. */
 function resumoAssembly(a) {
   const nomes = a.linhas.map((l) => (item(l.itemId) || {}).nome).filter(Boolean);
-  return a.linhas.length + (a.linhas.length === 1 ? ' linha: ' : ' linhas: ') + nomes.slice(0, 3).join(', ') + (nomes.length > 3 ? (' ' + tr('e mais') + ' ') + (nomes.length - 3) : '');
+  return tn(a.linhas.length, '{n} linha', '{n} linhas') + ': ' + nomes.slice(0, 3).join(', ') + (nomes.length > 3 ? (' ' + tr('e mais') + ' ') + (nomes.length - 3) : '');
 }
 
 async function dialogoCondicao(c, comAssembly) {
@@ -945,7 +945,7 @@ async function dialogoTypical(t, regiao) {
     corpo: ('<label class="rotulo-pequeno" for="ty-nome">' + tr('Nome') + '</label><input type="text" id="ty-nome" name="nome" value="') + esc(t ? t.nome : regiao ? '' : tr('Pavimento tipo')) + ('" placeholder="' + tr('Ex.: Apartamento tipo A, Casa modelo B') + '">') +
       ('<p class="mudo pequeno">' + tr('Onde ele se repete e quantas vezes,') + ' <b>' + tr('contando o que está desenhado') + '</b>' + tr('. Ex.: 4 apartamentos iguais por andar, em 3 andares: 2º pavimento 4, 3º pavimento 4, 4º pavimento 4 (× 12).') + '</p>') +
       '<div class="ty-ocorrencias">' + linhas.map((o, i) => '<input type="text" name="oc-rotulo-' + i + '" value="' + esc(o.rotulo) + '" placeholder="' + (i ? '' : tr('Ex.: 2º pavimento')) + ('" aria-label="' + tr('Ocorrência') + ' ') + (i + 1) + '">' +
-        '<input type="number" min="1" step="1" name="oc-qtd-' + i + '" value="' + esc(o.quantidade) + ('" placeholder="qtd" aria-label="' + tr('Quantidade') + ' ') + (i + 1) + '">').join('') + '</div>',
+        '<input type="number" min="1" step="1" name="oc-qtd-' + i + '" value="' + esc(o.quantidade) + ('" placeholder="' + tr('qtd') + '" aria-label="' + tr('Quantidade') + ' ') + (i + 1) + '">').join('') + '</div>',
     acoes: [{ rotulo: tr('Cancelar'), valor: false }].concat(t ? [{ rotulo: tr('Excluir'), valor: 'excluir' }] : []).concat([{ rotulo: t ? tr('Salvar') : tr('Criar typical'), valor: true, classe: 'btn-primario' }]),
   });
   if (!res || !res.valor) { atualizarInterface(); return; }
@@ -1134,7 +1134,7 @@ export const acoesMeasure = {
   async 'mz-editar-condicao'(el) { await dialogoCondicao(condicao(el.dataset.id)); },
   async 'mz-excluir-condicao'(el) {
     const c = condicao(el.dataset.id);
-    if (!(await confirmar(tr('Excluir "') + c.nome + '"?', c.medicoes.length ? (tr('As') + ' ') + c.medicoes.length + (' ' + tr('medições dela, em todas as folhas, também serão apagadas.')) : tr('A condição não tem medições.'), tr('Excluir')))) return;
+    if (!(await confirmar(tr('Excluir "') + c.nome + '"?', c.medicoes.length ? tn(c.medicoes.length, 'A medição dela, em todas as folhas, também será apagada.', 'As {n} medições dela, em todas as folhas, também serão apagadas.') : tr('A condição não tem medições.'), tr('Excluir')))) return;
     excluirCondicao(c.id);
     visor.condicaoId = (condicoesDaFolha(visor.folhaId)[0] || {}).id || null;
     atualizarInterface();
@@ -1142,7 +1142,7 @@ export const acoesMeasure = {
   async 'mz-tirar-da-folha'(el) {
     const c = condicao(el.dataset.id);
     const n = c.medicoes.filter((m) => m.folhaId === visor.folhaId).length;
-    if (!(await confirmar(tr('Tirar "{nome}" desta folha?', { nome: c.nome }), (n ? (tr('As') + ' ') + n + (' ' + tr('medições dela nesta folha serão apagadas.') + ' ') : '') + tr('Nas outras folhas ela continua.'), tr('Tirar')))) return;
+    if (!(await confirmar(tr('Tirar "{nome}" desta folha?', { nome: c.nome }), (n ? tn(n, 'A medição dela nesta folha será apagada.', 'As {n} medições dela nesta folha serão apagadas.') + ' ' : '') + tr('Nas outras folhas ela continua.'), tr('Tirar')))) return;
     tirarDaFolha(c.id, visor.folhaId);
     visor.condicaoId = (condicoesDaFolha(visor.folhaId)[0] || {}).id || null;
     atualizarInterface();
@@ -1190,7 +1190,7 @@ export const acoesMeasure = {
   async 'mz-excluir-projeto'(el) {
     const p = projeto(el.dataset.id);
     const nf = folhasDo(p.id).length, nc = condicoesDo(p.id).length;
-    if (!(await confirmar(tr('Excluir "') + p.nome + '"?', nf || nc ? (tr('As') + ' ') + nf + (' ' + tr('folhas e as') + ' ') + nc + (' ' + tr('condições (com as medições) também serão apagadas.')) : tr('O projeto ainda não tem folhas.'), tr('Excluir')))) return;
+    if (!(await confirmar(tr('Excluir "') + p.nome + '"?', nf || nc ? tr('Também serão apagadas: {folhas} e {condicoes} (com as medições).', { folhas: tn(nf, '{n} folha', '{n} folhas'), condicoes: tn(nc, '{n} condição', '{n} condições') }) : tr('O projeto ainda não tem folhas.'), tr('Excluir')))) return;
     excluirProjeto(p.id);
     toast(tr('Projeto excluído.'));
     app.ir('#/measure');

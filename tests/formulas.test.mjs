@@ -36,7 +36,7 @@ const recusar = [
   ['(', 'area', 'sintaxe inválida'],
 ];
 for (const [f, tipo, nome] of recusar) verificar(!!analisar(f, tipo).erro, 'recusa ' + nome + ': ' + JSON.stringify(f));
-verificar(/SurfaceArea \(altura\)/.test(calcular('SurfaceArea / 32', 'linear', { MeasuredLinear: 100 }).erro || ''), 'falta de variável diz o que preencher na condição (altura)');
+verificar(/SurfaceArea \((altura|height)\)/.test(calcular('SurfaceArea / 32', 'linear', { MeasuredLinear: 100 }).erro || ''), 'falta de variável diz o que preencher na condição (altura)');
 verificar(!!calcular('MeasuredArea / 0', 'area', { MeasuredArea: 10 }).erro, 'divisão por zero vira erro, não Infinity');
 verificar(!!calcular('0 - MeasuredArea', 'area', { MeasuredArea: 10 }).erro, 'resultado negativo vira erro');
 

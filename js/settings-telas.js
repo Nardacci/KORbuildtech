@@ -91,7 +91,7 @@ function telaFuncionarios(filtro) {
       '<td class="num"><b>' + dinheiro(valorAtual(f)) + '</b></td>' +
       '<td class="num">' + dinheiro(custoCarregado(f)) + '</td>' +
       '<td>' + (f.situacao === 'ativo' ? ('<span class="etiqueta etiqueta-verde">' + tr('Ativo') + '</span>') : '<span class="etiqueta etiqueta-neutro">' + SITUACOES_FUNC[f.situacao] + '</span>') +
-        (avisos.length ? ' <span class="etiqueta etiqueta-ambar" title="' + esc(avisos.map((c) => c.nome).join(', ')) + '">' + avisos.length + (' ' + tr('certificação a vencer') + '</span>') : '') + '</td></tr>';
+        (avisos.length ? ' <span class="etiqueta etiqueta-ambar" title="' + esc(avisos.map((c) => c.nome).join(', ')) + '">' + tn(avisos.length, '{n} certificação a vencer', '{n} certificações a vencer') + '</span>' : '') + '</td></tr>';
   }).join('');
   return moldura({
     ativo: 'funcionarios', titulo: tr('Funcionários'), subtitulo: tr('Cadastro único da empresa: vale para o Crew, o Daily e o Measure'),
@@ -99,7 +99,7 @@ function telaFuncionarios(filtro) {
     conteudo: ('<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">') + abas.map(([id, r]) => '<a href="#/settings/funcionarios' + (id ? '/' + id : '') + '"' + ((filtro || '') === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
       ('<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-funcionarios"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Função e equipe') + '</th><th>' + tr('Classificação') + '</th><th class="num">' + tr('Valor hora') + '</th><th class="num">' + tr('Custo carregado') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
       (linhas || ('<tr><td colspan="6" class="mudo">' + tr('Nenhum funcionário.') + '</td></tr>')) + '</tbody></table></div></section>' +
-      ('<p class="dica">' + tr('Custo carregado = valor hora +') + ' ') + pct(encargosEm(hoje())) + (' ' + tr('de encargos (') + '<a href="#/settings/encargos">' + tr('Encargos') + '</a>' + tr('). Autônomo (1099) não tem encargos nem hora extra.') + '</p>'),
+      '<p class="dica">' + tr('Custo carregado = valor hora + {pct} de <a href="#/settings/encargos">encargos</a>. Autônomo (1099) não tem encargos nem hora extra.', { pct: pct(encargosEm(hoje())) }) + '</p>',
   });
 }
 

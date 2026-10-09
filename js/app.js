@@ -97,7 +97,7 @@ async function sincronizar() {
       break;
     }
     r.sync = 'enviado';
-    registrar(r, (tr('Aparelho de') + ' ') + r.autor, tr('Recebido no escritório (') + r.fotos.length + (' ' + tr('fotos,') + ' ') + tamanho(r.fotos.reduce((s, f) => s + f.tamanho, 0)) + ')');
+    registrar(r, (tr('Aparelho de') + ' ') + r.autor, tn(r.fotos.length, 'Recebido no escritório ({n} foto, {tamanho})', 'Recebido no escritório ({n} fotos, {tamanho})', { tamanho: tamanho(r.fotos.reduce((s, f) => s + f.tamanho, 0)) }));
     salvar();
     enviados++;
     toast(tr('RDO nº {n}', { n: r.numero }) + ' (' + o.nome + tr(') chegou ao escritório.'));
@@ -363,7 +363,7 @@ function telaCampo() {
           '<div class="cartao-obra-topo"><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
           '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(o.etapa) + '</span>' +
           '<span class="etiquetas">' + '<span class="etiqueta etiqueta-' + s.classe + '">' + s.texto + '</span>' +
-            atrasos.map((d) => ('<span class="etiqueta etiqueta-alerta">' + tr('RDO de') + ' ') + dataCurta(d).slice(0, 5) + ' atrasado</span>').join('') + '</span></a>';
+            atrasos.map((d) => '<span class="etiqueta etiqueta-alerta">' + tr('RDO de {data} atrasado', { data: dataCurta(d).slice(0, 5) }) + '</span>').join('') + '</span></a>';
       }).join('') + '</div>' +
       ('<button type="button" class="link-sutil" data-acao="testar-lembrete">' + tr('Como funcionam os lembretes? Testar no celular') + '</button>'),
   });
@@ -435,7 +435,7 @@ function telaObraCampo(id) {
 function telaHistorico() {
   const lista = estado().rdos.slice().sort((a, b) => (a.data === b.data ? b.numero - a.numero : a.data < b.data ? 1 : -1));
   return moldura({
-    ativo: 'historico', titulo: tr('Histórico'), subtitulo: lista.length + (' ' + tr('relatórios de todas as obras')),
+    ativo: 'historico', titulo: tr('Histórico'), subtitulo: tn(lista.length, '{n} relatório de todas as obras', '{n} relatórios de todas as obras'),
     conteudo: '<div class="lista">' + lista.map((r) => itemRdo(r, { comObra: true })).join('') + '</div>',
   });
 }
@@ -804,7 +804,7 @@ function telaAprovacoes() {
   const ajustes = recebidos.filter((r) => r.status === 'ajustes');
   const aprovados = recebidos.filter((r) => r.status === 'aprovado').sort((a, b) => b.aprovadoEm - a.aprovadoEm).slice(0, 8);
   return moldura({
-    ativo: 'aprovacoes', largo: true, titulo: tr('Aprovações'), subtitulo: aguardando.length ? aguardando.length + (' ' + tr('relatórios esperando a sua revisão')) : tr('Nenhum relatório esperando revisão'),
+    ativo: 'aprovacoes', largo: true, titulo: tr('Aprovações'), subtitulo: aguardando.length ? tn(aguardando.length, '{n} relatório esperando a sua revisão', '{n} relatórios esperando a sua revisão') : tr('Nenhum relatório esperando revisão'),
     conteudo:
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Aguardando aprovação') + ' <span class="contador">') + aguardando.length + '</span></h2>' +
         (aguardando.length ? '<ul class="fila">' + aguardando.map((r) => itemPainel(r, tr('Revisar'))).join('') + '</ul>' : ('<p class="vazio">' + tr('Nada pendente. Tudo aprovado.') + '</p>')) +
@@ -825,7 +825,7 @@ function telaAprovacoes() {
 function telaObrasAdmin() {
   const { obras } = estado();
   return moldura({
-    ativo: 'obras', largo: true, titulo: tr('Obras'), subtitulo: obras.length + (' ' + tr('obras ativas')),
+    ativo: 'obras', largo: true, titulo: tr('Obras'), subtitulo: tn(obras.length, '{n} obra ativa', '{n} obras ativas'),
     conteudo: '<div class="lista grade-obras">' + obras.map((o) => {
       const f = farol(o);
       const qtd = rdosDaObra(o.id).filter(recebido).length;
@@ -833,7 +833,7 @@ function telaObrasAdmin() {
         '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
         '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(textoPartes(o)) + '</span>' +
         '<span class="mudo">' + esc(etapaAtual(o)) + '</span>' +
-        '<span class="cartao-obra-rodape">' + f.texto + ' · ' + qtd + (' ' + tr('RDOs recebidos') + '</span></a>');
+        '<span class="cartao-obra-rodape">' + f.texto + (qtd ? ' · ' + tn(qtd, '{n} RDO recebido', '{n} RDOs recebidos') : '') + '</span></a>';
     }).join('') + '</div>',
   });
 }
@@ -1083,7 +1083,7 @@ const acoes = {
           const emAndamento = r.atividades.filter((a) => a.situacao !== 'concluida').length;
           return '<label class="opcao-rdo"><input type="radio" name="base" value="' + esc(r.id) + '"' + (i === 0 ? ' checked' : '') + '>' +
             '<span><b>' + dataRelativa(r.data) + (dataRelativa(r.data) === dataCurta(r.data) ? '' : ' · ' + dataCurta(r.data)) + '</b>' +
-            ('<span class="mudo">' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + r.equipamentos.length + (' ' + tr('equipamentos ·') + ' ') + emAndamento + (' ' + tr('em andamento') + '</span></span></label>');
+            ('<span class="mudo">' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + tn(pessoas, '{n} pessoa', '{n} pessoas') + ' · ' + tn(r.equipamentos.length, '{n} equipamento', '{n} equipamentos') + ' · ' + tr('{n} em andamento', { n: emAndamento }) + '</span></span></label>';
         }).join('') + '</div>',
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Copiar'), valor: true, classe: 'btn-primario' }],
     });
@@ -1291,7 +1291,7 @@ const acoes = {
   },
   async aprovar() {
     const r = rdoDaTela();
-    if (!(await confirmar((tr('Aprovar e lacrar o RDO nº') + ' ') + r.numero + '?', tr('Depois de aprovado, o relatório não pode mais ser alterado por ninguém. Ele recebe um código de verificação para o cliente conferir.'), tr('Aprovar e lacrar')))) return;
+    if (!(await confirmar(tr('Aprovar e lacrar o RDO nº {n}?', { n: r.numero }), tr('Depois de aprovado, o relatório não pode mais ser alterado por ninguém. Ele recebe um código de verificação para o cliente conferir.'), tr('Aprovar e lacrar')))) return;
     r.status = 'aprovado';
     r.aprovadoEm = Date.now();
     r.aprovadoPor = usuarioAtual().nome;

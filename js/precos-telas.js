@@ -50,7 +50,7 @@ export function telaPrecos(moldura) {
         if (!lista.length) return '';
         return '<section class="cartao"><h2 class="cartao-titulo">' + nome + '</h2>' +
           (cat === 'mao-de-obra' && crew ? '<p class="aviso-info">' + icone('crew', 16) + (tr('Pelo Crew, a hora custa em média') + ' <b>') + dinheiro(crew.custo) + ('</b>' + tr(': valor hora médio de') + ' ') + dinheiro(crew.media) +
-            ' (' + crew.funcionarios + (' ' + tr('funcionários) +') + ' ') + pct(crew.encargos * 100) + (' ' + tr('de encargos.') + '</p>') : '') +
+            ' (' + tn(crew.funcionarios, '{n} funcionário', '{n} funcionários') + ') + ' + tr('{pct} de encargos.', { pct: pct(crew.encargos * 100) }) + '</p>' : '') +
           ('<div class="tabela-rolagem"><table class="tabela tabela-precos"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Item') + '</th><th class="num">' + tr('Preço atual') + '</th><th>' + tr('Vigência e origem') + '</th><th></th></tr></thead><tbody>') +
           lista.map(linha).join('') + '</tbody></table></div></section>';
       }).join('') +

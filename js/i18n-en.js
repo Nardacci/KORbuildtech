@@ -1339,7 +1339,7 @@ export const EN = {
   'OSB 7/16" 4\'×8\'': 'OSB 7/16" 4\'×8\'',
   'Piso vinílico LVP': 'LVP vinyl plank',
   'Porta de entrada 36" × 80" pré-montada': 'Entry door 36" × 80" pre-hung',
-  'Siding vinil (square)': 'Vinyl siding (square)',
+  'Siding vinil (square)': 'Vinyl siding',
   'Tela soldada 5\'×150\'': 'Welded wire mesh 5\'×150\'',
   'caixa': 'box',
   'chapa': 'sheet',
@@ -1528,9 +1528,10 @@ export const EN = {
   'Arraste para mover a planta. Ctrl + rolagem do mouse: zoom.': 'Drag to pan the plan. Ctrl + mouse wheel: zoom.',
   'Inclua um assembly no painel ao lado (parede, piso, janela…) para começar a medir.': 'Add an assembly in the side panel (wall, floor, window…) to start measuring.',
   'As marcações de "': 'The marks for "',
-  'Contagem: clique em cada item de "': 'Count: click each item for "',
+  'Contagem: clique em cada item de "{nome}".': 'Count: click each "{nome}".',
   'Linear: clique nos pontos. Duplo clique ou Enter conclui, Esc cancela, Backspace desfaz o último ponto. Shift: linha reta. Perto de um ponto já medido, o clique gruda nele (Alt desliga). Para mais precisão, aumente o zoom.': 'Linear: click the points. Double-click or Enter to finish, Esc to cancel, Backspace to undo the last point. Shift: straight line. Near an existing point, clicks snap to it (Alt turns it off). Zoom in for more precision.',
-  'Recortar (borracha): clique nos cantos do que sai de "': 'Deduct (eraser): click the corners of what comes out of "',
+  'Recortar (borracha): clique nos cantos do que sai de "{nome}" (escada, chaminé, recorte). Duplo clique, Enter ou clique no primeiro ponto fecha.': 'Deduct (eraser): click the corners of the area to remove from "{nome}" (stairwell, chimney, cutout). Double-click, Enter or click the first point to close.',
+  'e-mail preparado em': 'email drafted on',
   'Área: clique nos cantos. Duplo clique, Enter ou clique no primeiro ponto fecha a área.': 'Area: click the corners. Double-click, Enter or click the first point to close the area.',
   'A área precisa de pelo menos 3 pontos.': 'An area needs at least 3 points.',
   'Marque pelo menos 2 pontos.': 'Mark at least 2 points.',
@@ -2163,4 +2164,56 @@ export const EN = {
   // ---------- Tela de entrada — manual ----------
   'Manual de teste (em português):': 'Test guide (in Portuguese):',
   'Baixar (Word)': 'Download (Word)',
+
+  // ---------- Revisão do inglês (outubro) ----------
+  'RDO de {data} atrasado': '{data} report late',
+  'registros': 'entries',
+  'Contratante * (recebe a proposta)': 'Client * (receives the proposal)',
+  '(precisa de {campo})': '(needs {campo})',
+  '{n} linha': '{n} line',
+  '{n} linhas': '{n} lines',
+
+  // ---------- Revisão do inglês: plurais ----------
+  'Recebido no escritório ({n} foto, {tamanho})': 'Received at the office ({n} photo, {tamanho})',
+  'Recebido no escritório ({n} fotos, {tamanho})': 'Received at the office ({n} photos, {tamanho})',
+  '{n} relatório de todas as obras': '{n} report from all jobs',
+  '{n} relatórios de todas as obras': '{n} reports from all jobs',
+  '{n} relatório esperando a sua revisão': '{n} report awaiting your review',
+  '{n} relatórios esperando a sua revisão': '{n} reports awaiting your review',
+  '{n} obra ativa': '{n} active job',
+  '{n} obras ativas': '{n} active jobs',
+  '{n} equipamento': '{n} piece of equipment',
+  '{n} equipamentos': '{n} pieces of equipment',
+  '{n} em andamento': '{n} in progress',
+  '{n} timesheet da semana passada aguardando aprovação': '{n} timesheet from last week awaiting approval',
+  '{n} timesheets da semana passada aguardando aprovação': '{n} timesheets from last week awaiting approval',
+  'A medição dela, em todas as folhas, também será apagada.': 'Its measurement, on every sheet, will also be deleted.',
+  'As {n} medições dela, em todas as folhas, também serão apagadas.': 'Its {n} measurements, on every sheet, will also be deleted.',
+  'A medição dela nesta folha será apagada.': 'Its measurement on this sheet will be deleted.',
+  'As {n} medições dela nesta folha serão apagadas.': 'Its {n} measurements on this sheet will be deleted.',
+  'Também serão apagadas: {folhas} e {condicoes} (com as medições).': 'This also deletes {folhas} and {condicoes} (with their measurements).',
+  '{n} folha': '{n} sheet',
+  '{n} folhas': '{n} sheets',
+  '{n} condição': '{n} condition',
+  '{n} condições': '{n} conditions',
+  '{n} funcionário': '{n} employee',
+  '{n} funcionários': '{n} employees',
+  '{pct} de encargos.': '{pct} in payroll burden.',
+  '{n} certificação a vencer': '{n} certification expiring',
+  '{n} certificações a vencer': '{n} certifications expiring',
+  '{n} dia decorrido': '{n} day elapsed',
+  '{n} dias decorridos': '{n} days elapsed',
+
+  // ---------- Revisão do inglês: plurais ----------
+  'qtd': 'qty',
+
+  // ---------- Revisão do inglês: plurais ----------
+  '{n} RDO recebido': '{n} report received',
+  '{n} RDOs recebidos': '{n} reports received',
+
+  // ---------- Revisão do inglês: plurais ----------
+  '{tipo} às {hora}, batida a {dist} da obra': '{tipo} at {hora}, punched {dist} from the job',
+  'Ajustar o dia {data}': 'Edit hours for {data}',
+  'Custo carregado = valor hora + {pct} de <a href="#/settings/encargos">encargos</a>. Autônomo (1099) não tem encargos nem hora extra.': 'Burdened cost = hourly rate + {pct} <a href="#/settings/encargos">labor burden</a>. Contractors (1099) have no labor burden or overtime.',
+  'Aprovar e lacrar o RDO nº {n}?': 'Approve and seal report #{n}?',
 };

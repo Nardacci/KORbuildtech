@@ -85,7 +85,7 @@ export function telaCotacao(id, moldura) {
     const ultimos = envios(p, f.id);
     return '<section class="cartao cot-fornecedor"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + esc(f.nome) + '</h2>' +
         '<span class="mudo pequeno">' + esc([f.pessoa, f.email].filter(Boolean).join(' · ') || tr('sem e-mail cadastrado')) + ' · ' + tn(g.itens.length, '{n} item', '{n} itens') + '</span>' +
-        (ultimos.length ? '<span class="etiqueta etiqueta-verde">e-mail preparado em ' + dataCurta(ultimos[ultimos.length - 1].em.slice(0, 10)) + '</span>' : '') +
+        (ultimos.length ? '<span class="etiqueta etiqueta-verde">' + tr('e-mail preparado em') + ' ' + dataCurta(ultimos[ultimos.length - 1].em.slice(0, 10)) + '</span>' : '') +
         (respostas(p, f.id).length ? ('<span class="etiqueta etiqueta-azul">' + tr('preços recebidos em') + ' ') + dataCurta(respostas(p, f.id).slice(-1)[0].em.slice(0, 10)) + '</span>' : '') + '</div>' +
         '<div class="btn-linha">' + (pode(usuarioAtual(), 'measure.catalogo') ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="cot-resposta" data-projeto="' + id + '" data-fornecedor="' + f.id + ('">' + tr('Registrar preços recebidos') + '</button>') : '') +
         '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/cotacao/' + f.id + '/imprimir">' + icone('baixar', 16) + 'PDF</a>' +

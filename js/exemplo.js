@@ -5,7 +5,7 @@
  *  - Galpão Logístico Rodovia: último RDO há 2 dias, com ajustes pedidos (vermelho). */
 
 import { hoje, somarDias, diasEntre, novoId, sha256 } from './util.js';
-import { tr } from './i18n.js';
+import { tr, emIngles } from './i18n.js';
 import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
 import { criarDadosCrew, RAIO_CERCA } from './crew.js';
 import { criarSettings } from './settings.js';
@@ -13,6 +13,14 @@ import { criarDadosMeasure } from './measure.js';
 import { retrato } from './cronograma.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
+
+/* Domínios dos e-mails de exemplo no idioma da demonstração (o login aceita os dois: ver plataforma.js). */
+export const DOMINIOS_EN = {
+  'construtoraexemplo.com': 'examplebuilders.com', 'prestadoraexemplo.com': 'northfieldframing.com',
+  'cliente.exemplo.com': 'client.example.com', 'fornecedor.exemplo.com': 'supplier.example.com',
+  'construtora.exemplo.com': 'gc.example.com', 'prestadora.exemplo.com': 'sub.example.com',
+};
+const em = (texto) => emIngles() ? texto.replace(/[a-z.]*exemplo\.com/g, (d) => DOMINIOS_EN[d] || d) : texto;
 
 /* Duas empresas assinam o KORbuild na demonstração, cada uma com os seus dados (docs/saas.md §Atores):
  *  - a CONSTRUTORA (general contractor que também executa): Ana é a administradora;
@@ -22,13 +30,13 @@ const SEGUROS = tr('General liability: US$ 1.000.000 por ocorrência / US$ 2.000
 export const CONSTRUTORA = {
   id: 'construtora-exemplo', nome: tr('Construtora Exemplo'), razaoSocial: tr('Construtora Exemplo LLC'), sigla: 'CE', ein: '00-0000000', atuacao: 'construtora',
   especialidades: tr('Obras residenciais, comerciais e industriais: estrutura, alvenaria e gestão de obra'), endereco: '900 Elm St', cidade: 'Manchester', estado: 'NH', zip: '03101',
-  telefone: '(603) 555-0180', email: 'office@construtoraexemplo.com', site: 'construtoraexemplo.com',
+  telefone: '(603) 555-0180', email: em('office@construtoraexemplo.com'), site: em('construtoraexemplo.com'),
   licencas: tr('Registro de contractor na cidade de Manchester'), seguros: SEGUROS, termosProposta: TERMOS, logo: null,
 };
 export const PRESTADORA = {
   id: 'prestadora-exemplo', nome: tr('Northfield Framing & Siding'), razaoSocial: tr('Northfield Framing & Siding LLC'), sigla: 'NFS', ein: '00-0000001', atuacao: 'prestadora',
   especialidades: tr('Framing, siding, janelas e acabamento externo'), endereco: '210 Canal St', cidade: 'Manchester', estado: 'NH', zip: '03101',
-  telefone: '(603) 555-0100', email: 'office@prestadoraexemplo.com', site: 'prestadoraexemplo.com',
+  telefone: '(603) 555-0100', email: em('office@prestadoraexemplo.com'), site: em('prestadoraexemplo.com'),
   licencas: tr('Registro de contractor na cidade de Manchester\nEPA Lead-Safe Certified Firm (RRP)'), seguros: SEGUROS, termosProposta: TERMOS, logo: null,
 };
 /* Os de fora: um diretório só, com marcadores (docs/saas.md §Atores). Cada empresa tem o seu. */
@@ -58,7 +66,7 @@ const CONTATOS_PRESTADORA = [
 function criarContatos(proprios) {
   return proprios.concat(CONTATOS_COMUNS).map(([id, nome, pessoa, papel, cidade, etapas], i) => ({
     id, nome, pessoa, papeis: [papel], cidade, estado: 'NH', endereco: '', zip: '',
-    email: id === 'ct-construtora' ? 'ana@construtoraexemplo.com' : id.slice(3) + '@' + papel + '.exemplo.com',
+    email: em(id === 'ct-construtora' ? 'ana@construtoraexemplo.com' : id.slice(3) + '@' + papel + '.exemplo.com'),
     telefone: '(603) 555-0' + String(200 + i), etapas: etapas || [], notas: '', criadoEm: Date.now(),
   }));
 }
@@ -70,11 +78,11 @@ export const PESSOAS = {
 /* Usuários da empresa. Os dois primeiros são as contas de demonstração da tela de login. */
 // perfilId: perfil de acesso do Settings (Administrador, Gestor de obras, Encarregado, Trabalhador)
 const USUARIOS = [
-  { id: 'u-carlos', nome: tr('Carlos Mendes'), email: 'carlos@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: tr('Mestre de obras'), telefone: '(603) 555-0142' },
-  { id: 'u-ana', nome: tr('Ana Ribeiro'), email: 'ana@construtoraexemplo.com', perfilId: 'administrador', cargo: tr('Engenheira responsável'), telefone: '(603) 555-0187' },
-  { id: 'u-roberto', nome: tr('Roberto Lima'), email: 'roberto@construtoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: tr('Encarregado'), telefone: '(603) 555-0163' },
-  { id: 'u-marcia', nome: tr('Márcia Souza'), email: 'marcia@construtoraexemplo.com', perfilId: 'gestor', cargo: tr('Diretora de obras'), telefone: '(603) 555-0119' },
-  { id: 'u-diego', nome: tr('Diego Santos'), email: 'diego@construtoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: tr('Pedreiro'), telefone: '(603) 555-0175' },
+  { id: 'u-carlos', nome: tr('Carlos Mendes'), email: em('carlos@construtoraexemplo.com'), perfilId: 'encarregado', funcionarioId: 'f-carlos', cargo: tr('Mestre de obras'), telefone: '(603) 555-0142' },
+  { id: 'u-ana', nome: tr('Ana Ribeiro'), email: em('ana@construtoraexemplo.com'), perfilId: 'administrador', cargo: tr('Engenheira responsável'), telefone: '(603) 555-0187' },
+  { id: 'u-roberto', nome: tr('Roberto Lima'), email: em('roberto@construtoraexemplo.com'), perfilId: 'encarregado', funcionarioId: 'f-roberto', cargo: tr('Encarregado'), telefone: '(603) 555-0163' },
+  { id: 'u-marcia', nome: tr('Márcia Souza'), email: em('marcia@construtoraexemplo.com'), perfilId: 'gestor', cargo: tr('Diretora de obras'), telefone: '(603) 555-0119' },
+  { id: 'u-diego', nome: tr('Diego Santos'), email: em('diego@construtoraexemplo.com'), perfilId: 'trabalhador', funcionarioId: 'f-diego', cargo: tr('Pedreiro'), telefone: '(603) 555-0175' },
 ];
 // Contas da tela de login: uma de cada jeito de usar (só ponto, campo, escritório)
 export const CONTAS_DEMO = ['u-diego', 'u-carlos', 'u-ana'];
@@ -194,7 +202,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 23;
+export const VERSAO_DADOS = 24;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -297,10 +305,10 @@ export async function criarDemonstracao() {
 /* ---------- A prestadora de serviço (subcontractor) ---------- */
 
 const USUARIOS_PRESTADORA = [
-  { id: 'u-tom', nome: tr('Tom Reilly'), email: 'tom@prestadoraexemplo.com', perfilId: 'administrador', cargo: tr('Sócio e estimador'), telefone: '(603) 555-0101' },
-  { id: 'u-rita', nome: tr('Rita Gomes'), email: 'rita@prestadoraexemplo.com', perfilId: 'gestor', cargo: tr('Estimadora'), telefone: '(603) 555-0102' },
-  { id: 'u-jose', nome: tr('José Pereira'), email: 'jose@prestadoraexemplo.com', perfilId: 'encarregado', funcionarioId: 'f-jose', cargo: tr('Encarregado de framing'), telefone: '(603) 555-0103' },
-  { id: 'u-luis', nome: tr('Luis Ortega'), email: 'luis@prestadoraexemplo.com', perfilId: 'trabalhador', funcionarioId: 'f-luis', cargo: tr('Carpinteiro'), telefone: '(603) 555-0104' },
+  { id: 'u-tom', nome: tr('Tom Reilly'), email: em('tom@prestadoraexemplo.com'), perfilId: 'administrador', cargo: tr('Sócio e estimador'), telefone: '(603) 555-0101' },
+  { id: 'u-rita', nome: tr('Rita Gomes'), email: em('rita@prestadoraexemplo.com'), perfilId: 'gestor', cargo: tr('Estimadora'), telefone: '(603) 555-0102' },
+  { id: 'u-jose', nome: tr('José Pereira'), email: em('jose@prestadoraexemplo.com'), perfilId: 'encarregado', funcionarioId: 'f-jose', cargo: tr('Encarregado de framing'), telefone: '(603) 555-0103' },
+  { id: 'u-luis', nome: tr('Luis Ortega'), email: em('luis@prestadoraexemplo.com'), perfilId: 'trabalhador', funcionarioId: 'f-luis', cargo: tr('Carpinteiro'), telefone: '(603) 555-0104' },
 ];
 const FUNCIONARIOS_PRESTADORA = [
   ['f-jose', tr('José Pereira'), tr('Encarregado'), 34, 'u-jose'],

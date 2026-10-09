@@ -4,6 +4,7 @@
  * módulos. No protótipo há uma empresa só e tudo fica no navegador; na versão real, o servidor
  * isola os dados de cada empresa. */
 
+import { DOMINIOS_EN } from './exemplo.js';
 import { esc, dataCurta, diasEntre, hoje, dataHora, isoDoDia, horaCurta } from './util.js';
 import { estado, todasAsEmpresas, salvar } from './armazem.js';
 import { pode, perfilDe, modulosDe } from './settings.js';
@@ -65,8 +66,12 @@ export function sair() { localStorage.removeItem(CHAVE_SESSAO); }
 /* Na entrada, o e-mail diz a empresa: procura em todas e a sessão abre a empresa do usuário. */
 export function usuarioPorEmail(email) {
   const e = String(email || '').trim().toLowerCase();
+  // os e-mails de exemplo mudam de domínio com o idioma; aceita os dois (o manual de teste usa os em português)
+  const [local, dom] = e.split('@');
+  const pares = Object.entries(DOMINIOS_EN).flatMap(([pt, en]) => [[pt, en], [en, pt]]);
+  const aceitos = [e].concat(pares.filter(([a]) => a === dom).map(([, b]) => local + '@' + b));
   for (const d of todasAsEmpresas()) {
-    const u = d.usuarios.find((x) => x.email.toLowerCase() === e && x.ativo);
+    const u = d.usuarios.find((x) => aceitos.includes(x.email.toLowerCase()) && x.ativo);
     if (u) return u;
   }
   return null;
@@ -204,6 +209,9 @@ function menuUsuario(u) {
     '</div></details>';
 }
 
+/* Identificador que a conta mostra: o nome da empresa sem acento, em minúsculas (no protótipo, o id interno não muda com o idioma). */
+const identificador = (nome) => nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
 /* ---------- Login ---------- */
 
 /* grupos: [{ empresa, usuarios: [{ u, perfil }] }] — os usuários de demonstração de cada empresa. */
@@ -300,7 +308,7 @@ export function telaConta(u) {
           '<div class="empresa-id"><span class="rel-logo">' + esc(d.empresa.sigla) + '</span><div><b>' + esc(d.empresa.nome) + '</b><span class="mudo">EIN ' + esc(d.empresa.ein) + '</span></div></div>' +
           ('<p class="mudo pequeno">' + tr('O logotipo e o nome aparecem nos relatórios em PDF e no link do cliente.') + '</p>') +
           ('<div class="linha-info"><span>' + tr('Cliente desde') + '</span><b>') + dataCurta(d.empresa.desde) + '</b></div>' +
-          ('<div class="linha-info"><span>' + tr('Identificador da conta') + '</span><b class="codigo">') + esc(d.empresa.id) + '</b></div>' +
+          ('<div class="linha-info"><span>' + tr('Identificador da conta') + '</span><b class="codigo">') + esc(identificador(d.empresa.nome)) + '</b></div>' +
         '</section>' +
         ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Assinatura') + '</h2>') +
           '<div class="plano"><b>' + tr('Plano {nome}', { nome: esc(p.nome) }) + '</b><span class="etiqueta ' + (p.status === 'teste' ? 'etiqueta-azul' : 'etiqueta-verde') + '">' + (p.status === 'teste' ? tn(dias, 'Teste grátis · {n} dia', 'Teste grátis · {n} dias') : tr('Ativa')) + '</span></div>' +

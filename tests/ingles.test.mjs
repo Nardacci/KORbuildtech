@@ -4,6 +4,7 @@
  * Com --relatorio, lista tudo o que achou em português (sem falhar). */
 
 import { chromium } from 'playwright';
+import fs from 'fs';
 
 const BASE = process.argv.find((a) => a.startsWith('http')) || 'http://localhost:8123/';
 const RELATORIO = process.argv.includes('--relatorio');
@@ -14,9 +15,17 @@ function verificar(cond, texto) {
   else { falhas++; console.log('FALHA ' + texto); }
 }
 
-// Palavras e grafias que não existem em inglês. Nomes próprios de exemplo ficam de fora (PERMITIDO).
-const PORTUGUES = /[ãõçâêôáéíóú]|\b(de|da|dos|das|não|para|com|que|em|nos|nas|uma|ou|obra|obras|hoje|ontem|semana|horas|equipe|ponto|preço|preços|projeto|projetos|você|está|são|até|sem|por|pelo|pela|ao|aos|novo|nova|salvar|editar|excluir|voltar|enviar|entrada|saída|intervalo|funcionário|funcionários|usuário|usuários|perfil|relatório|relatórios|aprovar|ajustes|etapa|mês|dia|dias|pessoa|pessoas|trabalhando|fora|ainda|desde|cada|quando|também|aqui|agora|então|foto|fotos|faltam|falta|feito|feita|nenhum|nenhuma|todos|todas|está|estão|ser|tem|vai|após|antes|depois|sobre|entre|seu|sua|seus|suas|isso|este|esta|esse|essa|mais|menos|muito|só|já|outro|outra|valor|custo|prazo|lista|folha|escala|medida|condição|tirar|incluir|criar|ver|abrir|fechar|salvo|salva|registrado|registrada|aguardando|pendente|aberto|fechado)\b/i;
-const PERMITIDO = /\S+@\S+|to-dos|Márcia|Antônio|João|José|André|Português|KORbuild|Northfield/g;
+// Português na tela: acento ou palavra que só aparece nas chaves do dicionário (frases em português)
+// e nunca nas traduções. Nomes próprios de exemplo ficam de fora (PERMITIDO).
+const dic = fs.readFileSync(new URL('../js/i18n-en.js', import.meta.url), 'utf8');
+const pares = [...dic.matchAll(/^\s*'((?:[^'\\]|\\.)*)':\s*'((?:[^'\\]|\\.)*)',?\s*$/gm)];
+const palavras = (s) => s.toLowerCase().match(/[a-zà-ü]+/g) || [];
+const EN = new Set(pares.flatMap((p) => palavras(p[2])).concat('a an the of to in on at by for and or is are be it no yes all per'.split(' ')));
+const SO_PT = new Set(pares.flatMap((p) => palavras(p[1])).filter((w) => w.length >= 2 && !EN.has(w)));
+const PERMITIDO = /\S+@\S+|Márcia|Antônio|João|José|André|Sebastião|Conceição|Gonçalves|Simões|Araújo|Português|KORbuild|Northfield|casa-modelo\.pdf/g;
+// códigos de verificação, hashes e siglas (LO, DA…) não são palavras
+const CODIGOS = /\b[0-9A-F]{4}(-[0-9A-F]{4})+\b|SHA-256 [0-9a-f]+|\b[A-Z]{1,4}\b/g;
+const emPortugues = (l) => { const s = l.replace(PERMITIDO, '').replace(CODIGOS, ''); return /[ãõçâêôáéíóúà]/i.test(s) || palavras(s).some((w) => SO_PT.has(w)); };
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const context = await browser.newContext({
@@ -36,18 +45,25 @@ await page.waitForSelector('#form-login', { timeout: 30000 });
 verificar(await page.evaluate(() => document.documentElement.lang === 'en'), 'sem escolha, o app abre em inglês');
 verificar((await page.textContent('#form-login h2')).trim() === 'Sign in', 'tela de entrada em inglês');
 
+const telaEntrada = await page.textContent('#form-login');
+verificar(telaEntrada.includes('ana@examplebuilders.com') && !telaEntrada.includes('exemplo.com'), 'e-mails de exemplo com domínio em inglês');
+await page.fill('#login-email', 'carlos@construtoraexemplo.com');
+await page.click('#form-login button[type="submit"]');
+await page.waitForFunction(() => localStorage.getItem('kbt.sessao') === 'u-carlos', null, { timeout: 5000 }).catch(() => {});
+verificar(await page.evaluate(() => localStorage.getItem('kbt.sessao') === 'u-carlos'), 'o e-mail em português (manual de teste) também entra');
+
 const achados = new Map(); // linha → { telas }
 const semTraducao = new Set();
 
 async function coletar(rota) {
   const r = await page.evaluate(() => {
     const linhas = document.body.innerText.split('\n').map((s) => s.trim()).filter(Boolean);
-    const attrs = [...document.querySelectorAll('[title],[aria-label],[placeholder]')]
-      .flatMap((el) => ['title', 'aria-label', 'placeholder'].map((a) => el.getAttribute(a)).filter(Boolean));
+    const attrs = [...document.querySelectorAll('[title],[aria-label],[placeholder],option')]
+      .flatMap((el) => ['title', 'aria-label', 'placeholder'].map((a) => el.getAttribute(a)).concat(el.tagName === 'OPTION' ? el.textContent.trim() : null).filter(Boolean));
     return { linhas: linhas.concat(attrs), falta: [...(window.kbtSemTraducao || [])] };
   });
   for (const l of r.linhas) {
-    if (!PORTUGUES.test(l.replace(PERMITIDO, ''))) continue;
+    if (!emPortugues(l)) continue;
     const a = achados.get(l) || new Set();
     a.add(rota);
     achados.set(l, a);

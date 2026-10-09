@@ -424,7 +424,7 @@ export const acoesCrew = {
     const f = funcionario(el.dataset.id);
     const iso = el.dataset.dia;
     const res = await abrirDialogo({
-      titulo: (tr('Ajustar o dia') + ' ') + dataCurta(iso) + ' · ' + f.nome,
+      titulo: tr('Ajustar o dia {data}', { data: dataCurta(iso) }) + ' · ' + f.nome,
       corpo: ('<p class="mudo pequeno">' + tr('O ajuste entra como uma batida nova, marcada como ajuste, com o seu nome e o motivo. As batidas originais continuam visíveis.') + '</p>') +
         ('<label class="rotulo-pequeno" for="aj-tipo">' + tr('Batida') + '</label><select id="aj-tipo" name="tipo"><option value="saida">' + tr('Saída') + '</option><option value="intervalo-inicio">' + tr('Início do intervalo') + '</option><option value="intervalo-fim">' + tr('Fim do intervalo') + '</option><option value="entrada">' + tr('Entrada') + '</option></select>') +
         ('<label class="rotulo-pequeno" for="aj-hora">' + tr('Hora') + '</label><input type="text" id="aj-hora" name="hora" value="17:00" inputmode="numeric" pattern="[0-9]{2}:[0-9]{2}">') +
@@ -454,8 +454,8 @@ export const acoesCrew = {
       if (s.status !== 'aprovado') continue;
       for (const d of s.dias) for (const seg of d.segmentos) {
         if (seg.tipo === 'intervalo' || !seg.fim) continue;
-        linhas.push([segunda, f.nome, f.funcao, d.iso, nomeObra(seg.obraId), seg.tipo === 'deslocamento' ? tr('Deslocamento') : seg.etapa, seg.tipo,
-          horaCurta(seg.ini), horaCurta(seg.fim), ((seg.fim - seg.ini) / 3600000).toFixed(2), 'aprovado']);
+        linhas.push([segunda, f.nome, f.funcao, d.iso, nomeObra(seg.obraId), seg.tipo === 'deslocamento' ? tr('Deslocamento') : seg.etapa, seg.tipo === 'deslocamento' ? tr('Deslocamento') : tr('Trabalho'),
+          horaCurta(seg.ini), horaCurta(seg.fim), ((seg.fim - seg.ini) / 3600000).toFixed(2), tr('Aprovado')]);
       }
     }
     if (linhas.length === 1) { toast(tr('Nenhum timesheet aprovado nesta semana.')); return; }
@@ -900,7 +900,7 @@ function resumoPassos(passos) {
   return '<p class="mapa-resumo">' +
     ('<span><i class="lg-inicio"></i>' + tr('Entrada') + ' <b>') + (passos.entrada ? horaCurta(passos.entrada) : '—') + '</b></span>' +
     '<span><i class="lg-fim"></i>' + (passos.saida ? (tr('Saída') + ' <b>') + horaCurta(passos.saida) + '</b>' : passos.aberto ? ('<b>' + tr('Ponto aberto') + '</b>') : tr('Sem saída')) + '</span>' +
-    '<span><b>' + passos.itens.length + '</b> registros</span>' +
+    '<span><b>' + passos.itens.length + '</b> ' + tr('registros') + '</span>' +
     '<span>≈ <b>' + formatarDistancia(passos.total) + '</b> percorridos</span></p>';
 }
 
@@ -1028,7 +1028,7 @@ function htmlPercurso(percurso) {
       '<span class="parada-endereco">' + icone('pino', 14) + esc(p.endereco) + ' · ' + esc(p.cidade) + '</span>' +
       ('<span class="mudo pequeno">' + tr('Chegada') + ' ') + horaCurta(p.chegada) + ' · ' + (p.aberto ? tr('ainda na obra') : p.saida ? (tr('saída') + ' ') + horaCurta(p.saida) : tr('sem saída')) +
         (p.saida || p.aberto ? ' · ' + horas(minutosEntre(p.chegada, p.saida || Date.now())) : '') + '</span>' +
-      p.fora.map((f) => '<span class="parada-fora" id="fora-' + esc(f.id) + '">' + esc(f.tipo) + (' ' + tr('às') + ' ') + f.hora + (' ' + tr('batida a') + ' ') + formatarDistancia(f.distancia) + (' ' + tr('da obra ·') + ' <span class="endereco-fora">') + f.lat.toFixed(5) + ', ' + f.lon.toFixed(5) + '</span></span>').join('') +
+      p.fora.map((f) => '<span class="parada-fora" id="fora-' + esc(f.id) + '">' + tr('{tipo} às {hora}, batida a {dist} da obra', { tipo: esc(f.tipo), hora: f.hora, dist: formatarDistancia(f.distancia) }) + ' · <span class="endereco-fora">' + f.lat.toFixed(5) + ', ' + f.lon.toFixed(5) + '</span></span>').join('') +
     '</div></li>' }));
   percurso.pernas.forEach((p, i) => itens.push({ em: p.ini + 1, html:
     '<li class="perna perna-' + p.tipo + '" id="perna-' + i + '"><span class="perna-linha"></span><div>' +
@@ -1384,7 +1384,7 @@ export function notificacoesCrew(u) {
   if (pode(u, 'crew.acompanhar')) {
     const anterior = somarDias(inicioDaSemana(hojeIso), -7);
     const pend = todosFuncionarios().filter((f) => semana(f.id, anterior).status === 'pendente').length;
-    if (pend && pode(u, 'crew.aprovar')) lista.push({ id: 'crew-ts-' + anterior, em: new Date(inicioDaSemana(hojeIso) + 'T08:00:00').getTime(), modulo: 'crew', titulo: pend + (' ' + tr('timesheets da semana passada aguardando aprovação')), href: '#/crew/timesheets/' + anterior });
+    if (pend && pode(u, 'crew.aprovar')) lista.push({ id: 'crew-ts-' + anterior, em: new Date(inicioDaSemana(hojeIso) + 'T08:00:00').getTime(), modulo: 'crew', titulo: tn(pend, '{n} timesheet da semana passada aguardando aprovação', '{n} timesheets da semana passada aguardando aprovação'), href: '#/crew/timesheets/' + anterior });
     for (const b of c.batidas.filter((x) => x.dentroCerca === false && !x.conferida && x.em > Date.now() - 2 * 86400000)) {
       lista.push({ id: 'crew-fora-' + b.id, em: b.em, modulo: 'crew', titulo: funcionario(b.funcionarioId).nome + ': ' + ROTULO_BATIDA[b.tipo].toLowerCase() + (' ' + tr('fora da obra')), href: '#/crew/agora' });
     }
