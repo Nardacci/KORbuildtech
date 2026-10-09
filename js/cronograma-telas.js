@@ -13,6 +13,7 @@ import {
   cronogramasRecebidos, publicacao, nomeResponsavel, nomeDaEmpresaVinculada, DIAS_LOOKAHEAD,
 } from './cronograma.js';
 import { exportarExcel } from './cronograma-excel.js';
+import { modelos, modelo, aplicarModelo, distribuir } from './obras.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarCronograma(funcoes) { app = { ...app, ...funcoes }; }
@@ -121,7 +122,8 @@ export function telaCronograma(moldura, obraId) {
             htmlGantt(c, { editavel: ed, responsavel: nomeResponsavel }) + '</section>'
         : '<section class="cartao vazio-grande"><h2>' + tr('O cronograma desta obra ainda não tem etapas') + '</h2><p class="mudo">' +
             tr('Monte as etapas do seu serviço com início e fim. O encarregado informa o andamento no diário, e a construtora vê a versão que você publicar.') + '</p>' +
-            (ed ? '<button type="button" class="btn btn-primario" data-acao="cr-etapa" data-obra="' + o.id + '">' + icone('mais', 18) + tr('Criar a primeira etapa') + '</button>' : '') + '</section>') +
+            (ed ? '<div class="btn-linha">' + (modelos().length ? '<button type="button" class="btn btn-primario" data-acao="cr-modelo" data-obra="' + o.id + '">' + icone('tabela', 18) + tr('Começar com um modelo') + '</button>' : '') +
+              '<button type="button" class="btn ' + (modelos().length ? 'btn-contorno' : 'btn-primario') + '" data-acao="cr-etapa" data-obra="' + o.id + '">' + icone('mais', 18) + tr('Criar a primeira etapa') + '</button></div>' : '') + '</section>') +
       (temEtapas ? '<div class="grade-2">' +
         '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Linha de base') + '</h2>' +
           (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="cr-base" data-obra="' + o.id + '">' + tr('Salvar nova linha de base') + '</button>' : '') + '</div>' +
@@ -268,6 +270,26 @@ async function dialogoBase(obraId) {
 }
 
 export const acoesCronograma = {
+  async 'cr-modelo'(el) {
+    const o = acharObra(el.dataset.obra);
+    const lista = modelos();
+    const previa = (m) => '<ol class="lista-previa">' + distribuir(m.etapas, o.inicio, o.prazo).map((e) => '<li><b>' + esc(e.nome) + '</b><span class="mudo">' + dataCurta(e.inicio) + ' → ' + dataCurta(e.fim) + '</span></li>').join('') + '</ol>';
+    const trocar = (ev) => { if (ev.target.id === 'cr-modelo-id') document.getElementById('cr-modelo-previa').innerHTML = previa(modelo(ev.target.value)); };
+    document.addEventListener('change', trocar);
+    const res = await abrirDialogo({
+      titulo: tr('Começar com um modelo'),
+      corpo: '<label class="rotulo-pequeno" for="cr-modelo-id">' + tr('Modelo de etapas') + '</label><select id="cr-modelo-id" name="modeloId">' + lista.map((m) => '<option value="' + m.id + '">' + esc(m.nome) + '</option>').join('') + '</select>' +
+        '<p class="mudo pequeno">' + tr('As etapas dividem o período da obra ({inicio} → {prazo}) na proporção do modelo. Depois tudo se ajusta.', { inicio: dataCurta(o.inicio), prazo: dataCurta(o.prazo) }) + '</p>' +
+        '<div id="cr-modelo-previa">' + previa(lista[0]) + '</div>',
+      acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Aplicar'), valor: true, classe: 'btn-primario' }],
+    });
+    document.removeEventListener('change', trocar);
+    if (!res || !res.valor) return;
+    const r = aplicarModelo(o.id, res.campos.modeloId, (usuarioAtual() || {}).nome);
+    if (r.erro) { toast(r.erro); return; }
+    toast(tr('Etapas criadas a partir do modelo. A primeira linha de base foi salva.'));
+    app.desenhar();
+  },
   async 'cr-etapa'(el) { await dialogoEtapa(el.dataset.obra || document.getElementById('cronograma').dataset.obra, el.dataset.id || null); },
   async 'cr-avanco'(el) { await dialogoAvanco(document.getElementById('cronograma').dataset.obra, el.dataset.id); },
   'cr-mover'(el) { moverEtapa(document.getElementById('cronograma').dataset.obra, el.dataset.id, Number(el.dataset.passo)); app.desenhar(); },

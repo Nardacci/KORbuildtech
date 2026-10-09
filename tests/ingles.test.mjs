@@ -24,7 +24,7 @@ const EN = new Set(pares.flatMap((p) => palavras(p[2])).concat('a an the of to i
 const SO_PT = new Set(pares.flatMap((p) => palavras(p[1])).filter((w) => w.length >= 2 && !EN.has(w)));
 const PERMITIDO = /\S+@\S+|Márcia|Antônio|João|José|André|Sebastião|Conceição|Gonçalves|Simões|Araújo|Português|KORbuild|Northfield|casa-modelo\.pdf/g;
 // códigos de verificação, hashes e siglas (LO, DA…) não são palavras
-const CODIGOS = /\b[0-9A-F]{4}(-[0-9A-F]{4})+\b|SHA-256 [0-9a-f]+|\b[A-Z]{1,4}\b/g;
+const CODIGOS = /\b[0-9A-F]{4}(-[0-9A-F]{4})+\b|SHA-256 [0-9a-f]+|\b[0-9a-f]{10,}…?|\b[A-Z]{1,4}\b/g;
 const emPortugues = (l) => { const s = l.replace(PERMITIDO, '').replace(CODIGOS, ''); return /[ãõçâêôáéíóúà]/i.test(s) || palavras(s).some((w) => SO_PT.has(w)); };
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });

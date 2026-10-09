@@ -18,10 +18,12 @@ import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } fr
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
 import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure } from './measure-telas.js';
 import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
+import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
+import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra } from './crew.js';
 import { icone, marca } from './icones.js';
@@ -133,7 +135,7 @@ function conferirLembretes() {
   const p = pendenciasDoCampo();
   atualizarBadge(p.total);
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  for (const o of estado().obras) {
+  for (const o of obrasEmAndamento()) {
     const s = situacaoDeHoje(o);
     if (s !== 'lembrete' && s !== 'atrasado') continue;
     const chave = 'kbt.lembrete.' + o.id + '.' + hoje() + '.' + s;
@@ -197,6 +199,7 @@ function desenhar() {
     else if (q[0] === 'aprovacoes') html = telaAprovacoes();
     else if (q[0] === 'obras' && q[1] && q[2] === 'cronograma' && q[3] === 'recebido') html = telaCronogramaRecebido(moldura, q[1], q[4]) || naoEncontrado('#/daily/obras/' + q[1]);
     else if (q[0] === 'obras' && q[1] && q[2] === 'cronograma') html = telaCronograma(moldura, q[1]) || naoEncontrado('#/daily/obras');
+    else if (q[0] === 'obras' && q[1] === 'encerradas') html = telaObrasAdmin('encerradas');
     else if (q[0] === 'obras' && q[1]) html = telaObraAdmin(q[1]);
     else if (q[0] === 'obras') html = telaObrasAdmin();
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
@@ -243,6 +246,8 @@ function desenhar() {
   if (p[0] === 'cliente') verificarLacreNaTela(p[1]);
   if (p[0] === 'crew') aposDesenharCrew();
   if (p[0] === 'measure') aposDesenharMeasure();
+  if (p[0] === 'settings' && p[1] === 'obra') aposDesenharObras();
+  if (p[0] === 'settings' && p[1] === 'modelo') aposDesenharModelo();
 }
 
 function chaveDoFoco(el) {
@@ -344,7 +349,8 @@ function avisosDePrazo() {
 }
 
 function telaCampo() {
-  const { obras, rdos } = estado();
+  const { rdos } = estado();
+  const obras = obrasEmAndamento();
   const ajustes = rdos.filter((r) => r.status === 'ajustes');
   return moldura({
     ativo: 'hoje', titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
@@ -738,7 +744,8 @@ function aguardandoAprovacao() {
 }
 
 function telaPainel() {
-  const { obras, rdos } = estado();
+  const { rdos } = estado();
+  const obras = obrasEmAndamento();
   const recebidos = rdos.filter(recebido);
   const aguardando = aguardandoAprovacao();
   const faroes = obras.map((o) => ({ o, ...farol(o) }));
@@ -822,15 +829,23 @@ function telaAprovacoes() {
 
 /* ---------- Escritório: obras ---------- */
 
-function telaObrasAdmin() {
-  const { obras } = estado();
+function telaObrasAdmin(filtro) {
+  const todas = estado().obras;
+  const ativas = obrasEmAndamento();
+  const outras = todas.filter((o) => situacaoDaObra(o) !== 'andamento');
+  const obras = filtro === 'encerradas' ? outras : ativas;
+  const podeCadastrar = pode(usuarioAtual(), 'settings.obras');
   return moldura({
-    ativo: 'obras', largo: true, titulo: tr('Obras'), subtitulo: tn(obras.length, '{n} obra ativa', '{n} obras ativas'),
-    conteudo: '<div class="lista grade-obras">' + obras.map((o) => {
+    ativo: 'obras', largo: true, titulo: tr('Obras'), subtitulo: tn(ativas.length, '{n} obra ativa', '{n} obras ativas'),
+    acoes: podeCadastrar ? '<a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova">' + icone('mais', 16) + tr('Nova obra') + '</a>' : '',
+    conteudo: (outras.length ? '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '"><a href="#/daily/obras"' + (filtro !== 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Em andamento') + ' <span class="mz-contagem">' + ativas.length + '</span></a>' +
+        '<a href="#/daily/obras/encerradas"' + (filtro === 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Paralisadas e concluídas') + ' <span class="mz-contagem">' + outras.length + '</span></a></nav>' : '') +
+      (!obras.length ? '<p class="vazio">' + (filtro === 'encerradas' ? tr('Nenhuma obra paralisada ou concluída.') : tr('Nenhuma obra em andamento.')) + (podeCadastrar && filtro !== 'encerradas' ? ' <a href="#/settings/obra/nova">' + tr('Cadastrar a primeira obra') + '</a>' : '') + '</p>' : '') +
+      '<div class="lista grade-obras">' + obras.map((o) => {
       const f = farol(o);
       const qtd = rdosDaObra(o.id).filter(recebido).length;
       return '<a class="cartao-obra" href="#/daily/obras/' + o.id + '">' +
-        '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + icone('seta', 18) + '</div>' +
+        '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + (situacaoDaObra(o) !== 'andamento' ? ' <span class="etiqueta ' + SITUACOES_OBRA[situacaoDaObra(o)].classe + '">' + SITUACOES_OBRA[situacaoDaObra(o)].nome + '</span>' : '') + icone('seta', 18) + '</div>' +
         '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(textoPartes(o)) + '</span>' +
         '<span class="mudo">' + esc(etapaAtual(o)) + '</span>' +
         '<span class="cartao-obra-rodape">' + f.texto + (qtd ? ' · ' + tn(qtd, '{n} RDO recebido', '{n} RDOs recebidos') : '') + '</span></a>';
@@ -845,9 +860,10 @@ function telaObraAdmin(id) {
   const lista = rdosDaObra(o.id).filter(recebido);
   return moldura({
     ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
-    conteudo: resumoObra(o) + htmlCartaoCronograma(o) +
+    conteudo: (situacaoDaObra(o) !== 'andamento' ? '<div class="aviso aviso-ambar"><b>' + tr('Obra {situacao}', { situacao: SITUACOES_OBRA[situacaoDaObra(o)].nome.toLowerCase() }) + '</b><span>' + tr('Não cobra o diário e não aparece no campo nem no ponto. O histórico continua aqui.') + '</span></div>' : '') +
+      resumoObra(o) + htmlCartaoCronograma(o) +
       ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
-        ('<button type="button" class="link" data-acao="em-breve" data-texto="' + tr('Editar responsável, prazo e calendário vem na próxima etapa.') + '">' + tr('Editar') + '</button></div>') +
+        (pode(usuarioAtual(), 'settings.obras') ? '<a class="link" href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a>' : '') + '</div>' +
         ('<div class="linha-info"><span>' + tr('Responsável') + '</span><b>') + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Prazo diário') + '</span><b>') + tr('{prazo} · lembrete às {lembrete} e alerta às {prazo} (sininho e celular)', { prazo: horaCheia(PRAZO_HORA), lembrete: horaCheia(LEMBRETE_HORA) }) + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Dias de trabalho') + '</span><b>') + primeiraMaiuscula(descreverDias(o)) + '</b></div>' +
@@ -1442,7 +1458,7 @@ function notificacoesDaily(u) {
   const lista = [];
   const { rdos } = estado();
   if (pode(u, 'daily.acompanhar')) {
-    for (const obra of estado().obras) for (const e of (cronogramaDe(obra.id) || { etapas: [] }).etapas.filter((x) => situacaoDaEtapa(x) === 'atrasada')) {
+    for (const obra of obrasEmAndamento()) for (const e of (cronogramaDe(obra.id) || { etapas: [] }).etapas.filter((x) => situacaoDaEtapa(x) === 'atrasada')) {
       lista.push({ id: 'cr-atraso-' + e.id + e.fim, em: new Date(somarDias(e.fim, 1) + 'T08:00:00').getTime(), modulo: 'daily', titulo: tr('Etapa atrasada: {etapa} · {obra}', { etapa: e.nome, obra: obra.nome }), href: '#/daily/obras/' + obra.id + '/cronograma' });
     }
     for (const { obra, data } of semRdoOntem()) {
@@ -1472,11 +1488,12 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
   ligarContatos({ desenhar, ir });
+  ligarObras({ desenhar, ir });
   ligarRelatorios({ desenhar, ir });
   ligarPrecos({ desenhar, ir });
   ligarCronograma({ desenhar, ir });

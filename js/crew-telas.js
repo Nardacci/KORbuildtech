@@ -16,6 +16,7 @@ import {
   custosDoPeriodo, resumoDaObra, statusSemana,
 } from './crew.js';
 import { ativos, funcionarios as todosFuncionarios, regraEm, resumoRegra, encargosVersao } from './settings.js';
+import { emAndamento } from './obras.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarCrew(funcoes) { app = { ...app, ...funcoes }; }
@@ -219,7 +220,7 @@ function textoDistancia(loc) {
 }
 
 function opcoesObras(selecionada, excluir) {
-  return estado().obras.filter((o) => o.id !== excluir).map((o) => '<option value="' + o.id + '"' + (o.id === selecionada ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('');
+  return estado().obras.filter((o) => o.id !== excluir && (emAndamento(o) || o.id === selecionada)).map((o) => '<option value="' + o.id + '"' + (o.id === selecionada ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('');
 }
 function opcoesEtapas(selecionada) {
   return ETAPAS.map((e) => '<option' + (e === selecionada ? ' selected' : '') + '>' + esc(e) + '</option>').join('');
@@ -1043,7 +1044,7 @@ function htmlPercurso(percurso) {
 }
 
 let leafletPromessa = null;
-function carregarLeaflet() {
+export function carregarLeaflet() {
   if (window.L) return Promise.resolve(window.L);
   if (!leafletPromessa) {
     leafletPromessa = new Promise((ok, falha) => {

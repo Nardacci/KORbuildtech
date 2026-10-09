@@ -14,6 +14,7 @@ import {
   PERMISSOES, perfis, perfilDe, modulosDe, salvarPermissoes, criarPerfil, excluirPerfil, salvarUsuario,
 } from './settings.js';
 import { telaEmpresa, telaContatos, telaFormContato } from './contatos-telas.js';
+import { telaObras, telaFormObra, telaModelos, telaFormModelo } from './obras-telas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarSettings(funcoes) { app = { ...app, ...funcoes }; }
@@ -27,6 +28,7 @@ function nav() {
   }
   if (pode(u, 'settings.regras')) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: tr('Encargos'), icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: tr('Jornada'), icone: 'relogio' });
   if (pode(u, 'settings.conta')) itens.push({ id: 'empresa', href: '#/settings/empresa', rotulo: tr('Empresa'), icone: 'obras' });
+  if (pode(u, 'settings.obras')) itens.push({ id: 'obras', href: '#/settings/obras', rotulo: tr('Obras'), icone: 'obras' });
   if (pode(u, 'settings.contatos')) itens.push({ id: 'contatos', href: '#/settings/contatos', rotulo: tr('Contatos'), icone: 'link' });
   if (pode(u, 'settings.acesso')) itens.push({ id: 'usuarios', href: '#/settings/usuarios', rotulo: tr('Usuários'), icone: 'conta' }, { id: 'perfis', href: '#/settings/perfis', rotulo: tr('Perfis'), icone: 'aprovacoes' }, { id: 'auditoria', href: '#/settings/auditoria', rotulo: tr('Auditoria'), icone: 'historico' });
   return itens;
@@ -43,7 +45,7 @@ const proximaSegunda = () => somarDias(segundaDe(hoje()), 7);
 /* Rotas #/settings/... */
 export function telaSettings(q) {
   const u = usuarioAtual();
-  const precisa = { funcionarios: 'settings.funcionarios', funcionario: 'settings.funcionarios', encargos: 'settings.regras', regras: 'settings.regras', usuarios: 'settings.acesso', usuario: 'settings.acesso', perfis: 'settings.acesso', auditoria: 'settings.acesso', empresa: 'settings.conta', contatos: 'settings.contatos', contato: 'settings.contatos' };
+  const precisa = { funcionarios: 'settings.funcionarios', funcionario: 'settings.funcionarios', encargos: 'settings.regras', regras: 'settings.regras', usuarios: 'settings.acesso', usuario: 'settings.acesso', perfis: 'settings.acesso', auditoria: 'settings.acesso', empresa: 'settings.conta', contatos: 'settings.contatos', contato: 'settings.contatos', obras: 'settings.obras', obra: 'settings.obras', modelos: 'settings.obras', modelo: 'settings.obras' };
   const primeira = nav()[0];
   if (!primeira) return { trocar: '#/inicio' };
   if (!q.length || (precisa[q[0]] && !pode(u, precisa[q[0]]))) return { trocar: primeira.href };
@@ -51,6 +53,11 @@ export function telaSettings(q) {
   if (q[0] === 'contatos') return telaContatos(moldura, q[1]);
   if (q[0] === 'contato' && q[1] === 'novo') return telaFormContato(moldura, null, q[2]);
   if (q[0] === 'contato' && q[1]) return telaFormContato(moldura, q[1]);
+  if (q[0] === 'obras') return telaObras(moldura, q[1]);
+  if (q[0] === 'obra' && q[1] === 'nova') return telaFormObra(moldura, null, q[2]);
+  if (q[0] === 'obra' && q[1]) return telaFormObra(moldura, q[1]);
+  if (q[0] === 'modelos') return telaModelos(moldura);
+  if (q[0] === 'modelo' && q[1]) return telaFormModelo(moldura, q[1] === 'novo' ? null : q[1]);
   if (q[0] === 'usuarios') return telaUsuarios();
   if (q[0] === 'usuario') return telaFormUsuario(q[1] === 'novo' ? null : q[1]);
   if (q[0] === 'perfis') return telaPerfis();

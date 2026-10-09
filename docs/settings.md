@@ -114,6 +114,7 @@ A tela sempre mostra **de onde vem o valor** ("padrão da empresa" ou "definido 
 | Settings | Usuários e perfis de acesso | Quem entra e o que cada perfil pode |
 | Settings | Empresa, conta e plano | **Settings › Empresa** (logo, identificação, endereço, licenças e seguros, termos padrão da proposta), plano e módulos |
 | Settings | Contatos | **Settings › Contatos**: construtoras, clientes e fornecedores num diretório só, com marcadores (ver [`saas.md` §Atores](saas.md)) |
+| Settings | Cadastrar e editar obras | **Settings › Obras**: nova obra, local e cerca, prazo, responsável pelo diário, situação e modelos de etapas (ver [`obras.md`](obras.md)) |
 
 "Ver valores em dinheiro" é separada de propósito: um engenheiro pode aprovar horas sem ver o salário de cada um.
 
@@ -123,7 +124,7 @@ A tela sempre mostra **de onde vem o valor** ("padrão da empresa" ou "definido 
 | --- | --- | --- |
 | **Trabalhador** | Bater o próprio ponto | **Direto no "Meu ponto", sem a tela de módulos** e sem menu |
 | **Encarregado** | Próprio ponto, ponto da equipe, preencher o RDO | Tela de módulos (Daily e Crew) |
-| **Gestor de obras** | Acompanhar e aprovar no Crew e no Daily, ver custos | Tela de módulos (Daily e Crew), sem o Settings |
+| **Gestor de obras** | Acompanhar e aprovar no Crew e no Daily, ver custos, cadastrar obras | Tela de módulos (Daily, Crew e Settings só com Obras) |
 | **Administrador** | Tudo do escritório, inclusive o Settings | Tela de módulos (Daily, Crew e Settings) |
 
 Exemplos:

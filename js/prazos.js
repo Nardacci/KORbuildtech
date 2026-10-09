@@ -25,6 +25,8 @@ function dataDeIso(iso, hora) {
 export function prazoDe(iso) { return dataDeIso(iso, PRAZO_HORA).getTime(); }
 
 export function ehDiaDeTrabalho(obra, iso) {
+  // obra paralisada ou concluída não cobra diário, nem antes do início (docs/obras.md OB-04)
+  if ((obra.situacao || 'andamento') !== 'andamento' || (obra.inicio && iso < obra.inicio)) return false;
   return (obra.diasTrabalho || DIAS_TRABALHO).includes(dataDeIso(iso).getDay());
 }
 
@@ -105,5 +107,5 @@ export function semRdoOntem(agora) {
   if (hora < ESCALADA_HORA) return [];
   return estado().obras
     .map((o) => ({ obra: o, data: diaDeTrabalhoAnterior(o, hoje()) }))
-    .filter(({ obra, data }) => (!obra.inicio || data >= obra.inicio) && !diaCumprido(obra, data));
+    .filter(({ obra, data }) => ehDiaDeTrabalho(obra, data) && !diaCumprido(obra, data));
 }

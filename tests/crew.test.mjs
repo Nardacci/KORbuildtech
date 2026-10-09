@@ -370,7 +370,10 @@ for (const h of ['#/crew/agora', '#/daily/painel', '#/settings/funcionarios']) {
 }
 await como('u-marcia', '#/inicio');
 await page.waitForSelector('.modulos');
-verificar(await page.locator('.modulos .modulo-daily').count() === 1 && await page.locator('.modulos .modulo-crew').count() === 1 && await page.locator('.modulos .modulo-settings').count() === 0, 'gestor de obras vê os módulos, sem o Settings');
+verificar(await page.locator('.modulos .modulo-daily').count() === 1 && await page.locator('.modulos .modulo-crew').count() === 1 && await page.locator('.modulos .modulo-settings').count() === 1, 'gestor de obras vê os módulos e o Settings (só para cadastrar obras)');
+await page.goto(BASE + '#/settings');
+await page.waitForTimeout(300);
+verificar(page.url().endsWith('#/settings/obras') && (await page.$$eval('nav a[href^="#/settings/"]', (a) => a.map((x) => x.getAttribute('href')))).every((h) => h.startsWith('#/settings/obras')), 'no Settings, o gestor só vê Obras');
 await page.goto(BASE + '#/crew/custos');
 await page.waitForSelector('.custo-obra');
 verificar(true, 'gestor vê os custos');

@@ -1,5 +1,7 @@
 # KORbuild — Cronograma da obra
 
+> O cronograma **pertence à obra** (cadastro em [`docs/obras.md`](obras.md)); ao criar a obra, um modelo de etapas pode montar o cronograma inicial.
+>
 > Decidido em outubro de 2026. **A prestadora monta** o cronograma do serviço dela (framing, siding…) dentro da obra; **a construtora visualiza** a versão publicada. Sem dependências entre etapas nesta versão. Exporta para Excel com layout profissional.
 
 ## 1. Por que existe

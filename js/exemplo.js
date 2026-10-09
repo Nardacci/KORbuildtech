@@ -11,6 +11,7 @@ import { criarDadosCrew, RAIO_CERCA } from './crew.js';
 import { criarSettings } from './settings.js';
 import { criarDadosMeasure } from './measure.js';
 import { retrato } from './cronograma.js';
+import { modelosIniciais } from './obras.js';
 import { guardarFoto } from './armazem.js';
 import { fotoDeExemplo } from './fotos.js';
 
@@ -90,17 +91,17 @@ export const CONTAS_DEMO = ['u-diego', 'u-carlos', 'u-ana'];
 const OBRAS = [
   {
     id: 'jardim', nome: tr('Residencial Jardim das Flores'), contratanteId: 'ct-horizonte', donoId: null,
-    endereco: '1450 Elm St · North End', cidade: 'Manchester, NH 03104',
+    endereco: '1450 Elm St · North End', cidade: 'Manchester, NH 03104', municipio: 'Manchester', estado: 'NH', zip: '03104',
     lat: 43.0040, lon: -71.4635, etapa: tr('Alvenaria do 3º pavimento'), inicio: -120, prazo: 240,
   },
   {
     id: 'atlantico', nome: tr('Edifício Atlântico'), contratanteId: 'ct-atlantico', donoId: null,
-    endereco: '120 Market St · Downtown', cidade: 'Portsmouth, NH 03801',
+    endereco: '120 Market St · Downtown', cidade: 'Portsmouth, NH 03801', municipio: 'Portsmouth', estado: 'NH', zip: '03801',
     lat: 43.0757, lon: -70.7568, etapa: tr('Estrutura do 7º pavimento'), inicio: -200, prazo: 400,
   },
   {
     id: 'galpao', nome: tr('Galpão Logístico Rodovia'), contratanteId: 'ct-logsul', donoId: null,
-    endereco: '45 Northeastern Blvd · Industrial Park', cidade: 'Nashua, NH 03062',
+    endereco: '45 Northeastern Blvd · Industrial Park', cidade: 'Nashua, NH 03062', municipio: 'Nashua', estado: 'NH', zip: '03062',
     lat: 42.7268, lon: -71.4402, etapa: tr('Piso industrial'), inicio: -60, prazo: 150,
   },
 ];
@@ -202,12 +203,12 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 24;
+export const VERSAO_DADOS = 25;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
   // Cada obra tem um responsável pelo RDO e um calendário de dias de trabalho (prazo diário: 18h).
-  const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo), responsavelId: 'u-carlos', diasTrabalho: DIAS_TRABALHO, cerca: { lat: o.lat, lon: o.lon, raio: RAIO_CERCA } }));
+  const obras = OBRAS.map((o) => ({ ...o, inicio: somarDias(dia0, o.inicio), prazo: somarDias(dia0, o.prazo), responsavelId: 'u-carlos', diasTrabalho: DIAS_TRABALHO, situacao: 'andamento', cerca: { lat: o.lat, lon: o.lon, raio: RAIO_CERCA } }));
   const rdos = [];
   let semente = 7;
 
@@ -294,7 +295,7 @@ export async function criarDemonstracao() {
   const inicioEmpresa = somarDias(dia0, -400);
   const settings = criarSettings(inicioEmpresa, new Date(inicioEmpresa + 'T09:00:00').getTime());
   const { funcionarios, ...crew } = criarDadosCrew(obras);
-  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, measure: criarDadosMeasure({ projetos: false }) };
+  const construtora = { criadoEm: Date.now(), offlineSimulado: false, empresa, usuarios, contasDemo: CONTAS_DEMO, interesses: [], contatos: criarContatos(CONTATOS_CONSTRUTORA), obras, rdos, funcionarios, settings, crew, modelosCronograma: modelosIniciais('construtora'), measure: criarDadosMeasure({ projetos: false }) };
   const prestadora = criarPrestadora(dia0);
   // a prestadora já publicou uma versão do cronograma para a construtora (há 2 dias)
   const pub = retrato(prestadora, prestadora.obras[0], tr('Tom Reilly'), new Date(somarDias(dia0, -2) + 'T16:00:00').getTime(), 1);
@@ -346,6 +347,7 @@ function criarPrestadora(dia0) {
     crew: { equipes: [{ id: 'eq-nf', nome: tr('Equipe do José'), encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
     measure: criarDadosMeasure({ projetos: true, estimadores: ['u-tom', 'u-rita'] }),
     cronogramas: { 'nf-jardim': criarCronogramaExemplo(dia0) },
+    modelosCronograma: modelosIniciais('prestadora'),
   };
 }
 

@@ -232,6 +232,7 @@ export const PERMISSOES = [
     { id: 'settings.acesso', nome: tr('Usuários e perfis de acesso'), descricao: tr('Quem entra e o que cada perfil pode fazer') },
     { id: 'settings.conta', nome: tr('Empresa, conta e plano'), descricao: tr('Dados e logo da empresa, termos da proposta, plano e módulos') },
     { id: 'settings.contatos', nome: tr('Contatos'), descricao: tr('Construtoras, clientes e fornecedores') },
+    { id: 'settings.obras', nome: tr('Cadastrar e editar obras'), descricao: tr('Nova obra, local e cerca, prazo, responsável, situação e modelos de etapas do cronograma') },
   ] },
 ];
 export const TODAS_PERMISSOES = PERMISSOES.flatMap((g) => g.itens.map((i) => i.id));
@@ -239,7 +240,7 @@ export function permissao(id) { return PERMISSOES.flatMap((g) => g.itens).find((
 
 export const PERFIS_INICIAIS = [
   { id: 'administrador', nome: tr('Administrador'), descricao: tr('Escritório: tudo, inclusive o Settings'), sistema: true, permissoes: TODAS_PERMISSOES.filter((p) => p !== 'crew.ponto.proprio' && p !== 'crew.ponto.equipe' && p !== 'daily.preencher') },
-  { id: 'gestor', nome: tr('Gestor de obras'), descricao: tr('Vê tudo dos módulos e aprova, sem mexer nas configurações'), permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'daily.cronograma', 'measure.medir'] },
+  { id: 'gestor', nome: tr('Gestor de obras'), descricao: tr('Vê tudo dos módulos e aprova, sem mexer nas configurações'), permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'daily.cronograma', 'measure.medir', 'settings.obras'] },
   { id: 'encarregado', nome: tr('Encarregado'), descricao: tr('Campo: ponto da equipe e diário de obra'), permissoes: ['crew.ponto.proprio', 'crew.ponto.equipe', 'daily.preencher'] },
   { id: 'trabalhador', nome: tr('Trabalhador'), descricao: tr('Só bate o próprio ponto: entra direto no ponto, sem a tela de módulos'), permissoes: ['crew.ponto.proprio'] },
 ];

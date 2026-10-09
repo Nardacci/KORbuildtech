@@ -1302,3 +1302,28 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .atividade-crono { display: grid; grid-template-columns: 1fr; gap: 4px; margin-top: 8px; padding: 10px; border-radius: 8px; background: var(--azul-claro); border: 1px solid var(--azul-borda); }
 .cr-lookahead .fila li { align-items: center; }
 .gantt-pct.escuro { color: var(--texto-2); text-shadow: none; }
+
+/* ---------- Obras: cadastro e modelos de etapas (docs/obras.md) ---------- */
+.mapa-obra { height: 320px; margin: 10px 0; border: 1px solid var(--borda); border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--fundo-2, #f2f4f7); }
+.mapa-obra.leaflet-container { display: block; }
+.mapa-obra-campos { margin-bottom: 8px; }
+.dias-obra { display: flex; flex-wrap: wrap; gap: 6px 16px; border: 0; padding: 0; margin: 12px 0 0; }
+.dias-obra legend { width: 100%; margin-bottom: 6px; }
+.previa-modelo:empty { display: none; }
+.lista-previa { margin: 10px 0; padding-left: 22px; display: grid; gap: 4px; font-size: 13.5px; }
+.lista-previa li span { margin-left: 8px; }
+.grade-modelos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.lista-modelo { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13.5px; }
+.lista-modelo li { display: grid; grid-template-columns: 1fr 90px 44px; gap: 10px; align-items: center; }
+.lista-modelo b { text-align: right; }
+.barra-modelo { height: 8px; border-radius: 4px; background: var(--borda); overflow: hidden; }
+.barra-modelo span { display: block; height: 100%; background: var(--primario); }
+.cabeca-modelo { display: grid; grid-template-columns: 1fr 120px 36px; gap: 8px; margin-top: 14px; }
+.linha-modelo { display: grid; grid-template-columns: 1fr 120px 36px; gap: 8px; margin-bottom: 8px; }
+.btn-icone { border: 1px solid var(--borda); background: transparent; border-radius: 8px; font-size: 18px; line-height: 1; cursor: pointer; color: var(--mudo); }
+.btn-icone:hover { color: var(--vermelho); border-color: var(--vermelho); }
+.texto-verde { color: var(--verde, #0F766E); font-weight: 600; }
+.tabela-obras td { vertical-align: top; }
+.aviso .btn { margin-top: 8px; align-self: flex-start; }
+@media (max-width: 600px) { .lista-modelo li { grid-template-columns: 1fr 60px 40px; } .cabeca-modelo, .linha-modelo { grid-template-columns: 1fr 70px 36px; } }
+.form-settings .btn[data-acao="obra-aqui"] { width: auto; align-self: flex-start; display: inline-flex; }

@@ -184,7 +184,11 @@ function telaProjeto(id) {
     conteudo:
       '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
-        dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? esc(obra(p.obraId).nome) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl></section>' +
+        dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="#/daily/obras/' + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
+        // projeto ganho vira obra: o cadastro já vem preenchido (docs/obras.md OB-07)
+        (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
+          ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.') + '</span><a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova/' + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
+        '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
         fs.map((f) => {
           const n = cs.reduce((t, c) => t + c.medicoes.filter((m) => m.folhaId === f.id).length, 0);
