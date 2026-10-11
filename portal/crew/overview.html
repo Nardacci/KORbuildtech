@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview · Crew · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-crew)">
+  <aside class="lateral" aria-label="Crew documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">C</span>Crew</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html" aria-current=page>Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Crew</a> › Start here</nav>
+    <header class="doc-cabecalho">
+      <h1>Overview</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Overview.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p><strong>Crew</strong> is the crew time clock. It records <strong>who worked, where, on which cost code and for how long</strong>, turns that into <strong>weekly timesheets approved for payroll</strong>, and into <strong>labor cost per job</strong>: budget × actual × forecast to completion.</p>
+<h2 id="three-questions-it-answers">Three questions it answers</h2>
+<ol>
+<li><strong>Who worked, where and how much?</strong> Punches with GPS, the job's geofence and an optional crew photo.</li>
+<li><strong>How much do I pay?</strong> The weekly timesheet, with overtime calculated by the company's work rule, approved and exported to payroll as a CSV file.</li>
+<li><strong>How much is this job costing, and will it finish within budget?</strong> Labor cost by job and cost code, with the forecast to completion — early enough to act.</li>
+</ol>
+<p>The same punches fill the crew of the <strong>Daily</strong> report, so the field enters the crew once.</p>
+<h2 id="who-uses-it">Who uses it</h2>
+<table>
+<thead>
+<tr>
+<th>Who</th>
+<th>Where</th>
+<th>What they do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Worker</strong></td>
+<td>Phone</td>
+<td><strong>My time clock</strong>: clocks in and out on their own phone, sees their punches and hours of the week (never dollar amounts).</td>
+</tr>
+<tr>
+<td><strong>Foreman</strong></td>
+<td>Phone</td>
+<td><strong>Crew time clock</strong>: clocks in the whole crew from one phone; <strong>Hours</strong>: the crew's week with alerts.</td>
+</tr>
+<tr>
+<td><strong>Office</strong> (admin, project manager)</td>
+<td>Computer</td>
+<td><strong>Now</strong> (who is working where), <strong>Timesheets</strong> (approve, return, edit, export), <strong>Costs</strong> (budget, actual, forecast).</td>
+</tr>
+</tbody>
+</table>
+<p>Employees, hourly rates, labor burden and work rules are set up in <strong>Settings</strong>, because every module uses them. Crew only reads them.</p>
+<h2 id="the-main-screens">The main screens</h2>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Who sees it</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>My time clock</strong></td>
+<td>Worker</td>
+<td>The clock, today's status, one big button with what fits now (clock in, start break, switch job, clock out), today's punches and the week.</td>
+</tr>
+<tr>
+<td><strong>Crew time clock</strong></td>
+<td>Foreman</td>
+<td>The crew with each person's status; select people and use <strong>Clock in · Break · Back from break · Switch job · Arrived · Clock out</strong>.</td>
+</tr>
+<tr>
+<td><strong>Hours</strong></td>
+<td>Foreman</td>
+<td>The crew's hours of the week by person and day, with alerts.</td>
+</tr>
+<tr>
+<td><strong>Now</strong></td>
+<td>Office</td>
+<td>Who is working on each job, on break or traveling, and the off-site punches to review.</td>
+</tr>
+<tr>
+<td><strong>Timesheets</strong></td>
+<td>Office</td>
+<td>Everyone's week: hours per day, total, overtime, cost and status; approve, return and export.</td>
+</tr>
+<tr>
+<td><strong>Employee week</strong></td>
+<td>Office</td>
+<td>One person's days, with <strong>Edit</strong> (a new punch with a reason) and the <strong>Day map</strong>.</td>
+</tr>
+<tr>
+<td><strong>Day map</strong></td>
+<td>Office</td>
+<td>The day on a street map: punches, the job's geofence, the path, <strong>Play back</strong> and the timeline.</td>
+</tr>
+<tr>
+<td><strong>Costs</strong></td>
+<td>Office (with cost permission)</td>
+<td>By job (budget, actual, forecast, chart), by month and by week.</td>
+</tr>
+</tbody>
+</table>
+<figure class="celular"><img src="../img/crew-my-clock-before-mobile.png" alt="My time clock, on the worker&#x27;s phone" loading="lazy"><figcaption>My time clock, on the worker&#x27;s phone</figcaption></figure>
+<figure><img src="../img/crew-now.png" alt="Now: who is working on each job" loading="lazy"><figcaption>Now: who is working on each job</figcaption></figure>
+<h2 id="key-ideas">Key ideas</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Punch</strong></td>
+<td>One time clock record: clock in, break start, break end, switch job, arrived, clock out. A punch is <strong>never edited or deleted</strong>; a correction is a new punch, marked as an edit, with who and why.</td>
+</tr>
+<tr>
+<td><strong>Geofence</strong></td>
+<td>A circle around the job (150 m by default, set per job). A punch outside it is accepted but flagged for the office to review.</td>
+</tr>
+<tr>
+<td><strong>Cost code</strong></td>
+<td>The service the hour was spent on (foundation, structure, masonry…). Every hour belongs to a job and a cost code.</td>
+</tr>
+<tr>
+<td><strong>Travel</strong></td>
+<td>Moving from one job to another during the workday. It is paid time.</td>
+</tr>
+<tr>
+<td><strong>Timesheet</strong></td>
+<td>One person's week, Monday to Sunday: total, regular and overtime hours, cost and status.</td>
+</tr>
+<tr>
+<td><strong>Labor burden</strong></td>
+<td>What the company pays on top of wages (FICA, unemployment, workers' comp, benefits), as a % of payroll.</td>
+</tr>
+<tr>
+<td><strong>Burdened cost</strong></td>
+<td>Hourly rate × (1 + labor burden): what an hour really costs the company.</td>
+</tr>
+<tr>
+<td><strong>Estimate at completion</strong></td>
+<td>Where the job's labor cost is heading, from what was spent and how much of the job is built.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="connected-to-the-other-modules">Connected to the other modules</h2>
+<ul>
+<li><strong>Daily:</strong> the report's crew can be filled from who clocked in on the job that day.</li>
+<li><strong>Jobs</strong> (Settings › Jobs): the job's location and geofence radius come from the job setup. Only jobs <strong>in progress</strong> appear in the time clock.</li>
+<li><strong>Settings:</strong> employees and hourly rates (with effective dates), labor burden, work rules (overtime and breaks).</li>
+</ul>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#three-questions-it-answers">Three questions it answers</a></li><li><a href="#who-uses-it">Who uses it</a></li><li><a href="#the-main-screens">The main screens</a></li><li><a href="#key-ideas">Key ideas</a></li><li><a href="#connected-to-the-other-modules">Connected to the other modules</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

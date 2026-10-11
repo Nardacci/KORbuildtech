@@ -1,6 +1,6 @@
 # Presenter's guide
 
-This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A full presentation of Daily takes about **15 minutes**; with questions, plan for 30.
+This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A presentation of Daily and Crew takes about **25 minutes**; with questions, plan for 40.
 
 ## The story in one minute
 
@@ -112,13 +112,35 @@ Full details: [Daily user manual — Fill out the daily report](@/daily/user-man
 !!! say "What to say"
     "The client doesn't need an account or an app: just a link. And the link proves the report is exactly what was approved. That's what protects the contractor in a delay claim."
 
-### Act 6 — The other modules (optional, 5 min each)
+### Act 6 — Crew: the time clock and labor cost (6 min)
 
-Detailed scripts for Crew, Measure and Settings will be added to this guide. Meanwhile, the highlights:
+1. Sign in as **Diego Santos** (Worker). KORbuild opens straight on **My time clock**: one big button with what fits now.
 
-- **Crew** — sign in as **Carlos**, open Crew › **Crew**: clock in the whole crew at once, with GPS and the job's geofence. Then as **Ana**: **Now** (who is working where), **Timesheets** and **Costs** by job, with the forecast to completion.
+    ![My time clock: the worker sees only his own time clock](img/crew-my-clock-before-mobile.png)
+
+2. Sign in as **Carlos Mendes** (Foreman), open **Crew**: the **Crew time clock**. Tap **Select all** and **Clock in (6)**: the window shows the distance to the job and *inside the geofence ✓*. Choose the cost code and confirm.
+
+    ![Clocking in the whole crew from one phone](img/crew-team-clock-in-dialog-mobile.png)
+
+3. Show **Switch job**: travel to the other job is paid time.
+4. Sign in as **Ana Ribeiro** (Admin), open **Crew**: **Now** shows who is working on each job and the **off-site punches to review**.
+5. Open **Timesheets**, go to the previous week: hours per day, overtime, cost and status. Open **Roberto Lima** (awaiting approval) and show **Edit** (a new punch with a reason — the original stays) and **Approve week**.
+6. Open **Costs**: the **Atlantic Tower** has spent 34% of the budget and built 31% — KORbuild already shows a **projected overrun** of about $111k, with a third of the schedule gone.
+
+    ![Labor cost by job, with the forecast to completion](img/crew-costs-jobs.png)
+
+!!! say "What to say"
+    "The foreman clocks in the whole crew in seconds, with GPS and the job's geofence — no paper card, no buddy punching. The office approves the week and exports it to payroll. And the owner sees, a third of the way into the job, that labor is going to run over — while there is still time to act."
+
+Full details: [Crew user manual](@/crew/user-manual.html).
+
+### Act 7 — The other modules (optional)
+
+Detailed scripts for Measure and Settings will be added to this guide. Meanwhile, the highlights:
+
 - **Measure** — sign in as **Tom**, open a project, then a sheet: set the scale, measure walls and floors on the PDF plan, and see the materials and labor calculated by the assemblies; then the **Material list for quotes** and the **Proposal**.
 - **Job schedule** — as **Tom**, Daily › Jobs › Maple Gardens Residences › **Open schedule**: Gantt chart, baseline, progress from the daily reports, export to Excel and publish to the GC.
+- **Settings** — as **Ana**: employees with hourly rate history, labor burden, work rules, jobs, users and access roles, audit log.
 
 ## Questions customers ask
 

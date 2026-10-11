@@ -902,7 +902,7 @@ function resumoPassos(passos) {
     ('<span><i class="lg-inicio"></i>' + tr('Entrada') + ' <b>') + (passos.entrada ? horaCurta(passos.entrada) : '—') + '</b></span>' +
     '<span><i class="lg-fim"></i>' + (passos.saida ? (tr('Saída') + ' <b>') + horaCurta(passos.saida) + '</b>' : passos.aberto ? ('<b>' + tr('Ponto aberto') + '</b>') : tr('Sem saída')) + '</span>' +
     '<span><b>' + passos.itens.length + '</b> ' + tr('registros') + '</span>' +
-    '<span>≈ <b>' + formatarDistancia(passos.total) + '</b> percorridos</span></p>';
+    '<span>' + tr('≈ {dist} percorridos', { dist: '<b>' + formatarDistancia(passos.total) + '</b>' }) + '</span></p>';
 }
 
 function htmlPassos(passos) {

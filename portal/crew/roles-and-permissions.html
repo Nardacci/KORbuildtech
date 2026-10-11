@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roles and permissions · Crew · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-crew)">
+  <aside class="lateral" aria-label="Crew documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">C</span>Crew</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html" aria-current=page>Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Crew</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Roles and permissions</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Roles and permissions.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>What each person can do in Crew comes from their <strong>access role</strong> (Settings › Access roles). The company can adjust the default roles or create new ones.</p>
+<h2 id="crew-permissions">Crew permissions</h2>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>What it allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clock in and out (self)</strong></td>
+<td><strong>My time clock</strong>: clock in, break and clock out on your own phone, with GPS.</td>
+</tr>
+<tr>
+<td><strong>Clock in the crew</strong></td>
+<td><strong>Crew time clock</strong> and <strong>Hours</strong>: punch the crew and see their hours.</td>
+</tr>
+<tr>
+<td><strong>View time clock and timesheets</strong></td>
+<td><strong>Now</strong>, <strong>Timesheets</strong> and the <strong>Day map</strong> (read-only).</td>
+</tr>
+<tr>
+<td><strong>Approve and edit timesheets</strong></td>
+<td>Approve, return, edit and export to payroll. Includes <strong>View time clock and timesheets</strong>.</td>
+</tr>
+<tr>
+<td><strong>See costs and dollar amounts</strong></td>
+<td><strong>Costs</strong>, budgets and wages on timesheets. Includes <strong>View time clock and timesheets</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="default-roles">Default roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th style="text-align: center;">Self</th>
+<th style="text-align: center;">Crew</th>
+<th style="text-align: center;">View</th>
+<th style="text-align: center;">Approve</th>
+<th style="text-align: center;">Costs</th>
+<th>Where Crew opens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Admin</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Now</td>
+</tr>
+<tr>
+<td><strong>Project manager</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Now</td>
+</tr>
+<tr>
+<td><strong>Foreman</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Crew time clock</td>
+</tr>
+<tr>
+<td><strong>Worker</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>My time clock (straight, no modules screen)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Good to know</p>
+<ul>
+<li>A <strong>worker</strong> only clocks in and out: KORbuild opens straight on <strong>My time clock</strong> and does not open any other screen, even by typing its address.</li>
+<li>A <strong>user</strong> is someone who signs in; an <strong>employee</strong> is someone who works on the jobs (Settings › Employees). A worker who clocks in on their own phone needs both, linked. Someone the foreman clocks in does not need a login.</li>
+<li>Workers and foremen see hours, never dollar amounts.</li>
+</ul>
+</div>
+<h2 id="in-the-prototype">In the prototype</h2>
+<table>
+<thead>
+<tr>
+<th>Demo user</th>
+<th>Role</th>
+<th>Use it to show</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diego Santos</td>
+<td>Worker</td>
+<td><strong>My time clock</strong></td>
+</tr>
+<tr>
+<td>Carlos Mendes</td>
+<td>Foreman</td>
+<td><strong>Crew time clock</strong> and <strong>Hours</strong> (Carlos's crew)</td>
+</tr>
+<tr>
+<td>Ana Ribeiro</td>
+<td>Admin</td>
+<td><strong>Now</strong>, <strong>Timesheets</strong>, <strong>Costs</strong></td>
+</tr>
+<tr>
+<td>Márcia Souza</td>
+<td>Project manager</td>
+<td>The office without Settings (not on the sign-in list)</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#crew-permissions">Crew permissions</a></li><li><a href="#default-roles">Default roles</a></li><li><a href="#in-the-prototype">In the prototype</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

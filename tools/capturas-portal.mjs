@@ -7,7 +7,10 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
-const RAIZ = process.argv[2] || 'http://localhost:8123/';
+const RAIZ = process.argv.find((a) => a.startsWith('http')) || 'http://localhost:8123/';
+// --so=daily,crew: refaz só essas partes (as outras capturas continuam como estão)
+const SO = ((process.argv.find((a) => a.startsWith('--so=')) || '').slice(5)).split(',').filter(Boolean);
+const parte = (nome) => !SO.length || SO.includes(nome);
 const DEMO = RAIZ + '?demo';
 const PASTA = new URL('../portal/img/', import.meta.url).pathname;
 mkdirSync(PASTA, { recursive: true });
@@ -15,7 +18,7 @@ mkdirSync(PASTA, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 let feitas = 0;
 
-async function contexto(largura) {
+async function contexto(largura, quando = '2026-10-07T16:30:00') {
   const celular = largura < 600;
   const ctx = await browser.newContext({
     viewport: { width: largura, height: celular ? 844 : 860 }, deviceScaleFactor: celular ? 2 : 1.25,
@@ -25,7 +28,7 @@ async function contexto(largura) {
   await ctx.route('https://api.open-meteo.com/**', (r) => r.fulfill({ json: { hourly: { time: [], weather_code: [], precipitation: [], temperature_2m: [] } } }));
   await ctx.route(/fonts\.|tile\.openstreetmap|router\.project-osrm|nominatim/, (r) => r.abort());
   const page = await ctx.newPage();
-  await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
+  await page.clock.setFixedTime(new Date(quando));
   await page.goto(DEMO + '#/entrar');
   await page.waitForSelector('#form-login', { timeout: 60000 });
   return { ctx, page };
@@ -45,7 +48,7 @@ async function foto(page, nome, alvo) {
 }
 
 /* ---------- Entrada ---------- */
-{
+if (parte('entrada')) {
   const { ctx, page } = await contexto(1366);
   await page.goto(RAIZ); await page.waitForSelector('#form-login-oficial');
   await foto(page, 'entry-main');
@@ -57,7 +60,7 @@ async function foto(page, nome, alvo) {
 }
 
 /* ---------- Daily: campo (celular, Carlos, encarregado) ---------- */
-{
+if (parte('daily')) {
   const { ctx, page } = await contexto(390);
   await como(page, 'u-carlos', '#/daily/campo');
   await foto(page, 'daily-field-today-mobile');
@@ -90,7 +93,7 @@ async function foto(page, nome, alvo) {
 }
 
 /* ---------- Daily: escritório (computador, Ana, administradora) ---------- */
-{
+if (parte('daily')) {
   const { ctx, page } = await contexto(1366);
   await como(page, 'u-ana', '#/daily/painel');
   await foto(page, 'daily-dashboard');
@@ -124,6 +127,93 @@ async function foto(page, nome, alvo) {
   await page.goto(DEMO + '#/cliente/' + codigo);
   await page.waitForTimeout(1500);
   await foto(page, 'daily-client-link');
+  await ctx.close();
+}
+
+/* ---------- Crew: trabalhador (celular, Diego) ---------- */
+if (parte('crew')) {
+  // antes da entrada (6h50): o Meu ponto só oferece "bater entrada"
+  let { ctx, page } = await contexto(390, '2026-10-07T06:50:00');
+  await como(page, 'u-diego', '#/crew/meu');
+  await foto(page, 'crew-my-clock-before-mobile');
+  const entrada = page.locator('#conteudo button[data-acao]').first();
+  await entrada.click().catch(() => {});
+  await page.waitForTimeout(1200);
+  if (await page.locator('dialog[open]').count()) await foto(page, 'crew-my-clock-in-dialog-mobile', 'dialog[open]');
+  await ctx.close();
+  ({ ctx, page } = await contexto(390));
+  await como(page, 'u-diego', '#/crew/meu');
+  await foto(page, 'crew-my-clock-working-mobile');
+  await ctx.close();
+}
+
+/* ---------- Crew: encarregado (celular, Carlos) ---------- */
+if (parte('crew')) {
+  // 6h55: a equipe ainda não entrou; o Carlos bate a entrada de todos
+  const { ctx, page } = await contexto(390, '2026-10-07T06:55:00');
+  await como(page, 'u-carlos', '#/crew/equipe');
+  await foto(page, 'crew-team-before-mobile');
+  await page.click('[data-acao="crew-todos"]');
+  await page.waitForTimeout(300);
+  await foto(page, 'crew-team-selected-mobile');
+  await page.click('[data-acao="crew-entrada"]');
+  await page.waitForSelector('dialog[open]');
+  await page.waitForTimeout(1000);
+  await foto(page, 'crew-team-clock-in-dialog-mobile', 'dialog[open]');
+  await page.click('dialog[open] .btn-primario');
+  await page.waitForTimeout(1200);
+  await foto(page, 'crew-team-working-mobile');
+  await page.click('[data-acao="crew-todos"]');
+  await page.waitForTimeout(300);
+  await page.click('[data-acao="crew-troca"]');
+  await page.waitForSelector('dialog[open]');
+  await page.waitForTimeout(1000);
+  await foto(page, 'crew-switch-job-dialog-mobile', 'dialog[open]');
+  await page.keyboard.press('Escape');
+  await como(page, 'u-carlos', '#/crew/horas');
+  await foto(page, 'crew-team-hours-mobile');
+  await ctx.close();
+}
+
+/* ---------- Crew: escritório (computador, Ana) ---------- */
+if (parte('crew')) {
+  const { ctx, page } = await contexto(1366);
+  await como(page, 'u-ana', '#/crew/agora');
+  await foto(page, 'crew-now');
+  await como(page, 'u-ana', '#/crew/timesheets/2026-09-28');
+  await foto(page, 'crew-timesheets');
+  // a semana de quem ainda espera aprovação (Roberto): ajustar e devolver ficam ali
+  const semana = await page.$$eval('#conteudo tr', (linhas) => {
+    const l = linhas.find((tr) => /Awaiting approval/.test(tr.textContent) && tr.querySelector('a[href^="#/crew/semana/"]'));
+    return l ? l.querySelector('a[href^="#/crew/semana/"]').getAttribute('href') : null;
+  });
+  if (semana) {
+    await como(page, 'u-ana', semana);
+    await foto(page, 'crew-employee-week');
+    for (const [acao, nome] of [['crew-ajustar', 'crew-adjust-dialog'], ['crew-devolver', 'crew-return-dialog']]) {
+      if (!(await page.locator('[data-acao="' + acao + '"]').count())) continue;
+      await page.locator('[data-acao="' + acao + '"]').first().click();
+      await page.waitForSelector('dialog[open]');
+      await page.waitForTimeout(300);
+      await foto(page, nome, 'dialog[open]');
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(300);
+    }
+  }
+  await como(page, 'u-ana', '#/crew/agora');
+  const dia = await page.$eval('#conteudo a[href^="#/crew/dia/"]', (a) => a.getAttribute('href')).catch(() => null);
+  if (dia) {
+    await como(page, 'u-ana', dia);
+    await page.waitForTimeout(1500);
+    await foto(page, 'crew-day-map');
+  }
+  await como(page, 'u-ana', '#/crew/custos');
+  await foto(page, 'crew-costs-jobs');
+  await page.click('[data-acao="crew-orcamento"]').catch(() => {});
+  await page.waitForTimeout(500);
+  if (await page.locator('dialog[open]').count()) { await foto(page, 'crew-budget-dialog', 'dialog[open]'); await page.keyboard.press('Escape'); }
+  await como(page, 'u-ana', '#/crew/custos/mes/2026-10');
+  await foto(page, 'crew-costs-month');
   await ctx.close();
 }
 

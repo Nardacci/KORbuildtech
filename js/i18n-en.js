@@ -2347,4 +2347,7 @@ export const EN = {
   'dados de exemplo, guardados só neste navegador': 'sample data, stored only in this browser',
   'Entrada oficial': 'Main sign-in',
   'Escolha um usuário de demonstração abaixo.': 'Pick a demo user below.',
+
+  // ---------- Revisão do inglês: plurais ----------
+  '≈ {dist} percorridos': '≈ {dist} traveled',
 };

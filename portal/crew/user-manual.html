@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · Crew · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-crew)">
+  <aside class="lateral" aria-label="Crew documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">C</span>Crew</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html" aria-current=page>User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Crew</a> › Using it</nav>
+    <header class="doc-cabecalho">
+      <h1>User manual</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - User manual.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>This manual walks through Crew one task at a time: first the <strong>worker</strong> and the <strong>foreman</strong> (on the phone), then the <strong>office</strong> (on the computer). Screen names, buttons and messages are written exactly as they appear in KORbuild, in <strong>bold</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">Before you start</p>
+<p>Crew opens in the area of your role: a worker goes straight to <strong>My time clock</strong> (no modules screen); a foreman opens on the <strong>Crew time clock</strong>; the office opens on <strong>Now</strong>. If you do not see a screen described here, your role does not include it — see <a href="../crew/roles-and-permissions.html">Roles and permissions</a>.</p>
+</div>
+<h2 id="worker-clock-in-and-out-on-your-own-phone">Worker: clock in and out on your own phone</h2>
+<p><strong>What it is for:</strong> recording your own day, with the time and the location of each punch.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Clock in and out (self)</strong> (default role: <strong>Worker</strong>).</p>
+</div>
+<ol>
+<li>Open KORbuild. <strong>My time clock</strong> opens directly, with the <strong>Official clock time</strong>, today's status (for example, <em>Not clocked in yet</em>) and one big button with what fits now.</li>
+<li>Tap <strong>Clock in</strong>. A window opens:<ul>
+<li><strong>Job</strong> — where you are working (only jobs in progress are listed).</li>
+<li>The distance to the job, in green when you are <strong>inside the geofence ✓</strong>, or in red when you are outside it.</li>
+<li><strong>Cost code</strong> — the service you are working on.</li>
+<li><strong>Crew photo</strong> (optional) — opens the camera.</li>
+<li><strong>Note (optional)</strong> — for example, <em>material was late; left early with the foreman's OK</em>.</li>
+</ul>
+</li>
+<li>Confirm. Your punch is recorded with the time, the GPS position and its accuracy.</li>
+<li>During the day, the same button changes to what fits: start the break, come back from the break, switch job, clock out.</li>
+</ol>
+<figure class="celular"><img src="../img/crew-my-clock-before-mobile.png" alt="My time clock before clocking in" loading="lazy"><figcaption>My time clock before clocking in</figcaption></figure>
+<figure class="celular"><img src="../img/crew-my-clock-in-dialog-mobile.png" alt="The clock-in window: job, geofence, cost code, photo and note" loading="lazy"><figcaption>The clock-in window: job, geofence, cost code, photo and note</figcaption></figure>
+<p>Below the button, <strong>Today</strong> lists your punches and <strong>My week</strong> shows your hours per day and the total. A worker never sees dollar amounts.</p>
+<figure class="celular"><img src="../img/crew-my-clock-working-mobile.png" alt="My time clock during the workday" loading="lazy"><figcaption>My time clock during the workday</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">Your location</p>
+<p>Your location is only recorded while you are clocked in: at each punch and during the workday. Nothing is recorded during breaks or after you clock out. The screen says so at the bottom.</p>
+</div>
+<h2 id="foreman-clock-in-the-whole-crew">Foreman: clock in the whole crew</h2>
+<p><strong>What it is for:</strong> one phone clocks in the whole crew at once — the most common way crews work on site.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Clock in the crew</strong> (default role: <strong>Foreman</strong>).</p>
+</div>
+<ol>
+<li>Open <strong>Crew</strong>. The <strong>Crew time clock</strong> shows the <strong>Official clock time</strong>, how many are <strong>working</strong>, <strong>on break</strong>, <strong>traveling</strong> and <strong>off site</strong>, and the list of the crew with each person's status.</li>
+<li>Select people: tap each one, or <strong>Select all</strong>. The bar at the bottom says how many are selected and turns on the buttons that make sense for them (for example, <strong>Clock in (6)</strong>).</li>
+<li>Tap <strong>Clock in</strong>. KORbuild locates the phone and shows the distance to the job ("inside the geofence ✓" or "outside the geofence"). Choose the <strong>cost code</strong>, take a crew photo if you want, add a note, and confirm.</li>
+</ol>
+<figure class="celular"><img src="../img/crew-team-before-mobile.png" alt="The crew before the day starts" loading="lazy"><figcaption>The crew before the day starts</figcaption></figure>
+<figure class="celular"><img src="../img/crew-team-selected-mobile.png" alt="Everyone selected: Clock in (6)" loading="lazy"><figcaption>Everyone selected: Clock in (6)</figcaption></figure>
+<figure class="celular"><img src="../img/crew-team-clock-in-dialog-mobile.png" alt="Clocking in the crew" loading="lazy"><figcaption>Clocking in the crew</figcaption></figure>
+<p>Each person receives their own punch, which records <strong>who registered it</strong> (the foreman). With nobody selected, the buttons stay off.</p>
+<figure class="celular"><img src="../img/crew-team-working-mobile.png" alt="The crew after clocking in" loading="lazy"><figcaption>The crew after clocking in</figcaption></figure>
+<h3 id="breaks-and-clock-out">Breaks and clock-out</h3>
+<ul>
+<li><strong>Break</strong> and <strong>Back from break</strong> cover the meal break (one tap, no window).</li>
+<li><strong>Clock out</strong> ends the day. KORbuild asks <strong>Clock out now?</strong> — if someone keeps working, leave them out of the selection.</li>
+</ul>
+<h3 id="switch-job">Switch job</h3>
+<ol>
+<li>Select the people and tap <strong>Switch job</strong>.</li>
+<li>Choose <strong>Which job?</strong> and tap <strong>Leave for the job</strong>. The punch is made <strong>where you are</strong> (the job you are leaving), and the <strong>travel</strong> starts. Travel time to the other job counts as hours worked.</li>
+<li>When you get there, tap <strong>Arrived</strong>, choose the <strong>cost code on this job</strong> and <strong>Record arrival</strong>. The arrival is checked against the geofence of the new job.</li>
+</ol>
+<figure class="celular"><img src="../img/crew-switch-job-dialog-mobile.png" alt="Switch job: the travel to the other job is paid time" loading="lazy"><figcaption>Switch job: the travel to the other job is paid time</figcaption></figure>
+<h2 id="foreman-check-the-crews-hours">Foreman: check the crew's hours</h2>
+<p><strong>Hours</strong> shows the crew's week: hours per person and per day. A red <strong>!</strong> means something to check — a missing clock-out, an off-site punch or a missed break. The office approves the hours.</p>
+<figure class="celular"><img src="../img/crew-team-hours-mobile.png" alt="Crew hours, with the alerts" loading="lazy"><figcaption>Crew hours, with the alerts</figcaption></figure>
+<h2 id="office-see-who-is-working-now">Office: see who is working now</h2>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>View time clock and timesheets</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<p><strong>Now</strong> shows:</p>
+<ul>
+<li><strong>Working now</strong>, <strong>On break</strong>, <strong>Traveling</strong> and <strong>Hours today</strong>.</li>
+<li><strong>Off-site punches to review</strong>: punches outside the geofence, with the distance from the job. <strong>View day</strong> opens the person's day map; <strong>Reviewed</strong> marks it as checked (the punch stays recorded as outside the geofence).</li>
+<li>Each job with the people clocked in on it, since when and on which cost code.</li>
+</ul>
+<figure><img src="../img/crew-now.png" alt="Now" loading="lazy"><figcaption>Now</figcaption></figure>
+<h2 id="office-approve-the-week-timesheets">Office: approve the week (timesheets)</h2>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Approve and edit timesheets</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<ol>
+<li>Open <strong>Timesheets</strong>. Use <strong>Previous</strong> and <strong>Next</strong> to change the week (Monday to Sunday).</li>
+<li>At the top: <strong>Hours this week</strong>, <strong>Overtime hours</strong>, <strong>Labor cost</strong> (with the cost permission) and <strong>Awaiting approval</strong>.</li>
+<li>The table has one row per person: hours per day, <strong>Total</strong>, <strong>OT</strong> (overtime), <strong>Cost</strong> and <strong>Status</strong> (<strong>Approved</strong>, <strong>Awaiting approval</strong>…).</li>
+<li>Check the people to approve and click <strong>Approve selected</strong>, or open a person and click <strong>Approve week</strong>.</li>
+</ol>
+<figure><img src="../img/crew-timesheets.png" alt="Timesheets of the week" loading="lazy"><figcaption>Timesheets of the week</figcaption></figure>
+<p>A week cannot be approved while someone has a <strong>missing clock-out</strong>: KORbuild lists who needs to be fixed first. Approved hours are released for payroll.</p>
+<h3 id="open-one-persons-week">Open one person's week</h3>
+<p>Click a person to see their <strong>Employee week</strong>: total, regular, overtime and cost, and each day with its segments (work on a job and cost code, break, travel), the <strong>Day map</strong> and <strong>Edit</strong>.</p>
+<figure><img src="../img/crew-employee-week.png" alt="One person&#x27;s week, awaiting approval" loading="lazy"><figcaption>One person&#x27;s week, awaiting approval</figcaption></figure>
+<h3 id="return-a-week">Return a week</h3>
+<p><strong>Return</strong> sends the week back to the foreman. Write <strong>What needs to be reviewed?</strong> (for example, <em>confirm Tuesday's clock-out with the foreman</em>) and click <strong>Return</strong>.</p>
+<figure><img src="../img/crew-return-dialog.png" alt="Returning a timesheet with the reason" loading="lazy"><figcaption>Returning a timesheet with the reason</figcaption></figure>
+<h3 id="edit-a-day-for-example-a-forgotten-clock-out">Edit a day (for example, a forgotten clock-out)</h3>
+<ol>
+<li>On the person's week, click <strong>Edit</strong> on the day.</li>
+<li>Choose the <strong>Punch</strong> (clock out, break start, break end, clock in), the <strong>Time</strong> and the <strong>Reason</strong> (for example, <em>forgot to clock out; confirmed with the foreman</em>).</li>
+<li>Click <strong>Save edit</strong>.</li>
+</ol>
+<p>The edit is added as a <strong>new punch</strong>, marked as an edit, with your name and the reason. The original punches stay visible.</p>
+<figure><img src="../img/crew-adjust-dialog.png" alt="Editing a day: a new punch with time and reason" loading="lazy"><figcaption>Editing a day: a new punch with time and reason</figcaption></figure>
+<h3 id="export-to-payroll">Export to payroll</h3>
+<p><strong>Export CSV (approved)</strong> downloads the approved hours of the week, one line per segment (week, employee, trade, date, job, cost code, type, start, end, hours, status), ready for payroll systems such as QuickBooks, Gusto or ADP.</p>
+<h2 id="office-see-a-persons-day-on-the-map">Office: see a person's day on the map</h2>
+<p><strong>Day map</strong> (from <strong>Now</strong> › <strong>View day</strong>, or from a person's week) shows the day on a street map:</p>
+<ul>
+<li><strong>Clock in</strong> (green <strong>E</strong>) and <strong>Clock out</strong> (dark <strong>S</strong>), the number of entries and the distance traveled;</li>
+<li>the jobs, numbered in the order visited, with the geofence;</li>
+<li>the location points recorded during the workday, connected with arrows in the direction of travel;</li>
+<li>off-site punches in red;</li>
+<li><strong>Play back</strong> replays the day, with the clock on screen; <strong>Full screen</strong> enlarges the map.</li>
+</ul>
+<p>Below the map: the <strong>route of the day</strong> (job → travel → job, with distance and minutes), the list of <strong>location entries</strong> (tap one to see it on the map) and the <strong>timeline</strong> of punches, with geofence, accuracy, who registered it, photo and edits.</p>
+<figure><img src="../img/crew-day-map.png" alt="The day map" loading="lazy"><figcaption>The day map</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p>The trail between punches is <strong>simulated</strong> from the punches (the map shows <em>Simulated trail</em>). In the product, it comes from the phone's GPS during the workday, which requires the store app. Street maps, routes and addresses use free public services in the prototype; without internet, the map becomes a simple drawing.</p>
+</div>
+<h2 id="office-follow-labor-cost-by-job">Office: follow labor cost by job</h2>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>See costs and dollar amounts</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<p><strong>Costs › Jobs</strong> shows, for all jobs, <strong>Labor budget</strong>, <strong>Actual to date</strong>, <strong>Estimate at completion</strong> and <strong>Projected overrun</strong>, and for each job:</p>
+<ul>
+<li>the status: <strong>On track</strong>, <strong>Watch</strong> or <strong>Projected overrun</strong>;</li>
+<li><strong>Budget</strong>, <strong>Actual</strong> (% of budget), <strong>Estimate at completion</strong> and the overrun or savings;</li>
+<li>bars for <strong>Schedule elapsed</strong>, <strong>Budget used</strong> and <strong>Percent complete</strong>;</li>
+<li>the chart of <strong>Actual (cumulative)</strong>, <strong>Planned</strong> and <strong>Forecast</strong> to the end of the job;</li>
+<li>tables by cost code and week by week.</li>
+</ul>
+<figure><img src="../img/crew-costs-jobs.png" alt="Labor cost by job" loading="lazy"><figcaption>Labor cost by job</figcaption></figure>
+<p><strong>Edit budget</strong> sets the <strong>Total labor budget ($)</strong> and the <strong>Job percent complete (%)</strong>. The forecast and the status are recalculated immediately.</p>
+<figure><img src="../img/crew-budget-dialog.png" alt="Editing the budget and the percent complete" loading="lazy"><figcaption>Editing the budget and the percent complete</figcaption></figure>
+<p><strong>Month</strong> and <strong>Week</strong> show the cost of the period by job and cost code, split into wages, overtime premium and labor burden — for closing and checking.</p>
+<figure><img src="../img/crew-costs-month.png" alt="Cost of the month" loading="lazy"><figcaption>Cost of the month</figcaption></figure>
+<div class="admonition tip">
+<p class="admonition-title">How the forecast works</p>
+<p>With a percent complete, forecast = actual ÷ percent complete (spent 34% and built 31% means about 10% over budget). Without it, KORbuild uses the pace of the last 4 complete weeks through the end date.</p>
+</div>
+<h2 id="notifications">Notifications</h2>
+<table>
+<thead>
+<tr>
+<th>When</th>
+<th>Who</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Last week has timesheets not approved</td>
+<td>Office</td>
+<td><em>N last week's timesheets awaiting approval</em></td>
+</tr>
+<tr>
+<td>An off-site punch in the last 48 hours, not reviewed</td>
+<td>Office</td>
+<td><em>Name: clock in off site</em></td>
+</tr>
+<tr>
+<td>Someone in the crew had no clock-out yesterday</td>
+<td>Foreman</td>
+<td><em>Name has no clock-out from yesterday: let the office know</em></td>
+</tr>
+<tr>
+<td>8 AM on a workday and nobody in the crew clocked in</td>
+<td>Foreman</td>
+<td><em>Your crew hasn't clocked in today</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="messages-and-alerts">Messages and alerts</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Where</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>inside the geofence ✓</strong> / <strong>outside the geofence</strong></td>
+<td>Clock-in window</td>
+<td>Outside is accepted: the punch is flagged for the office.</td>
+</tr>
+<tr>
+<td><strong>!</strong> next to the hours</td>
+<td>Hours, Timesheets</td>
+<td>Something to check: missing clock-out, off-site punch or missed break.</td>
+</tr>
+<tr>
+<td><em>Before approving, fix the missing clock-outs for: …</em></td>
+<td>Approving</td>
+<td>Open the person's week and <strong>Edit</strong> the day.</td>
+</tr>
+<tr>
+<td><strong>Clock out now?</strong></td>
+<td>Clock out</td>
+<td>Leave out anyone still working.</td>
+</tr>
+<tr>
+<td><em>Punch reviewed. It stays recorded as outside the geofence.</em></td>
+<td>Now</td>
+<td>Nothing: it was marked as checked.</td>
+</tr>
+<tr>
+<td><em>Can't start inside a week that's already approved (it went to payroll).</em></td>
+<td>Changing an hourly rate (Settings)</td>
+<td>Choose a date from the next open week.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#worker-clock-in-and-out-on-your-own-phone">Worker: clock in and out on your own phone</a></li><li><a href="#foreman-clock-in-the-whole-crew">Foreman: clock in the whole crew</a></li><li class="sub"><a href="#breaks-and-clock-out">Breaks and clock-out</a></li><li class="sub"><a href="#switch-job">Switch job</a></li><li><a href="#foreman-check-the-crews-hours">Foreman: check the crew&#x27;s hours</a></li><li><a href="#office-see-who-is-working-now">Office: see who is working now</a></li><li><a href="#office-approve-the-week-timesheets">Office: approve the week (timesheets)</a></li><li class="sub"><a href="#open-one-persons-week">Open one person&#x27;s week</a></li><li class="sub"><a href="#return-a-week">Return a week</a></li><li class="sub"><a href="#edit-a-day-for-example-a-forgotten-clock-out">Edit a day (for example, a forgotten clock-out)</a></li><li class="sub"><a href="#export-to-payroll">Export to payroll</a></li><li><a href="#office-see-a-persons-day-on-the-map">Office: see a person&#x27;s day on the map</a></li><li><a href="#office-follow-labor-cost-by-job">Office: follow labor cost by job</a></li><li><a href="#notifications">Notifications</a></li><li><a href="#messages-and-alerts">Messages and alerts</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>
