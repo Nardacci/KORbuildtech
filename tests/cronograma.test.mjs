@@ -171,7 +171,12 @@ await page.evaluate((id) => {
   Object.assign(r, { status: 'enviado', sync: 'enviado', enviadoEm: Date.now(), primeiroEnvioEm: Date.now() });
   localStorage.setItem('kbt.rdo.v1', JSON.stringify(b));
 }, rdoId);
+// a obra é da construtora: a Northfield não aprova o próprio diário (docs/saas.md HS-11)
 await comoUsuario('u-tom', '#/daily/painel/rdo/' + rdoId);
+await page.reload();
+await page.waitForSelector('.revisao-lado');
+verificar(await page.locator('[data-acao="aprovar"]').count() === 0 && (await page.textContent('.revisao-lado')).includes('Construtora Exemplo'), 'a prestadora vê que o diário espera a aprovação da construtora');
+await comoUsuario('u-ana', '#/daily/painel/rdo/' + rdoId);
 await page.reload();
 await page.waitForSelector('[data-acao="aprovar"]');
 verificar((await page.textContent('#conteudo')).includes('Cronograma: Framing do 2º pavimento → 80%'), 'o relatório mostra a etapa e o % informados');
@@ -179,7 +184,9 @@ await page.click('[data-acao="aprovar"]');
 await noDialogo('Aprovar e lacrar');
 verificar((await toast()).includes('cronograma recebeu o andamento de 1 etapa'), 'aprovar avisa que o cronograma foi atualizado');
 const fr2 = (await crono()).etapas.find((e) => e.id === 'et-fr2');
-verificar(fr2.pct === 80 && fr2.historico.slice(-1)[0].fonte === 'rdo' && fr2.historico.slice(-1)[0].rdoId === rdoId, 'o % vai para a etapa, com o RDO de origem no histórico');
+verificar(fr2.pct === 80 && fr2.historico.slice(-1)[0].fonte === 'rdo' && fr2.historico.slice(-1)[0].rdoId === rdoId, 'aprovado pela construtora, o % vai para a etapa da prestadora, com o RDO de origem no histórico');
+const aprovado = (await banco()).empresas['prestadora-exemplo'].rdos.find((r) => r.id === rdoId);
+verificar(aprovado.status === 'aprovado' && aprovado.aprovadoPor === 'Ana Ribeiro' && aprovado.aprovadoPorEmpresa === 'Construtora Exemplo', 'o diário fica aprovado na prestadora, com quem aprovou e a empresa');
 
 console.log('Sininho e permissões');
 await comoUsuario('u-tom', '#/daily/painel');

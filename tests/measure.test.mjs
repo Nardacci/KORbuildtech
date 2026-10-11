@@ -655,7 +655,7 @@ const contatosAna = await textoDe('.tabela-contatos');
 verificar(contatosAna.includes('Northfield Framing & Siding') && contatosAna.includes('Prestadora') && !contatosAna.includes('Granite Drywall Supply'), 'para a construtora, a Northfield é um contato (prestadora); o que a prestadora cadastrou não aparece');
 await como('u-tom', '#/daily/obras');
 await page.waitForSelector('.grade-obras');
-verificar(await page.locator('.cartao-obra').count() === 1 && !(await textoDe('.grade-obras')).includes('Edifício Atlântico'), 'a prestadora só vê o próprio serviço, não as obras da construtora');
+verificar(await page.locator('.cartao-obra').count() === 2 && !(await textoDe('.grade-obras')).includes('Edifício Atlântico'), 'a prestadora só vê as próprias obras (o serviço no Jardim e o cliente direto), não as da construtora');
 
 verificar(erros.length === 0, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.join(' | ') : ''));
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');

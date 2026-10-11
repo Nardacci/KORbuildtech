@@ -60,7 +60,7 @@ await page.goto(BASE);
 await page.waitForSelector('#form-login', { timeout: 30000 });
 verificar(page.url().endsWith('#/entrar'), 'sem login, abre a tela de entrar');
 verificar((await page.inputValue('#login-email')).length > 0, 'login já vem preenchido (mockup)');
-verificar(await page.locator('.usuarios-demo p').count() === 2 && await page.locator('.usuarios-demo p:has-text("Construtora Exemplo") .email-demo').count() === 3 && await page.locator('.usuarios-demo p:has-text("Northfield") .email-demo').count() === 4, 'usuários de demonstração das duas empresas: construtora (3) e prestadora (4)');
+verificar(await page.locator('.usuarios-demo p').count() === 3 && await page.locator('.usuarios-demo p:has-text("Construtora Exemplo") .email-demo').count() === 1 && await page.locator('.usuarios-demo p:has-text("Ridgeline") .email-demo').count() === 3 && await page.locator('.usuarios-demo p:has-text("Northfield") .email-demo').count() === 4, 'usuários de demonstração das três empresas: construtora (1), Ridgeline (3) e Northfield (4)');
 await page.fill('#login-email', 'ninguem@exemplo.com');
 await page.click('#form-login button[type="submit"]');
 verificar(await page.isVisible('#login-erro'), 'e-mail desconhecido mostra erro');
@@ -130,8 +130,7 @@ await page.waitForFunction(() => document.querySelectorAll('[data-acao="clima-te
 verificar(await page.locator('[data-turno="manha"][data-valor="sol"][aria-pressed="true"]').count() === 1, 'clima automático: manhã de sol');
 verificar(await page.locator('[data-turno="tarde"][data-valor="chuva"][aria-pressed="true"]').count() === 1, 'clima automático: tarde de chuva');
 verificar(await page.locator('[data-turno="tarde"][data-acao="clima-prat"][data-valor="0"][aria-pressed="true"]').count() === 1, 'tarde impraticável (chuva > 2 mm)');
-// 5 funções da equipe própria, copiadas de ontem, + 3 da prestadora ligada à obra (pelo ponto dela)
-verificar(await page.locator('#s-equipe .tabela-linha').count() === 8, 'equipe copiada do dia anterior, mais a prestadora pelo ponto dela');
+verificar(await page.locator('#s-equipe .tabela-linha').count() === 5, 'equipe copiada do dia anterior');
 verificar(await page.locator('#s-equipamentos .equip').count() === 3, 'equipamentos copiados');
 const atividadesCopiadas = await page.locator('#s-atividades .atividade').count();
 verificar(atividadesCopiadas === 2, 'só as atividades em andamento foram copiadas (' + atividadesCopiadas + ')');
@@ -143,7 +142,7 @@ await page.click('[data-acao="equipe-mudar"][data-i="2"][data-campo="faltas"][da
 const totalDepois = await page.textContent('#s-equipe .secao-total');
 verificar(totalAntes !== totalDepois && /falta/.test(totalDepois), 'stepper muda o total: ' + totalDepois);
 await page.click('[data-acao="equipe-add"][data-valor="Carpinteiro"]');
-verificar(await page.locator('#s-equipe .tabela-linha').count() === 9, 'nova função pelo chip');
+verificar(await page.locator('#s-equipe .tabela-linha').count() === 6, 'nova função pelo chip');
 await page.click('[data-acao="equip-status"][data-i="0"][data-valor="manutencao"]');
 verificar(await page.locator('[data-acao="equip-status"][data-i="0"][data-valor="manutencao"][aria-pressed="true"]').count() === 1, 'status de equipamento');
 
@@ -178,7 +177,7 @@ await page.setInputFiles('input[data-fotos="camera"]', { name: 'IMG_0001.jpg', m
 await page.waitForSelector('#s-fotos .foto img[src^="blob:"]', { timeout: 20000 });
 const meta = await page.textContent('#s-fotos .foto .mudo');
 verificar(/GPS ✓/.test(meta), 'foto com GPS do aparelho: ' + meta);
-const dados = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['construtora-exemplo']);
+const dados = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['prestadora-estrutura']);
 const novo = dados.rdos.find((r) => r.obraId === 'jardim' && r.status === 'rascunho');
 const f = novo.fotos[0];
 verificar(f.tamanho < 400 * 1024 && f.tamanhoOriginal > f.tamanho * 3, 'foto comprimida: ' + Math.round(f.tamanhoOriginal / 1024) + ' KB → ' + Math.round(f.tamanho / 1024) + ' KB');
@@ -200,7 +199,8 @@ await print('05-offline');
 await comoUsuario('u-ana', '#/daily');
 await page.waitForSelector('.faroes');
 verificar(page.url().endsWith('#/daily/painel'), 'administradora entra no Daily pelo painel');
-verificar(await page.locator('.faroes .farol-amarelo').count() === 1, 'escritório: Jardim ainda amarelo (RDO não chegou)');
+// um farol por prestadora em cada obra: Ridgeline nas três, Northfield no Jardim (último diário ontem)
+verificar(await page.locator('.faroes .farol-amarelo').count() === 2, 'construtora: Jardim ainda amarelo para a Ridgeline (RDO não chegou) e para a Northfield');
 verificar(await page.locator('.abas .abas-item').count() === 3, 'abas do escritório: Painel, Aprovações e Obras');
 
 // Internet volta → sobe sozinho
@@ -212,7 +212,7 @@ verificar((await page.textContent('.aviso-escalada')).includes('Galpão Logísti
 verificar((await page.textContent('.aviso-escalada')).includes('Carlos Mendes'), 'escritório: aviso mostra o responsável');
 await page.click('.abas-item[href="#/daily/aprovacoes"]');
 await page.waitForSelector('.abas-item.ativo[href="#/daily/aprovacoes"]');
-verificar(await page.locator('.cartao').first().locator('.fila li').count() === 3, 'Aprovações: três RDOs na fila');
+verificar(await page.locator('.cartao').first().locator('.fila li').count() === 4, 'Aprovações: quatro diários das prestadoras na fila');
 await page.click('.abas-item[href="#/daily/obras"]');
 await page.click('.pagina a[href="#/daily/obras/galpao"]');
 await page.waitForSelector('.item-rdo');
@@ -245,7 +245,7 @@ await print('08-cliente');
 // adulteração: muda um texto direto no armazenamento → a verificação acusa
 await page.evaluate((id) => {
   const b = JSON.parse(localStorage.getItem('kbt.rdo.v1'));
-  b.empresas['construtora-exemplo'].rdos.find((r) => r.id === id).atividades[0].descricao += ' (editado)';
+  b.empresas['prestadora-estrutura'].rdos.find((r) => r.id === id).atividades[0].descricao += ' (editado)';
   localStorage.setItem('kbt.rdo.v1', JSON.stringify(b));
 }, id);
 await page.reload();
@@ -276,7 +276,7 @@ verificar((await page.textContent('[data-acao="enviar"]')).includes('Reenviar'),
 await page.click('[data-acao="enviar"]');
 await page.waitForSelector('.aviso-azul, .aviso-ambar', { timeout: 15000 });
 await page.waitForFunction(() => !/Enviando/.test(document.getElementById('conexao').textContent), null, { timeout: 15000 });
-const dados2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['construtora-exemplo']);
+const dados2 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['prestadora-estrutura']);
 const reenviado = dados2.rdos.find((r) => r.id === 'rdo-galpao-m2');
 verificar(reenviado.status === 'enviado' && reenviado.sync === 'enviado', 'reenviado e recebido');
 
@@ -289,7 +289,7 @@ await page.waitForSelector('dialog .opcao-rdo');
 await page.click('dialog .opcao-rdo >> nth=2');
 await page.click('dialog button:has-text("Copiar")');
 await page.waitForSelector('#s-clima');
-const dados3 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['construtora-exemplo']);
+const dados3 = await page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')).empresas['prestadora-estrutura']);
 const copiaAntiga = dados3.rdos.find((r) => r.obraId === 'galpao' && r.status === 'rascunho');
 verificar(copiaAntiga && copiaAntiga.historico[0].acao.includes('nº 115'), 'copiar: dá para escolher um RDO mais antigo (nº 115)');
 verificar(copiaAntiga && copiaAntiga.equipe.length === 4 && copiaAntiga.fotos.length === 0, 'copiar: traz a equipe e começa sem fotos');
@@ -330,7 +330,7 @@ await page.goto(BASE + '#/conta');
 await page.waitForSelector('.tabela-usuarios');
 verificar((await page.textContent('.plano')).includes('Profissional'), 'conta: plano da empresa');
 verificar((await page.textContent('.uso')).includes('3 de 5'), 'conta: uso de obras ativas');
-verificar(await page.locator('.tabela-usuarios tbody tr').count() === 5, 'conta: usuários da empresa');
+verificar(await page.locator('.tabela-usuarios tbody tr').count() === 2, 'conta: usuários da construtora (só a gestão)');
 verificar((await page.textContent('.fila')).includes('KORbuild Measure'), 'conta: módulos da empresa, com o Measure');
 await print('09-conta');
 

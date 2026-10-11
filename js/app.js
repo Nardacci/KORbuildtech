@@ -7,6 +7,7 @@ import {
 import {
   estado, bancoDeDados, todasAsEmpresas, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
   guardarFoto, apagarFoto, hidratarFotos, apagarTudo, idMiniatura,
+  diariosDeFora, origemDe, obraDoRdo, obraLocalDoRdo, naEmpresaDoRdo, obrasLigadas, emNomeDaEmpresa, empresaAtualId, empresaPorId,
 } from './armazem.js';
 import { criarDemonstracao, VERSAO_DADOS } from './exemplo.js';
 import { tr, tn, idioma, definirIdioma } from './i18n.js';
@@ -54,16 +55,16 @@ let pedidoInstalar = null;
 /* ---------- Conexão (real + simulada) ---------- */
 
 function semInternet() {
-  return !navigator.onLine || estado().offlineSimulado;
+  return !navigator.onLine || !!bancoDeDados().offlineSimulado;
 }
 
 function htmlConexao() {
-  const pendentes = estado().rdos.filter((r) => r.sync === 'pendente').length;
+  const pendentes = filaDoAparelho().length;
   if (sincronizando) {
     return ('<span class="pontinho azul"></span>' + tr('Enviando') + ' ') + esc(sincronizando.nome) + ' · ' + sincronizando.feito + '/' + sincronizando.total;
   }
   if (semInternet()) {
-    return ('<span class="pontinho ambar"></span>' + tr('Sem internet')) + (estado().offlineSimulado ? (' ' + tr('(simulado)')) : '') +
+    return ('<span class="pontinho ambar"></span>' + tr('Sem internet')) + (bancoDeDados().offlineSimulado ? (' ' + tr('(simulado)')) : '') +
       (pendentes ? ' · ' + pendentes + (' ' + tr('no aparelho')) : '');
   }
   return ('<span class="pontinho verde"></span>' + tr('Online'));
@@ -77,13 +78,18 @@ function atualizarConexao() {
 const espera = (ms) => new Promise((ok) => setTimeout(ok, ms));
 
 /* Envia ao "servidor" os RDOs guardados no aparelho. Foto por foto, como seria de verdade. */
+/* A fila do aparelho: diários guardados sem internet. No protótipo, o navegador é o aparelho de todos os
+ * usuários (de qualquer empresa), então a fila cobre todas; na versão real, cada celular tem a sua. */
+function filaDoAparelho(sync) {
+  return todasAsEmpresas().flatMap((d) => d.rdos.filter((r) => r.sync === (sync || 'pendente')).map((r) => ({ r, o: d.obras.find((x) => x.id === r.obraId) })));
+}
+
 async function sincronizar() {
   if (sincronizando || semInternet()) return;
-  const fila = estado().rdos.filter((r) => r.sync === 'pendente');
+  const fila = filaDoAparelho();
   if (!fila.length) return;
   let enviados = 0;
-  for (const r of fila) {
-    const o = acharObra(r.obraId);
+  for (const { r, o } of fila) {
     sincronizando = { feito: 0, total: r.fotos.length + 1, nome: tr('RDO nº {n}', { n: r.numero }) };
     r.sync = 'enviando';
     atualizarConexao();
@@ -758,7 +764,7 @@ function telaRdoLeitura(r, o) {
     aviso = ('<div class="aviso aviso-ambar"><b>' + tr('Guardado no aparelho') + '</b><span>' + tr('Sem internet agora. O RDO sobe sozinho, com as fotos, assim que a conexão voltar. Pode fechar o app.') + '</span>') +
       ('<button type="button" class="btn btn-contorno btn-pequeno" data-acao="sincronizar">' + tr('Tentar enviar agora') + '</button></div>');
   } else if (r.status === 'enviado') {
-    aviso = ('<div class="aviso aviso-azul"><b>' + tr('Enviado ao escritório')) + (r.enviadoEm ? (' ' + tr('às') + ' ') + horaCurta(r.enviadoEm) : '') + ('</b><span>' + tr('Aguardando a aprovação do escritório. Se pedirem ajustes, você recebe aqui.') + '</span></div>');
+    aviso = ('<div class="aviso aviso-azul"><b>' + tr('Enviado ao escritório')) + (r.enviadoEm ? (' ' + tr('às') + ' ') + horaCurta(r.enviadoEm) : '') + ('</b><span>' + (quemAprova(o) ? tr('Aguardando a aprovação de {empresa}. Se pedirem ajustes, você recebe aqui.', { empresa: esc(quemAprova(o)) }) : tr('Aguardando a aprovação do escritório. Se pedirem ajustes, você recebe aqui.')) + '</span></div>');
   } else if (r.status === 'aprovado') {
     aviso = ('<div class="aviso aviso-verde"><b>' + tr('Aprovado e lacrado') + '</b><span>' + tr('Depois de aprovado, o RDO não pode mais ser alterado por ninguém. Código') + ' ') + esc(r.codigo) + '.</span>' +
       '<a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/' + r.id + ('">' + tr('Ver PDF') + '</a></div>');
@@ -782,18 +788,67 @@ function farol(o) {
   return { cor: 'vermelho', texto: tr('Último RDO há {n} dias', { n: dias }), ultimo };
 }
 
-const NOME_FAROL = { verde: tr('em dia'), amarelo: tr('1 dia de atraso'), vermelho: tr('2 dias ou mais de atraso') };
+const NOME_FAROL = { verde: tr('em dia'), amarelo: tr('1 dia de atraso'), vermelho: tr('2 dias ou mais de atraso'), neutro: tr('sem prestadora') };
+
+/* A construtora gerencia e não executa (docs/saas.md HS-09): o Daily dela acompanha os diários das prestadoras. */
+function soAcompanha() { return estado().empresa.atuacao === 'construtora'; }
+
+/* Diários que chegaram a este escritório: os próprios e, na construtora, os das prestadoras das obras dela. */
+function diariosRecebidos() { return estado().rdos.filter(recebido).concat(diariosDeFora()); }
+
+/* Quem aprova (HS-11, HS-13): a construtora aprova o diário da obra ligada a ela; nas outras, a própria empresa. */
+function aprovaAqui(r) { return origemDe(r) ? true : !(obraDoRdo(r) || {}).vinculo; }
+function quemAprova(o) {
+  const d = o && o.vinculo && empresaPorId(o.vinculo.empresaId);
+  return d ? d.empresa.nome : null;
+}
 
 function aguardandoAprovacao() {
-  return estado().rdos.filter((r) => recebido(r) && r.status === 'enviado').sort((a, b) => (a.data < b.data ? -1 : 1));
+  return diariosRecebidos().filter((r) => r.status === 'enviado' && aprovaAqui(r)).sort((a, b) => (a.data < b.data ? -1 : 1));
+}
+
+/* Frentes da obra: na construtora, cada prestadora ligada; nas outras empresas, a própria obra. */
+function frentesDaObra(o) {
+  if (!soAcompanha()) return [{ empresaId: null, empresa: null, obra: o }];
+  return obrasLigadas(o.id).map((f) => ({ empresaId: f.empresaId, empresa: f.empresa.nome, obra: f.obra }));
+}
+function farolDaFrente(f) { return f.empresaId ? emNomeDaEmpresa(f.empresaId, () => farol(f.obra)) : farol(f.obra); }
+const PESO_FAROL = { verde: 0, neutro: 1, amarelo: 2, vermelho: 3 };
+/* Farol da obra: o pior entre as frentes (na construtora, entre as prestadoras). */
+function farolDaObra(o) {
+  const fs = frentesDaObra(o);
+  if (!fs.length) return { cor: 'neutro', texto: tr('Nenhuma prestadora ligada a esta obra') };
+  const lista = fs.map((f) => ({ ...farolDaFrente(f), empresa: f.empresa }));
+  const pior = lista.reduce((a, b) => (PESO_FAROL[b.cor] > PESO_FAROL[a.cor] ? b : a));
+  return lista.length > 1 && pior.empresa ? { ...pior, texto: pior.empresa + ': ' + pior.texto } : pior;
+}
+/* Diários recebidos de uma obra (na construtora, de todas as prestadoras dela), do mais novo ao mais antigo. */
+function diariosDaObra(o) {
+  if (!soAcompanha()) return rdosDaObra(o.id).filter(recebido);
+  return diariosDeFora().filter((r) => obraLocalDoRdo(r) === o).sort((a, b) => (a.data < b.data ? 1 : -1));
+}
+/* Escalada da manhã: frentes que ficaram sem diário no último dia de trabalho. */
+function semRdoOntemAqui() {
+  if (!soAcompanha()) {
+    return semRdoOntem().map(({ obra, data }) => ({ nome: obra.nome, data, href: '#/daily/obras/' + obra.id, resp: (estado().usuarios.find((u) => u.id === obra.responsavelId) || {}).nome }));
+  }
+  const lista = [];
+  for (const f of obrasLigadas()) {
+    emNomeDaEmpresa(f.empresaId, () => {
+      for (const { obra, data } of semRdoOntem().filter((x) => x.obra === f.obra)) {
+        lista.push({ nome: obra.nome + ' · ' + f.empresa.nome, data, href: '#/daily/obras/' + obra.vinculo.obraId, resp: (estado().usuarios.find((u) => u.id === obra.responsavelId) || {}).nome });
+      }
+    });
+  }
+  return lista;
 }
 
 function telaPainel() {
-  const { rdos } = estado();
   const obras = obrasEmAndamento();
-  const recebidos = rdos.filter(recebido);
+  const recebidos = diariosRecebidos();
   const aguardando = aguardandoAprovacao();
-  const faroes = obras.map((o) => ({ o, ...farol(o) }));
+  // na construtora, um farol por prestadora em cada obra
+  const faroes = obras.flatMap((o) => frentesDaObra(o).map((f) => ({ o, empresa: f.empresa, ...farolDaFrente(f) })));
   const deHoje = recebidos.filter((r) => r.data === hoje());
   const fotosHoje = deHoje.reduce((s, r) => s + r.fotos.length, 0);
   const atrasadas = faroes.filter((f) => f.cor !== 'verde').length;
@@ -801,8 +856,9 @@ function telaPainel() {
   return moldura({
     ativo: 'painel', largo: true, titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
+      (soAcompanha() ? '<p class="aviso-empresa">' + icone('obra', 18) + '<span>' + tr('Os diários são feitos pelas prestadoras de cada obra e chegam aqui para você aprovar. Cada prestadora registra a própria equipe.') + '</span></p>' : '') +
       '<div class="kpis">' +
-        kpi(tr('RDOs de hoje'), tr('{n} de {total}', { n: deHoje.length, total: obras.length }), deHoje.length === obras.length ? 'verde' : '') +
+        kpi(tr('RDOs de hoje'), tr('{n} de {total}', { n: deHoje.length, total: faroes.length }), deHoje.length === faroes.length ? 'verde' : '') +
         kpi(tr('Aguardando aprovação'), aguardando.length, aguardando.length ? 'azul' : '') +
         kpi(tr('Obras com RDO atrasado'), atrasadas, atrasadas ? 'alerta' : 'verde') +
         kpi(tr('Fotos recebidas hoje'), fotosHoje, '') +
@@ -811,7 +867,7 @@ function telaPainel() {
       '<div class="painel-grade">' +
         ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Farol das obras') + '</h2><a class="link" href="#/daily/obras">' + tr('Ver obras') + '</a></div>') +
           '<ul class="faroes">' + faroes.map((f) =>
-            '<li><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><div><b>' + esc(f.o.nome) + '</b><span class="mudo">' + esc(f.o.cidade) + ' · ' + f.texto + '</span></div>' +
+            '<li><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><div><b>' + esc(f.o.nome) + '</b><span class="mudo">' + (f.empresa ? '<b class="farol-empresa">' + esc(f.empresa) + '</b> · ' : esc(f.o.cidade) + ' · ') + f.texto + '</span></div>' +
             '<a class="btn btn-contorno btn-pequeno" href="#/daily/obras/' + f.o.id + ('">' + tr('Abrir') + '</a></li>')).join('') + '</ul>' +
           ('<p class="legenda-farol"><span><i class="farol farol-verde"></i>' + tr('em dia') + '</span><span><i class="farol farol-amarelo"></i>' + tr('1 dia de atraso') + '</span><span><i class="farol farol-vermelho"></i>' + tr('2 dias ou mais') + '</span></p>') +
         '</section>' +
@@ -825,15 +881,13 @@ function telaPainel() {
 
 /* Escalada da manhã seguinte: obras que ficaram sem RDO no último dia de trabalho. */
 function blocoSemRdoOntem() {
-  const lista = semRdoOntem();
+  const lista = semRdoOntemAqui();
   if (!lista.length) return '';
   return '<section class="aviso aviso-alerta aviso-escalada"><div class="aviso-cabeca"><b>' +
       (lista.length === 1 ? tr('1 obra ficou sem RDO') : lista.length + (' ' + tr('obras ficaram sem RDO'))) + (' ' + tr('no último dia de trabalho') + '</b>') +
       '</div>' +
-    '<ul class="lista-atrasos">' + lista.map(({ obra, data }) => {
-      const resp = estado().usuarios.find((u) => u.id === obra.responsavelId);
-      return '<li><a href="#/daily/obras/' + obra.id + '"><b>' + esc(obra.nome) + '</b><span>' + primeiraMaiuscula(diaDaSemana(data)) + ', ' + dataCurta(data) + (' ' + tr('· responsável:') + ' ') + esc(resp ? resp.nome : '—') + '</span>' + icone('seta', 18) + '</a></li>';
-    }).join('') + '</ul></section>';
+    '<ul class="lista-atrasos">' + lista.map(({ nome, data, href, resp }) =>
+      '<li><a href="' + href + '"><b>' + esc(nome) + '</b><span>' + primeiraMaiuscula(diaDaSemana(data)) + ', ' + dataCurta(data) + (' ' + tr('· responsável:') + ' ') + esc(resp || '—') + '</span>' + icone('seta', 18) + '</a></li>').join('') + '</ul></section>';
 }
 
 function kpi(rotulo, valor, cor) {
@@ -841,9 +895,10 @@ function kpi(rotulo, valor, cor) {
 }
 
 function itemPainel(r, acao) {
-  const o = acharObra(r.obraId);
+  const o = obraDoRdo(r);
+  const og = origemDe(r);
   const pessoas = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
-  return ('<li><div><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataRelativa(r.data) + ' · ' + esc(r.autor) + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + tn(r.fotos.length, '{n} foto', '{n} fotos') +
+  return ('<li><div><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + esc(o.nome) + '</b><span class="mudo">' + (og ? '<b class="farol-empresa">' + esc(og.empresa.nome) + '</b> · ' : '') + dataRelativa(r.data) + ' · ' + esc(r.autor) + ' · ' + pessoas + (' ' + tr('pessoas ·') + ' ') + tn(r.fotos.length, '{n} foto', '{n} fotos') +
     (r.ocorrencias.length ? ' · <span class="texto-alerta">' + r.ocorrencias.length + (r.ocorrencias.length === 1 ? (' ' + tr('ocorrência')) : (' ' + tr('ocorrências'))) + '</span>' : '') + '</span></div>' +
     '<a class="btn ' + (acao === 'Revisar' ? 'btn-primario' : 'btn-contorno') + ' btn-pequeno" href="#/daily/painel/rdo/' + r.id + '">' + acao + '</a></li>';
 }
@@ -851,9 +906,9 @@ function itemPainel(r, acao) {
 /* ---------- Escritório: aprovações ---------- */
 
 function telaAprovacoes() {
-  const recebidos = estado().rdos.filter(recebido);
+  const recebidos = diariosRecebidos();
   const aguardando = aguardandoAprovacao();
-  const ajustes = recebidos.filter((r) => r.status === 'ajustes');
+  const ajustes = recebidos.filter((r) => r.status === 'ajustes' && aprovaAqui(r));
   const aprovados = recebidos.filter((r) => r.status === 'aprovado').sort((a, b) => b.aprovadoEm - a.aprovadoEm).slice(0, 8);
   return moldura({
     ativo: 'aprovacoes', largo: true, titulo: tr('Aprovações'), subtitulo: aguardando.length ? tn(aguardando.length, '{n} relatório esperando a sua revisão', '{n} relatórios esperando a sua revisão') : tr('Nenhum relatório esperando revisão'),
@@ -864,8 +919,9 @@ function telaAprovacoes() {
       (ajustes.length ? ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Com o canteiro para ajustes') + '</h2><ul class="fila">') + ajustes.map((r) => itemPainel(r, tr('Ver'))).join('') + '</ul></section>' : '') +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Aprovados recentemente') + '</h2>') +
         '<ul class="fila">' + aprovados.map((r) => {
-          const o = acharObra(r.obraId);
-          return ('<li><div><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + esc(o.nome) + '</b><span class="mudo">' + dataCurta(r.data) + (' ' + tr('· aprovado') + ' ') + dataHora(r.aprovadoEm) + (' ' + tr('· código') + ' ') + esc(r.codigo) + '</span></div>' +
+          const o = obraDoRdo(r);
+          const og = origemDe(r);
+          return ('<li><div><b>' + tr('RDO nº {n}', { n: r.numero })) + ' · ' + esc(o.nome) + '</b><span class="mudo">' + (og ? '<b class="farol-empresa">' + esc(og.empresa.nome) + '</b> · ' : '') + dataCurta(r.data) + (' ' + tr('· aprovado') + ' ') + dataHora(r.aprovadoEm) + (' ' + tr('· código') + ' ') + esc(r.codigo) + '</span></div>' +
             '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/daily/painel/rdo/' + r.id + ('">' + tr('Abrir') + '</a><a class="btn btn-contorno btn-pequeno" href="#/daily/pdf/') + r.id + '">PDF</a></div></li>';
         }).join('') + '</ul>' +
       '</section>',
@@ -887,24 +943,27 @@ function telaObrasAdmin(filtro) {
         '<a href="#/daily/obras/encerradas"' + (filtro === 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Paralisadas e concluídas') + ' <span class="mz-contagem">' + outras.length + '</span></a></nav>' : '') +
       (!obras.length ? '<p class="vazio">' + (filtro === 'encerradas' ? tr('Nenhuma obra paralisada ou concluída.') : tr('Nenhuma obra em andamento.')) + (podeCadastrar && filtro !== 'encerradas' ? ' <a href="#/settings/obra/nova">' + tr('Cadastrar a primeira obra') + '</a>' : '') + '</p>' : '') +
       '<div class="lista grade-obras">' + obras.map((o) => {
-      const f = farol(o);
-      const qtd = rdosDaObra(o.id).filter(recebido).length;
+      const f = farolDaObra(o);
+      const qtd = diariosDaObra(o).length;
+      const prest = soAcompanha() ? obrasLigadas(o.id).map((x) => x.empresa.nome) : [];
       return '<a class="cartao-obra" href="#/daily/obras/' + o.id + '">' +
         '<div class="cartao-obra-topo"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><b>' + esc(o.nome) + '</b>' + (situacaoDaObra(o) !== 'andamento' ? ' <span class="etiqueta ' + SITUACOES_OBRA[situacaoDaObra(o)].classe + '">' + SITUACOES_OBRA[situacaoDaObra(o)].nome + '</span>' : '') + icone('seta', 18) + '</div>' +
         '<span class="mudo">' + esc(o.cidade) + ' · ' + esc(textoPartes(o)) + '</span>' +
         '<span class="mudo">' + esc(etapaAtual(o)) + '</span>' +
+        (soAcompanha() ? '<span class="mudo">' + (prest.length ? tr('Prestadoras:') + ' ' + esc(prest.join(', ')) : tr('Nenhuma prestadora ligada')) + '</span>' : '') +
         '<span class="cartao-obra-rodape">' + f.texto + (qtd ? ' · ' + tn(qtd, '{n} RDO recebido', '{n} RDOs recebidos') : '') + '</span></a>';
     }).join('') + '</div>',
   });
 }
 
-/* Prestadoras ligadas a esta obra: quem está aqui hoje e as horas, por função. Sem nomes e sem valores:
- * salário, encargos e custo são da prestadora (docs/saas.md). */
+/* Prestadoras ligadas a esta obra: quem está aqui hoje, desde quando, e as horas. A construtora vê tudo a
+ * nível gerencial, menos valores: salário, encargos e custo ficam com a prestadora (docs/saas.md HS-10). */
+const SITUACAO_PESSOA = { trabalho: tr('na obra'), intervalo: tr('no intervalo'), deslocamento: tr('em deslocamento'), saiu: tr('saiu') };
 function htmlPrestadorasNaObra(o) {
   const lista = prestadorasNaObra(o.id, hoje());
   if (!lista.length) return '';
   return '<section class="cartao prestadoras-obra"><h2 class="cartao-titulo">' + tr('Prestadoras nesta obra') + '</h2>' +
-    '<p class="mudo pequeno">' + tr('Cada prestadora registra o ponto dos próprios funcionários no KORbuild. Aqui você vê as pessoas e as horas por função; valores e encargos ficam só com ela.') + '</p>' +
+    '<p class="mudo pequeno">' + tr('Cada prestadora registra o ponto dos próprios funcionários no KORbuild. Aqui você acompanha quem está na obra e as horas; salários, encargos e custos ficam só com ela.') + '</p>' +
     lista.map((p) => '<div class="prestadora-obra"><div class="prestadora-cab"><b>' + esc(p.empresa) + '</b><span class="mudo pequeno">' + esc(p.servico) + '</span></div>' +
       '<div class="prestadora-numeros">' +
         '<div><span>' + tr('Na obra agora') + '</span><b>' + p.naObraAgora + '</b></div>' +
@@ -912,7 +971,11 @@ function htmlPrestadorasNaObra(o) {
         '<div><span>' + tr('Horas hoje') + '</span><b>' + horas(p.minutosDia) + '</b></div>' +
         '<div><span>' + tr('Horas na semana') + '</span><b>' + horas(p.minutosSemana) + '</b></div>' +
       '</div>' +
-      (Object.keys(p.porFuncao).length ? '<ul class="prestadora-funcoes">' + Object.entries(p.porFuncao).map(([funcao, v]) => '<li><b>' + esc(funcao) + '</b> · ' + tn(v.presentes, '{n} pessoa', '{n} pessoas') + ' · ' + horas(v.minutos) + '</li>').join('') + '</ul>' : '<p class="mudo pequeno">' + tr('Ninguém da prestadora bateu ponto hoje.') + '</p>') +
+      (p.pessoas.length
+        ? '<div class="tabela-rolagem"><table class="tabela tabela-pessoas-obra"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Função') + '</th><th>' + tr('Entrada') + '</th><th>' + tr('Agora') + '</th><th class="num">' + tr('Horas hoje') + '</th></tr></thead><tbody>' +
+          p.pessoas.map((x) => '<tr><td><b>' + esc(x.nome) + '</b></td><td>' + esc(x.funcao) + '</td><td>' + (x.entrada ? horaCurta(x.entrada) : '—') + '</td><td><span class="etiqueta ' + (x.naObra ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + SITUACAO_PESSOA[x.situacao] + '</span></td><td class="num">' + horas(x.minutos) + '</td></tr>').join('') +
+          '</tbody></table></div>'
+        : '<p class="mudo pequeno">' + tr('Ninguém da prestadora bateu ponto hoje.') + '</p>') +
     '</div>').join('') +
   '</section>';
 }
@@ -920,22 +983,40 @@ function htmlPrestadorasNaObra(o) {
 function telaObraAdmin(id) {
   const o = acharObra(id);
   if (!o) return naoEncontrado('#/daily/obras');
-  const f = farol(o);
-  const lista = rdosDaObra(o.id).filter(recebido);
+  const f = farolDaObra(o);
+  const lista = diariosDaObra(o);
+  const item = (r) => itemRdo(r, { href: '#/daily/painel/rdo/' + r.id });
   return moldura({
     ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
     conteudo: (situacaoDaObra(o) !== 'andamento' ? '<div class="aviso aviso-ambar"><b>' + tr('Obra {situacao}', { situacao: SITUACOES_OBRA[situacaoDaObra(o)].nome.toLowerCase() }) + '</b><span>' + tr('Não cobra o diário e não aparece no campo nem no ponto. O histórico continua aqui.') + '</span></div>' : '') +
       resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) +
-      ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
+      (soAcompanha() ? (pode(usuarioAtual(), 'settings.obras') ? '<p class="dica"><a href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a></p>' : '') + htmlDiariosPorPrestadora(o, lista) : htmlRdoObrigatorio(o, lista, item)),
+  });
+}
+
+/* Diários recebidos na obra da construtora, separados por prestadora. */
+function htmlDiariosPorPrestadora(o, lista) {
+  const frentes = obrasLigadas(o.id);
+  if (!frentes.length) return '<p class="vazio">' + tr('Nenhuma prestadora ligada a esta obra ainda. A prestadora liga a obra dela a esta quando é contratada.') + '</p>';
+  return frentes.map((fr) => {
+    const daFrente = lista.filter((r) => obraDoRdo(r) === fr.obra);
+    const f = farolDaFrente({ empresaId: fr.empresaId, obra: fr.obra });
+    return '<h2 class="titulo-secao titulo-com-farol"><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span>' + tr('Diários de {empresa}', { empresa: esc(fr.empresa.nome) }) + ' <span class="mudo pequeno">' + f.texto + '</span></h2>' +
+      (daFrente.length ? '<div class="lista grade-rdos">' + daFrente.map((r) => naEmpresaDoRdo(r, () => itemRdo(r, { href: '#/daily/painel/rdo/' + r.id }))).join('') + '</div>' : '<p class="vazio">' + tr('Nenhum diário recebido desta prestadora.') + '</p>');
+  }).join('');
+}
+
+function htmlRdoObrigatorio(o, lista, item) {
+  return ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
         (pode(usuarioAtual(), 'settings.obras') ? '<a class="link" href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a>' : '') + '</div>' +
         ('<div class="linha-info"><span>' + tr('Responsável') + '</span><b>') + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Prazo diário') + '</span><b>') + tr('{prazo} · lembrete às {lembrete} e alerta às {prazo} (sininho e celular)', { prazo: horaCheia(PRAZO_HORA), lembrete: horaCheia(LEMBRETE_HORA) }) + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Dias de trabalho') + '</span><b>') + primeiraMaiuscula(descreverDias(o)) + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Escritório é avisado') + '</span><b>' + tr('No dia seguinte, às') + ' ') + ESCALADA_HORA + 'h</b></div>' +
       '</section>' +
+      (o.vinculo ? '<p class="mudo pequeno">' + tr('Os diários desta obra são aprovados por {empresa}.', { empresa: '<b>' + esc(quemAprova(o)) + '</b>' }) + '</p>' : '') +
       ('<h2 class="titulo-secao">' + tr('Relatórios recebidos') + '</h2>') +
-      (lista.length ? '<div class="lista grade-rdos">' + lista.map((r) => itemRdo(r, { href: '#/daily/painel/rdo/' + r.id })).join('') + '</div>' : ('<p class="vazio">' + tr('Nenhum relatório recebido desta obra.') + '</p>')),
-  });
+      (lista.length ? '<div class="lista grade-rdos">' + lista.map(item).join('') + '</div>' : ('<p class="vazio">' + tr('Nenhum relatório recebido desta obra.') + '</p>'));
 }
 
 /* ---------- Escritório: revisar um RDO ---------- */
@@ -946,9 +1027,12 @@ function telaRdoPainel(id) {
     return moldura({ ativo: 'aprovacoes', largo: true, titulo: 'RDO', voltar: { href: '#/daily/aprovacoes', rotulo: tr('Aprovações') },
       conteudo: ('<div class="aviso aviso-ambar"><b>' + tr('Este RDO ainda não chegou ao escritório') + '</b><span>' + tr('Ele pode estar em rascunho ou guardado no celular, esperando internet.') + '</span></div>') });
   }
-  const o = acharObra(r.obraId);
+  const o = obraDoRdo(r);
+  const og = origemDe(r);
   let painelAcoes;
-  if (r.status === 'enviado') {
+  if (r.status === 'enviado' && !aprovaAqui(r)) {
+    painelAcoes = ('<h2 class="cartao-titulo">' + tr('Com a construtora') + '</h2><p class="mudo pequeno">' + tr('Este diário é aprovado por {empresa}, a contratante da obra. Quando ela aprovar ou pedir ajustes, você é avisado.', { empresa: '<b>' + esc(quemAprova(o)) + '</b>' }) + '</p>');
+  } else if (r.status === 'enviado') {
     painelAcoes = ('<h2 class="cartao-titulo">' + tr('Revisão') + '</h2><p class="mudo pequeno">' + tr('Confira o relatório. Ao aprovar, ele é lacrado e não pode mais ser alterado.') + '</p>') +
       ('<button type="button" class="btn btn-primario btn-bloco" data-acao="aprovar">' + tr('Aprovar e lacrar') + '</button>') +
       ('<button type="button" class="btn btn-contorno btn-bloco" data-acao="pedir-ajustes">' + tr('Pedir ajustes ao canteiro') + '</button>');
@@ -960,16 +1044,18 @@ function telaRdoPainel(id) {
       '<a class="btn btn-primario btn-bloco" href="#/daily/pdf/' + r.id + '">' + icone('baixar', 18) + (tr('Baixar PDF') + '</a>') +
       '<button type="button" class="btn btn-contorno btn-bloco" data-acao="copiar-link">' + icone('link', 18) + (tr('Copiar link para o contratante') + '</button>') +
       '<a class="btn btn-contorno btn-bloco" href="#/cliente/' + r.codigo + '">' + icone('olho', 18) + (tr('Ver como o contratante vê') + '</a>') +
-      (contratanteDe(acharObra(r.obraId)) ? ('<p class="mudo pequeno">' + tr('Contratante:') + ' <b>') + esc(contratanteDe(acharObra(r.obraId)).nome) + '</b>' + (contratanteDe(acharObra(r.obraId)).email ? ' · ' + esc(contratanteDe(acharObra(r.obraId)).email) : '') + '</p>' : '');
+      (contratanteDe(obraLocalDoRdo(r)) ? ('<p class="mudo pequeno">' + tr('Contratante:') + ' <b>') + esc(contratanteDe(obraLocalDoRdo(r)).nome) + '</b>' + (contratanteDe(obraLocalDoRdo(r)).email ? ' · ' + esc(contratanteDe(obraLocalDoRdo(r)).email) : '') + '</p>' : '');
   }
   const historico = ('<h3 class="subtitulo">' + tr('Histórico') + '</h3><ol class="historico">') + r.historico.map((h) =>
     '<li><span class="mudo">' + dataHora(h.em) + '</span><b>' + esc(h.quem) + '</b><span>' + esc(h.acao) + '</span></li>').join('') + '</ol>';
   // Voltar para onde a pessoa estava: a fila (se ainda pendente) ou a obra.
-  const voltar = r.status === 'enviado' ? { href: '#/daily/aprovacoes', rotulo: tr('Aprovações') } : { href: '#/daily/obras/' + o.id, rotulo: o.nome };
+  const local = obraLocalDoRdo(r);
+  const naFila = r.status === 'enviado' && aprovaAqui(r);
+  const voltar = naFila ? { href: '#/daily/aprovacoes', rotulo: tr('Aprovações') } : { href: '#/daily/obras/' + local.id, rotulo: local.nome };
   return moldura({
-    ativo: r.status === 'enviado' ? 'aprovacoes' : 'obras', largo: true,
-    titulo: tr('RDO nº {n}', { n: r.numero }), subtitulo: o.nome + ' · ' + primeiraMaiuscula(dataLonga(r.data)), voltar,
-    conteudo: '<div class="revisao"><div class="relatorio-tela">' + htmlRelatorio(r, o) + '</div>' +
+    ativo: naFila ? 'aprovacoes' : 'obras', largo: true,
+    titulo: tr('RDO nº {n}', { n: r.numero }), subtitulo: (og ? og.empresa.nome + ' · ' : '') + o.nome + ' · ' + primeiraMaiuscula(dataLonga(r.data)), voltar,
+    conteudo: '<div class="revisao"><div class="relatorio-tela">' + naEmpresaDoRdo(r, () => htmlRelatorio(r, o)) + '</div>' +
       '<aside class="revisao-lado"><div class="cartao fixo">' + painelAcoes + historico + '</div></aside></div>',
   });
 }
@@ -979,12 +1065,12 @@ function telaRdoPainel(id) {
 function telaPdf(id) {
   const r = acharRdo(id);
   if (!r) return naoEncontrado('#/daily');
-  const o = acharObra(r.obraId);
+  const o = obraDoRdo(r);
   const voltar = pode(usuarioAtual(), 'daily.acompanhar') ? '#/daily/painel/rdo/' + r.id : '#/daily/campo/rdo/' + r.id;
   return '<div class="pdf-barra nao-imprimir"><a class="btn btn-escuro btn-pequeno" href="' + voltar + '">' + icone('voltar', 16) + (tr('Voltar') + '</a>') +
       ('<span>' + tr('Pré-visualização do PDF (A4)') + '</span>') +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="imprimir">' + icone('baixar', 16) + (tr('Baixar PDF') + '</button></div>') +
-    '<div class="pdf-folha">' + htmlRelatorio(r, o) + '</div>' +
+    '<div class="pdf-folha">' + naEmpresaDoRdo(r, () => htmlRelatorio(r, o)) + '</div>' +
     ('<p class="pdf-dica nao-imprimir">' + tr('Na janela que abrir, escolha "Salvar como PDF". Na versão final, o PDF é gerado no servidor e chega pronto.') + '</p>');
 }
 
@@ -1001,12 +1087,25 @@ function gruposDeEntrada() {
 
 /* ---------- Link do contratante (a construtora, ou o dono quando contrata direto) ---------- */
 
+/* O link é público e não depende de quem está logado: procura o diário em todas as empresas. Na versão
+ * real, é o servidor que entrega o relatório pelo código. */
+function diarioPorCodigo(codigo) {
+  for (const d of todasAsEmpresas()) {
+    const r = d.rdos.find((x) => x.codigo === codigo && x.status === 'aprovado');
+    if (r) return { r, o: d.obras.find((x) => x.id === r.obraId), empresaId: d.empresa.id };
+  }
+  return null;
+}
+
 function telaCliente(codigo) {
-  const r = estado().rdos.find((x) => x.codigo === codigo && x.status === 'aprovado');
-  if (!r) {
+  const achado = diarioPorCodigo(codigo);
+  if (!achado) {
     return ('<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>' + tr('Relatório não encontrado') + '</b><span>' + tr('Confira o link. No protótipo não há servidor, então o link do cliente só abre no mesmo navegador em que o RDO foi aprovado.') + '</span></div></main>');
   }
-  const o = acharObra(r.obraId);
+  return emNomeDaEmpresa(achado.empresaId, () => htmlCliente(achado.r, achado.o));
+}
+
+function htmlCliente(r, o) {
   return '<header class="cliente-topo"><div class="cliente-empresa">' + htmlLogo('rel-logo-img') + ('<div><span class="mudo">' + tr('Relatório compartilhado por') + '</span><b>') + esc(estado().empresa.nome) + '</b></div></div>' +
       '<span class="cliente-via">via ' + marca(18) + 'KORbuild Daily</span></header>' +
     '<main class="pagina pagina-larga">' +
@@ -1016,19 +1115,19 @@ function telaCliente(codigo) {
 }
 
 async function verificarLacreNaTela(codigo) {
-  const r = estado().rdos.find((x) => x.codigo === codigo && x.status === 'aprovado');
-  if (!r) return;
-  const o = acharObra(r.obraId);
+  const achado = diarioPorCodigo(codigo);
+  if (!achado) return;
+  const { r, o } = achado;
   const ok = await conferirLacre(r, o);
   const el = document.getElementById('verificacao');
   if (!el) return;
   el.className = 'aviso ' + (ok ? 'aviso-verde' : 'aviso-alerta');
   el.innerHTML = ok
-    ? ('<b>' + tr('Documento autêntico') + '</b><span>' + tr('O conteúdo é idêntico ao aprovado por') + ' ') + esc(r.aprovadoPor) + ' ' + tr('em') + ' ' + dataHora(r.aprovadoEm) + (tr('. Código') + ' ') + esc(r.codigo) + '.</span>'
+    ? ('<b>' + tr('Documento autêntico') + '</b><span>' + tr('O conteúdo é idêntico ao aprovado por') + ' ') + esc(r.aprovadoPor) + (r.aprovadoPorEmpresa ? ' (' + esc(r.aprovadoPorEmpresa) + ')' : '') + ' ' + tr('em') + ' ' + dataHora(r.aprovadoEm) + (tr('. Código') + ' ') + esc(r.codigo) + '.</span>'
     : ('<b>' + tr('Atenção: o conteúdo mudou depois da aprovação') + '</b><span>' + tr('O hash atual não bate com o lacre. Peça à construtora o PDF original.') + '</span>');
   if (!ok) {
     const rel = document.getElementById('cliente-relatorio');
-    rel.innerHTML = htmlRelatorio(r, o, { verificado: false });
+    rel.innerHTML = emNomeDaEmpresa(achado.empresaId, () => htmlRelatorio(r, o, { verificado: false }));
     hidratarFotos(rel);
   }
 }
@@ -1095,7 +1194,7 @@ async function climaAutomatico(r, silencioso) {
 
 const acoes = {
   'alternar-internet'() {
-    const d = estado();
+    const d = bancoDeDados(); // a falta de internet simulada é do aparelho, não da empresa
     if (!navigator.onLine) { toast(tr('O aparelho está sem internet de verdade agora.')); return; }
     d.offlineSimulado = !d.offlineSimulado;
     salvar();
@@ -1382,19 +1481,26 @@ const acoes = {
   },
   async aprovar() {
     const r = rdoDaTela();
+    if (!r || !aprovaAqui(r)) return;
     if (!(await confirmar(tr('Aprovar e lacrar o RDO nº {n}?', { n: r.numero }), tr('Depois de aprovado, o relatório não pode mais ser alterado por ninguém. Ele recebe um código de verificação para o cliente conferir.'), tr('Aprovar e lacrar')))) return;
     r.status = 'aprovado';
     r.aprovadoEm = Date.now();
     r.aprovadoPor = usuarioAtual().nome;
-    await lacrar(r, acharObra(r.obraId));
-    registrar(r, usuarioAtual().nome, (tr('Aprovou · código') + ' ') + r.codigo);
-    const noCronograma = aplicarRdoAprovado(r, usuarioAtual().nome);
+    r.aprovadoPorEmpresa = estado().empresa.nome;
+    const quem = usuarioAtual().nome;
+    // o andamento vai para o cronograma de quem fez o diário (a prestadora, quando aprovado pela construtora)
+    const o = obraDoRdo(r);
+    const deFora = !!origemDe(r);
+    await lacrar(r, o);
+    registrar(r, quem, (tr('Aprovou · código') + ' ') + r.codigo + (deFora ? ' (' + estado().empresa.nome + ')' : ''));
+    const noCronograma = naEmpresaDoRdo(r, () => aplicarRdoAprovado(r, quem));
     salvar();
     desenhar();
     toast((tr('RDO aprovado e lacrado. Código') + ' ') + r.codigo + '.' + (noCronograma ? ' ' + tn(noCronograma, 'O cronograma recebeu o andamento de {n} etapa.', 'O cronograma recebeu o andamento de {n} etapas.') : ''));
   },
   async 'pedir-ajustes'() {
     const r = rdoDaTela();
+    if (!r || !aprovaAqui(r)) return;
     const res = await abrirDialogo({
       titulo: tr('Pedir ajustes ao canteiro'),
       corpo: ('<label class="rotulo-pequeno" for="motivo">' + tr('O que precisa ser corrigido?') + '</label>') +
@@ -1416,7 +1522,7 @@ const acoes = {
     const link = location.origin + location.pathname + '?demo#/cliente/' + r.codigo;
     try {
       await navigator.clipboard.writeText(link);
-      const ct = contratanteDe(acharObra(r.obraId));
+      const ct = contratanteDe(obraLocalDoRdo(r));
       toast(tr('Link copiado') + (ct ? (' ' + tr('para enviar a') + ' ') + ct.nome : '') + tr('. Ele vê o relatório sem precisar de conta.'));
     } catch (e) {
       await abrirDialogo({
@@ -1428,7 +1534,7 @@ const acoes = {
   },
   async imprimir() {
     const r = rdoDaTela();
-    const o = acharObra(r.obraId);
+    const o = obraDoRdo(r);
     await hidratarFotos(app);
     const tituloAntes = document.title;
     document.title = 'RDO ' + r.numero + ' - ' + o.nome + ' - ' + dataCurta(r.data).replace(/\//g, '-');
@@ -1544,12 +1650,11 @@ function notificacoesDaily(u) {
     for (const obra of obrasEmAndamento()) for (const e of (cronogramaDe(obra.id) || { etapas: [] }).etapas.filter((x) => situacaoDaEtapa(x) === 'atrasada')) {
       lista.push({ id: 'cr-atraso-' + e.id + e.fim, em: new Date(somarDias(e.fim, 1) + 'T08:00:00').getTime(), modulo: 'daily', titulo: tr('Etapa atrasada: {etapa} · {obra}', { etapa: e.nome, obra: obra.nome }), href: '#/daily/obras/' + obra.id + '/cronograma' });
     }
-    for (const { obra, data } of semRdoOntem()) {
-      const resp = estado().usuarios.find((x) => x.id === obra.responsavelId);
-      lista.push({ id: 'd-semrdo-' + obra.id + data, em: new Date(hoje() + 'T08:00:00').getTime(), modulo: 'daily', titulo: obra.nome + (' ' + tr('ficou sem RDO em') + ' ') + dataCurta(data).slice(0, 5) + (resp ? ' (' + resp.nome + ')' : ''), href: '#/daily/obras/' + obra.id });
+    for (const { nome, data, href, resp } of semRdoOntemAqui()) {
+      lista.push({ id: 'd-semrdo-' + href + data, em: new Date(hoje() + 'T08:00:00').getTime(), modulo: 'daily', titulo: nome + (' ' + tr('ficou sem RDO em') + ' ') + dataCurta(data).slice(0, 5) + (resp ? ' (' + resp + ')' : ''), href });
     }
-    for (const r of rdos.filter((x) => pode(u, 'daily.aprovar') && recebido(x) && x.status === 'enviado')) {
-      lista.push({ id: 'd-recebido-' + r.id, em: r.enviadoEm, modulo: 'daily', titulo: tr('RDO nº {numero} de {obra} aguardando aprovação', { numero: r.numero, obra: acharObra(r.obraId).nome }), href: '#/daily/painel/rdo/' + r.id });
+    for (const r of (pode(u, 'daily.aprovar') ? aguardandoAprovacao() : [])) {
+      lista.push({ id: 'd-recebido-' + r.id, em: r.enviadoEm, modulo: 'daily', titulo: tr('RDO nº {numero} de {obra} aguardando aprovação', { numero: r.numero, obra: obraDoRdo(r).nome }), href: '#/daily/painel/rdo/' + r.id });
     }
   } else if (pode(u, 'daily.preencher')) {
     const p = pendenciasDoCampo();
@@ -1603,7 +1708,7 @@ async function iniciar() {
     definirEstado({ ...(await criarDemonstracao()), idioma: idioma() });
   }
   // Envio interrompido (app fechado no meio): volta para a fila.
-  estado().rdos.forEach((r) => { if (r.sync === 'enviando') r.sync = 'pendente'; });
+  filaDoAparelho('enviando').forEach(({ r }) => { r.sync = 'pendente'; });
   window.addEventListener('hashchange', desenhar);
   window.addEventListener('online', () => { atualizarConexao(); sincronizar(); });
   window.addEventListener('offline', atualizarConexao);

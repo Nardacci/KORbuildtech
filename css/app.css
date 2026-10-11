@@ -1362,3 +1362,11 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .login-prototipo > span { flex: 1 1 180px; }
 .login-prototipo a { margin-left: auto; font-weight: 600; }
 .login-erro a { font-weight: 700; }
+
+/* Construtora: diários por prestadora (docs/saas.md HS-11) */
+.farol-neutro { background: var(--borda-forte); }
+.farol-empresa { font-weight: 600; color: var(--texto-2); }
+.titulo-com-farol { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.titulo-com-farol .mudo { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.tabela-pessoas-obra td, .tabela-pessoas-obra th { white-space: nowrap; }
+.aviso-empresa > span { font-size: 14px; line-height: 1.45; }

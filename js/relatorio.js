@@ -130,13 +130,13 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
         ? '<div class="rel-lacre' + (verificado === false ? ' alterado' : '') + '">' +
             '<div class="rel-lacre-selo">' + (verificado === false ? '!' : '✓') + '</div>' +
             '<div><b>' + (verificado === false ? tr('Conteúdo diferente do aprovado') : tr('Aprovado e lacrado')) + '</b>' +
-            ('<span>' + tr('Aprovado por') + ' ') + esc(r.aprovadoPor) + ' ' + tr('em') + ' ' + dataHora(r.aprovadoEm) + '</span>' +
+            ('<span>' + tr('Aprovado por') + ' ') + esc(r.aprovadoPor) + (r.aprovadoPorEmpresa ? ' (' + esc(r.aprovadoPorEmpresa) + ')' : '') + ' ' + tr('em') + ' ' + dataHora(r.aprovadoEm) + '</span>' +
             ('<span>' + tr('Código de verificação') + ' <b class="codigo">') + esc(r.codigo) + '</b></span>' +
             ('<span class="hash">' + tr('SHA-256') + ' ') + esc(r.hashDocumento) + '</span></div></div>'
         : ('<div class="rel-lacre pendente"><div class="rel-lacre-selo">…</div><div><b>' + tr('Ainda não aprovado') + '</b><span>' + tr('Este relatório pode mudar até ser aprovado pelo escritório.') + '</span></div></div>')) +
       '<div class="rel-assinaturas">' +
         '<div><span class="linha"></span><b>' + esc(r.autor) + ('</b><small>' + tr('Responsável pelo preenchimento · enviado') + ' ') + (r.enviadoEm ? (tr('às') + ' ') + horaCurta(r.enviadoEm) : '—') + '</small></div>' +
-        '<div><span class="linha"></span><b>' + esc(r.aprovadoPor || tr('Engenheiro(a) responsável')) + ('</b><small>' + tr('Aprovação') + '</small></div>') +
+        '<div><span class="linha"></span><b>' + esc(r.aprovadoPor || tr('Engenheiro(a) responsável')) + ('</b><small>' + tr('Aprovação') + (r.aprovadoPorEmpresa ? ' · ' + esc(r.aprovadoPorEmpresa) : '') + '</small></div>') +
       '</div>' +
       ('<p class="rel-gerado">' + tr('Gerado pelo KORbuild Daily · protótipo com dados fictícios') + '</p>') +
     '</footer>' +

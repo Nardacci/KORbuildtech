@@ -13,7 +13,7 @@
  * Tipos de batida: entrada · intervalo-inicio · intervalo-fim · troca (sai rumo a outra obra) · chegada · etapa · saida */
 
 import { hoje, somarDias, diasEntre, novoId, isoDoDia } from './util.js';
-import { estado, salvar, bancoDeDados, empresaAtualId, emNomeDaEmpresa } from './armazem.js';
+import { estado, salvar, obrasLigadas, emNomeDaEmpresa } from './armazem.js';
 import { tr, tn, emIngles } from './i18n.js';
 import { regraEm, encargosEm, extrasDaSemana, funcionarios as listaFuncionarios, ativos, auditar, ENCARGOS_INICIAIS, segundaDe } from './settings.js';
 
@@ -321,36 +321,37 @@ export function presencaNaObra(obraId, iso) {
 }
 
 /* Prestadoras na obra da construtora: cada prestadora tem a própria obra ligada a esta (vinculo) e registra
- * o ponto dos próprios funcionários. A construtora recebe só horas por função (sem nomes, sem valores):
- * custo, salário e encargos são da prestadora (docs/saas.md). */
+ * o ponto dos próprios funcionários. A construtora vê tudo a nível gerencial — nomes, presença e horas —,
+ * menos valores: salário, encargos e custo são da prestadora (docs/saas.md HS-10). */
 export function prestadorasNaObra(obraId, iso, agora) {
-  const b = bancoDeDados();
-  const eu = empresaAtualId();
-  if (!b) return [];
   const lista = [];
-  for (const [id, d] of Object.entries(b.empresas)) {
-    if (id === eu || !d.crew) continue;
-    for (const o of d.obras.filter((x) => x.vinculo && x.vinculo.empresaId === eu && x.vinculo.obraId === obraId)) {
-      lista.push(emNomeDaEmpresa(id, () => {
-        const fim = agora || Date.now();
-        const minutosNaObra = (fid, dia) => jornada(fid, dia, fim).segmentos
-          .filter((s) => s.tipo === 'trabalho' && s.obraId === o.id)
-          .reduce((t, s) => t + Math.max(0, (s.fim || (s.aberto ? fim : s.ini)) - s.ini) / 60000, 0);
-        const porFuncao = {};
-        let presentes = 0, naObraAgora = 0, minutosDia = 0, minutosSemana = 0;
-        for (const f of listaFuncionarios()) {
-          const min = minutosNaObra(f.id, iso);
-          for (let d2 = inicioDaSemana(iso); d2 <= iso; d2 = somarDias(d2, 1)) minutosSemana += minutosNaObra(f.id, d2);
-          if (!min && !jornada(f.id, iso, fim).segmentos.some((s) => s.obraId === o.id)) continue;
-          const pf = porFuncao[f.funcao] = porFuncao[f.funcao] || { presentes: 0, minutos: 0 };
-          pf.presentes++; pf.minutos += min;
-          presentes++; minutosDia += min;
-          const j = jornada(f.id, iso, fim);
-          if (j.atual && j.atual.obraId === o.id) naObraAgora++;
-        }
-        return { empresaId: id, empresa: d.empresa.nome, servico: o.nome, porFuncao, presentes, naObraAgora, minutosDia, minutosSemana };
-      }));
-    }
+  for (const { empresaId, empresa, obra: o } of obrasLigadas(obraId)) {
+    lista.push(emNomeDaEmpresa(empresaId, () => {
+      const fim = agora || Date.now();
+      const segs = (fid, dia) => jornada(fid, dia, fim).segmentos.filter((s) => s.obraId === o.id);
+      const minutos = (fid, dia) => segs(fid, dia).filter((s) => s.tipo === 'trabalho')
+        .reduce((t, s) => t + Math.max(0, (s.fim || (s.aberto ? fim : s.ini)) - s.ini) / 60000, 0);
+      const porFuncao = {};
+      const pessoas = [];
+      let minutosSemana = 0;
+      for (const f of listaFuncionarios()) {
+        for (let d2 = inicioDaSemana(iso); d2 <= iso; d2 = somarDias(d2, 1)) minutosSemana += minutos(f.id, d2);
+        if (!segs(f.id, iso).length) continue;
+        const j = jornada(f.id, iso, fim);
+        const min = minutos(f.id, iso);
+        const entrada = j.batidas.find((b) => b.obraId === o.id && (b.tipo === 'entrada' || b.tipo === 'chegada'));
+        const naObra = !!(j.atual && j.atual.obraId === o.id);
+        pessoas.push({ nome: f.nome, funcao: f.funcao, entrada: entrada ? entrada.em : null, naObra, situacao: naObra ? j.atual.tipo : 'saiu', minutos: min });
+        const pf = porFuncao[f.funcao] = porFuncao[f.funcao] || { presentes: 0, minutos: 0 };
+        pf.presentes++; pf.minutos += min;
+      }
+      pessoas.sort((a, b) => (b.naObra - a.naObra) || a.nome.localeCompare(b.nome));
+      return {
+        empresaId, empresa: empresa.nome, servico: o.nome, porFuncao, pessoas,
+        presentes: pessoas.length, naObraAgora: pessoas.filter((p) => p.naObra).length,
+        minutosDia: pessoas.reduce((t, p) => t + p.minutos, 0), minutosSemana,
+      };
+    }));
   }
   return lista;
 }
@@ -447,9 +448,9 @@ export function criarDadosCrew(obras) {
     const admissao = somarDias(equipeBase.inicio, -(10 + (id.length * 7) % 40));
     const r = REAJUSTES[id];
     const valores = r
-      ? [{ desde: admissao, valor: valorHora - r[1], motivo: tr('Admissão'), por: tr('Ana Ribeiro'), em: quando(admissao, 9, 0) },
-        { desde: somarDias(inicioDaSemana(dia0), r[0]), valor: valorHora, motivo: r[2], por: tr('Ana Ribeiro'), em: quando(somarDias(inicioDaSemana(dia0), r[0] - 3), 10, 0) }]
-      : [{ desde: admissao, valor: valorHora, motivo: tr('Admissão'), por: tr('Ana Ribeiro'), em: quando(admissao, 9, 0) }];
+      ? [{ desde: admissao, valor: valorHora - r[1], motivo: tr('Admissão'), por: tr('Sandra Lopes'), em: quando(admissao, 9, 0) },
+        { desde: somarDias(inicioDaSemana(dia0), r[0]), valor: valorHora, motivo: r[2], por: tr('Sandra Lopes'), em: quando(somarDias(inicioDaSemana(dia0), r[0] - 3), 10, 0) }]
+      : [{ desde: admissao, valor: valorHora, motivo: tr('Admissão'), por: tr('Sandra Lopes'), em: quando(admissao, 9, 0) }];
     const n = PESSOAS.findIndex((p) => p[0] === id);
     return {
       id, nome, funcao, equipeId, admissao, valores, usuarioId: id === 'f-carlos' ? 'u-carlos' : id === 'f-roberto' ? 'u-roberto' : null,
@@ -565,12 +566,12 @@ export function criarDadosCrew(obras) {
     orcamentos[id] = {
       valor, avanco: Math.round(pct * CENARIO[id].ritmoAvanco * 100),
       porEtapa: Object.fromEntries(Object.entries(ORCAMENTO_ETAPAS[id]).map(([e, f]) => [e, Math.round(valor * f / 100) * 100])),
-      por: tr('Ana Ribeiro'), em: quando(o.inicio, 9, 0),
+      por: tr('Sandra Lopes'), em: quando(o.inicio, 9, 0),
     };
   }
 
   // A semana anterior da equipe A já foi aprovada; a da equipe B espera aprovação.
-  const aprovacoes = funcionarios.filter((f) => f.equipeId === 'eq-a').map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: tr('Ana Ribeiro'), motivo: '', em: quando(segundaAtual, 9, 10) }));
+  const aprovacoes = funcionarios.filter((f) => f.equipeId === 'eq-a').map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: tr('Sandra Lopes'), motivo: '', em: quando(segundaAtual, 9, 10) }));
 
   return { funcionarios, equipes, batidas, excursoes, aprovacoes, historico, orcamentos };
 }

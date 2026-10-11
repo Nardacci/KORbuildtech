@@ -23,7 +23,7 @@ export const MODULOS = [
     resumo: tr('Diário de obra: fotos com GPS, equipe, clima e atividades, aprovado pelo escritório e em PDF.'),
   },
   {
-    id: 'crew', nome: 'Crew', status: 'disponivel',
+    id: 'crew', nome: 'Crew', status: 'disponivel', atuacoes: ['prestadora', 'ambas'], // a construtora não bate ponto (docs/saas.md HS-09)
     resumo: tr('Ponto da equipe: quem trabalhou, quantas horas, em qual obra e quanto custou.'),
     oQueFaz: [
       tr('Ponto no celular do encarregado, com foto e localização, mesmo sem internet.'),

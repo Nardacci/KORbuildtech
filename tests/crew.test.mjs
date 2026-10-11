@@ -102,11 +102,10 @@ await page.goto(BASE + '#/daily/campo/obra/jardim');
 await page.click('[data-acao="novo-rdo"]');
 await page.waitForSelector('#s-equipe');
 verificar(await page.isVisible('#s-equipe .fonte-crew'), 'RDO avisa que a equipe veio do Crew');
-// 6 da equipe do Carlos + 4 da prestadora ligada à obra (cada empresa pelo próprio ponto)
-verificar((await page.textContent('#s-equipe .secao-total')).includes('10 presentes'), 'RDO com as 6 pessoas que bateram entrada na obra e as 4 da prestadora');
+verificar((await page.textContent('#s-equipe .secao-total')).includes('6 presentes'), 'RDO com as 6 pessoas que bateram entrada na obra');
 
 console.log('Escritório');
-await como('u-ana', '#/crew');
+await como('u-sandra', '#/crew');
 await page.waitForSelector('.grade-obras-agora');
 verificar(page.url().endsWith('#/crew/agora'), 'administradora entra no Crew pelo "Agora"');
 verificar((await page.locator('.kpi', { hasText: 'Trabalhando agora' }).textContent()).includes('11'), 'Agora: 11 pessoas trabalhando');
@@ -157,7 +156,7 @@ await page.waitForFunction(() => !/Sem saída/.test(document.querySelector('.pag
 verificar(true, 'ajuste registrado: o alerta de sem saída some');
 await page.goto(BASE + '#/crew/dia/f-rafael/2026-10-06');
 await page.waitForSelector('.linha-tempo');
-verificar((await page.textContent('.linha-tempo')).includes('Ajuste de Ana Ribeiro'), 'linha do tempo mostra o ajuste e quem fez');
+verificar((await page.textContent('.linha-tempo')).includes('Ajuste de Sandra Lopes'), 'linha do tempo mostra o ajuste e quem fez');
 
 // Custos e mapa do dia
 await page.goto(BASE + '#/crew/custos/2026-09-28'); // endereço antigo: abre a semana
@@ -379,10 +378,10 @@ await page.goto(BASE + '#/crew/custos');
 await page.waitForSelector('.custo-obra');
 verificar(true, 'gestor vê os custos');
 const hojeIso = await page.evaluate(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); });
-await como('u-ana', '#/crew/dia/f-diego/' + hojeIso);
+await como('u-sandra', '#/crew/dia/f-diego/' + hojeIso);
 await page.waitForSelector('.nota-batida');
 verificar((await page.textContent('.pagina')).includes(notaDiego), 'o escritório vê a nota no dia do funcionário');
-await como('u-ana', '#/settings/perfis');
+await como('u-sandra', '#/settings/perfis');
 await page.waitForSelector('.matriz-perfis');
 verificar(await page.locator('.matriz-perfis input[name^="administrador|"]:disabled').count() > 0, 'perfil Administrador é fixo');
 verificar((await page.textContent('.linha-inicio')).includes('Direto no "Meu ponto"'), 'matriz mostra para onde cada perfil vai ao entrar');
@@ -393,7 +392,7 @@ await page.waitForFunction(() => /Permissões salvas/.test((document.getElementB
 await como('u-diego', '#/inicio');
 await page.waitForSelector('.modulos');
 verificar(await page.locator('.modulos .modulo-daily').count() === 1 && await page.locator('.modulos .modulo-crew').count() === 1, 'trabalhador que também preenche o RDO passa a ver a tela de módulos');
-await como('u-ana', '#/settings/perfis');
+await como('u-sandra', '#/settings/perfis');
 await page.waitForSelector('.matriz-perfis');
 await page.click('[data-acao="settings-novo-perfil"]');
 await page.fill('dialog input[name="nome"]', 'Encarregado com aprovação');
@@ -404,7 +403,7 @@ verificar(true, 'novo perfil criado a partir de outro');
 await page.goto(BASE + '#/settings/usuario/novo');
 await page.waitForSelector('#form-usuario');
 await page.fill('#form-usuario [name="nome"]', 'Bruno Alves');
-await page.fill('#form-usuario [name="email"]', 'bruno@construtoraexemplo.com');
+await page.fill('#form-usuario [name="email"]', 'bruno@estruturaexemplo.com');
 await page.check('#form-usuario input[value="trabalhador"]');
 await page.click('[data-acao="settings-salvar-usuario"]');
 await page.waitForFunction(() => /ligue o usuário ao cadastro/.test((document.getElementById('toast') || {}).textContent || ''));
@@ -412,7 +411,7 @@ verificar(true, 'quem bate o próprio ponto precisa estar ligado ao funcionário
 await page.selectOption('#form-usuario [name="funcionarioId"]', 'f-bruno');
 await page.click('[data-acao="settings-salvar-usuario"]');
 await page.waitForSelector('.tabela-usuarios-settings');
-verificar((await page.textContent('.tabela-usuarios-settings')).includes('bruno@construtoraexemplo.com'), 'novo usuário ligado ao funcionário');
+verificar((await page.textContent('.tabela-usuarios-settings')).includes('bruno@estruturaexemplo.com'), 'novo usuário ligado ao funcionário');
 await page.goto(BASE + '#/settings/auditoria');
 await page.waitForSelector('.lista-auditoria');
 verificar((await page.textContent('.lista-auditoria')).includes('Permissões do perfil Trabalhador') && (await page.textContent('.lista-auditoria')).includes('Novo usuário: Bruno Alves'), 'auditoria registra permissões e usuários');

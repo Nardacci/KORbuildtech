@@ -18,7 +18,8 @@ import { modelos, modelo, aplicarModelo, distribuir } from './obras.js';
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarCronograma(funcoes) { app = { ...app, ...funcoes }; }
 const quem = () => (usuarioAtual() || {}).nome || '';
-const podeEditar = () => pode(usuarioAtual(), 'daily.cronograma');
+// o cronograma é de quem executa: a construtora só vê os publicados pelas prestadoras (docs/saas.md HS-12)
+const podeEditar = () => estado().empresa.atuacao !== 'construtora' && pode(usuarioAtual(), 'daily.cronograma');
 
 /* ---------- Peças comuns (cronograma próprio ou publicado) ---------- */
 

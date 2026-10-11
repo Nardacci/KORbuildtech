@@ -47,7 +47,7 @@ verificar((await page.textContent('#form-login h2')).trim() === 'Sign in', 'tela
 
 const telaEntrada = await page.textContent('#form-login');
 verificar(telaEntrada.includes('ana@examplebuilders.com') && !telaEntrada.includes('exemplo.com'), 'e-mails de exemplo com domínio em inglês');
-await page.fill('#login-email', 'carlos@construtoraexemplo.com');
+await page.fill('#login-email', 'carlos@estruturaexemplo.com');
 await page.click('#form-login button[type="submit"]');
 await page.waitForFunction(() => localStorage.getItem('kbt.sessao') === 'u-carlos', null, { timeout: 5000 }).catch(() => {});
 verificar(await page.evaluate(() => localStorage.getItem('kbt.sessao') === 'u-carlos'), 'o e-mail em português (manual de teste) também entra');
@@ -93,7 +93,7 @@ async function percorrer(usuario, limite) {
   return vistas.size;
 }
 
-for (const [u, limite] of [['u-ana', 90], ['u-carlos', 40], ['u-diego', 10], ['u-tom', 90], ['u-rita', 20]]) {
+for (const [u, limite] of [['u-ana', 90], ['u-sandra', 90], ['u-carlos', 40], ['u-diego', 10], ['u-tom', 90], ['u-rita', 20]]) {
   const n = await percorrer(u, limite);
   console.log('  ' + u + ': ' + n + ' telas');
 }

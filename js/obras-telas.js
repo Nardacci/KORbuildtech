@@ -3,7 +3,7 @@
 
 import { esc, dataCurta, decimal, toast, confirmar } from './util.js';
 import { tr, tn } from './i18n.js';
-import { estado } from './armazem.js';
+import { estado, obrasLigadas } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
@@ -13,7 +13,7 @@ import { cronogramaDe, avancoDaObra } from './cronograma.js';
 import { carregarLeaflet } from './crew-telas.js';
 import {
   obras, situacaoDaObra, SITUACOES_OBRA, salvarObra, obraEmBranco, projetoDaObra, RAIO_MIN, RAIO_MAX,
-  modelos, modelo, salvarModelo, excluirModelo, distribuir,
+  modelos, modelo, salvarModelo, excluirModelo, distribuir, empresaExecuta,
 } from './obras.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
@@ -33,20 +33,23 @@ export function telaObras(moldura, filtro) {
   const todas = obras().slice().sort((a, b) => a.nome.localeCompare(b.nome));
   const lista = todas.filter((o) => !filtro || situacaoDaObra(o) === filtro);
   const abas = [['', tr('Todas'), todas.length]].concat(Object.entries(SITUACOES_OBRA).map(([id, s]) => [id, s.nome, todas.filter((o) => situacaoDaObra(o) === id).length]));
+  const executa = empresaExecuta();
+  // na construtora, no lugar do diário e do cronograma (que são das prestadoras), quem trabalha na obra
+  const prestadoras = (o) => obrasLigadas(o.id).map((x) => x.empresa.nome).join(', ') || tr('Nenhuma prestadora ligada');
   return moldura({
-    ativo: 'obras', titulo: tr('Obras'), subtitulo: tr('Um cadastro só para a empresa: usado pelo Daily, pelo Crew e pelo Measure'),
-    acoes: '<a class="btn btn-contorno btn-pequeno" href="#/settings/modelos">' + icone('tabela', 16) + tr('Modelos de etapas') + '</a>' +
+    ativo: 'obras', titulo: tr('Obras'), subtitulo: executa ? tr('Um cadastro só para a empresa: usado pelo Daily, pelo Crew e pelo Measure') : tr('As obras da construtora. Cada prestadora liga a obra dela a uma destas e faz o diário, o ponto e o cronograma do seu serviço.'),
+    acoes: (executa ? '<a class="btn btn-contorno btn-pequeno" href="#/settings/modelos">' + icone('tabela', 16) + tr('Modelos de etapas') + '</a>' : '') +
       '<a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova">' + icone('mais', 16) + tr('Nova obra') + '</a>',
     conteudo: '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r, n]) => '<a href="#/settings/obras' + (id ? '/' + id : '') + '"' + ((filtro || '') === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + ' <span class="mz-contagem">' + n + '</span></a>').join('') + '</nav>' +
-      (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-obras"><thead><tr><th>' + tr('Obra') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Período') + '</th><th>' + tr('Responsável pelo diário') + '</th><th>' + tr('Cronograma') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
+      (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-obras"><thead><tr><th>' + tr('Obra') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Período') + '</th>' + (executa ? '<th>' + tr('Responsável pelo diário') + '</th><th>' + tr('Cronograma') + '</th>' : '<th>' + tr('Prestadoras') + '</th>') + '<th>' + tr('Situação') + '</th></tr></thead><tbody>' +
         lista.map((o) => {
           const c = cronogramaDe(o.id);
           const n = c ? c.etapas.length : 0;
           return '<tr><td><a href="#/settings/obra/' + o.id + '"><b>' + esc(o.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(o.cidade || '') + '</span></td>' +
             '<td>' + esc(nomeContato(o.contratanteId) || '—') + '</td>' +
             '<td class="pequeno">' + (o.inicio ? dataCurta(o.inicio) + ' → ' + dataCurta(o.prazo) : '—') + '</td>' +
-            '<td>' + esc(nomeUsuario(o.responsavelId)) + '</td>' +
-            '<td class="pequeno">' + (n ? '<a href="#/daily/obras/' + o.id + '/cronograma">' + tn(n, '{n} etapa', '{n} etapas') + ' · ' + Math.round(avancoDaObra(c).real) + '%</a>' : '<a href="#/daily/obras/' + o.id + '/cronograma" class="mudo">' + tr('Sem etapas') + '</a>') + '</td>' +
+ (executa ? '<td>' + esc(nomeUsuario(o.responsavelId)) + '</td>' +
+            '<td class="pequeno">' + (n ? '<a href="#/daily/obras/' + o.id + '/cronograma">' + tn(n, '{n} etapa', '{n} etapas') + ' · ' + Math.round(avancoDaObra(c).real) + '%</a>' : '<a href="#/daily/obras/' + o.id + '/cronograma" class="mudo">' + tr('Sem etapas') + '</a>') + '</td>' : '<td>' + esc(prestadoras(o)) + '</td>') +
             '<td>' + etiquetaSituacao(o) + '</td></tr>';
         }).join('') + '</tbody></table></div></section>'
         : '<p class="vazio">' + tr('Nenhuma obra aqui.') + '</p>'),
@@ -64,6 +67,7 @@ export function telaFormObra(moldura, id, projetoId) {
   const lon = o.cerca && o.cerca.lon != null ? o.cerca.lon : o.lon;
   const raio = (o.cerca && o.cerca.raio) || 150;
   const responsaveis = estado().usuarios.filter((u) => u.ativo !== false && pode(u, 'daily.preencher'));
+  const executa = empresaExecuta();
   const dias = o.diasTrabalho || [];
   const projeto = existente ? projetoDaObra(existente) : pj;
   const voltar = existente && pode(usuarioAtual(), 'daily.acompanhar') ? { href: '#/daily/obras/' + id, rotulo: existente.nome } : { href: '#/settings/obras', rotulo: tr('Obras') };
@@ -94,15 +98,15 @@ export function telaFormObra(moldura, id, projetoId) {
         '</div>' +
         '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="obra-aqui">' + icone('pino', 16) + tr('Usar a localização atual') + '</button>' +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Prazo e diário de obra') + '</h2><div class="grade-campos">' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + (executa ? tr('Prazo e diário de obra') : tr('Prazo')) + '</h2><div class="grade-campos">' +
         campo('ob-inicio', tr('Início *'), '<input type="date" id="ob-inicio" name="inicio" value="' + esc(o.inicio || '') + '">') +
         campo('ob-prazo', tr('Prazo (término) *'), '<input type="date" id="ob-prazo" name="prazo" value="' + esc(o.prazo || '') + '">') +
-        campo('ob-responsavelId', tr('Quem preenche o diário *'), '<select id="ob-responsavelId" name="responsavelId"><option value="">' + tr('Escolha…') + '</option>' +
-          responsaveis.map((u) => '<option value="' + u.id + '"' + (u.id === o.responsavelId ? ' selected' : '') + '>' + esc(u.nome) + (u.cargo ? ' · ' + esc(u.cargo) : '') + '</option>').join('') + '</select>') + '</div>' +
-        '<fieldset class="dias-obra"><legend class="rotulo-pequeno">' + tr('Dias de trabalho * (cobram o diário)') + '</legend>' +
+        (!executa ? '</div><p class="mudo pequeno">' + tr('O diário, o ponto e o cronograma são feitos pelas prestadoras, cada uma na obra dela ligada a esta.') + '</p>' : campo('ob-responsavelId', tr('Quem preenche o diário *'), '<select id="ob-responsavelId" name="responsavelId"><option value="">' + tr('Escolha…') + '</option>' +
+          responsaveis.map((u) => '<option value="' + u.id + '"' + (u.id === o.responsavelId ? ' selected' : '') + '>' + esc(u.nome) + (u.cargo ? ' · ' + esc(u.cargo) : '') + '</option>').join('') + '</select>') + '</div>') +
+        '<fieldset class="dias-obra"' + (executa ? '' : ' hidden') + '><legend class="rotulo-pequeno">' + tr('Dias de trabalho * (cobram o diário)') + '</legend>' +
           [1, 2, 3, 4, 5, 6, 0].map((dia) => '<label class="check pequeno"><input type="checkbox" name="diasTrabalho" value="' + dia + '"' + (dias.includes(dia) ? ' checked' : '') + '> ' + NOMES_DIAS[dia] + '</label>').join('') + '</fieldset>' +
       '</section>' +
-      (existente ? '' : '<section class="cartao"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' +
+      (existente || !executa ? '' : '<section class="cartao"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' +
         campo('ob-modeloId', tr('Começar com um modelo de etapas'), '<select id="ob-modeloId" name="modeloId"><option value="">' + tr('Nenhum: monto depois') + '</option>' +
           modelos().map((m, i) => '<option value="' + m.id + '"' + (i === 0 ? ' selected' : '') + '>' + esc(m.nome) + ' · ' + tn(m.etapas.length, '{n} etapa', '{n} etapas') + '</option>').join('') + '</select>') +
         '<div id="ob-previa" class="previa-modelo"></div>' +

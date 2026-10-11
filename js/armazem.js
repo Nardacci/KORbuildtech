@@ -71,7 +71,52 @@ export function salvar() {
 }
 
 export function obra(id) { return estado().obras.find((o) => o.id === id); }
-export function rdo(id) { return estado().rdos.find((r) => r.id === id); }
+export function rdo(id) { return estado().rdos.find((r) => r.id === id) || diariosDeFora().find((r) => r.id === id) || null; }
+
+/* Diários que esta empresa recebe de outras: os das prestadoras nas obras ligadas às dela, já enviados
+ * (docs/saas.md HS-11: a construtora aprova). No protótipo, são os próprios objetos da prestadora: aprovar
+ * aqui grava lá. Na versão real, é o servidor que entrega e registra a aprovação. */
+const ORIGEM = new WeakMap();
+export function diariosDeFora() {
+  const b = carregar();
+  const eu = empresaAtualId();
+  const lista = [];
+  if (!b) return lista;
+  for (const [id, d] of Object.entries(b.empresas)) {
+    if (id === eu) continue;
+    for (const o of d.obras) {
+      if (!o.vinculo || o.vinculo.empresaId !== eu) continue;
+      for (const r of d.rdos) {
+        if (r.obraId !== o.id || !recebido(r)) continue;
+        ORIGEM.set(r, { para: eu, empresaId: id, empresa: d.empresa, obra: o });
+        lista.push(r);
+      }
+    }
+  }
+  return lista;
+}
+/* As obras de outras empresas ligadas a uma obra desta (as frentes das prestadoras): [{ empresaId, empresa, obra }]. */
+export function obrasLigadas(obraId) {
+  const b = carregar();
+  const eu = empresaAtualId();
+  const lista = [];
+  if (!b) return lista;
+  for (const [id, d] of Object.entries(b.empresas)) {
+    if (id === eu) continue;
+    for (const o of d.obras) if (o.vinculo && o.vinculo.empresaId === eu && (!obraId || o.vinculo.obraId === obraId)) lista.push({ empresaId: id, empresa: d.empresa, obra: o });
+  }
+  return lista;
+}
+/* De onde veio um diário de fora: { empresaId, empresa, obra (a obra na prestadora) }; null se é da própria empresa. */
+export function origemDe(r) {
+  const og = r && ORIGEM.get(r);
+  return og && og.para === empresaAtualId() ? og : null;
+}
+/* A obra do próprio diário (na empresa que o fez) e a obra desta empresa a que ele pertence. */
+export function obraDoRdo(r) { const og = origemDe(r); return og ? og.obra : obra(r.obraId); }
+export function obraLocalDoRdo(r) { const og = origemDe(r); return og ? obra(og.obra.vinculo.obraId) : obra(r.obraId); }
+/* Roda algo (desenhar o relatório, aplicar no cronograma) com os dados da empresa que fez o diário. */
+export function naEmpresaDoRdo(r, fn) { const og = origemDe(r); return og ? emNomeDaEmpresa(og.empresaId, fn) : fn(); }
 
 export function rdosDaObra(obraId) {
   return estado().rdos.filter((r) => r.obraId === obraId).sort((a, b) => (a.data < b.data ? 1 : -1));

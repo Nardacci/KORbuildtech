@@ -21,6 +21,7 @@ export function conteudoCanonico(r, obra) {
     semAtividade: r.semAtividade || null,
     primeiroEnvioEm: r.primeiroEnvioEm || null,
     aprovadoPor: r.aprovadoPor,
+    aprovadoPorEmpresa: r.aprovadoPorEmpresa, // quando quem aprova é a construtora (fica de fora se não houver)
     aprovadoEm: r.aprovadoEm,
   });
 }

@@ -122,7 +122,12 @@ p = await prestadora();
 verificar(p.settings.auditoria.some((a) => a.descricao.includes('Situação da obra Casa Thompson') && a.depois === 'Paralisada'), 'mudança de situação na auditoria');
 
 console.log('Cronograma de obra sem etapas');
+// a construtora não monta cronograma (docs/saas.md HS-12): quem monta é a prestadora, na obra dela
 await comoUsuario('u-ana', '#/daily/obras/galpao/cronograma');
+verificar(await page.locator('[data-acao="cr-modelo"]').count() === 0 && await page.locator('[data-acao="cr-etapa"]').count() === 0, 'a construtora não monta cronograma (HS-12)');
+await comoUsuario('u-sandra', '#/daily/obras/galpao');
+await page.goto(BASE + '#/daily/obras/galpao/cronograma');
+await page.waitForTimeout(350);
 verificar(await page.locator('[data-acao="cr-modelo"]').count() === 1, 'obra sem etapas oferece "Começar com um modelo"');
 await page.click('[data-acao="cr-modelo"]');
 await page.waitForSelector('#cr-modelo-previa li');

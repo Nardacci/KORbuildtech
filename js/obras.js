@@ -32,6 +32,10 @@ export function obrasEmAndamento(dados) { return (dados || estado()).obras.filte
 /* "Manchester, NH 03104": o texto que as telas mostram. */
 export function textoCidade(d) { return [d.municipio, [d.estado, d.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); }
 
+/* A construtora gerencia a obra e não faz diário nem ponto (docs/saas.md HS-09): na obra dela não há
+ * responsável pelo diário nem cronograma próprio (HS-12); isso fica na obra de cada prestadora. */
+export function empresaExecuta(dados) { return (dados || estado()).empresa.atuacao !== 'construtora'; }
+
 export function salvarObra(id, dados, por) {
   const num = (v) => (t(v) === '' ? NaN : Number(String(v).replace(',', '.')));
   const d = {
@@ -54,7 +58,8 @@ export function salvarObra(id, dados, por) {
   if (d.raio < RAIO_MIN || d.raio > RAIO_MAX) return { erro: tr('Raio da cerca entre {min} e {max} m.', { min: RAIO_MIN, max: RAIO_MAX }) };
   if (!DATA.test(d.inicio) || !DATA.test(d.prazo)) return { erro: tr('Informe o início e o prazo da obra.') };
   if (diasEntre(d.inicio, d.prazo) < 0) return { erro: tr('O prazo não pode ser antes do início.') };
-  if (!d.responsavelId || !estado().usuarios.some((u) => u.id === d.responsavelId)) return { erro: tr('Escolha quem preenche o diário desta obra.') };
+  if (empresaExecuta() && (!d.responsavelId || !estado().usuarios.some((u) => u.id === d.responsavelId))) return { erro: tr('Escolha quem preenche o diário desta obra.') };
+  if (!d.diasTrabalho.length && !empresaExecuta()) d.diasTrabalho = [1, 2, 3, 4, 5];
   if (!d.diasTrabalho.length) return { erro: tr('Marque pelo menos um dia de trabalho.') };
   if (!SITUACOES_OBRA[d.situacao]) return { erro: tr('Escolha a situação.') };
 
