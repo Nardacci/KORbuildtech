@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presenter&#x27;s guide · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="index.html#modules">Modules</a>
+    <a href="presenting.html" aria-current=page>Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Modules">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guide</div><ul><li><a href="presenting.html" aria-current=page>Presenter&#x27;s guide</a></li></ul>
+    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
+    <header class="doc-cabecalho">
+      <h1>Presenter&#x27;s guide</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Presenters guide.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A full presentation of Daily takes about <strong>15 minutes</strong>; with questions, plan for 30.</p>
+<h2 id="the-story-in-one-minute">The story in one minute</h2>
+<p>Construction companies in the US run their jobs on paper, text messages and spreadsheets. The superintendent writes the daily report at night (or not at all), the office chases people by phone, and when a client disputes a delay there is no reliable record of what happened on site.</p>
+<p>KORbuild is <strong>one platform, one set of jobs and people</strong>, with modules the company turns on as it needs them:</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>In one sentence</th>
+<th>Who uses it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Daily</strong></td>
+<td>The daily construction report, filled out on the phone in minutes, approved by the office and shared with the client as a sealed PDF.</td>
+<td>Foreman / superintendent (phone), office (computer)</td>
+</tr>
+<tr>
+<td><strong>Crew</strong></td>
+<td>The crew time clock with GPS and geofence, timesheets and labor cost by job.</td>
+<td>Foreman (phone), office</td>
+</tr>
+<tr>
+<td><strong>Measure</strong></td>
+<td>Plan takeoff in feet and inches, assemblies, quantities, quote lists and proposals.</td>
+<td>Estimators (computer)</td>
+</tr>
+<tr>
+<td><strong>Settings</strong></td>
+<td>Company setup: employees, labor burden, work rules, jobs, contacts, users and roles.</td>
+<td>Office administrator</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"KORbuild replaces the paper daily report, the paper time card and the spreadsheet takeoff with one system. Everything the field does on the phone reaches the office the same day — and works even without signal on the job site."</p>
+</div>
+<p>KORbuild serves both sides of a job: the <strong>general contractor</strong> (GC) and the <strong>trade contractor</strong> (sub) that the GC hires. The prototype has one company of each, so you can show both points of view.</p>
+<h2 id="before-you-start">Before you start</h2>
+<ol>
+<li>Open the prototype link: on the main sign-in page, click <strong>Open the prototype</strong>. You can also go straight to the prototype address (it ends in <code>?demo</code>).</li>
+<li>Use <strong>Chrome or Edge</strong> on a computer. If you want to show the field side on a real phone, open the same link on the phone (Chrome on Android, Safari on iPhone).</li>
+<li>Check the language button <strong>EN | PT</strong> at the top of the sign-in card. The prototype opens in English.</li>
+<li>If someone already played with the prototype in that browser, reset it: user menu (your initials, top right) › <strong>Reset demo</strong>. Everything comes back to the original sample data.</li>
+</ol>
+<figure><img src="img/entry-main.png" alt="The main sign-in page: customer sign-in, the product guide and the prototype" loading="lazy"><figcaption>The main sign-in page: customer sign-in, the product guide and the prototype</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p>The prototype keeps all its data <strong>in the browser</strong> (no server yet). Two consequences: what you do on the phone does not appear on the computer, and two people never see each other's changes. To show the field → office flow, switch users <strong>in the same browser</strong>: user menu › <strong>Sign out</strong>, then sign in with the other user. Customer accounts with a real database are being built; the main sign-in page already shows where they will sign in.</p>
+</div>
+<h2 id="demo-users">Demo users</h2>
+<p>There is no password in the prototype: on the sign-in screen, click the email of the user you want and then <strong>Sign in</strong>.</p>
+<figure><img src="img/entry-prototype.png" alt="The prototype sign-in screen with the demo users" loading="lazy"><figcaption>The prototype sign-in screen with the demo users</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>Company</th>
+<th>Role</th>
+<th>Use it to show</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Carlos Mendes</strong> · carlos@examplebuilders.com</td>
+<td>Example Builders (GC)</td>
+<td>Foreman</td>
+<td>The phone: daily report, crew time clock</td>
+</tr>
+<tr>
+<td><strong>Ana Ribeiro</strong> · ana@examplebuilders.com</td>
+<td>Example Builders (GC)</td>
+<td>Admin</td>
+<td>The office: dashboard, approvals, client link, settings</td>
+</tr>
+<tr>
+<td><strong>Diego Santos</strong> · diego@examplebuilders.com</td>
+<td>Example Builders (GC)</td>
+<td>Worker</td>
+<td>A worker who only clocks in and out</td>
+</tr>
+<tr>
+<td><strong>Tom Reilly</strong> · tom@northfieldframing.com</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Admin</td>
+<td>The trade contractor: Measure, job schedule, pricing</td>
+</tr>
+<tr>
+<td><strong>Rita Gomes</strong> · rita@northfieldframing.com</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Project manager</td>
+<td>An estimator</td>
+</tr>
+<tr>
+<td><strong>José Pereira</strong> · jose@northfieldframing.com</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Foreman</td>
+<td>The sub's field side</td>
+</tr>
+<tr>
+<td><strong>Luis Ortega</strong> · luis@northfieldframing.com</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Worker</td>
+<td>A worker of the sub</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Before the meeting, open the prototype once on the device you will use. After the first visit it also works offline, which is a strong point to show (see act 3).</p>
+</div>
+<h2 id="the-presentation-act-by-act">The presentation, act by act</h2>
+<h3 id="act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</h3>
+<ol>
+<li>Sign in as <strong>Ana Ribeiro</strong> (Admin).</li>
+<li>Show the <strong>modules screen</strong>: Daily, Crew, Measure and Settings, each with a short description.</li>
+</ol>
+<figure><img src="img/modules-home.png" alt="The modules screen after signing in" loading="lazy"><figcaption>The modules screen after signing in</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"Each company turns on the modules it needs. The jobs, people and contacts are entered once and used by every module."</p>
+</div>
+<h3 id="act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</h3>
+<p>Show this on a phone if you can; otherwise, narrow the browser window.</p>
+<ol>
+<li>Sign out and sign in as <strong>Carlos Mendes</strong> (Foreman). Daily opens on <strong>Today</strong>.</li>
+<li>Point out the red box (<strong>late report</strong>), the yellow box (<strong>today's report is missing</strong>, with the time left until 6 PM) and the request for changes sent by the office.</li>
+<li>Open <strong>Maple Gardens Residences</strong> and tap <strong>or copy from a previous report</strong> → choose yesterday → <strong>Copy</strong>. The crew, the equipment and the activities still in progress come from yesterday.</li>
+<li>Scroll through the report: weather (pulled automatically from the job location), crew (+ and − buttons), equipment, <strong>Work performed</strong> with <strong>Dictate</strong> and <strong>Improve text</strong>, <strong>Issues &amp; delays</strong>, photos.</li>
+<li>Tap <strong>Submit for approval</strong>.</li>
+</ol>
+<figure class="celular"><img src="img/daily-field-today-mobile.png" alt="Today screen of the foreman, with late and missing reports" loading="lazy"><figcaption>Today screen of the foreman, with late and missing reports</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"The foreman fills out the report at the end of the day, on the phone, in three or four minutes — copying yesterday, adjusting the crew, dictating what was done. Photos get a stamp with the date, time and GPS inside the image. If he forgets, the app reminds him at 4 PM, flags it at 6 PM and tells the office the next morning."</p>
+</div>
+<p>Full details: <a href="daily/user-manual.html#field-fill-out-the-daily-report">Daily user manual — Fill out the daily report</a>.</p>
+<h3 id="act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</h3>
+<ol>
+<li>In the top bar, tap <strong>Online</strong>: it switches to offline (this simulates losing signal).</li>
+<li>Submit a report: it stays queued on the phone.</li>
+<li>Tap again to go back online: the report uploads by itself, photo by photo.</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"Job sites often have no signal. Nothing is lost: everything is saved on the phone and uploads as soon as there is a connection."</p>
+</div>
+<h3 id="act-4-the-office-review-approve-and-seal-4-min">Act 4 — The office: review, approve and seal (4 min)</h3>
+<ol>
+<li>Sign out and sign in as <strong>Ana Ribeiro</strong>. Daily opens on the <strong>Dashboard</strong>: today's numbers, the job status (green, yellow, red) and the approval queue.</li>
+<li>Open a report from <strong>Awaiting approval</strong> and click <strong>Review</strong>.</li>
+<li>Show <strong>Request changes from the field</strong>: the reason goes back to the foreman's phone. (Cancel it for the demo.)</li>
+<li>Click <strong>Approve and seal</strong> → confirm. The report gets a <strong>verification code</strong> and can no longer be changed by anyone.</li>
+</ol>
+<figure><img src="img/daily-dashboard.png" alt="The office dashboard: numbers of the day, job status and approval queue" loading="lazy"><figcaption>The office dashboard: numbers of the day, job status and approval queue</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"The office sees at a glance which jobs reported today. Approval seals the report with a digital fingerprint: if anyone changes a single word or photo later, the client's link shows that the document was altered."</p>
+</div>
+<h3 id="act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</h3>
+<ol>
+<li>On the approved report, click <strong>View as the client</strong> (or <strong>Copy link for the client</strong>).</li>
+<li>Show the green box <strong>Authentic document</strong> and the full report with the photos.</li>
+<li>Show <strong>Download PDF</strong>.</li>
+</ol>
+<figure><img src="img/daily-client-link.png" alt="What the client sees: authentic document, with the full report" loading="lazy"><figcaption>What the client sees: authentic document, with the full report</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"The client doesn't need an account or an app: just a link. And the link proves the report is exactly what was approved. That's what protects the contractor in a delay claim."</p>
+</div>
+<h3 id="act-6-the-other-modules-optional-5-min-each">Act 6 — The other modules (optional, 5 min each)</h3>
+<p>Detailed scripts for Crew, Measure and Settings will be added to this guide. Meanwhile, the highlights:</p>
+<ul>
+<li><strong>Crew</strong> — sign in as <strong>Carlos</strong>, open Crew › <strong>Crew</strong>: clock in the whole crew at once, with GPS and the job's geofence. Then as <strong>Ana</strong>: <strong>Now</strong> (who is working where), <strong>Timesheets</strong> and <strong>Costs</strong> by job, with the forecast to completion.</li>
+<li><strong>Measure</strong> — sign in as <strong>Tom</strong>, open a project, then a sheet: set the scale, measure walls and floors on the PDF plan, and see the materials and labor calculated by the assemblies; then the <strong>Material list for quotes</strong> and the <strong>Proposal</strong>.</li>
+<li><strong>Job schedule</strong> — as <strong>Tom</strong>, Daily › Jobs › Maple Gardens Residences › <strong>Open schedule</strong>: Gantt chart, baseline, progress from the daily reports, export to Excel and publish to the GC.</li>
+</ul>
+<h2 id="questions-customers-ask">Questions customers ask</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Does it work without internet?</td>
+<td>Yes. The app is saved on the phone after the first visit; reports and punches are stored on the phone and upload when there is signal.</td>
+</tr>
+<tr>
+<td>Do I need to install an app?</td>
+<td>Not in the prototype: it runs in the browser and can be added to the home screen. App Store and Google Play versions are planned.</td>
+</tr>
+<tr>
+<td>Can the foreman change a report after approval?</td>
+<td>No. Approval seals it. Changes are requested <strong>before</strong> approval ("Request changes from the field").</td>
+</tr>
+<tr>
+<td>What does the client need?</td>
+<td>Nothing: they receive a link and can download the PDF. No account, no cost.</td>
+</tr>
+<tr>
+<td>Can someone fake a photo or a date?</td>
+<td>Each photo carries a stamp with date, time and GPS inside the image, plus a digital fingerprint of the original file. The approved report is sealed; any change shows up on the client's link.</td>
+</tr>
+<tr>
+<td>Does it send SMS or email reminders?</td>
+<td>Not yet: reminders go to the in-app notifications (bell) and to the phone's notifications. SMS and email are being evaluated.</td>
+</tr>
+<tr>
+<td>Where is my data stored?</td>
+<td>In the prototype, only in the browser. In the product, on a secure cloud database, separated by company.</td>
+</tr>
+<tr>
+<td>What does it cost?</td>
+<td>Pricing is not part of the prototype.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">To be confirmed</p>
+<p>Prices, plans, the release date of the store apps and integrations (payroll, accounting) are commercial decisions still open. Do not commit to them during the presentation.</p>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-office-review-approve-and-seal-4-min">Act 4 — The office: review, approve and seal (4 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-the-other-modules-optional-5-min-each">Act 6 — The other modules (optional, 5 min each)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="assets/portal.js"></script>
+</body></html>

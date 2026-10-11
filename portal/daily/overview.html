@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview · Daily · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html" aria-current=page>Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Daily</a> › Start here</nav>
+    <header class="doc-cabecalho">
+      <h1>Overview</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Overview.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p><strong>Daily</strong> is the daily construction report (in Portuguese, <em>RDO</em>). Every workday, the person in charge on site records the weather, the crew, the equipment, the work performed, the issues and the photos. The office reviews and approves the report, and the approved report is sealed and shared with the client as a link or a PDF.</p>
+<h2 id="why-it-matters">Why it matters</h2>
+<ul>
+<li><strong>A record that holds up.</strong> When a client disputes a delay, the daily reports are the contractor's evidence: rain that stopped the pour, a late delivery, a missing inspection. Photos carry date, time and GPS inside the image, and the approved report is sealed.</li>
+<li><strong>Reports that actually get done.</strong> Each job has a person responsible for its report, a daily deadline (6 PM) and reminders. The office sees the next morning which jobs did not report.</li>
+<li><strong>Minutes, not an evening.</strong> On the phone, the foreman copies yesterday's report, adjusts the crew, dictates what was done and takes the photos. It works without signal.</li>
+</ul>
+<h2 id="who-uses-it">Who uses it</h2>
+<table>
+<thead>
+<tr>
+<th>Who</th>
+<th>Where</th>
+<th>What they do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Foreman / superintendent</strong></td>
+<td>Phone</td>
+<td>Fills out and submits the report of each job, every workday; fixes reports sent back by the office.</td>
+</tr>
+<tr>
+<td><strong>Office</strong> (admin, project manager)</td>
+<td>Computer</td>
+<td>Follows the jobs on the dashboard, reviews, approves or requests changes, shares with the client.</td>
+</tr>
+<tr>
+<td><strong>Client</strong> (owner or general contractor)</td>
+<td>Any browser</td>
+<td>Opens the link of the approved report, checks it is authentic and downloads the PDF. No account needed.</td>
+</tr>
+</tbody>
+</table>
+<p>Who can do what depends on the access role: see <a href="../daily/roles-and-permissions.html">Roles and permissions</a>.</p>
+<h2 id="the-main-screens">The main screens</h2>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Who sees it</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Today</strong></td>
+<td>Field</td>
+<td>The jobs of the day, late reports, what is still missing today and requests for changes.</td>
+</tr>
+<tr>
+<td><strong>History</strong></td>
+<td>Field</td>
+<td>Every report you filled out, newest first.</td>
+</tr>
+<tr>
+<td><strong>Report</strong> (editor)</td>
+<td>Field</td>
+<td>The report form: weather, crew, equipment, work performed, issues &amp; delays, photos, notes.</td>
+</tr>
+<tr>
+<td><strong>Dashboard</strong></td>
+<td>Office</td>
+<td>Numbers of the day, job status (green, yellow, red), jobs missing a report, approval queue.</td>
+</tr>
+<tr>
+<td><strong>Approvals</strong></td>
+<td>Office</td>
+<td>Reports awaiting approval, reports sent back for changes, approved reports.</td>
+</tr>
+<tr>
+<td><strong>Jobs</strong></td>
+<td>Office</td>
+<td>Every active job with its status; each job opens its reports and its schedule.</td>
+</tr>
+<tr>
+<td><strong>Client link</strong></td>
+<td>Client</td>
+<td>The approved report, read-only, with the authenticity check and the PDF.</td>
+</tr>
+</tbody>
+</table>
+<figure class="celular"><img src="../img/daily-field-today-mobile.png" alt="Today on the foreman&#x27;s phone" loading="lazy"><figcaption>Today on the foreman&#x27;s phone</figcaption></figure>
+<figure><img src="../img/daily-dashboard.png" alt="The office dashboard" loading="lazy"><figcaption>The office dashboard</figcaption></figure>
+<h2 id="how-a-report-moves">How a report moves</h2>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>What it means</th>
+<th>Who acts next</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Draft</strong></td>
+<td>Being filled out; saved on the phone.</td>
+<td>Field: submit.</td>
+</tr>
+<tr>
+<td><strong>Saved on this device</strong></td>
+<td>Submitted without signal; uploads by itself when the connection comes back.</td>
+<td>Nobody: automatic.</td>
+</tr>
+<tr>
+<td><strong>Awaiting approval</strong></td>
+<td>Received by the office.</td>
+<td>Office: approve or request changes.</td>
+</tr>
+<tr>
+<td><strong>Changes requested</strong></td>
+<td>Sent back with a reason.</td>
+<td>Field: fix and resubmit.</td>
+</tr>
+<tr>
+<td><strong>Approved</strong></td>
+<td>Sealed with a verification code. Nobody can change it.</td>
+<td>Office: share with the client.</td>
+</tr>
+<tr>
+<td><strong>No work</strong></td>
+<td>The day was logged as "no work" with a reason (rain, holiday…).</td>
+<td>Nobody.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="connected-to-the-other-modules">Connected to the other modules</h2>
+<ul>
+<li><strong>Crew:</strong> when a report starts, the crew can be filled in from the people who clocked in on the job that day (<strong>Update from the crew that clocked in</strong>).</li>
+<li><strong>Job schedule:</strong> each activity of the report can point to a task of the job's schedule with its % complete; when the report is approved, the schedule is updated.</li>
+<li><strong>Jobs</strong> are set up once, for the whole company (Settings › Jobs): address, geofence, deadline, who fills out the report and the workdays.</li>
+</ul>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#why-it-matters">Why it matters</a></li><li><a href="#who-uses-it">Who uses it</a></li><li><a href="#the-main-screens">The main screens</a></li><li><a href="#how-a-report-moves">How a report moves</a></li><li><a href="#connected-to-the-other-modules">Connected to the other modules</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

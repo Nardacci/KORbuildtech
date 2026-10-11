@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · Daily · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html" aria-current=page>User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Daily</a> › Using it</nav>
+    <header class="doc-cabecalho">
+      <h1>User manual</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - User manual.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>This manual walks through Daily one task at a time. The first part is for the <strong>field</strong> (on the phone); the second, for the <strong>office</strong> (on the computer). Screen names, buttons and messages are written exactly as they appear in KORbuild, in <strong>bold</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">Before you start</p>
+<p>Daily opens in the area of your role: the field starts on <strong>Today</strong>, the office on the <strong>Dashboard</strong>. On the phone, the menu is at the bottom of the screen; on the computer, on the left. If you do not see a screen described here, your role does not include it — see <a href="../daily/roles-and-permissions.html">Roles and permissions</a>.</p>
+</div>
+<h2 id="field-see-what-is-due-today">Field: see what is due today</h2>
+<p><strong>What it is for:</strong> knowing, at a glance, which reports you owe and which ones the office sent back.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone who fills out daily reports (default role: <strong>Foreman</strong>).</p>
+</div>
+<ol>
+<li>Open KORbuild and tap <strong>Daily</strong> on the modules screen. It opens on <strong>Today</strong>.</li>
+<li>Read the boxes at the top, from most to least urgent:<ul>
+<li><strong>red — late report:</strong> a past workday without a report. Tap the job to fill it out now.</li>
+<li><strong>yellow — today's report is missing:</strong> jobs without today's report, with the deadline and the time left (for example, <em>Due: today at 6 PM · 1h30 left</em>).</li>
+<li><strong>red — the office requested changes:</strong> a report sent back, with the reason in quotes. Tap <strong>Fix now →</strong>.</li>
+</ul>
+</li>
+<li>Below, <strong>Your jobs</strong> lists each job with the status of today's report.</li>
+</ol>
+<figure class="celular"><img src="../img/daily-field-today-mobile.png" alt="Today: late reports, today&#x27;s missing reports and a request for changes" loading="lazy"><figcaption>Today: late reports, today&#x27;s missing reports and a request for changes</figcaption></figure>
+<p>The number on the <strong>Today</strong> tab (and on the app icon, where the phone allows it) is the total of pending items: late days, jobs without today's report and requests for changes.</p>
+<h2 id="field-fill-out-the-daily-report">Field: fill out the daily report</h2>
+<p><strong>What it is for:</strong> recording the day on the job: weather, crew, equipment, what was done, what got in the way, and photos.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>The person responsible for the job's report, or anyone with <strong>Fill out daily reports</strong> (default role: <strong>Foreman</strong>).</p>
+</div>
+<ol>
+<li>On <strong>Today</strong>, tap the job. The job screen shows the date, the deadline and the previous reports.</li>
+<li>
+<p>Tap <strong>New daily report</strong> to start blank, or <strong>or copy from a previous report</strong> to start from another day (see <a href="#copy-a-previous-report">Copy a previous report</a>).</p>
+<figure class="celular"><img src="../img/daily-field-job-mobile.png" alt="The job screen: start a new report, copy a previous one or log no work today" loading="lazy"><figcaption>The job screen: start a new report, copy a previous one or log no work today</figcaption></figure>
+</li>
+<li>
+<p>The report opens. At the top, the progress chips (<strong>Weather</strong>, <strong>Crew</strong>, <strong>Work performed</strong>, <strong>Photos</strong>) turn green as each part is complete. Fill out the sections below in any order.</p>
+<figure class="celular"><img src="../img/daily-report-top-mobile.png" alt="The top of the report, with the progress chips" loading="lazy"><figcaption>The top of the report, with the progress chips</figcaption></figure>
+</li>
+</ol>
+<h3 id="weather">Weather</h3>
+<p>The weather is <strong>pulled automatically from the job location</strong> for the morning (7 AM–12 PM) and the afternoon (1 PM–5 PM). With more than 2 mm of rain in a period, that period is marked <strong>Not workable</strong>.</p>
+<ul>
+<li>Check or correct each period: <strong>Sunny</strong>, <strong>Cloudy</strong> or <strong>Rain</strong>, and <strong>Workable</strong> or <strong>Not workable</strong>.</li>
+<li><strong>Get weather automatically</strong> fetches it again (it needs signal).</li>
+<li>The report says whether the weather was automatic, adjusted by hand or entered by hand.</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-clima-mobile.png" alt="Weather, morning and afternoon" loading="lazy"><figcaption>Weather, morning and afternoon</figcaption></figure>
+<h3 id="crew">Crew</h3>
+<ul>
+<li>Tap the trades (<strong>+ Mason</strong>, <strong>+ Laborer</strong>, <strong>+ Carpenter</strong>…) to add them, then use <strong>−</strong> and <strong>+</strong> to set how many were <strong>Present</strong> and <strong>Absent</strong>.</li>
+<li>A trade that is not in the list: type it in <strong>Other trade</strong> and tap <strong>Add</strong>.</li>
+<li><strong>Update from the crew that clocked in</strong> fills the crew from the people who clocked in on this job today in <strong>Crew</strong> (the time clock).</li>
+<li>The section shows the total present (for example, <strong>13 present</strong>).</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-equipe-mobile.png" alt="Crew: present and absent by trade" loading="lazy"><figcaption>Crew: present and absent by trade</figcaption></figure>
+<h3 id="equipment">Equipment</h3>
+<p>Add the equipment on site with its quantity and status: <strong>Running</strong>, <strong>Idle</strong> or <strong>Under maintenance</strong>.</p>
+<figure class="celular"><img src="../img/daily-report-equipamentos-mobile.png" alt="Equipment on site" loading="lazy"><figcaption>Equipment on site</figcaption></figure>
+<h3 id="work-performed">Work performed</h3>
+<p>Each activity has:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>What to enter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Description</td>
+<td>What was done. Example: <em>poured the 2nd floor slab, 60 cu yd</em>.</td>
+</tr>
+<tr>
+<td><strong>Location / phase</strong></td>
+<td>Where on the job (floor, building, area).</td>
+</tr>
+<tr>
+<td>Status</td>
+<td><strong>In progress</strong> or <strong>Completed</strong>.</td>
+</tr>
+<tr>
+<td><strong>Schedule task</strong> and <strong>% complete</strong></td>
+<td>Only when the job has a schedule: the task this activity advanced and how far it is now. The schedule is updated when the office approves the report.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Dictate</strong>: speak instead of typing (uses the phone's voice recognition).</li>
+<li><strong>Improve text</strong>: rewrites what you typed or dictated in clear, technical language. A window shows the before and after; tap <strong>Use this text</strong> to keep it.</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-atividades-mobile.png" alt="Work performed, with Dictate and Improve text" loading="lazy"><figcaption>Work performed, with Dictate and Improve text</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p><strong>Improve text</strong> is simulated with simple rules on the phone. In the product it will use AI, and the original text is kept alongside.</p>
+</div>
+<h3 id="issues-delays">Issues &amp; delays</h3>
+<p>Anything that got in the way of the day: tap the type (<strong>Material / delivery</strong>, <strong>Rain</strong>, <strong>Equipment</strong>, <strong>Safety / accident</strong>, <strong>Crew / absences</strong>, <strong>Visit / inspection</strong>, <strong>Design / conflict</strong>, <strong>Other</strong>) and describe what happened and the impact.</p>
+<div class="admonition tip">
+<p class="admonition-title">Why it matters</p>
+<p>This is the section that protects the contractor in a delay claim: rain that stopped the pour, a late delivery, an inspection that did not show up — recorded on the day it happened.</p>
+</div>
+<figure class="celular"><img src="../img/daily-report-ocorrencias-mobile.png" alt="Issues &amp; delays" loading="lazy"><figcaption>Issues &amp; delays</figcaption></figure>
+<h3 id="photos">Photos</h3>
+<ul>
+<li><strong>Take photo</strong> opens the camera; <strong>From gallery</strong> picks existing photos.</li>
+<li>Each photo gets a stamp <strong>inside the image</strong> with the job, date, time and GPS coordinates, and is reduced on the phone (for example, 4.2 MB becomes about 300 KB) so it uploads fast even on a weak signal.</li>
+<li>Add a caption to each photo (for example, <em>rebar before the pour</em>).</li>
+<li>If the phone has no GPS, the job's location is used, and the stamp says so.</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-fotos-mobile.png" alt="Photos: camera or gallery" loading="lazy"><figcaption>Photos: camera or gallery</figcaption></figure>
+<h3 id="submit">Submit</h3>
+<p>The bar at the bottom says what is still missing — for example, <em>Missing: at least one person in manpower, at least one activity described</em> — or that the report is ready. Then tap <strong>Submit for approval</strong>.</p>
+<figure class="celular"><img src="../img/daily-report-submit-bar-mobile.png" alt="The bottom bar: what is missing and Submit for approval" loading="lazy"><figcaption>The bottom bar: what is missing and Submit for approval</figcaption></figure>
+<p>A report needs, at least: the weather of the morning and of the afternoon, one person in the crew and one activity described. Without photos, KORbuild asks before submitting:</p>
+<figure class="celular"><img src="../img/daily-report-send-check-mobile.png" alt="Submitting without photos asks for confirmation" loading="lazy"><figcaption>Submitting without photos asks for confirmation</figcaption></figure>
+<p>Everything you type is saved on the phone as you go, even without signal. You can leave the report and come back later.</p>
+<h2 id="copy-a-previous-report">Copy a previous report</h2>
+<p><strong>What it is for:</strong> most days look like the day before. Copying saves typing.</p>
+<ol>
+<li>On the job screen, tap <strong>or copy from a previous report</strong>.</li>
+<li>Choose the report to copy from (the most recent comes selected) and tap <strong>Copy</strong>.</li>
+</ol>
+<figure class="celular"><img src="../img/daily-copy-previous-mobile.png" alt="Choose which report to copy" loading="lazy"><figcaption>Choose which report to copy</figcaption></figure>
+<p>The new report brings the <strong>crew</strong> (with absences reset to zero), the <strong>equipment</strong> and the <strong>activities still in progress</strong>. Weather, photos and issues are not copied: they belong to the day.</p>
+<h2 id="log-no-work-today">Log "no work today"</h2>
+<p><strong>What it is for:</strong> a workday without work on the job (rain, holiday, job on hold) still needs a record — it justifies the day and stops the reminders.</p>
+<ol>
+<li>On the job screen, tap <strong>No work today</strong>.</li>
+<li>Choose the reason: <strong>Rain / unworkable weather</strong>, <strong>Holiday or day off</strong>, <strong>Job put on hold by the client</strong>, <strong>Material shortage</strong>, <strong>Strike or work stoppage</strong> or <strong>Other reason</strong>, and add a note if you want.</li>
+<li>Tap <strong>Log it</strong>.</li>
+</ol>
+<p>The day is recorded as that day's report, it goes to the office and the reminders for that day stop.</p>
+<h2 id="fill-out-a-late-report">Fill out a late report</h2>
+<p>If a past workday has no report, it appears in the red <strong>late report</strong> box on <strong>Today</strong> (up to the last 3 workdays). Tap it and fill out the report as usual — you can also copy from a previous one.</p>
+<p>A report submitted after the deadline is accepted, but it is marked <strong>Submitted late</strong> in the report and in the PDF, with the date and time of the first submission and the deadline it missed.</p>
+<h2 id="fix-a-report-the-office-sent-back">Fix a report the office sent back</h2>
+<ol>
+<li>On <strong>Today</strong>, the red box <strong>The office requested changes to report #…</strong> shows the job, the date and the reason, in quotes.</li>
+<li>Tap <strong>Fix now →</strong>. The report opens with the request at the top.</li>
+<li>Make the changes and tap <strong>Resubmit</strong>.</li>
+</ol>
+<figure class="celular"><img src="../img/daily-field-changes-requested-mobile.png" alt="A request for changes on the foreman&#x27;s Today screen" loading="lazy"><figcaption>A request for changes on the foreman&#x27;s Today screen</figcaption></figure>
+<p>A resubmission after a request for changes does not count as late: what counts is the first submission.</p>
+<h2 id="work-without-signal">Work without signal</h2>
+<p>Nothing special to do: KORbuild works offline.</p>
+<ul>
+<li>While you fill out the report, everything is saved on the phone.</li>
+<li>If you submit without signal, the report is <strong>Saved on this device</strong> and waits in a queue. As soon as the connection comes back, it uploads by itself, photo by photo, and the office receives it.</li>
+<li>After the first visit, the whole app opens without internet.</li>
+</ul>
+<p>The indicator at the top of the screen (<strong>Online</strong>) shows the connection.</p>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p>Tap <strong>Online</strong> to simulate losing the signal, and tap again to come back online.</p>
+</div>
+<h2 id="see-your-reports-history">See your reports (History)</h2>
+<p><strong>History</strong> lists every report you filled out, newest first, with its status (<strong>Draft</strong>, <strong>Awaiting approval</strong>, <strong>Changes requested</strong>, <strong>Approved</strong>). Tap one to open it.</p>
+<figure class="celular"><img src="../img/daily-field-history-mobile.png" alt="History on the phone" loading="lazy"><figcaption>History on the phone</figcaption></figure>
+<h2 id="office-follow-the-jobs-on-the-dashboard">Office: follow the jobs on the Dashboard</h2>
+<p><strong>What it is for:</strong> seeing, at a glance, which jobs reported today and what is waiting for you.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>View all jobs</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<p>The <strong>Dashboard</strong> shows:</p>
+<ul>
+<li><strong>The numbers of the day:</strong> today's reports received, reports awaiting approval, jobs with late reports, photos received today.</li>
+<li><strong>Jobs missing a report for the last workday</strong>, with the person responsible (shown from 8 AM on the next day).</li>
+<li><strong>Job status</strong>, with a color for each job: <strong>green</strong> (on track: today's report received), <strong>yellow</strong> (1 day behind), <strong>red</strong> (2 or more days behind). <strong>Open</strong> goes to the job.</li>
+<li><strong>Awaiting approval:</strong> the queue, with <strong>Review</strong> on each report.</li>
+</ul>
+<figure><img src="../img/daily-dashboard.png" alt="The office Dashboard" loading="lazy"><figcaption>The office Dashboard</figcaption></figure>
+<h2 id="office-review-and-approve-a-report">Office: review and approve a report</h2>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Approve reports and send to the client</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<ol>
+<li>
+<p>Open <strong>Approvals</strong> (or <strong>Review</strong> on the Dashboard).</p>
+<figure><img src="../img/daily-approvals.png" alt="Approvals: the queue of reports" loading="lazy"><figcaption>Approvals: the queue of reports</figcaption></figure>
+</li>
+<li>
+<p>The report opens exactly as the client will see it: job, client, prepared by, current phase, deadline, weather, manpower, equipment, work performed, issues, photos. On the right, the <strong>Review</strong> panel and the report's <strong>History</strong> (who started it, submitted it, when it arrived).</p>
+<figure><img src="../img/daily-review.png" alt="Reviewing a report" loading="lazy"><figcaption>Reviewing a report</figcaption></figure>
+</li>
+<li>
+<p>Choose:</p>
+<ul>
+<li><strong>Approve and seal</strong> — confirm in the window. The report is sealed: it receives a <strong>verification code</strong> and nobody can change it anymore.</li>
+<li><strong>Request changes from the field</strong> — see the next task.</li>
+</ul>
+</li>
+</ol>
+<figure><img src="../img/daily-approve-confirm.png" alt="Confirming the approval" loading="lazy"><figcaption>Confirming the approval</figcaption></figure>
+<p>After the approval, the panel shows <strong>Approved and sealed</strong>, the verification code and the sharing options.</p>
+<figure><img src="../img/daily-approved.png" alt="An approved report, with its verification code" loading="lazy"><figcaption>An approved report, with its verification code</figcaption></figure>
+<div class="admonition tip">
+<p class="admonition-title">How the seal works</p>
+<p>At approval, the whole content of the report — including a digital fingerprint of each photo — gets a fingerprint (SHA-256). Its first characters become the verification code. If anyone changes a word or a photo afterwards, the client's link shows that the document no longer matches what was approved.</p>
+</div>
+<h2 id="office-request-changes-from-the-field">Office: request changes from the field</h2>
+<ol>
+<li>On the report, click <strong>Request changes from the field</strong>.</li>
+<li>In <strong>What needs to be fixed?</strong>, write the reason (for example, <em>missing the photo of the rebar before the pour</em>).</li>
+<li>Click <strong>Send request</strong>.</li>
+</ol>
+<figure><img src="../img/daily-request-changes.png" alt="Requesting changes" loading="lazy"><figcaption>Requesting changes</figcaption></figure>
+<p>The report goes back to the field with the reason, and appears in red on the foreman's <strong>Today</strong> screen. When the foreman resubmits, the report comes back to your queue.</p>
+<h2 id="office-share-the-report-with-the-client">Office: share the report with the client</h2>
+<p>On an approved report:</p>
+<ul>
+<li><strong>Copy link for the client</strong> — copies a link you can send by email or message. The client opens it in any browser, without an account.</li>
+<li><strong>View as the client</strong> — opens that link, so you can see what the client sees.</li>
+<li><strong>Download PDF</strong> — the report as a PDF, with the company logo, the job, the weather, the tables, the photos with captions, date and GPS, the seal and signatures.</li>
+</ul>
+<p>The client's page checks the seal every time it opens. If the content matches what was approved, it shows <strong>Authentic document</strong>, with who approved it and when.</p>
+<figure><img src="../img/daily-client-link.png" alt="What the client sees" loading="lazy"><figcaption>What the client sees</figcaption></figure>
+<figure><img src="../img/daily-pdf.png" alt="The PDF preview" loading="lazy"><figcaption>The PDF preview</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p>The PDF is printed from the browser (choose <strong>Save as PDF</strong> in the print window). In the product, it is generated on the server, ready to download. The client's link only works in the same browser, because the prototype has no server.</p>
+</div>
+<h2 id="office-follow-a-job">Office: follow a job</h2>
+<ol>
+<li>Open <strong>Jobs</strong>: every active job with its status and the number of reports received.</li>
+<li>Open a job: its address, client and parties, the <strong>Schedule</strong> card (when the job has a schedule), the daily report settings (person responsible, deadline, workdays) and every report received.</li>
+</ol>
+<figure><img src="../img/daily-jobs.png" alt="Jobs" loading="lazy"><figcaption>Jobs</figcaption></figure>
+<figure><img src="../img/daily-job.png" alt="A job" loading="lazy"><figcaption>A job</figcaption></figure>
+<p>From the job, <strong>Edit job</strong> (for those who can manage jobs) opens the job setup: address, geofence, deadline, person responsible and workdays.</p>
+<h2 id="notifications">Notifications</h2>
+<p>The bell at the top of every screen gathers the alerts of all modules, with the number of unread ones and <strong>Mark all as read</strong>. For Daily:</p>
+<table>
+<thead>
+<tr>
+<th>When</th>
+<th>Who</th>
+<th>Message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4 PM</td>
+<td>Person responsible for the job</td>
+<td>Today's report is missing; due at 6 PM.</td>
+</tr>
+<tr>
+<td>6 PM</td>
+<td>Person responsible for the job</td>
+<td>Today's report is late.</td>
+</tr>
+<tr>
+<td>8 AM, next day</td>
+<td>Office</td>
+<td>Jobs with no report on the last workday, with the person responsible.</td>
+</tr>
+<tr>
+<td>When it happens</td>
+<td>Field</td>
+<td>The office requested changes to a report.</td>
+</tr>
+<tr>
+<td>When it happens</td>
+<td>Field</td>
+<td>Your report was approved.</td>
+</tr>
+<tr>
+<td>When it happens</td>
+<td>Office</td>
+<td>A report is awaiting approval.</td>
+</tr>
+<tr>
+<td>8 AM, after a task's end date</td>
+<td>Office</td>
+<td>A schedule task is behind (when the job has a schedule).</td>
+</tr>
+</tbody>
+</table>
+<p>On the phone, the same reminders also arrive as phone notifications (when allowed). On <strong>Today</strong>, <strong>How do reminders work? Test on your phone</strong> shows the schedule and sends a real test notification.</p>
+<figure><img src="../img/daily-notifications.png" alt="The bell, with the alerts of all modules" loading="lazy"><figcaption>The bell, with the alerts of all modules</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p>Reminders at 4 PM and 6 PM only fire while the app is open. In the product, the server sends them even with the app closed. There is no SMS or email for now.</p>
+</div>
+<h2 id="messages-and-alerts">Messages and alerts</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>Where</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>Missing: at least one person in manpower, at least one activity described</em></td>
+<td>Bottom bar of the report</td>
+<td>Fill in what is listed; the button submits once nothing is missing.</td>
+</tr>
+<tr>
+<td><strong>Submit without photos?</strong></td>
+<td>When submitting</td>
+<td>Go <strong>Back</strong> and add photos, or <strong>Submit without photos</strong>.</td>
+</tr>
+<tr>
+<td><em>A daily report is required for every workday. Fill it out now; it will be marked as submitted late.</em></td>
+<td>Today, red box</td>
+<td>Open the job and fill out the report.</td>
+</tr>
+<tr>
+<td><em>Today's report is missing… Due: today at 6 PM</em></td>
+<td>Today, yellow box</td>
+<td>Fill out today's report or log <strong>No work today</strong>.</td>
+</tr>
+<tr>
+<td><strong>The office requested changes to report #…</strong></td>
+<td>Today, red box</td>
+<td><strong>Fix now →</strong>, change and <strong>Resubmit</strong>.</td>
+</tr>
+<tr>
+<td><strong>Saved on this device</strong></td>
+<td>Report status</td>
+<td>Nothing: it uploads when the signal comes back.</td>
+</tr>
+<tr>
+<td><strong>Authentic document</strong></td>
+<td>Client's link</td>
+<td>The report is exactly what was approved.</td>
+</tr>
+<tr>
+<td>The client's link says the document does not match</td>
+<td>Client's link</td>
+<td>The content was changed after approval: contact the contractor.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#field-see-what-is-due-today">Field: see what is due today</a></li><li><a href="#field-fill-out-the-daily-report">Field: fill out the daily report</a></li><li class="sub"><a href="#weather">Weather</a></li><li class="sub"><a href="#crew">Crew</a></li><li class="sub"><a href="#equipment">Equipment</a></li><li class="sub"><a href="#work-performed">Work performed</a></li><li class="sub"><a href="#issues-delays">Issues &amp; delays</a></li><li class="sub"><a href="#photos">Photos</a></li><li class="sub"><a href="#submit">Submit</a></li><li><a href="#copy-a-previous-report">Copy a previous report</a></li><li><a href="#log-no-work-today">Log &quot;no work today&quot;</a></li><li><a href="#fill-out-a-late-report">Fill out a late report</a></li><li><a href="#fix-a-report-the-office-sent-back">Fix a report the office sent back</a></li><li><a href="#work-without-signal">Work without signal</a></li><li><a href="#see-your-reports-history">See your reports (History)</a></li><li><a href="#office-follow-the-jobs-on-the-dashboard">Office: follow the jobs on the Dashboard</a></li><li><a href="#office-review-and-approve-a-report">Office: review and approve a report</a></li><li><a href="#office-request-changes-from-the-field">Office: request changes from the field</a></li><li><a href="#office-share-the-report-with-the-client">Office: share the report with the client</a></li><li><a href="#office-follow-a-job">Office: follow a job</a></li><li><a href="#notifications">Notifications</a></li><li><a href="#messages-and-alerts">Messages and alerts</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

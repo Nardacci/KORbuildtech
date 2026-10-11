@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roles and permissions · Daily · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html" aria-current=page>Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Daily</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Roles and permissions</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Roles and permissions.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>In KORbuild, what each person can do comes from their <strong>access role</strong>. A role is a set of permissions; the company can adjust the default roles or create new ones in <strong>Settings › Access roles</strong>. Nothing is hard-coded.</p>
+<h2 id="daily-permissions">Daily permissions</h2>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>What it allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fill out daily reports</strong></td>
+<td>Create and submit the reports of your jobs (the field area: <strong>Today</strong> and <strong>History</strong>).</td>
+</tr>
+<tr>
+<td><strong>View all jobs</strong></td>
+<td>The office area: <strong>Dashboard</strong>, <strong>Jobs</strong> and the reports received.</td>
+</tr>
+<tr>
+<td><strong>Approve reports and send to the client</strong></td>
+<td>Approve, request changes, download the PDF and share the client link. Includes <strong>View all jobs</strong>.</td>
+</tr>
+<tr>
+<td><strong>Build the job schedule</strong></td>
+<td>Tasks, baseline, publish to the client and export to Excel. Includes <strong>View all jobs</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="default-roles">Default roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th style="text-align: center;">Fill out</th>
+<th style="text-align: center;">View all jobs</th>
+<th style="text-align: center;">Approve</th>
+<th style="text-align: center;">Build the schedule</th>
+<th>Where Daily opens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Admin</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Dashboard</td>
+</tr>
+<tr>
+<td><strong>Project manager</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Dashboard</td>
+</tr>
+<tr>
+<td><strong>Foreman</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Today</td>
+</tr>
+<tr>
+<td><strong>Worker</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>(no Daily: goes straight to <strong>My time clock</strong>)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Good to know</p>
+<ul>
+<li>The <strong>Admin</strong> role is locked, so the company always has someone who can manage access. An admin who also fills out reports needs a new role created from it, with <strong>Fill out daily reports</strong> added.</li>
+<li>Someone without <strong>View all jobs</strong> never opens the office screens; someone without <strong>Fill out daily reports</strong> never opens the field screens. Typing the address of a screen does not get around it.</li>
+<li>The <strong>client</strong> is not a user: they receive the link of the approved report and need no account.</li>
+</ul>
+</div>
+<h2 id="in-the-prototype">In the prototype</h2>
+<table>
+<thead>
+<tr>
+<th>Demo user</th>
+<th>Role</th>
+<th>Company</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Carlos Mendes</td>
+<td>Foreman</td>
+<td>Example Builders</td>
+</tr>
+<tr>
+<td>Ana Ribeiro</td>
+<td>Admin</td>
+<td>Example Builders</td>
+</tr>
+<tr>
+<td>Márcia Souza</td>
+<td>Project manager</td>
+<td>Example Builders</td>
+</tr>
+<tr>
+<td>Diego Santos</td>
+<td>Worker</td>
+<td>Example Builders</td>
+</tr>
+<tr>
+<td>Tom Reilly</td>
+<td>Admin</td>
+<td>Northfield Framing &amp; Siding</td>
+</tr>
+<tr>
+<td>Rita Gomes</td>
+<td>Project manager</td>
+<td>Northfield Framing &amp; Siding</td>
+</tr>
+<tr>
+<td>José Pereira</td>
+<td>Foreman</td>
+<td>Northfield Framing &amp; Siding</td>
+</tr>
+<tr>
+<td>Luis Ortega</td>
+<td>Worker</td>
+<td>Northfield Framing &amp; Siding</td>
+</tr>
+</tbody>
+</table>
+<p>Márcia Souza and Roberto Lima (a second foreman) exist in the sample data but are not on the sign-in list.</p>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#daily-permissions">Daily permissions</a></li><li><a href="#default-roles">Default roles</a></li><li><a href="#in-the-prototype">In the prototype</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

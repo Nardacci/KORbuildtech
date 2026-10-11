@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype status · Daily · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html" aria-current=page>Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Daily</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Prototype status</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Prototype status.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>The prototype shows the product working with sample data. A few things are simulated because there is no server yet. This page lists them, so nobody promises more than exists — and so the customer knows what is coming.</p>
+<h2 id="simulated-today">Simulated today</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>In the prototype</th>
+<th>In the product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where the data lives</td>
+<td>Only in the browser of each device. The field's phone and the office's computer do not see each other's data.</td>
+<td>A cloud database, separated by company; everyone sees the same data.</td>
+</tr>
+<tr>
+<td>Reminders at 4 PM and 6 PM</td>
+<td>Only while the app is open.</td>
+<td>Sent by the server, even with the app closed.</td>
+</tr>
+<tr>
+<td><strong>Improve text</strong></td>
+<td>Simple rules on the phone.</td>
+<td>AI, keeping the original text alongside.</td>
+</tr>
+<tr>
+<td>PDF</td>
+<td>Printed from the browser (<strong>Save as PDF</strong>).</td>
+<td>Generated on the server, ready to download.</td>
+</tr>
+<tr>
+<td>Client link</td>
+<td>Opens only in the same browser.</td>
+<td>Opens anywhere.</td>
+</tr>
+<tr>
+<td>Losing signal</td>
+<td>Simulated by tapping <strong>Online</strong>.</td>
+<td>Real.</td>
+</tr>
+<tr>
+<td>Sign-in</td>
+<td>Demo users, no password.</td>
+<td>Company email and password.</td>
+</tr>
+<tr>
+<td>Weather</td>
+<td>Real (Open-Meteo), when there is internet.</td>
+<td>Same.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="coming-next">Coming next</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Customer accounts on the database</td>
+<td>The main sign-in page is ready; accounts arrive with the database.</td>
+</tr>
+<tr>
+<td>Store apps (App Store, Google Play)</td>
+<td>Planned; the prototype already installs on the home screen.</td>
+</tr>
+<tr>
+<td>Settings for deadline and reminder times</td>
+<td>To be confirmed.</td>
+</tr>
+<tr>
+<td>SMS and email reminders</td>
+<td>Evaluated later (US rules for business SMS).</td>
+</tr>
+<tr>
+<td>GC invites the trade contractor (bid) and a channel between them</td>
+<td>Specified; arrives with the database.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#simulated-today">Simulated today</a></li><li><a href="#coming-next">Coming next</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

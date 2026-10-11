@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business rules · Daily · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html" aria-current=page>Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Daily</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Business rules</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Business rules.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Each rule has an ID (<code>DLY-nnn</code>) so it can be quoted in meetings, tests and change requests. The <strong>Status</strong> column says whether the rule works in the prototype today.</p>
+<div class="admonition note">
+<p class="admonition-title">Source</p>
+<p>These rules come from the prototype's code and from the product decisions recorded in the project documentation (daily report alerts, jobs, schedule). Where something was not decided yet, it is marked <strong>To be confirmed</strong>.</p>
+</div>
+<h2 id="who-reports-and-when">Who reports and when</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-001</td>
+<td>Every job has <strong>one person responsible</strong> for its daily report. Reminders and alerts go to that person.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-002</td>
+<td>A report is required for each <strong>workday of the job's calendar</strong> (default: Monday to Saturday). Days that are not workdays generate no alert; if there is work, a report can still be filled out.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-003</td>
+<td>Only jobs <strong>in progress</strong> require reports. Jobs <strong>on hold</strong> or <strong>completed</strong> do not appear in the field and generate no alert. A job also requires nothing before its start date.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-004</td>
+<td>The daily <strong>deadline is 6 PM</strong> of the day itself.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-005</td>
+<td>A day is <strong>done</strong> when its report was submitted (even if it is still saved on the phone, without signal) or when it was logged as <strong>No work</strong>.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-006</td>
+<td><strong>No work</strong> requires a reason (rain, holiday or day off, job on hold, material shortage, strike, other) and may have a note. It counts as the report of the day and stops that day's alerts.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="alerts">Alerts</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-010</td>
+<td>At <strong>4 PM</strong>, the person responsible gets a reminder: today's report is missing.</td>
+<td>Working (app open)</td>
+</tr>
+<tr>
+<td>DLY-011</td>
+<td>At <strong>6 PM</strong>, the report of the day is <strong>late</strong>: the person responsible gets an alert.</td>
+<td>Working (app open)</td>
+</tr>
+<tr>
+<td>DLY-012</td>
+<td>At <strong>8 AM of the next day</strong>, the office sees on the Dashboard and in notifications every job with no report on its last workday, with the person responsible.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-013</td>
+<td>Alerts go to the in-app notifications (bell) and to the phone's notifications. <strong>No SMS or email</strong> for now.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-014</td>
+<td>The field's pending count (late days + jobs without today's report + requests for changes) shows on the <strong>Today</strong> tab and, where the phone allows it, on the app icon.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="late-reports">Late reports</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-020</td>
+<td>The <strong>last 3 workdays</strong> without a report are shown as late and can be filled out.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-021</td>
+<td>A report submitted after the deadline is accepted but marked <strong>Submitted late</strong> in the report and in the PDF, with the date and time of submission and the deadline it missed.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-022</td>
+<td>Lateness is measured on the <strong>first submission</strong>: resubmitting after a request for changes does not count as late.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="filling-out-the-report">Filling out the report</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-030</td>
+<td>A report can only be submitted with: the weather of the morning and of the afternoon, at least one person present in the crew and at least one activity described.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-031</td>
+<td>A report without photos can be submitted, after a confirmation.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-032</td>
+<td>The weather is pulled automatically from the job's location for the morning (7 AM–12 PM) and the afternoon (1 PM–5 PM). More than 2 mm of rain in a period marks it <strong>Not workable</strong>. Everything can be corrected by hand; the report shows whether the weather was automatic, adjusted or manual.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-033</td>
+<td><strong>Copy from a previous report</strong> brings the crew (absences reset to zero), the equipment and the activities still in progress. Weather, photos and issues are never copied.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-034</td>
+<td>The crew can be filled from the people who clocked in on the job that day in Crew.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-035</td>
+<td>Everything typed is saved on the phone as it is entered, with or without signal.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-036</td>
+<td>A report submitted without signal waits in a queue on the phone and uploads by itself, photo by photo, when the connection comes back.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-037</td>
+<td>An activity may point to a task of the job's schedule with its % complete. The schedule receives it only when the report is <strong>approved</strong>.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="photos-as-evidence">Photos as evidence</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-040</td>
+<td>Each photo gets a stamp <strong>inside the image</strong> with the job, date, time and GPS coordinates.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-041</td>
+<td>Without GPS, the job's location is used, and the stamp says so.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-042</td>
+<td>Photos are reduced on the phone (about 1,600 px and 300 KB) before uploading.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-043</td>
+<td>A digital fingerprint (SHA-256) of the <strong>original</strong> file is kept with each photo.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="approval-and-seal">Approval and seal</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-050</td>
+<td>Only users with <strong>Approve reports and send to the client</strong> can approve or request changes.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-051</td>
+<td>A request for changes requires a reason, which appears on the field's phone. The report goes back to <strong>Changes requested</strong>.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-052</td>
+<td>At approval, the whole content of the report (including each photo's fingerprint) receives a SHA-256 fingerprint. Its first 12 characters become the <strong>verification code</strong>.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-053</td>
+<td>An approved report <strong>cannot be changed by anyone</strong>.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-054</td>
+<td>Each report keeps a history: who started it, submitted it, when it reached the office, who requested changes and who approved it.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sharing-with-the-client">Sharing with the client</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-060</td>
+<td>Only <strong>approved</strong> reports can be shared.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-061</td>
+<td>The client opens the report by a link, read-only, <strong>without an account</strong>.</td>
+<td>Working (same browser only, see Prototype status)</td>
+</tr>
+<tr>
+<td>DLY-062</td>
+<td>Every time the link opens, the seal is checked: if the content changed after approval, the page says the document does not match what was approved.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-063</td>
+<td>The PDF has the company logo, the job, the weather, the tables, the photos with caption, date and GPS, the seal and signatures.</td>
+<td>Working (printed from the browser)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="office-follow-up">Office follow-up</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-070</td>
+<td><strong>Job status:</strong> green when today's report was received, yellow with 1 day behind, red with 2 days or more.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>DLY-071</td>
+<td>The Dashboard shows the reports of the day, those awaiting approval, the jobs with late reports and the photos received today.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">To be confirmed</p>
+<ul>
+<li>Whether the 6 PM deadline and the 4 PM reminder become a setting per company or per job.</li>
+<li>Whether a report approved by mistake can be reopened (today: never).</li>
+<li>SMS and email reminders (left out for now: SMS in the US requires A2P 10DLC registration and consent).</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#who-reports-and-when">Who reports and when</a></li><li><a href="#alerts">Alerts</a></li><li><a href="#late-reports">Late reports</a></li><li><a href="#filling-out-the-report">Filling out the report</a></li><li><a href="#photos-as-evidence">Photos as evidence</a></li><li><a href="#approval-and-seal">Approval and seal</a></li><li><a href="#sharing-with-the-client">Sharing with the client</a></li><li><a href="#office-follow-up">Office follow-up</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

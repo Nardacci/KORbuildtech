@@ -28,6 +28,8 @@ python3 -m http.server 8123
 # abra http://localhost:8123/?demo   → o protótipo, com os dados de exemplo
 ```
 
+**Portal de especificações e manual** (`portal/`, em inglês; o português vem depois): o guia do apresentador e, por módulo, visão geral, manual do usuário com capturas, regras de negócio com ID, perfis e permissões e o que é simulado no protótipo, com busca e Word para baixar. O texto fica em `portal/fonte/en/` (Markdown); para atualizar: `node tools/capturas-portal.mjs` (refaz as capturas pelo protótipo) e `python3 tools/gerar_portal.py` (gera as páginas, a busca e os Word, e acusa link quebrado). `tests/portal.test.mjs` confere as páginas.
+
 **Três caminhos na entrada oficial:** o login das contas reais (ainda avisa "em breve" e aponta o protótipo), **Especificações e manual** (o portal em `portal/`) e **Abrir o protótipo** (`?demo`). O `?demo` acompanha toda a navegação, porque os links internos são só o `#…`. Os testes abrem o protótipo (`?demo`); `tests/entrada.test.mjs` cobre a entrada oficial.
 
 Para mostrar no celular, publique no GitHub Pages: **Settings → Pages → Deploy from a branch**, escolha a branch `main` e a pasta `/ (root)`. Precisa ser HTTPS (o GitHub Pages já é) para a câmera, o GPS, o modo offline e o hash SHA-256 funcionarem.

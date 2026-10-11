@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KORbuild product guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="index.html#modules">Modules</a>
+    <a href="presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<section class="heroi"><div class="heroi-dentro">
+  <p class="sobrescrito">KORbuild product guide</p>
+  <h1>Everything KORbuild does, in one place.</h1>
+  <p class="lead">KORbuild is a platform for construction companies in the United States: general contractors and the trade contractors
+  they hire. This guide explains each module — what it is for, the rules it enforces, who can do what — and walks through every task
+  with screenshots, so anyone can present the product with confidence.</p>
+  <div class="botoes">
+    <a class="botao" href="presenting.html">Presenter's guide →</a>
+    <a class="botao botao-secundario" href="#modules">Explore the modules</a>
+    <a class="botao botao-secundario" href="../?demo#/entrar">Open the prototype ↗</a>
+  </div>
+</div></section>
+<section class="faixa" id="modules">
+  <h2>Modules</h2>
+  <p>One account, one set of jobs and people, shared by every module. Each company turns on the modules it needs.</p>
+  <div class="cartoes"><a class="cartao-mod" href="daily/index.html" style="--cor:var(--cor-daily)"><span class="ico">D</span><b>Daily</b><span>Daily construction reports from the field: crew, weather, work performed, GPS-stamped photos and issues. The office reviews, approves and shares a sealed PDF with the client. Also home to the job list and the job schedule.</span></a><a class="cartao-mod" href="crew/index.html" style="--cor:var(--cor-crew)"><span class="ico">C</span><b>Crew</b><span>Crew time clock with GPS and geofence, timesheets, overtime and labor cost by job.</span><span class="em-breve">Documentation coming soon</span></a><a class="cartao-mod" href="measure/index.html" style="--cor:var(--cor-measure)"><span class="ico">M</span><b>Measure</b><span>Plan takeoff in feet and inches: scale, measure, assemblies, quantities, quote lists and proposals.</span><span class="em-breve">Documentation coming soon</span></a><a class="cartao-mod" href="settings/index.html" style="--cor:var(--cor-settings)"><span class="ico">S</span><b>Settings</b><span>Company setup: employees, labor burden, work rules, jobs, contacts, users and access roles, audit log.</span><span class="em-breve">Documentation coming soon</span></a></div>
+</section>
+<section class="faixa">
+  <h2>Where to start</h2>
+  <p>Pick the path that matches why you are here.</p>
+  <div class="publicos">
+    <div class="publico"><h3>I will present KORbuild to a customer</h3><p>Read the presenter's guide: the story, the order of the screens and what to say.</p>
+      <ul><li><a href="presenting.html">Presenter's guide</a></li><li><a href="../?demo#/entrar">Open the prototype</a></li></ul></div>
+    <div class="publico"><h3>I will use KORbuild every day</h3><p>Go to your module and open the user manual: one task at a time, with screenshots.</p>
+      <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li></ul></div>
+    <div class="publico"><h3>I need the rules and permissions</h3><p>Each module lists its business rules with IDs and who can do what.</p>
+      <ul><li><a href="daily/business-rules.html">Daily — business rules</a></li><li><a href="daily/roles-and-permissions.html">Daily — roles and permissions</a></li></ul></div>
+  </div>
+</section>
+<div style="height:40px"></div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="assets/portal.js"></script>
+</body></html>
