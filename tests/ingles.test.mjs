@@ -6,7 +6,7 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-const BASE = process.argv.find((a) => a.startsWith('http')) || 'http://localhost:8123/';
+const BASE = (process.argv.find((a) => a.startsWith('http')) || 'http://localhost:8123/') + '?demo';
 const RELATORIO = process.argv.includes('--relatorio');
 let falhas = 0, passos = 0;
 function verificar(cond, texto) {

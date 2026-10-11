@@ -6,7 +6,7 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
 const RAIZ = new URL('..', import.meta.url).pathname;
-const BASE = 'http://localhost:8123/';
+const BASE = 'http://localhost:8123/?demo';
 const [OUT, U, W, LIM] = process.argv.slice(2);
 const acoesVistas = new Set();
 

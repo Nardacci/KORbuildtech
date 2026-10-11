@@ -2336,4 +2336,15 @@ export const EN = {
   'Instalações e entrega': 'MEP and turnover',
   'Cadastrar e editar obras': 'Add and edit jobs',
   'Nova obra, local e cerca, prazo, responsável, situação e modelos de etapas do cronograma': 'New jobs, location and geofence, dates, daily report owner, status and schedule task templates',
+
+  // ---------- Entrada oficial e protótipo ----------
+  'A recuperação de senha chega junto com as contas de clientes.': 'Password recovery arrives together with customer accounts.',
+  'O acesso das contas de clientes está chegando. Enquanto isso, conheça o KORbuild pelo <a href="{url}">protótipo</a>.': 'Customer account access is coming soon. Meanwhile, explore KORbuild in the <a href="{url}">prototype</a>.',
+  'Especificações e manual': 'Product guide',
+  'O que o KORbuild faz, as regras de cada módulo e o manual do usuário': 'What KORbuild does, the rules of each module and the user manual',
+  'Abrir o protótipo': 'Open the prototype',
+  'Com dados de exemplo, sem conta: para conhecer e apresentar': 'Sample data, no account needed: to explore and present',
+  'dados de exemplo, guardados só neste navegador': 'sample data, stored only in this browser',
+  'Entrada oficial': 'Main sign-in',
+  'Escolha um usuário de demonstração abaixo.': 'Pick a demo user below.',
 };

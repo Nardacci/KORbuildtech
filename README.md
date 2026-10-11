@@ -24,8 +24,11 @@ O produto é em **inglês** (padrão), com formatos dos EUA (data MM/DD/YYYY, 4:
 
 ```bash
 python3 -m http.server 8123
-# abra http://localhost:8123/
+# abra http://localhost:8123/        → entrada oficial (contas reais, com o banco de dados: em breve)
+# abra http://localhost:8123/?demo   → o protótipo, com os dados de exemplo
 ```
+
+**Três caminhos na entrada oficial:** o login das contas reais (ainda avisa "em breve" e aponta o protótipo), **Especificações e manual** (o portal em `portal/`) e **Abrir o protótipo** (`?demo`). O `?demo` acompanha toda a navegação, porque os links internos são só o `#…`. Os testes abrem o protótipo (`?demo`); `tests/entrada.test.mjs` cobre a entrada oficial.
 
 Para mostrar no celular, publique no GitHub Pages: **Settings → Pages → Deploy from a branch**, escolha a branch `main` e a pasta `/ (root)`. Precisa ser HTTPS (o GitHub Pages já é) para a câmera, o GPS, o modo offline e o hash SHA-256 funcionarem.
 

@@ -13,6 +13,7 @@ import { tr, tn, idioma, definirIdioma } from './i18n.js';
 import {
   usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, registrarInteresse, modulo, definirPodeInstalar,
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
+  MODO_DEMO, telaLoginOficial, URL_PROTOTIPO,
 } from './plataforma.js';
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
@@ -116,7 +117,7 @@ async function notificar(titulo, corpo, tag) {
   let permissao = Notification.permission;
   if (permissao === 'default') permissao = await Notification.requestPermission();
   if (permissao !== 'granted') return false;
-  const opcoes = { body: corpo, tag: 'kbt-' + tag, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', data: { url: '#/daily/campo' } };
+  const opcoes = { body: corpo, tag: 'kbt-' + tag, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', data: { url: '?demo#/daily/campo' } };
   try {
     const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
     if (reg) await reg.showNotification((tr('KORbuild Daily ·') + ' ') + titulo, opcoes);
@@ -170,6 +171,14 @@ function trocarRota(hash) {
 }
 
 function desenhar() {
+  // Página oficial: só a entrada das contas reais (o banco de dados vem depois). O protótipo é "?demo".
+  if (!MODO_DEMO) {
+    if (location.hash !== '#/entrar') return trocarRota('#/entrar');
+    app.innerHTML = telaLoginOficial();
+    document.documentElement.lang = idioma() === 'en' ? 'en' : 'pt-BR';
+    document.body.dataset.modo = 'entrar';
+    return;
+  }
   const p = rota();
   const u = usuarioAtual();
   // O link do cliente é público; todo o resto pede login.
@@ -1068,6 +1077,9 @@ const acoes = {
     document.getElementById('login-erro').hidden = true;
     document.getElementById('login-senha').focus();
   },
+  'esqueci-senha-oficial'() {
+    toast(tr('A recuperação de senha chega junto com as contas de clientes.'));
+  },
   'esqueci-senha'() {
     toast(tr('No protótipo, a senha não é conferida. A recuperação por e-mail vem na versão final.'));
   },
@@ -1338,7 +1350,7 @@ const acoes = {
   },
   async 'copiar-link'() {
     const r = rdoDaTela();
-    const link = location.origin + location.pathname + '#/cliente/' + r.codigo;
+    const link = location.origin + location.pathname + '?demo#/cliente/' + r.codigo;
     try {
       await navigator.clipboard.writeText(link);
       const ct = contratanteDe(acharObra(r.obraId));
@@ -1381,6 +1393,14 @@ function fazerLogin(u) {
 }
 
 app.addEventListener('submit', (ev) => {
+  if (ev.target.id === 'form-login-oficial') {
+    // contas reais: chegam com o banco de dados (docs/concorrencias.md, plano do banco)
+    ev.preventDefault();
+    const erro = document.getElementById('login-erro');
+    erro.innerHTML = tr('O acesso das contas de clientes está chegando. Enquanto isso, conheça o KORbuild pelo <a href="{url}">protótipo</a>.', { url: URL_PROTOTIPO });
+    erro.hidden = false;
+    return;
+  }
   if (ev.target.id !== 'form-login') return;
   ev.preventDefault();
   const email = ev.target.email.value;
@@ -1509,6 +1529,7 @@ async function iniciar() {
     pedidoInstalar = ev;
     definirPodeInstalar(true);
   });
+  if (!MODO_DEMO) { window.addEventListener('hashchange', desenhar); desenhar(); return; }
   // Dados de uma versão antiga do protótipo são recriados no formato novo. Na tela de entrada (ninguém
   // logado), a demonstração também é recriada quando foi gerada em outro idioma (botão PT/EN).
   const ninguemLogado = (() => { try { return !localStorage.getItem('kbt.sessao'); } catch { return true; } })();

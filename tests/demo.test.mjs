@@ -5,7 +5,7 @@
 
 import { chromium } from 'playwright';
 
-const BASE = process.argv[2] || 'http://localhost:8123/';
+const BASE = (process.argv[2] || 'http://localhost:8123/') + '?demo'; // o protótipo (a página oficial é sem ?demo)
 const SAIDA = process.env.PRINTS || '';
 let falhas = 0, passos = 0;
 

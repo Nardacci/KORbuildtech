@@ -61,7 +61,7 @@ PAGINA = '''<!doctype html>
 </style>
 </head>
 <body>
-<nav class="barra"><a href="../#/entrar">← Voltar ao KORbuild</a><a href="KORbuild_Manual_de_teste.docx" download>Baixar (Word)</a></nav>
+<nav class="barra"><a href="../?demo#/entrar">← Voltar ao protótipo</a><a href="KORbuild_Manual_de_teste.docx" download>Baixar (Word)</a></nav>
 <main>
 ''' + corpo + '''
 </main>

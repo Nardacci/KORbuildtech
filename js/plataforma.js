@@ -212,6 +212,45 @@ function menuUsuario(u) {
 /* Identificador que a conta mostra: o nome da empresa sem acento, em minúsculas (no protótipo, o id interno não muda com o idioma). */
 const identificador = (nome) => nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+/* ---------- Entrada: oficial × protótipo ----------
+ * A página oficial (sem "?demo" no endereço) é a entrada das contas reais, que vão usar o banco de dados.
+ * O protótipo abre com "?demo": os dados de exemplo ficam no navegador, como sempre.
+ * Os links internos são só o "#…", então o "?demo" acompanha a navegação inteira. */
+export const MODO_DEMO = (() => { try { return new URLSearchParams(location.search).has('demo'); } catch { return true; } })();
+export const URL_PROTOTIPO = '?demo#/entrar';
+export const URL_OFICIAL = './';
+export const URL_PORTAL = 'portal/';
+
+export function telaLoginOficial() {
+  return '<div class="login-pagina">' +
+    '<section class="login-marca">' +
+      marca(40) +
+      '<div class="login-chamada">' +
+        '<p class="login-sobrescrito">' + SOBRESCRITO + '</p>' +
+        '<h1 class="login-logotipo">' + logotipo() + '</h1>' +
+        '<span class="login-traco" aria-hidden="true"></span>' +
+        '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
+        '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
+    '</section>' +
+    '<section class="login-lado">' +
+      '<form class="login-form" id="form-login-oficial" novalidate>' +
+        htmlSeletorIdioma('login-idioma') + '<h2>' + tr('Entrar') + '</h2><p class="mudo">' + tr('Use o e-mail da sua empresa.') + '</p>' +
+        '<label for="oficial-email">' + tr('E-mail') + '</label>' +
+        '<input id="oficial-email" name="email" type="email" autocomplete="email" required>' +
+        '<div class="login-linha"><label for="oficial-senha">' + tr('Senha') + '</label><button type="button" class="link" data-acao="esqueci-senha-oficial">' + tr('Esqueci a senha') + '</button></div>' +
+        '<input id="oficial-senha" name="senha" type="password" autocomplete="current-password" required>' +
+        '<label class="lembrar"><input type="checkbox" checked> ' + tr('Manter conectado') + '</label>' +
+        '<p class="login-erro" id="login-erro" role="alert" hidden></p>' +
+        '<button type="submit" class="btn btn-primario btn-bloco btn-grande">' + tr('Entrar') + '</button>' +
+        '<div class="login-caminhos">' +
+          '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário') + '</span></span>' + icone('seta', 18) + '</a>' +
+          '<a class="login-caminho" href="' + URL_PROTOTIPO + '">' + icone('play', 20) + '<span><b>' + tr('Abrir o protótipo') + '</b><span class="mudo">' + tr('Com dados de exemplo, sem conta: para conhecer e apresentar') + '</span></span>' + icone('seta', 18) + '</a>' +
+        '</div>' +
+      '</form>' +
+    '</section>' +
+  '</div>';
+}
+
 /* ---------- Login ---------- */
 
 /* grupos: [{ empresa, usuarios: [{ u, perfil }] }] — os usuários de demonstração de cada empresa. */
@@ -231,7 +270,8 @@ export function telaLogin(grupos) {
     '</section>' +
     '<section class="login-lado">' +
       '<form class="login-form" id="form-login" novalidate>' +
-        htmlSeletorIdioma('login-idioma') + ('<h2>' + tr('Entrar') + '</h2><p class="mudo">' + tr('Use o e-mail da sua empresa.') + '</p>') +
+        htmlSeletorIdioma('login-idioma') + '<p class="login-prototipo">' + icone('play', 16) + '<span><b>' + tr('Protótipo') + '</b> · ' + tr('dados de exemplo, guardados só neste navegador') + '</span><a href="' + URL_OFICIAL + '">' + tr('Entrada oficial') + '</a></p>' +
+        ('<h2>' + tr('Entrar') + '</h2><p class="mudo">' + tr('Escolha um usuário de demonstração abaixo.') + '</p>') +
         ('<label for="login-email">' + tr('E-mail') + '</label>') +
         '<input id="login-email" name="email" type="email" autocomplete="email" value="' + esc(admin[0] ? admin[0].email : '') + '" required>' +
         ('<div class="login-linha"><label for="login-senha">' + tr('Senha') + '</label><button type="button" class="link" data-acao="esqueci-senha">' + tr('Esqueci a senha') + '</button></div>') +

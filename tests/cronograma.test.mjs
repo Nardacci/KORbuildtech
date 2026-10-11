@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const BASE = process.argv[2] || 'http://localhost:8123/';
+const BASE = (process.argv[2] || 'http://localhost:8123/') + '?demo'; // o protótipo (a página oficial é sem ?demo)
 let falhas = 0, passos = 0;
 function verificar(cond, texto) {
   passos++;

@@ -1327,3 +1327,17 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .aviso .btn { margin-top: 8px; align-self: flex-start; }
 @media (max-width: 600px) { .lista-modelo li { grid-template-columns: 1fr 60px 40px; } .cabeca-modelo, .linha-modelo { grid-template-columns: 1fr 70px 36px; } }
 .form-settings .btn[data-acao="obra-aqui"] { width: auto; align-self: flex-start; display: inline-flex; }
+
+/* ---------- Entrada oficial × protótipo ---------- */
+.login-caminhos { display: grid; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--borda); }
+.login-caminho { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--borda); border-radius: 12px; color: var(--texto); text-decoration: none; background: var(--superficie, #fff); }
+.login-caminho:hover { border-color: var(--primario); }
+.login-caminho > svg:first-child { color: var(--primario); }
+.login-caminho > svg:last-child { color: var(--mudo); }
+.login-caminho b { display: block; font-size: 14.5px; }
+.login-caminho .mudo { display: block; font-size: 12.5px; line-height: 1.4; }
+.login-prototipo { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 0 0 14px; padding: 8px 12px; border-radius: 10px; background: var(--ambar-claro, #FFF7E6); font-size: 12.5px; color: var(--texto-2); }
+.login-prototipo svg { color: var(--primario); flex: none; }
+.login-prototipo > span { flex: 1 1 180px; }
+.login-prototipo a { margin-left: auto; font-weight: 600; }
+.login-erro a { font-weight: 700; }
