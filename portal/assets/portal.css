@@ -126,7 +126,7 @@ img { max-width: 100%; }
 .texto td:first-child code, .id { white-space: nowrap; }
 .texto figure { margin: 18px 0 24px; }
 .texto figure img { display: block; border: 1px solid var(--borda); border-radius: var(--raio-grande); box-shadow: 0 8px 24px -12px rgba(16,24,40,.25); background: #fff; }
-.texto figure.celular img { max-width: 360px; }
+.texto figure.celular img { max-width: min(360px, 100%); }
 .texto figcaption { font-size: 13.5px; color: var(--mudo); margin-top: 8px; }
 .admonition { border: 1px solid var(--borda); border-left: 4px solid var(--azul); background: var(--azul-claro); border-radius: var(--raio); padding: 12px 16px; margin: 16px 0; }
 .admonition > p { margin: 6px 0; }

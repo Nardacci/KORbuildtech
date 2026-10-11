@@ -1,6 +1,6 @@
 # Overview
 
-**Daily** is the daily construction report (in Portuguese, *RDO*). Every workday, the person in charge on site records the weather, the crew, the equipment, the work performed, the issues and the photos. The office reviews and approves the report, and the approved report is sealed and shared with the client as a link or a PDF.
+**Daily** is the daily construction report (in Portuguese, *RDO*). Every workday, the subcontractor's person in charge on site records the weather, the crew, the equipment, the work performed, the issues and the photos. The **general contractor** of the job reviews and approves the report — or the subcontractor itself, on a job it has directly with the owner — and the approved report is sealed and shared with the client as a link or a PDF. See [How KORbuild is organized](@/organization.html).
 
 ## Why it matters
 
@@ -12,8 +12,9 @@
 
 | Who | Where | What they do |
 |---|---|---|
-| **Foreman / superintendent** | Phone | Fills out and submits the report of each job, every workday; fixes reports sent back by the office. |
-| **Office** (admin, project manager) | Computer | Follows the jobs on the dashboard, reviews, approves or requests changes, shares with the client. |
+| **Subcontractor's foreman** | Phone | Fills out and submits the report of each job, every workday; fixes reports sent back. |
+| **General contractor** (admin, project manager) | Computer | Follows every subcontractor on each job, reviews, approves or requests changes, shares with the owner. Does not fill out reports. |
+| **Subcontractor's office** | Computer | Follows its own reports; approves them only on its jobs directly with an owner. |
 | **Client** (owner or general contractor) | Any browser | Opens the link of the approved report, checks it is authentic and downloads the PDF. No account needed. |
 
 Who can do what depends on the access role: see [Roles and permissions](@/daily/roles-and-permissions.html).
@@ -40,13 +41,13 @@ Who can do what depends on the access role: see [Roles and permissions](@/daily/
 |---|---|---|
 | **Draft** | Being filled out; saved on the phone. | Field: submit. |
 | **Saved on this device** | Submitted without signal; uploads by itself when the connection comes back. | Nobody: automatic. |
-| **Awaiting approval** | Received by the office. | Office: approve or request changes. |
+| **Awaiting approval** | Received by whoever approves it. | The general contractor (or the sub, on its own job): approve or request changes. |
 | **Changes requested** | Sent back with a reason. | Field: fix and resubmit. |
-| **Approved** | Sealed with a verification code. Nobody can change it. | Office: share with the client. |
+| **Approved** | Sealed with a verification code. Nobody can change it. | Share with the client. |
 | **No work** | The day was logged as "no work" with a reason (rain, holiday…). | Nobody. |
 
 ## Connected to the other modules
 
 - **Crew:** when a report starts, the crew can be filled in from the people who clocked in on the job that day (**Update from the crew that clocked in**).
 - **Job schedule:** each activity of the report can point to a task of the job's schedule with its % complete; when the report is approved, the schedule is updated.
-- **Jobs** are set up once, for the whole company (Settings › Jobs): address, geofence, deadline, who fills out the report and the workdays.
+- **Jobs** are set up once per company (Settings › Jobs). The general contractor registers its jobs; each subcontractor has its own job linked to the general contractor's, with who fills out the report and the workdays.

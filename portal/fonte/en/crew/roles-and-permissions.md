@@ -28,9 +28,12 @@ What each person can do in Crew comes from their **access role** (Settings › A
 
 ## In the prototype
 
-| Demo user | Role | Use it to show |
-|---|---|---|
-| Diego Santos | Worker | **My time clock** |
-| Carlos Mendes | Foreman | **Crew time clock** and **Hours** (Carlos's crew) |
-| Ana Ribeiro | Admin | **Now**, **Timesheets**, **Costs** |
-| Márcia Souza | Project manager | The office without Settings (not on the sign-in list) |
+Crew belongs to the companies that do the work (the subcontractors). A general contractor does not have Crew: it sees the subcontractors' people and hours on its jobs, in Daily, without dollar amounts (see [How KORbuild is organized](@/organization.html)).
+
+| Demo user | Company | Role | Use it to show |
+|---|---|---|---|
+| Diego Santos | Ridgeline (sub) | Worker | **My time clock** |
+| Carlos Mendes | Ridgeline (sub) | Foreman | **Crew time clock** and **Hours** (Carlos's crew) |
+| Sandra Lopes | Ridgeline (sub) | Admin | **Now**, **Timesheets**, **Costs** |
+| Márcia Souza | Ridgeline (sub) | Project manager | The office without Settings (not on the sign-in list) |
+| Tom Reilly | Northfield (sub) | Admin | A second sub with its own crew, timesheets and costs |

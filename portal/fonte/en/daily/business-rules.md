@@ -65,6 +65,10 @@ Each rule has an ID (`DLY-nnn`) so it can be quoted in meetings, tests and chang
 | DLY-052 | At approval, the whole content of the report (including each photo's fingerprint) receives a SHA-256 fingerprint. Its first 12 characters become the **verification code**. | Working |
 | DLY-053 | An approved report **cannot be changed by anyone**. | Working |
 | DLY-054 | Each report keeps a history: who started it, submitted it, when it reached the office, who requested changes and who approved it. | Working |
+| DLY-055 | **The general contractor approves.** On a subcontractor's job linked to a general contractor's job, the report goes to the general contractor's approval queue. The report stays in the subcontractor's account, with who approved it and the company (*Ana Ribeiro (Example Builders)*). The subcontractor cannot approve it. | Working |
+| DLY-056 | **On its own jobs, the subcontractor approves.** On a job directly with the owner (no general contractor linked), the subcontractor's own people approve. | Working |
+| DLY-057 | When the general contractor approves, the % complete informed in the report goes to the **subcontractor's** job schedule. | Working |
+| DLY-058 | A general contractor does not fill out daily reports: its jobs are reported by the subcontractors working on them. | Working |
 
 ## Sharing with the client
 
@@ -81,6 +85,8 @@ Each rule has an ID (`DLY-nnn`) so it can be quoted in meetings, tests and chang
 |---|---|---|
 | DLY-070 | **Job status:** green when today's report was received, yellow with 1 day behind, red with 2 days or more. | Working |
 | DLY-071 | The Dashboard shows the reports of the day, those awaiting approval, the jobs with late reports and the photos received today. | Working |
+| DLY-072 | For a general contractor, the job status, the next-morning alert and the notifications are **per subcontractor on each job**. | Working |
+| DLY-073 | On each job, the general contractor sees every subcontractor's people on site: name, trade, time in, who is there now and hours. **Never wages, labor burden or cost.** | Working |
 
 !!! confirm "To be confirmed"
     - Whether the 6 PM deadline and the 4 PM reminder become a setting per company or per job.

@@ -856,7 +856,7 @@ function telaPainel() {
   return moldura({
     ativo: 'painel', largo: true, titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
-      (soAcompanha() ? '<p class="aviso-empresa">' + icone('obra', 18) + '<span>' + tr('Os diários são feitos pelas prestadoras de cada obra e chegam aqui para você aprovar. Cada prestadora registra a própria equipe.') + '</span></p>' : '') +
+      (soAcompanha() ? '<p class="aviso-empresa">' + icone('obras', 18) + '<span>' + tr('Os diários são feitos pelas prestadoras de cada obra e chegam aqui para você aprovar. Cada prestadora registra a própria equipe.') + '</span></p>' : '') +
       '<div class="kpis">' +
         kpi(tr('RDOs de hoje'), tr('{n} de {total}', { n: deHoje.length, total: faroes.length }), deHoje.length === faroes.length ? 'verde' : '') +
         kpi(tr('Aguardando aprovação'), aguardando.length, aguardando.length ? 'azul' : '') +

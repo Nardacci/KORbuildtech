@@ -14,6 +14,7 @@
   <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
   <nav class="topo-nav" aria-label="Main">
     <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
     <a href="../presenting.html">Presenter's guide</a>
   </nav>
   <div class="topo-acoes">
@@ -197,6 +198,10 @@
 <figure class="celular"><img src="../img/daily-field-history-mobile.png" alt="History on the phone" loading="lazy"><figcaption>History on the phone</figcaption></figure>
 <h2 id="office-follow-the-jobs-on-the-dashboard">Office: follow the jobs on the Dashboard</h2>
 <p><strong>What it is for:</strong> seeing, at a glance, which jobs reported today and what is waiting for you.</p>
+<div class="admonition note">
+<p class="admonition-title">General contractor or subcontractor</p>
+<p>The office screens are the same for both, but a <strong>general contractor</strong> sees every subcontractor on its jobs: one status light per subcontractor on each job, and the reports of all of them in the queue. A <strong>subcontractor</strong> sees its own reports; the ones on a general contractor's job wait for the general contractor to approve.</p>
+</div>
 <div class="admonition who">
 <p class="admonition-title">Who can do it</p>
 <p>Anyone with <strong>View all jobs</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
@@ -212,7 +217,7 @@
 <h2 id="office-review-and-approve-a-report">Office: review and approve a report</h2>
 <div class="admonition who">
 <p class="admonition-title">Who can do it</p>
-<p>Anyone with <strong>Approve reports and send to the client</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+<p>Anyone with <strong>Approve reports and send to the client</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>) — at the <strong>general contractor</strong> of the job, or at the subcontractor when the job is directly with the owner.</p>
 </div>
 <ol>
 <li>
@@ -232,7 +237,9 @@
 </li>
 </ol>
 <figure><img src="../img/daily-approve-confirm.png" alt="Confirming the approval" loading="lazy"><figcaption>Confirming the approval</figcaption></figure>
-<p>After the approval, the panel shows <strong>Approved and sealed</strong>, the verification code and the sharing options.</p>
+<p>After the approval, the panel shows <strong>Approved and sealed</strong>, the verification code and the sharing options. The subcontractor's foreman sees the report approved, with who approved it and the company.</p>
+<p>On a general contractor's job, the subcontractor's office sees the report but cannot approve it: the panel says <strong>With the general contractor</strong>.</p>
+<figure><img src="../img/daily-sub-waiting-gc.png" alt="The subcontractor&#x27;s view while the general contractor reviews" loading="lazy"><figcaption>The subcontractor&#x27;s view while the general contractor reviews</figcaption></figure>
 <figure><img src="../img/daily-approved.png" alt="An approved report, with its verification code" loading="lazy"><figcaption>An approved report, with its verification code</figcaption></figure>
 <div class="admonition tip">
 <p class="admonition-title">How the seal works</p>
@@ -263,7 +270,11 @@
 <h2 id="office-follow-a-job">Office: follow a job</h2>
 <ol>
 <li>Open <strong>Jobs</strong>: every active job with its status and the number of reports received.</li>
-<li>Open a job: its address, client and parties, the <strong>Schedule</strong> card (when the job has a schedule), the daily report settings (person responsible, deadline, workdays) and every report received.</li>
+<li>
+<p>Open a job: its address, client and parties, the <strong>Schedule</strong> card (when the job has a schedule), the daily report settings (person responsible, deadline, workdays) and every report received.</p>
+<p>For a <strong>general contractor</strong>, the job shows instead <strong>Subcontractors on this job</strong> — for each subcontractor, who is on site now, who came in today, hours today and this week, and the list of people with trade, time in and hours (never dollar amounts) — the schedules published by the subcontractors and the reports received, grouped by subcontractor.</p>
+<figure><img src="../img/daily-job-subcontractors.png" alt="Subcontractors on a general contractor&#x27;s job" loading="lazy"><figcaption>Subcontractors on a general contractor&#x27;s job</figcaption></figure>
+</li>
 </ol>
 <figure><img src="../img/daily-jobs.png" alt="Jobs" loading="lazy"><figcaption>Jobs</figcaption></figure>
 <figure><img src="../img/daily-job.png" alt="A job" loading="lazy"><figcaption>A job</figcaption></figure>

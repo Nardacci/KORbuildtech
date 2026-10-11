@@ -173,6 +173,9 @@ The indicator at the top of the screen (**Online**) shows the connection.
 
 **What it is for:** seeing, at a glance, which jobs reported today and what is waiting for you.
 
+!!! note "General contractor or subcontractor"
+    The office screens are the same for both, but a **general contractor** sees every subcontractor on its jobs: one status light per subcontractor on each job, and the reports of all of them in the queue. A **subcontractor** sees its own reports; the ones on a general contractor's job wait for the general contractor to approve.
+
 !!! who "Who can do it"
     Anyone with **View all jobs** (default roles: **Admin** and **Project manager**).
 
@@ -188,7 +191,7 @@ The **Dashboard** shows:
 ## Office: review and approve a report
 
 !!! who "Who can do it"
-    Anyone with **Approve reports and send to the client** (default roles: **Admin** and **Project manager**).
+    Anyone with **Approve reports and send to the client** (default roles: **Admin** and **Project manager**) — at the **general contractor** of the job, or at the subcontractor when the job is directly with the owner.
 
 1. Open **Approvals** (or **Review** on the Dashboard).
 
@@ -204,7 +207,11 @@ The **Dashboard** shows:
 
 ![Confirming the approval](img/daily-approve-confirm.png)
 
-After the approval, the panel shows **Approved and sealed**, the verification code and the sharing options.
+After the approval, the panel shows **Approved and sealed**, the verification code and the sharing options. The subcontractor's foreman sees the report approved, with who approved it and the company.
+
+On a general contractor's job, the subcontractor's office sees the report but cannot approve it: the panel says **With the general contractor**.
+
+![The subcontractor's view while the general contractor reviews](img/daily-sub-waiting-gc.png)
 
 ![An approved report, with its verification code](img/daily-approved.png)
 
@@ -242,6 +249,10 @@ The client's page checks the seal every time it opens. If the content matches wh
 
 1. Open **Jobs**: every active job with its status and the number of reports received.
 2. Open a job: its address, client and parties, the **Schedule** card (when the job has a schedule), the daily report settings (person responsible, deadline, workdays) and every report received.
+
+    For a **general contractor**, the job shows instead **Subcontractors on this job** — for each subcontractor, who is on site now, who came in today, hours today and this week, and the list of people with trade, time in and hours (never dollar amounts) — the schedules published by the subcontractors and the reports received, grouped by subcontractor.
+
+    ![Subcontractors on a general contractor's job](img/daily-job-subcontractors.png)
 
 ![Jobs](img/daily-jobs.png)
 

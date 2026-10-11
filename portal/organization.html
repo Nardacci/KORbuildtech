@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How KORbuild is organized · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="index.html#modules">Modules</a>
+    <a href="organization.html" aria-current=page>How it is organized</a>
+    <a href="presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Modules">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guide</div><ul><li><a href="organization.html" aria-current=page>How KORbuild is organized</a></li><li><a href="presenting.html">Presenter&#x27;s guide</a></li></ul>
+    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
+    <header class="doc-cabecalho">
+      <h1>How KORbuild is organized</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - How KORbuild is organized.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>KORbuild is sold as a subscription (SaaS). Each customer is a <strong>company</strong> with its own account, its own people and its own data. This page explains who the customers are, who registers what, and what each company can see of the others. Read it before the presenter's guide: every screen in the demo follows these rules.</p>
+<h2 id="two-kinds-of-customer">Two kinds of customer</h2>
+<table>
+<thead>
+<tr>
+<th>Customer</th>
+<th>In the US market</th>
+<th>What it does in KORbuild</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>General contractor</strong> (GC)</td>
+<td><em>General contractor</em></td>
+<td><strong>Manages</strong> the jobs. It registers the jobs, links its subcontractors to them and follows everything they do. It does not fill out daily reports or clock anyone in.</td>
+</tr>
+<tr>
+<td><strong>Subcontractor</strong></td>
+<td><em>Trade contractor</em> (concrete, framing, siding, drywall…)</td>
+<td><strong>Does the work.</strong> It keeps the daily report, the crew time clock and the schedule of its own work, measures plans and sends proposals.</td>
+</tr>
+</tbody>
+</table>
+<p>A subcontractor can be a customer <strong>on its own</strong>, without any general contractor: for example, a siding company hired directly by a homeowner, or working for a general contractor that does not use KORbuild.</p>
+<h2 id="who-registers-what">Who registers what</h2>
+<p><code>General contractor
+├── Its own employees ............ registered and managed by the general contractor
+└── Subcontractors (any number)
+    └── Their employees ........... registered and managed by each subcontractor</code></p>
+<table>
+<thead>
+<tr>
+<th>The general contractor registers</th>
+<th>The subcontractor registers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Its subcontractors</td>
+<td>The schedule of its work on each job</td>
+</tr>
+<tr>
+<td>Its own employees (management: engineers, project managers, office)</td>
+<td>Its own employees and crews (hourly rates, burden, certifications)</td>
+</tr>
+<tr>
+<td>Jobs, and which subcontractors work on each one</td>
+<td>Daily reports (<strong>Daily</strong>)</td>
+</tr>
+<tr>
+<td>Access roles for its people</td>
+<td>Time clock and labor cost (<strong>Crew</strong>)</td>
+</tr>
+<tr>
+<td>Settings: company, jobs, contacts, users</td>
+<td>Takeoffs and proposals (<strong>Measure</strong>)</td>
+</tr>
+<tr>
+<td></td>
+<td>Settings: company, users, labor burden, work rules, contacts</td>
+</tr>
+<tr>
+<td></td>
+<td>Its own jobs, when it works directly for an owner</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Each company manages its own people</p>
+<p>A general contractor never sees or edits a subcontractor's employee records, and a subcontractor never sees another company's. On every employee record, <strong>Company (employer)</strong> shows the account the employee belongs to.</p>
+</div>
+<h2 id="what-each-company-sees-of-the-others">What each company sees of the others</h2>
+<p>When a subcontractor is hired, it links its own job to the general contractor's job. From then on:</p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>The subcontractor</th>
+<th>The general contractor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily reports</td>
+<td>Fills out and submits them</td>
+<td><strong>Approves</strong> them (or requests changes) and shares them with the owner</td>
+</tr>
+<tr>
+<td>People on site</td>
+<td>Clocks them in and out</td>
+<td>Sees <strong>names, trade, time in, who is on site now and hours</strong></td>
+</tr>
+<tr>
+<td>Wages, labor burden, labor cost</td>
+<td>Sees everything</td>
+<td><strong>Never sees them</strong></td>
+</tr>
+<tr>
+<td>Schedule</td>
+<td>Builds it and publishes versions</td>
+<td>Sees the published versions, read-only</td>
+</tr>
+</tbody>
+</table>
+<p>On a job that the subcontractor has <strong>directly with the owner</strong> (no general contractor), the subcontractor approves its own daily reports.</p>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"Each company keeps its own house in order — its people, its pay, its costs. The general contractor sees what matters to run the job: who is on site, how many hours, what was done every day — and approves the reports. What a sub pays its people stays with the sub."</p>
+</div>
+<h2 id="the-companies-in-the-demo">The companies in the demo</h2>
+<table>
+<thead>
+<tr>
+<th>Company</th>
+<th>Kind</th>
+<th>People you can sign in as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Example Builders</strong></td>
+<td>General contractor (manages, does not do the work)</td>
+<td>Ana Ribeiro (Admin)</td>
+</tr>
+<tr>
+<td><strong>Ridgeline Concrete &amp; Masonry</strong></td>
+<td>Subcontractor: structure, masonry and floors on the three jobs of Example Builders</td>
+<td>Sandra Lopes (Admin), Carlos Mendes (Foreman), Diego Santos (Worker)</td>
+</tr>
+<tr>
+<td><strong>Northfield Framing &amp; Siding</strong></td>
+<td>Subcontractor: framing and siding at Maple Gardens Residences, plus a homeowner job of its own (Thompson residence)</td>
+<td>Tom Reilly (Admin), Rita Gomes (Project manager), José Pereira (Foreman), Luis Ortega (Worker)</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="img/daily-job-subcontractors.png" alt="The general contractor&#x27;s view of a job: each subcontractor with the people on site and the hours, without dollar amounts" loading="lazy"><figcaption>The general contractor&#x27;s view of a job: each subcontractor with the people on site and the hours, without dollar amounts</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">In the prototype</p>
+<p>The three companies live in the same browser, so you can sign in as each of them in turn. In the product, each company has its own account on the server, and the general contractor receives only what the rules above allow.</p>
+</div>
+<div class="admonition confirm">
+<p class="admonition-title">To be confirmed</p>
+<ul>
+<li>How a general contractor invites a subcontractor and how the jobs get linked (today they come linked in the sample data). This comes with the bidding feature and the database.</li>
+<li>Whether a subcontractor can choose to share less (for example, hours without names).</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#two-kinds-of-customer">Two kinds of customer</a></li><li><a href="#who-registers-what">Who registers what</a></li><li><a href="#what-each-company-sees-of-the-others">What each company sees of the others</a></li><li><a href="#the-companies-in-the-demo">The companies in the demo</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="assets/portal.js"></script>
+</body></html>

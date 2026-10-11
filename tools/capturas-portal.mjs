@@ -54,8 +54,11 @@ if (parte('entrada')) {
   await foto(page, 'entry-main');
   await page.goto(DEMO + '#/entrar'); await page.waitForSelector('#form-login');
   await foto(page, 'entry-prototype');
-  await como(page, 'u-ana', '#/inicio');
+  // a tela de módulos de uma prestadora com tudo contratado (a construtora só tem o Daily de acompanhamento)
+  await como(page, 'u-tom', '#/inicio');
   await foto(page, 'modules-home');
+  await como(page, 'u-ana', '#/inicio');
+  await foto(page, 'modules-home-gc');
   await ctx.close();
 }
 
@@ -92,7 +95,7 @@ if (parte('daily')) {
   await ctx.close();
 }
 
-/* ---------- Daily: escritório (computador, Ana, administradora) ---------- */
+/* ---------- Daily: escritório (computador, Ana, administradora da construtora: aprova os diários das prestadoras) ---------- */
 if (parte('daily')) {
   const { ctx, page } = await contexto(1366);
   await como(page, 'u-ana', '#/daily/painel');
@@ -103,6 +106,11 @@ if (parte('daily')) {
   await foto(page, 'daily-jobs');
   await como(page, 'u-ana', '#/daily/obras/jardim');
   await foto(page, 'daily-job');
+  await foto(page, 'daily-job-subcontractors', '.prestadoras-obra');
+  // a prestadora não aprova o diário da obra da construtora: espera por ela
+  await como(page, 'u-tom', '#/daily/painel/rdo/rdo-nf-jardim-m1');
+  await foto(page, 'daily-sub-waiting-gc', '.revisao-lado');
+  await como(page, 'u-ana', '#/daily/obras/jardim');
   await page.click('.menu-usuario.sino summary').catch(() => {});
   await page.waitForTimeout(300);
   await foto(page, 'daily-notifications', '.menu-usuario.sino .menu');
@@ -178,9 +186,9 @@ if (parte('crew')) {
 /* ---------- Crew: escritório (computador, Ana) ---------- */
 if (parte('crew')) {
   const { ctx, page } = await contexto(1366);
-  await como(page, 'u-ana', '#/crew/agora');
+  await como(page, 'u-sandra', '#/crew/agora');
   await foto(page, 'crew-now');
-  await como(page, 'u-ana', '#/crew/timesheets/2026-09-28');
+  await como(page, 'u-sandra', '#/crew/timesheets/2026-09-28');
   await foto(page, 'crew-timesheets');
   // a semana de quem ainda espera aprovação (Roberto): ajustar e devolver ficam ali
   const semana = await page.$$eval('#conteudo tr', (linhas) => {
@@ -188,7 +196,7 @@ if (parte('crew')) {
     return l ? l.querySelector('a[href^="#/crew/semana/"]').getAttribute('href') : null;
   });
   if (semana) {
-    await como(page, 'u-ana', semana);
+    await como(page, 'u-sandra', semana);
     await foto(page, 'crew-employee-week');
     for (const [acao, nome] of [['crew-ajustar', 'crew-adjust-dialog'], ['crew-devolver', 'crew-return-dialog']]) {
       if (!(await page.locator('[data-acao="' + acao + '"]').count())) continue;
@@ -200,19 +208,19 @@ if (parte('crew')) {
       await page.waitForTimeout(300);
     }
   }
-  await como(page, 'u-ana', '#/crew/agora');
+  await como(page, 'u-sandra', '#/crew/agora');
   const dia = await page.$eval('#conteudo a[href^="#/crew/dia/"]', (a) => a.getAttribute('href')).catch(() => null);
   if (dia) {
-    await como(page, 'u-ana', dia);
+    await como(page, 'u-sandra', dia);
     await page.waitForTimeout(1500);
     await foto(page, 'crew-day-map');
   }
-  await como(page, 'u-ana', '#/crew/custos');
+  await como(page, 'u-sandra', '#/crew/custos');
   await foto(page, 'crew-costs-jobs');
   await page.click('[data-acao="crew-orcamento"]').catch(() => {});
   await page.waitForTimeout(500);
   if (await page.locator('dialog[open]').count()) { await foto(page, 'crew-budget-dialog', 'dialog[open]'); await page.keyboard.press('Escape'); }
-  await como(page, 'u-ana', '#/crew/custos/mes/2026-10');
+  await como(page, 'u-sandra', '#/crew/custos/mes/2026-10');
   await foto(page, 'crew-costs-month');
   await ctx.close();
 }

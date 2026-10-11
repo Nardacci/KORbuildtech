@@ -70,6 +70,8 @@ Each rule has an ID (`CRW-nnn`) so it can be quoted in meetings, tests and chang
 |---|---|---|
 | CRW-060 | **Dollar amounts** (costs, wages on timesheets) require **See costs and dollar amounts**. Workers and foremen see hours, never money. | Working |
 | CRW-061 | **Approve, return, edit and export** require **Approve and edit timesheets**. Without it, timesheets are read-only. | Working |
+| CRW-062 | **Each company clocks in its own employees.** A subcontractor never sees another company's people. On a general contractor's job, the general contractor sees the subcontractor's people on site — names, trade, time in, hours — but **never wages, labor burden or cost**. | Working |
+| CRW-063 | A **general contractor** does not use Crew: it manages the jobs and does not clock anyone in. | Working |
 
 !!! confirm "To be confirmed"
     - Whether workers' comp should vary by trade (labor burden per role).

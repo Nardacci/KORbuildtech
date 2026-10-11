@@ -14,6 +14,7 @@
   <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
   <nav class="topo-nav" aria-label="Main">
     <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
     <a href="../presenting.html">Presenter's guide</a>
   </nav>
   <div class="topo-acoes">
@@ -117,6 +118,8 @@
 <li>The <strong>Admin</strong> role is locked, so the company always has someone who can manage access. An admin who also fills out reports needs a new role created from it, with <strong>Fill out daily reports</strong> added.</li>
 <li>Someone without <strong>View all jobs</strong> never opens the office screens; someone without <strong>Fill out daily reports</strong> never opens the field screens. Typing the address of a screen does not get around it.</li>
 <li>The <strong>client</strong> is not a user: they receive the link of the approved report and need no account.</li>
+<li><strong>Who approves depends on the job, not only on the role.</strong> On a subcontractor's job linked to a general contractor, the general contractor's people with <strong>Approve reports</strong> approve it; the subcontractor sees <em>With the general contractor</em> and cannot approve. On a job the subcontractor has directly with the owner, its own people approve.</li>
+<li>A <strong>general contractor</strong> does not fill out reports: its Daily is the Dashboard, Approvals and Jobs, covering every subcontractor on its jobs.</li>
 </ul>
 </div>
 <h2 id="in-the-prototype">In the prototype</h2>
@@ -130,48 +133,48 @@
 </thead>
 <tbody>
 <tr>
-<td>Carlos Mendes</td>
-<td>Foreman</td>
-<td>Example Builders</td>
-</tr>
-<tr>
 <td>Ana Ribeiro</td>
 <td>Admin</td>
-<td>Example Builders</td>
+<td>Example Builders (general contractor)</td>
 </tr>
 <tr>
-<td>Márcia Souza</td>
-<td>Project manager</td>
-<td>Example Builders</td>
+<td>Sandra Lopes</td>
+<td>Admin</td>
+<td>Ridgeline Concrete &amp; Masonry (sub)</td>
+</tr>
+<tr>
+<td>Carlos Mendes</td>
+<td>Foreman</td>
+<td>Ridgeline Concrete &amp; Masonry (sub)</td>
 </tr>
 <tr>
 <td>Diego Santos</td>
 <td>Worker</td>
-<td>Example Builders</td>
+<td>Ridgeline Concrete &amp; Masonry (sub)</td>
 </tr>
 <tr>
 <td>Tom Reilly</td>
 <td>Admin</td>
-<td>Northfield Framing &amp; Siding</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
 </tr>
 <tr>
 <td>Rita Gomes</td>
 <td>Project manager</td>
-<td>Northfield Framing &amp; Siding</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
 </tr>
 <tr>
 <td>José Pereira</td>
 <td>Foreman</td>
-<td>Northfield Framing &amp; Siding</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
 </tr>
 <tr>
 <td>Luis Ortega</td>
 <td>Worker</td>
-<td>Northfield Framing &amp; Siding</td>
+<td>Northfield Framing &amp; Siding (sub)</td>
 </tr>
 </tbody>
 </table>
-<p>Márcia Souza and Roberto Lima (a second foreman) exist in the sample data but are not on the sign-in list.</p>
+<p>Laura Pierce (project manager at Example Builders), Márcia Souza (project manager at Ridgeline) and Roberto Lima (a second foreman at Ridgeline) exist in the sample data but are not on the sign-in list.</p>
     </article>
   </main>
   <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#daily-permissions">Daily permissions</a></li><li><a href="#default-roles">Default roles</a></li><li><a href="#in-the-prototype">In the prototype</a></li></ul></nav>

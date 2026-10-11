@@ -14,6 +14,7 @@
   <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
   <nav class="topo-nav" aria-label="Main">
     <a href="index.html#modules">Modules</a>
+    <a href="organization.html">How it is organized</a>
     <a href="presenting.html" aria-current=page>Presenter's guide</a>
   </nav>
   <div class="topo-acoes">
@@ -27,7 +28,7 @@
 <div class="doc-layout" style="--cor:var(--cor-geral)">
   <aside class="lateral" aria-label="Modules">
     <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
-    <div class="lat-titulo">Guide</div><ul><li><a href="presenting.html" aria-current=page>Presenter&#x27;s guide</a></li></ul>
+    <div class="lat-titulo">Guide</div><ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="presenting.html" aria-current=page>Presenter&#x27;s guide</a></li></ul>
     <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li></ul>
   </aside>
   <main class="doc" id="conteudo">
@@ -76,7 +77,8 @@
 <p class="admonition-title">What to say</p>
 <p>"KORbuild replaces the paper daily report, the paper time card and the spreadsheet takeoff with one system. Everything the field does on the phone reaches the office the same day — and works even without signal on the job site."</p>
 </div>
-<p>KORbuild serves both sides of a job: the <strong>general contractor</strong> (GC) and the <strong>trade contractor</strong> (sub) that the GC hires. The prototype has one company of each, so you can show both points of view.</p>
+<p>KORbuild serves both sides of a job: the <strong>general contractor</strong> (GC), who <strong>manages</strong> the job, and the <strong>subcontractors</strong> (subs) who <strong>do the work</strong>. Each sub keeps its own daily reports, time clock and schedule; the GC approves the reports and sees who is on site and the hours — never what the sub pays its people. A sub can also be a customer on its own, with jobs straight from the owner. Read <a href="organization.html">How KORbuild is organized</a> before the meeting: it takes three minutes.</p>
+<p>The prototype has three companies: <strong>Example Builders</strong> (the GC), <strong>Ridgeline Concrete &amp; Masonry</strong> and <strong>Northfield Framing &amp; Siding</strong> (two subs).</p>
 <h2 id="before-you-start">Before you start</h2>
 <ol>
 <li>Open the prototype link: on the main sign-in page, click <strong>Open the prototype</strong>. You can also go straight to the prototype address (it ends in <code>?demo</code>).</li>
@@ -87,7 +89,7 @@
 <figure><img src="img/entry-main.png" alt="The main sign-in page: customer sign-in, the product guide and the prototype" loading="lazy"><figcaption>The main sign-in page: customer sign-in, the product guide and the prototype</figcaption></figure>
 <div class="admonition simulated">
 <p class="admonition-title">In the prototype</p>
-<p>The prototype keeps all its data <strong>in the browser</strong> (no server yet). Two consequences: what you do on the phone does not appear on the computer, and two people never see each other's changes. To show the field → office flow, switch users <strong>in the same browser</strong>: user menu › <strong>Sign out</strong>, then sign in with the other user. Customer accounts with a real database are being built; the main sign-in page already shows where they will sign in.</p>
+<p>The prototype keeps all its data <strong>in the browser</strong> (no server yet). Two consequences: what you do on the phone does not appear on the computer, and two people never see each other's changes. To show the field → GC flow, switch users <strong>in the same browser</strong>: user menu › <strong>Sign out</strong>, then sign in with the other user. Customer accounts with a real database are being built; the main sign-in page already shows where they will sign in.</p>
 </div>
 <h2 id="demo-users">Demo users</h2>
 <p>There is no password in the prototype: on the sign-in screen, click the email of the user you want and then <strong>Sign in</strong>.</p>
@@ -103,46 +105,52 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Carlos Mendes</strong> · carlos@examplebuilders.com</td>
+<td><strong>Ana Ribeiro</strong> · ana@examplebuilders.com</td>
 <td>Example Builders (GC)</td>
+<td>Admin</td>
+<td>The general contractor: dashboard of all subs, approvals, jobs with the people on site, client link</td>
+</tr>
+<tr>
+<td><strong>Carlos Mendes</strong> · carlos@ridgelinemasonry.com</td>
+<td>Ridgeline (sub)</td>
 <td>Foreman</td>
 <td>The phone: daily report, crew time clock</td>
 </tr>
 <tr>
-<td><strong>Ana Ribeiro</strong> · ana@examplebuilders.com</td>
-<td>Example Builders (GC)</td>
-<td>Admin</td>
-<td>The office: dashboard, approvals, client link, settings</td>
-</tr>
-<tr>
-<td><strong>Diego Santos</strong> · diego@examplebuilders.com</td>
-<td>Example Builders (GC)</td>
+<td><strong>Diego Santos</strong> · diego@ridgelinemasonry.com</td>
+<td>Ridgeline (sub)</td>
 <td>Worker</td>
 <td>A worker who only clocks in and out</td>
 </tr>
 <tr>
-<td><strong>Tom Reilly</strong> · tom@northfieldframing.com</td>
-<td>Northfield Framing &amp; Siding (sub)</td>
+<td><strong>Sandra Lopes</strong> · sandra@ridgelinemasonry.com</td>
+<td>Ridgeline (sub)</td>
 <td>Admin</td>
-<td>The trade contractor: Measure, job schedule, pricing</td>
+<td>The sub's office: timesheets, labor cost, employees, labor burden</td>
+</tr>
+<tr>
+<td><strong>Tom Reilly</strong> · tom@northfieldframing.com</td>
+<td>Northfield (sub)</td>
+<td>Admin</td>
+<td>A sub with every module: Measure, job schedule, pricing, a homeowner job of its own</td>
 </tr>
 <tr>
 <td><strong>Rita Gomes</strong> · rita@northfieldframing.com</td>
-<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Northfield (sub)</td>
 <td>Project manager</td>
 <td>An estimator</td>
 </tr>
 <tr>
 <td><strong>José Pereira</strong> · jose@northfieldframing.com</td>
-<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Northfield (sub)</td>
 <td>Foreman</td>
-<td>The sub's field side</td>
+<td>The second sub's field side</td>
 </tr>
 <tr>
 <td><strong>Luis Ortega</strong> · luis@northfieldframing.com</td>
-<td>Northfield Framing &amp; Siding (sub)</td>
+<td>Northfield (sub)</td>
 <td>Worker</td>
-<td>A worker of the sub</td>
+<td>A worker of the second sub</td>
 </tr>
 </tbody>
 </table>
@@ -153,27 +161,30 @@
 <h2 id="the-presentation-act-by-act">The presentation, act by act</h2>
 <h3 id="act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</h3>
 <ol>
-<li>Sign in as <strong>Ana Ribeiro</strong> (Admin).</li>
+<li>Sign in as <strong>Tom Reilly</strong> (Admin of Northfield, a sub with every module).</li>
 <li>Show the <strong>modules screen</strong>: Daily, Crew, Measure and Settings, each with a short description.</li>
 </ol>
-<figure><img src="img/modules-home.png" alt="The modules screen after signing in" loading="lazy"><figcaption>The modules screen after signing in</figcaption></figure>
+<figure><img src="img/modules-home.png" alt="The modules screen of a subcontractor with every module" loading="lazy"><figcaption>The modules screen of a subcontractor with every module</figcaption></figure>
+<ol start="3">
+<li>Mention that a general contractor sees fewer modules: it manages the jobs, so it has <strong>Daily</strong> (to follow and approve) and <strong>Settings</strong>, but no time clock or takeoff of its own.</li>
+</ol>
 <div class="admonition say">
 <p class="admonition-title">What to say</p>
-<p>"Each company turns on the modules it needs. The jobs, people and contacts are entered once and used by every module."</p>
+<p>"Each company turns on the modules it needs. The jobs, people and contacts are entered once and used by every module. The subs do the work and record it; the general contractor follows and approves."</p>
 </div>
 <h3 id="act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</h3>
 <p>Show this on a phone if you can; otherwise, narrow the browser window.</p>
 <ol>
-<li>Sign out and sign in as <strong>Carlos Mendes</strong> (Foreman). Daily opens on <strong>Today</strong>.</li>
-<li>Point out the red box (<strong>late report</strong>), the yellow box (<strong>today's report is missing</strong>, with the time left until 6 PM) and the request for changes sent by the office.</li>
+<li>Sign out and sign in as <strong>Carlos Mendes</strong> (Foreman at Ridgeline, the concrete and masonry sub). Daily opens on <strong>Today</strong>.</li>
+<li>Point out the red box (<strong>late report</strong>), the yellow box (<strong>today's report is missing</strong>, with the time left until 6 PM) and the request for changes sent by the general contractor.</li>
 <li>Open <strong>Maple Gardens Residences</strong> and tap <strong>or copy from a previous report</strong> → choose yesterday → <strong>Copy</strong>. The crew, the equipment and the activities still in progress come from yesterday.</li>
 <li>Scroll through the report: weather (pulled automatically from the job location), crew (+ and − buttons), equipment, <strong>Work performed</strong> with <strong>Dictate</strong> and <strong>Improve text</strong>, <strong>Issues &amp; delays</strong>, photos.</li>
-<li>Tap <strong>Submit for approval</strong>.</li>
+<li>Tap <strong>Submit for approval</strong>. The report goes to the general contractor, who approves it.</li>
 </ol>
 <figure class="celular"><img src="img/daily-field-today-mobile.png" alt="Today screen of the foreman, with late and missing reports" loading="lazy"><figcaption>Today screen of the foreman, with late and missing reports</figcaption></figure>
 <div class="admonition say">
 <p class="admonition-title">What to say</p>
-<p>"The foreman fills out the report at the end of the day, on the phone, in three or four minutes — copying yesterday, adjusting the crew, dictating what was done. Photos get a stamp with the date, time and GPS inside the image. If he forgets, the app reminds him at 4 PM, flags it at 6 PM and tells the office the next morning."</p>
+<p>"The sub's foreman fills out the report at the end of the day, on the phone, in three or four minutes — copying yesterday, adjusting the crew, dictating what was done. Photos get a stamp with the date, time and GPS inside the image. If he forgets, the app reminds him at 4 PM, flags it at 6 PM and tells the general contractor the next morning."</p>
 </div>
 <p>Full details: <a href="daily/user-manual.html#field-fill-out-the-daily-report">Daily user manual — Fill out the daily report</a>.</p>
 <h3 id="act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</h3>
@@ -186,17 +197,23 @@
 <p class="admonition-title">What to say</p>
 <p>"Job sites often have no signal. Nothing is lost: everything is saved on the phone and uploads as soon as there is a connection."</p>
 </div>
-<h3 id="act-4-the-office-review-approve-and-seal-4-min">Act 4 — The office: review, approve and seal (4 min)</h3>
+<h3 id="act-4-the-general-contractor-review-approve-and-seal-5-min">Act 4 — The general contractor: review, approve and seal (5 min)</h3>
 <ol>
-<li>Sign out and sign in as <strong>Ana Ribeiro</strong>. Daily opens on the <strong>Dashboard</strong>: today's numbers, the job status (green, yellow, red) and the approval queue.</li>
-<li>Open a report from <strong>Awaiting approval</strong> and click <strong>Review</strong>.</li>
-<li>Show <strong>Request changes from the field</strong>: the reason goes back to the foreman's phone. (Cancel it for the demo.)</li>
+<li>Sign out and sign in as <strong>Ana Ribeiro</strong> (Example Builders, the GC). Daily opens on the <strong>Dashboard</strong>: today's numbers, a status light (green, yellow, red) <strong>for each subcontractor on each job</strong>, and the approval queue with the reports of both subs.</li>
+<li>
+<p>Open <strong>Jobs › Maple Gardens Residences</strong>. Show <strong>Subcontractors on this job</strong>: Ridgeline and Northfield, who is on site now, since when, and the hours — <strong>no dollar amounts</strong>. Below, the reports of each sub.</p>
+<figure><img src="img/daily-job-subcontractors.png" alt="The general contractor&#x27;s view: each subcontractor with the people on site and the hours" loading="lazy"><figcaption>The general contractor&#x27;s view: each subcontractor with the people on site and the hours</figcaption></figure>
+</li>
+<li>
+<p>Open a report from <strong>Awaiting approval</strong> and click <strong>Review</strong>.</p>
+</li>
+<li>Show <strong>Request changes from the field</strong>: the reason goes back to the sub's foreman. (Cancel it for the demo.)</li>
 <li>Click <strong>Approve and seal</strong> → confirm. The report gets a <strong>verification code</strong> and can no longer be changed by anyone.</li>
 </ol>
 <figure><img src="img/daily-dashboard.png" alt="The office dashboard: numbers of the day, job status and approval queue" loading="lazy"><figcaption>The office dashboard: numbers of the day, job status and approval queue</figcaption></figure>
 <div class="admonition say">
 <p class="admonition-title">What to say</p>
-<p>"The office sees at a glance which jobs reported today. Approval seals the report with a digital fingerprint: if anyone changes a single word or photo later, the client's link shows that the document was altered."</p>
+<p>"You see at a glance which sub reported today on each job, who is on site and how many hours — without seeing what they pay their people. You approve the subs' reports; approval seals the report with a digital fingerprint: if anyone changes a single word or photo later, the owner's link shows that the document was altered."</p>
 </div>
 <h3 id="act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</h3>
 <ol>
@@ -210,9 +227,10 @@
 <p>"The client doesn't need an account or an app: just a link. And the link proves the report is exactly what was approved. That's what protects the contractor in a delay claim."</p>
 </div>
 <h3 id="act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</h3>
+<p>The time clock belongs to each subcontractor: it clocks in its own people and sees its own labor cost.</p>
 <ol>
 <li>
-<p>Sign in as <strong>Diego Santos</strong> (Worker). KORbuild opens straight on <strong>My time clock</strong>: one big button with what fits now.</p>
+<p>Sign in as <strong>Diego Santos</strong> (Worker at Ridgeline). KORbuild opens straight on <strong>My time clock</strong>: one big button with what fits now.</p>
 <figure class="celular"><img src="img/crew-my-clock-before-mobile.png" alt="My time clock: the worker sees only his own time clock" loading="lazy"><figcaption>My time clock: the worker sees only his own time clock</figcaption></figure>
 </li>
 <li>
@@ -222,7 +240,7 @@
 <li>
 <p>Show <strong>Switch job</strong>: travel to the other job is paid time.</p>
 </li>
-<li>Sign in as <strong>Ana Ribeiro</strong> (Admin), open <strong>Crew</strong>: <strong>Now</strong> shows who is working on each job and the <strong>off-site punches to review</strong>.</li>
+<li>Sign in as <strong>Sandra Lopes</strong> (Admin at Ridgeline), open <strong>Crew</strong>: <strong>Now</strong> shows who is working on each job and the <strong>off-site punches to review</strong>.</li>
 <li>Open <strong>Timesheets</strong>, go to the previous week: hours per day, overtime, cost and status. Open <strong>Roberto Lima</strong> (awaiting approval) and show <strong>Edit</strong> (a new punch with a reason — the original stays) and <strong>Approve week</strong>.</li>
 <li>
 <p>Open <strong>Costs</strong>: the <strong>Atlantic Tower</strong> has spent 34% of the budget and built 31% — KORbuild already shows a <strong>projected overrun</strong> of about $111k, with a third of the schedule gone.</p>
@@ -231,7 +249,7 @@
 </ol>
 <div class="admonition say">
 <p class="admonition-title">What to say</p>
-<p>"The foreman clocks in the whole crew in seconds, with GPS and the job's geofence — no paper card, no buddy punching. The office approves the week and exports it to payroll. And the owner sees, a third of the way into the job, that labor is going to run over — while there is still time to act."</p>
+<p>"The foreman clocks in the whole crew in seconds, with GPS and the job's geofence — no paper card, no buddy punching. The sub's office approves the week and exports it to payroll. And the sub's owner sees, a third of the way into the job, that labor is going to run over — while there is still time to act. The general contractor sees the people and the hours on its job, never the wages."</p>
 </div>
 <p>Full details: <a href="crew/user-manual.html">Crew user manual</a>.</p>
 <h3 id="act-7-the-other-modules-optional">Act 7 — The other modules (optional)</h3>
@@ -239,7 +257,8 @@
 <ul>
 <li><strong>Measure</strong> — sign in as <strong>Tom</strong>, open a project, then a sheet: set the scale, measure walls and floors on the PDF plan, and see the materials and labor calculated by the assemblies; then the <strong>Material list for quotes</strong> and the <strong>Proposal</strong>.</li>
 <li><strong>Job schedule</strong> — as <strong>Tom</strong>, Daily › Jobs › Maple Gardens Residences › <strong>Open schedule</strong>: Gantt chart, baseline, progress from the daily reports, export to Excel and publish to the GC.</li>
-<li><strong>Settings</strong> — as <strong>Ana</strong>: employees with hourly rate history, labor burden, work rules, jobs, users and access roles, audit log.</li>
+<li><strong>Settings</strong> — as <strong>Sandra</strong>: employees (with the employer company), hourly rate history, labor burden, work rules, jobs, users and access roles, audit log. As <strong>Ana</strong>, the general contractor's Settings is lighter: jobs (with their subcontractors), contacts, users and roles.</li>
+<li><strong>A sub on its own</strong> — as <strong>Tom</strong>, Daily › Jobs › <strong>Thompson residence</strong>: a homeowner job with no general contractor. Here Northfield approves its own reports.</li>
 </ul>
 <h2 id="questions-customers-ask">Questions customers ask</h2>
 <table>
@@ -267,6 +286,18 @@
 <td>Nothing: they receive a link and can download the PDF. No account, no cost.</td>
 </tr>
 <tr>
+<td>Can the general contractor see what a sub pays its people?</td>
+<td>No. It sees names, time on site and hours. Wages, labor burden and cost stay with the sub.</td>
+</tr>
+<tr>
+<td>Do we need a general contractor to use KORbuild?</td>
+<td>No. A subcontractor can subscribe on its own and run its jobs directly with the owner.</td>
+</tr>
+<tr>
+<td>Who approves the sub's daily report?</td>
+<td>The general contractor of the job. On a job straight with the owner, the sub approves its own.</td>
+</tr>
+<tr>
 <td>Can someone fake a photo or a date?</td>
 <td>Each photo carries a stamp with date, time and GPS inside the image, plus a digital fingerprint of the original file. The approved report is sealed; any change shows up on the client's link.</td>
 </tr>
@@ -290,7 +321,7 @@
 </div>
     </article>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-office-review-approve-and-seal-4-min">Act 4 — The office: review, approve and seal (4 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</a></li><li class="sub"><a href="#act-7-the-other-modules-optional">Act 7 — The other modules (optional)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-general-contractor-review-approve-and-seal-5-min">Act 4 — The general contractor: review, approve and seal (5 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</a></li><li class="sub"><a href="#act-7-the-other-modules-optional">Act 7 — The other modules (optional)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
 </div>
 <footer class="rodape">
   <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>

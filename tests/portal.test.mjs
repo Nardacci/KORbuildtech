@@ -25,7 +25,7 @@ verificar((await page.textContent('h1')).includes('Everything KORbuild does'), '
 verificar(await page.locator('.cartao-mod').count() === 4, 'os quatro módulos');
 verificar(await page.locator('a[href="../?demo#/entrar"]').count() >= 1, 'caminho para o protótipo');
 
-for (const p of ['presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html']) {
+for (const p of ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html']) {
   await page.goto(BASE + p);
   await page.waitForLoadState('networkidle');
   // as imagens carregam conforme a rolagem (lazy): confere cada arquivo direto

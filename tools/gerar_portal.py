@@ -58,6 +58,8 @@ MODULOS = [
      'resumo': 'Company setup: employees, labor burden, work rules, jobs, contacts, users and access roles, audit log.', 'paginas': []},
 ]
 GERAIS = [
+    {'slug': 'organization', 'titulo': 'How KORbuild is organized', 'desc': 'Who the customers are (general contractors and subcontractors), '
+                                                                      'who registers what and what each company sees of the others.'},
     {'slug': 'presenting', 'titulo': "Presenter's guide", 'desc': 'How to present KORbuild to a customer: the story, the order of the screens, '
                                                                  'which demo user to sign in with and what to say at each step.'},
 ]
@@ -112,6 +114,7 @@ def cabecalho(titulo, raiz, ativo=''):
   <a class="marca" href="{raiz}index.html" aria-label="KORbuild product guide, home"><img src="{raiz}../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
   <nav class="topo-nav" aria-label="Main">
     {nav('modulos', 'index.html#modules', 'Modules')}
+    {nav('organization', 'organization.html', 'How it is organized')}
     {nav('presenting', 'presenting.html', "Presenter's guide")}
   </nav>
   <div class="topo-acoes">
@@ -234,6 +237,7 @@ def pagina_inicial():
   with screenshots, so anyone can present the product with confidence.</p>
   <div class="botoes">
     <a class="botao" href="presenting.html">Presenter's guide →</a>
+    <a class="botao botao-secundario" href="organization.html">How KORbuild is organized</a>
     <a class="botao botao-secundario" href="#modules">Explore the modules</a>
     <a class="botao botao-secundario" href="../?demo#/entrar">Open the prototype ↗</a>
   </div>
@@ -248,7 +252,7 @@ def pagina_inicial():
   <p>Pick the path that matches why you are here.</p>
   <div class="publicos">
     <div class="publico"><h3>I will present KORbuild to a customer</h3><p>Read the presenter's guide: the story, the order of the screens and what to say.</p>
-      <ul><li><a href="presenting.html">Presenter's guide</a></li><li><a href="../?demo#/entrar">Open the prototype</a></li></ul></div>
+      <ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="presenting.html">Presenter's guide</a></li><li><a href="../?demo#/entrar">Open the prototype</a></li></ul></div>
     <div class="publico"><h3>I will use KORbuild every day</h3><p>Go to your module and open the user manual: one task at a time, with screenshots.</p>
       <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li><li><a href="crew/user-manual.html">Crew — user manual</a></li></ul></div>
     <div class="publico"><h3>I need the rules and permissions</h3><p>Each module lists its business rules with IDs and who can do what.</p>

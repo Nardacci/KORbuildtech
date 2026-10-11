@@ -14,6 +14,7 @@
   <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
   <nav class="topo-nav" aria-label="Main">
     <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
     <a href="../presenting.html">Presenter's guide</a>
   </nav>
   <div class="topo-acoes">
@@ -36,7 +37,7 @@
       <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Overview.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
     </header>
     <article class="texto">
-<p><strong>Daily</strong> is the daily construction report (in Portuguese, <em>RDO</em>). Every workday, the person in charge on site records the weather, the crew, the equipment, the work performed, the issues and the photos. The office reviews and approves the report, and the approved report is sealed and shared with the client as a link or a PDF.</p>
+<p><strong>Daily</strong> is the daily construction report (in Portuguese, <em>RDO</em>). Every workday, the subcontractor's person in charge on site records the weather, the crew, the equipment, the work performed, the issues and the photos. The <strong>general contractor</strong> of the job reviews and approves the report — or the subcontractor itself, on a job it has directly with the owner — and the approved report is sealed and shared with the client as a link or a PDF. See <a href="../organization.html">How KORbuild is organized</a>.</p>
 <h2 id="why-it-matters">Why it matters</h2>
 <ul>
 <li><strong>A record that holds up.</strong> When a client disputes a delay, the daily reports are the contractor's evidence: rain that stopped the pour, a late delivery, a missing inspection. Photos carry date, time and GPS inside the image, and the approved report is sealed.</li>
@@ -54,14 +55,19 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Foreman / superintendent</strong></td>
+<td><strong>Subcontractor's foreman</strong></td>
 <td>Phone</td>
-<td>Fills out and submits the report of each job, every workday; fixes reports sent back by the office.</td>
+<td>Fills out and submits the report of each job, every workday; fixes reports sent back.</td>
 </tr>
 <tr>
-<td><strong>Office</strong> (admin, project manager)</td>
+<td><strong>General contractor</strong> (admin, project manager)</td>
 <td>Computer</td>
-<td>Follows the jobs on the dashboard, reviews, approves or requests changes, shares with the client.</td>
+<td>Follows every subcontractor on each job, reviews, approves or requests changes, shares with the owner. Does not fill out reports.</td>
+</tr>
+<tr>
+<td><strong>Subcontractor's office</strong></td>
+<td>Computer</td>
+<td>Follows its own reports; approves them only on its jobs directly with an owner.</td>
 </tr>
 <tr>
 <td><strong>Client</strong> (owner or general contractor)</td>
@@ -142,8 +148,8 @@
 </tr>
 <tr>
 <td><strong>Awaiting approval</strong></td>
-<td>Received by the office.</td>
-<td>Office: approve or request changes.</td>
+<td>Received by whoever approves it.</td>
+<td>The general contractor (or the sub, on its own job): approve or request changes.</td>
 </tr>
 <tr>
 <td><strong>Changes requested</strong></td>
@@ -153,7 +159,7 @@
 <tr>
 <td><strong>Approved</strong></td>
 <td>Sealed with a verification code. Nobody can change it.</td>
-<td>Office: share with the client.</td>
+<td>Share with the client.</td>
 </tr>
 <tr>
 <td><strong>No work</strong></td>
@@ -166,7 +172,7 @@
 <ul>
 <li><strong>Crew:</strong> when a report starts, the crew can be filled in from the people who clocked in on the job that day (<strong>Update from the crew that clocked in</strong>).</li>
 <li><strong>Job schedule:</strong> each activity of the report can point to a task of the job's schedule with its % complete; when the report is approved, the schedule is updated.</li>
-<li><strong>Jobs</strong> are set up once, for the whole company (Settings › Jobs): address, geofence, deadline, who fills out the report and the workdays.</li>
+<li><strong>Jobs</strong> are set up once per company (Settings › Jobs). The general contractor registers its jobs; each subcontractor has its own job linked to the general contractor's, with who fills out the report and the workdays.</li>
 </ul>
     </article>
   </main>
