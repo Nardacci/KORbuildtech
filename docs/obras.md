@@ -39,4 +39,4 @@ modelosCronograma[]: { id, nome, etapas: [{ nome, pct }] }   // pct somam 100
 
 - Busca do endereço no mapa (geocodificação) — hoje: clique no mapa ou localização atual.
 - Orçamento de mão de obra da obra direto no cadastro (hoje fica em Crew › Custos).
-- Concorrência da construtora para as prestadoras, fechamento que sela o vínculo e canal entre as duas: [`concorrencias.md`](concorrencias.md) — vem com o banco de dados.
+- Concorrência da construtora para as prestadoras, fechamento que sela o vínculo e canal entre as duas: [`concorrencias.md`](concorrencias.md) — especificada para o protótipo (v2).

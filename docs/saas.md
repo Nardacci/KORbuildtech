@@ -49,7 +49,7 @@ Construtora (empresa assinante)
 | 3 | **Obras (projetos)** | E quais prestadoras trabalham em cada uma |
 | 4 | **Perfis de acesso** dos funcionários dela | Com a visão gerencial de todas as prestadoras (HS-10) |
 | 5 | **Settings** | Empresa, obras, usuários, perfis, contatos (dono da obra, fornecedores) |
-| + | Concorrência e plano | A concorrência vem com o banco de dados (`docs/concorrencias.md`) |
+| + | Concorrência e plano | Concorrências para as prestadoras, com o canal: especificação para o protótipo em `docs/concorrencias.md` (v2) |
 
 **A prestadora** executa o serviço.
 
