@@ -102,7 +102,8 @@ await page.goto(BASE + '#/daily/campo/obra/jardim');
 await page.click('[data-acao="novo-rdo"]');
 await page.waitForSelector('#s-equipe');
 verificar(await page.isVisible('#s-equipe .fonte-crew'), 'RDO avisa que a equipe veio do Crew');
-verificar((await page.textContent('#s-equipe .secao-total')).includes('6 presentes'), 'RDO com as 6 pessoas que bateram entrada na obra');
+// 6 da equipe do Carlos + 4 da prestadora ligada à obra (cada empresa pelo próprio ponto)
+verificar((await page.textContent('#s-equipe .secao-total')).includes('10 presentes'), 'RDO com as 6 pessoas que bateram entrada na obra e as 4 da prestadora');
 
 console.log('Escritório');
 await como('u-ana', '#/crew');

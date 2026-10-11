@@ -26,7 +26,7 @@ import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartao
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
-import { presencaNaObra } from './crew.js';
+import { presencaNaObra, prestadorasNaObra, horas } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
   PRAZO_HORA, LEMBRETE_HORA, ESCALADA_HORA, prazoDe, situacaoDeHoje, diasAtrasados, pendenciasDoCampo, semRdoOntem, enviadoComAtraso, descreverDias,
@@ -513,12 +513,21 @@ function novoRdo(obraId, baseId, data) {
   climaAutomatico(r, true);
 }
 
-/* Com o KORbuild Crew contratado, a equipe do RDO vem do ponto: quem bateu entrada na obra no dia. */
+/* Com o KORbuild Crew contratado, a equipe do RDO vem do ponto: quem bateu entrada na obra no dia.
+ * As prestadoras ligadas à obra entram também, cada uma com o nome dela: elas registram o ponto dos
+ * próprios funcionários e a construtora recebe só quantas pessoas por função (docs/saas.md). */
 function equipeDoPonto(r) {
-  if (!estado().empresa.modulos.includes('crew') || !estado().crew) return false;
-  const p = presencaNaObra(r.obraId, r.data);
-  if (!p.total) return false;
-  r.equipe = Object.entries(p.porFuncao).map(([funcao, v]) => ({ funcao, presentes: v.presentes, faltas: v.faltas }));
+  const temCrew = estado().empresa.modulos.includes('crew') && estado().crew;
+  const p = temCrew ? presencaNaObra(r.obraId, r.data) : { total: 0, porFuncao: {} };
+  const ligadas = [];
+  for (const pr of prestadorasNaObra(r.obraId, r.data)) {
+    for (const [funcao, v] of Object.entries(pr.porFuncao)) ligadas.push({ funcao, presentes: v.presentes, faltas: 0, empresa: pr.empresa, empresaId: pr.empresaId });
+  }
+  if (!p.total && !ligadas.length) return false;
+  // sem ninguém da própria equipe no ponto, a equipe própria que já estava (ex.: copiada de ontem) fica
+  const proprias = p.total ? Object.entries(p.porFuncao).map(([funcao, v]) => ({ funcao, presentes: v.presentes, faltas: v.faltas })) : r.equipe.filter((e) => !e.empresa);
+  // equipes de prestadoras lançadas à mão (sem KORbuild) continuam
+  r.equipe = proprias.concat(ligadas, r.equipe.filter((e) => e.empresa && !e.empresaId));
   r.equipeFonte = 'crew';
   return true;
 }
@@ -600,22 +609,49 @@ function stepper(acao, i, campo, valor, rotulo) {
     '<button type="button" data-acao="' + acao + '" data-i="' + i + '" data-campo="' + campo + ('" data-valor="1" aria-label="' + tr('Aumentar') + ' ') + rotulo + '">+</button></div>';
 }
 
+/* A equipe do dia agrupada por empresa: primeiro a própria, depois cada prestadora (subcontractor). */
+function gruposDaEquipe(equipe) {
+  const grupos = [{ empresa: null, linhas: [] }];
+  equipe.forEach((e, i) => {
+    let g = grupos.find((x) => x.empresa === (e.empresa || null));
+    if (!g) grupos.push(g = { empresa: e.empresa, ligada: !!e.empresaId, linhas: [] });
+    g.linhas.push([e, i]);
+  });
+  return grupos.filter((g) => g.linhas.length);
+}
+
 function secaoEquipe(r) {
   const total = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
   const faltas = r.equipe.reduce((s, e) => s + Number(e.faltas || 0), 0);
-  const usadas = new Set(r.equipe.map((e) => e.funcao));
+  const usadas = new Set(r.equipe.filter((e) => !e.empresa).map((e) => e.funcao));
   const temCrew = estado().empresa.modulos.includes('crew');
+  const ligadas = prestadorasNaObra(r.obraId, r.data);
+  const grupos = gruposDaEquipe(r.equipe);
+  const porEmpresa = r.equipe.some((e) => e.empresa);
+  const linha = ([e, i]) => '<div class="tabela-linha"><b>' + esc(e.funcao) + '</b>' +
+    stepper('equipe-mudar', i, 'presentes', e.presentes, (tr('presentes de') + ' ') + esc(e.funcao)) +
+    stepper('equipe-mudar', i, 'faltas', e.faltas, (tr('faltas de') + ' ') + esc(e.funcao)) +
+    '<button type="button" class="remover" data-acao="equipe-remover" data-i="' + i + ('" aria-label="' + tr('Remover') + ' ') + esc(e.funcao) + ('">' + tr('×') + '</button></div>');
+  const cabGrupo = (g) => '<div class="tabela-grupo"><b>' + esc(g.empresa || estado().empresa.nome) + '</b>' +
+    (g.empresa ? '<span class="etiqueta etiqueta-neutro">' + tr('prestadora') + '</span>' + (g.ligada ? '<span class="mudo pequeno">' + tr('pelo ponto dela no KORbuild') + '</span>' : '') : '<span class="mudo pequeno">' + tr('equipe própria') + '</span>') + '</div>';
+  const prestadoras = (estado().contatos || []).filter((c) => (c.papeis || []).includes('prestadora'));
   return '<section class="secao" id="s-equipe">' + cabecalhoSecao('equipe', tr('Equipe'), total > 0, '<span class="secao-total">' + tn(total, '{n} presente', '{n} presentes') + (faltas ? ' · ' + tn(faltas, '{n} falta', '{n} faltas') : '') + '</span>') +
     (r.equipeFonte === 'crew' ? '<p class="fonte-crew">' + icone('crew', 16) + (tr('Preenchida pelo ponto do KORbuild Crew: quem bateu entrada nesta obra. Ajuste se precisar.') + '</p>') : '') +
-    (temCrew ? ('<button type="button" class="link-sutil alinhado-esquerda" data-acao="equipe-do-ponto">' + tr('Atualizar pela equipe que bateu ponto') + '</button>') : '') +
+    (temCrew || ligadas.length ? ('<button type="button" class="link-sutil alinhado-esquerda" data-acao="equipe-do-ponto">' + tr('Atualizar pela equipe que bateu ponto') + '</button>') : '') +
     (r.equipe.length ? ('<div class="tabela-edicao"><div class="tabela-cab"><span>' + tr('Função') + '</span><span>' + tr('Presentes') + '</span><span>' + tr('Faltas') + '</span><span></span></div>') +
-      r.equipe.map((e, i) => '<div class="tabela-linha"><b>' + esc(e.funcao) + '</b>' +
-        stepper('equipe-mudar', i, 'presentes', e.presentes, (tr('presentes de') + ' ') + esc(e.funcao)) +
-        stepper('equipe-mudar', i, 'faltas', e.faltas, (tr('faltas de') + ' ') + esc(e.funcao)) +
-        '<button type="button" class="remover" data-acao="equipe-remover" data-i="' + i + ('" aria-label="' + tr('Remover') + ' ') + esc(e.funcao) + ('">' + tr('×') + '</button></div>')).join('') + '</div>'
+      grupos.map((g) => (porEmpresa ? cabGrupo(g) : '') + g.linhas.map(linha).join('')).join('') + '</div>'
       : ('<p class="vazio">' + tr('Toque nas funções abaixo para adicionar quem está na obra hoje.') + '</p>')) +
     '<div class="chips">' + FUNCOES.filter((f) => !usadas.has(f)).map((f) => '<button type="button" class="chip" data-acao="equipe-add" data-valor="' + esc(f) + '">+ ' + esc(f) + '</button>').join('') + '</div>' +
     ('<div class="adicionar-outro"><input type="text" id="outra-funcao" placeholder="' + tr('Outra função') + '" aria-label="' + tr('Outra função') + '"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="equipe-outra">' + tr('Adicionar') + '</button></div>') +
+    ('<details class="equipe-prestadora"><summary>' + tr('Equipe de prestadora (subcontractor)') + '</summary>') +
+      ('<p class="mudo pequeno">' + tr('Para prestadora que não usa o KORbuild: informe a empresa, a função e quantas pessoas. As que usam entram pelo ponto delas.') + '</p>') +
+      '<div class="adicionar-prestadora">' +
+        ('<select id="equipe-prest-empresa" aria-label="' + tr('Prestadora') + '">') + prestadoras.map((c) => '<option>' + esc(c.nome) + '</option>').join('') + '</select>' +
+        ('<input type="text" id="equipe-prest-outra" placeholder="' + tr('Ou escreva o nome') + '" aria-label="' + tr('Nome de outra prestadora') + '">') +
+        ('<input type="text" id="equipe-prest-funcao" placeholder="' + tr('Função') + '" aria-label="' + tr('Função na prestadora') + '">') +
+        ('<input type="number" id="equipe-prest-qtd" min="1" value="1" inputmode="numeric" aria-label="' + tr('Quantas pessoas') + '">') +
+        ('<button type="button" class="btn btn-contorno btn-pequeno" data-acao="equipe-prestadora">' + tr('Adicionar') + '</button>') +
+      '</div></details>' +
   '</section>';
 }
 
@@ -862,6 +898,25 @@ function telaObrasAdmin(filtro) {
   });
 }
 
+/* Prestadoras ligadas a esta obra: quem está aqui hoje e as horas, por função. Sem nomes e sem valores:
+ * salário, encargos e custo são da prestadora (docs/saas.md). */
+function htmlPrestadorasNaObra(o) {
+  const lista = prestadorasNaObra(o.id, hoje());
+  if (!lista.length) return '';
+  return '<section class="cartao prestadoras-obra"><h2 class="cartao-titulo">' + tr('Prestadoras nesta obra') + '</h2>' +
+    '<p class="mudo pequeno">' + tr('Cada prestadora registra o ponto dos próprios funcionários no KORbuild. Aqui você vê as pessoas e as horas por função; valores e encargos ficam só com ela.') + '</p>' +
+    lista.map((p) => '<div class="prestadora-obra"><div class="prestadora-cab"><b>' + esc(p.empresa) + '</b><span class="mudo pequeno">' + esc(p.servico) + '</span></div>' +
+      '<div class="prestadora-numeros">' +
+        '<div><span>' + tr('Na obra agora') + '</span><b>' + p.naObraAgora + '</b></div>' +
+        '<div><span>' + tr('Vieram hoje') + '</span><b>' + p.presentes + '</b></div>' +
+        '<div><span>' + tr('Horas hoje') + '</span><b>' + horas(p.minutosDia) + '</b></div>' +
+        '<div><span>' + tr('Horas na semana') + '</span><b>' + horas(p.minutosSemana) + '</b></div>' +
+      '</div>' +
+      (Object.keys(p.porFuncao).length ? '<ul class="prestadora-funcoes">' + Object.entries(p.porFuncao).map(([funcao, v]) => '<li><b>' + esc(funcao) + '</b> · ' + tn(v.presentes, '{n} pessoa', '{n} pessoas') + ' · ' + horas(v.minutos) + '</li>').join('') + '</ul>' : '<p class="mudo pequeno">' + tr('Ninguém da prestadora bateu ponto hoje.') + '</p>') +
+    '</div>').join('') +
+  '</section>';
+}
+
 function telaObraAdmin(id) {
   const o = acharObra(id);
   if (!o) return naoEncontrado('#/daily/obras');
@@ -870,7 +925,7 @@ function telaObraAdmin(id) {
   return moldura({
     ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
     conteudo: (situacaoDaObra(o) !== 'andamento' ? '<div class="aviso aviso-ambar"><b>' + tr('Obra {situacao}', { situacao: SITUACOES_OBRA[situacaoDaObra(o)].nome.toLowerCase() }) + '</b><span>' + tr('Não cobra o diário e não aparece no campo nem no ponto. O histórico continua aqui.') + '</span></div>' : '') +
-      resumoObra(o) + htmlCartaoCronograma(o) +
+      resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) +
       ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
         (pode(usuarioAtual(), 'settings.obras') ? '<a class="link" href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a>' : '') + '</div>' +
         ('<div class="linha-info"><span>' + tr('Responsável') + '</span><b>') + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
@@ -1200,6 +1255,14 @@ const acoes = {
     const v = document.getElementById('outra-funcao').value.trim();
     if (!v) { toast(tr('Escreva o nome da função.')); return; }
     mudar((r) => r.equipe.push({ funcao: v, presentes: 1, faltas: 0 }));
+  },
+  'equipe-prestadora'() {
+    const empresa = (document.getElementById('equipe-prest-outra').value.trim() || document.getElementById('equipe-prest-empresa').value).trim();
+    const funcao = document.getElementById('equipe-prest-funcao').value.trim();
+    const qtd = Math.max(1, Math.round(Number(document.getElementById('equipe-prest-qtd').value) || 1));
+    if (!empresa) { toast(tr('Escolha ou escreva a prestadora.')); return; }
+    if (!funcao) { toast(tr('Escreva a função.')); return; }
+    mudar((r) => r.equipe.push({ funcao, presentes: qtd, faltas: 0, empresa }));
   },
   'equipe-mudar'(el) {
     mudar((r) => { const e = r.equipe[el.dataset.i]; e[el.dataset.campo] = Math.max(0, Number(e[el.dataset.campo]) + Number(el.dataset.valor)); });

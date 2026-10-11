@@ -16,6 +16,34 @@ Documento de análise de negócio. Descreve como a plataforma se organiza como S
 | **Obra** | Cadastro comum a todos os módulos. Unidade de cobrança. | Residencial Jardim das Flores |
 | **Contato** | Os de fora, num diretório só com marcadores: construtora, cliente (dono da obra), fornecedor. Recebem documentos sem ter conta. | Merrimack Valley Builders (construtora), pelo link do diário |
 
+## Hierarquia: construtora → prestadoras → funcionários
+
+Decidido em outubro de 2026. É a regra que organiza o SaaS inteiro:
+
+```
+Construtora (empresa assinante)
+├── Funcionários da construtora ......... cadastrados e gerenciados pela construtora
+└── Prestadoras (N)
+    └── Funcionários da prestadora (N) .. cadastrados e gerenciados pela prestadora
+```
+
+| ID | Regra | Situação |
+| --- | --- | --- |
+| HS-01 | **Uma construtora tem N funcionários e N prestadoras; cada prestadora tem N funcionários.** A mesma prestadora pode trabalhar para várias construtoras. | Funcionando |
+| HS-02 | **Cada empresa cadastra e gerencia os próprios funcionários.** Os da construtora ficam na conta da construtora; os da prestadora, na conta da prestadora. Uma empresa nunca vê nem edita os funcionários de outra. O cadastro mostra a **empresa (empregador)**, que é sempre a conta onde ele está. | Funcionando |
+| HS-03 | **O funcionário só registra as horas** (Meu ponto, ou o encarregado bate pela equipe). Não vê valores. | Funcionando |
+| HS-04 | **O gestor da empresa vê tudo dos funcionários dela**: horas, valor hora, encargos e impostos, custo por obra e timesheets. Vale para a construtora e para a prestadora, cada uma com os seus. | Funcionando |
+| HS-05 | **A prestadora tem a própria obra, ligada à da construtora** (`vinculo`). Ela registra o ponto dos funcionários dela nessa obra. | Funcionando |
+| HS-06 | **A construtora vê as prestadoras da obra só em pessoas e horas por função**: quem está na obra agora, quantos vieram, horas do dia e da semana. Sem nomes e sem valores: salário, encargos e custo são da prestadora. (Obra › Prestadoras nesta obra.) | Funcionando · **a confirmar** |
+| HS-07 | **O diário da construtora traz a equipe por empresa**: a própria, pelo ponto dela; cada prestadora ligada, pelo ponto da prestadora; e a prestadora que não usa o KORbuild, lançada à mão (empresa, função, quantas pessoas). O relatório, o PDF e o link do cliente separam a mão de obra por empresa. | Funcionando |
+| HS-08 | **Prestadora sem KORbuild** é um contato da construtora (marcador prestadora). A equipe dela entra no diário à mão. | Funcionando |
+
+**A confirmar (HS-06):** se a construtora deve ver os **nomes** das pessoas da prestadora na obra (controle de acesso ao canteiro, segurança) e se a prestadora escolhe o que compartilha. Hoje: só pessoas e horas por função.
+
+**No protótipo**, a construtora calcula essa visão lendo os dados da prestadora em nome dela (`emNomeDaEmpresa` em `js/armazem.js`) e recebe só o resumo. **Na versão real**, quem faz isso é o servidor: a construtora nunca recebe as batidas nem os valores da prestadora; recebe uma visão pronta (pessoas e horas por função, por obra ligada), como já acontece com o cronograma publicado.
+
+**No banco de dados** (Supabase): `funcionarios.empresa_id` é obrigatório e as regras de acesso (RLS) só deixam ler e gravar funcionários e batidas da própria empresa. A visão da construtora é uma função do servidor que agrega as batidas das obras ligadas (`obras.vinculo_empresa_id`, `obras.vinculo_obra_id`) e devolve só funções, pessoas e minutos.
+
 ## Atores
 
 Decidido em outubro de 2026. Público: **prestadoras de serviço e construtoras/empreiteiras nos EUA**, começando por New Hampshire.
@@ -23,7 +51,7 @@ Decidido em outubro de 2026. Público: **prestadoras de serviço e construtoras/
 | Ator | No mercado americano | Papel no KORbuild |
 | --- | --- | --- |
 | **Empresa** | *Subcontractor / trade contractor* (framing, siding, drywall, reforma) ou *general contractor* | **Assina e usa.** Mede e orça (Measure), controla a equipe (Crew), faz o diário (Daily). O perfil (logo, licenças, seguros, termos da proposta) fica em Settings › Empresa |
-| **Funcionários** | *Crew* | São da empresa (Settings › Funcionários) e entram como usuários, com perfil de acesso |
+| **Funcionários** | *Crew* | São da empresa que os emprega (Settings › Funcionários): a construtora cadastra os dela, a prestadora os seus (§Hierarquia). Quem bate o próprio ponto também é usuário, com perfil de acesso |
 | **Construtora** | *General contractor (GC)* | **Contato.** Contrata a prestadora; recebe a proposta, o diário e o avanço por link ou PDF |
 | **Cliente** | *Owner / homeowner* | **Contato.** Dono da obra. Recebe a proposta quando contrata a prestadora direto (sem construtora) |
 | **Fornecedor** | *Supplier / lumber yard* | **Contato.** Recebe a lista de materiais para cotação e devolve os preços. Diz o que fornece (etapas do catálogo) |
@@ -31,7 +59,7 @@ Decidido em outubro de 2026. Público: **prestadoras de serviço e construtoras/
 
 **Na demonstração** há duas empresas, isoladas (cada uma só vê os seus dados):
 - **Construtora Exemplo**: Ana (administradora), Márcia (gestora), Carlos e Roberto (encarregados), Diego (trabalhador); as três obras com diário e ponto (Daily e Crew; o Measure não é dela). Para ela, a Northfield é um contato (prestadora).
-- **Northfield Framing & Siding**: Tom (administrador), Rita (estimadora, gestor de obras), José (encarregado) e Luis (trabalhador); os projetos do Measure (com as plantas) e um serviço no Residencial Jardim das Flores, em que a contratante é a Construtora Exemplo e a dona é a Incorporadora Horizonte.
+- **Northfield Framing & Siding**: Tom (administrador), Rita (estimadora, gestor de obras), José (encarregado) e Luis (trabalhador); os projetos do Measure (com as plantas) e um serviço no Residencial Jardim das Flores, em que a contratante é a Construtora Exemplo e a dona é a Incorporadora Horizonte. Funcionários: José, Luis, Kevin e André (equipe do José), com duas semanas de ponto nessa obra (a anterior aprovada pelo Tom) e hoje em campo desde as 7h.
 - No aparelho, o armazenamento guarda `{ versao, padrao, empresas: { id: dados } }`; a empresa aberta é a do usuário da sessão (`js/armazem.js`).
 
 **Regras dos atores**
@@ -85,6 +113,7 @@ Perguntas para a validação: a obra é mesmo a melhor unidade de cobrança? Qua
 | Login, tela de módulos, papéis e permissões | Funcionando (login é mockup, sem senha de verdade; todos entram na página dos módulos e o papel vale dentro do Daily) |
 | Uma empresa com plano em teste, uso de obras e usuários | Funcionando, com dados fictícios |
 | Registro de interesse nos módulos em breve | Funcionando; aparece na conta da empresa |
-| Várias empresas isoladas | Ainda não: há uma empresa só, no navegador |
+| Várias empresas isoladas | Funcionando: duas empresas (construtora e prestadora) no navegador, cada uma só com os seus dados |
+| Hierarquia construtora → prestadoras → funcionários | Funcionando (§Hierarquia): cada empresa com os seus funcionários e o seu ponto; a construtora vê as prestadoras da obra em horas |
 | Cadastro da empresa, convite de usuários, assinatura e cobrança | Só na tela (avisam que vêm na próxima etapa) |
-| Cadastro de obras | Ainda não: as obras vêm dos dados de exemplo |
+| Cadastro de obras | Funcionando (Settings › Obras e Daily › Obras; ver [`obras.md`](obras.md)) |

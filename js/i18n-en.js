@@ -2350,4 +2350,25 @@ export const EN = {
 
   // ---------- Revisão do inglês: plurais ----------
   '≈ {dist} percorridos': '≈ {dist} traveled',
+
+  // ---------- Hierarquia SaaS: empresas, prestadoras e funcionários ----------
+  'prestadora': 'subcontractor',
+  'pelo ponto dela no KORbuild': 'from their own KORbuild time clock',
+  'equipe própria': 'own crew',
+  'Equipe de prestadora (subcontractor)': 'Subcontractor crew',
+  'Para prestadora que não usa o KORbuild: informe a empresa, a função e quantas pessoas. As que usam entram pelo ponto delas.': 'For a subcontractor that does not use KORbuild: enter the company, the trade and how many people. Those that use it come in from their own time clock.',
+  'Ou escreva o nome': 'Or type the name',
+  'Nome de outra prestadora': 'Name of another subcontractor',
+  'Função na prestadora': 'Trade at the subcontractor',
+  'Quantas pessoas': 'How many people',
+  'Prestadoras nesta obra': 'Subcontractors on this job',
+  'Cada prestadora registra o ponto dos próprios funcionários no KORbuild. Aqui você vê as pessoas e as horas por função; valores e encargos ficam só com ela.': 'Each subcontractor clocks in its own employees in KORbuild. Here you see people and hours by trade; wages and labor burden stay with the subcontractor.',
+  'Na obra agora': 'On site now',
+  'Vieram hoje': 'Came in today',
+  'Ninguém da prestadora bateu ponto hoje.': 'No one from this subcontractor has clocked in today.',
+  'Escolha ou escreva a prestadora.': 'Choose or type the subcontractor.',
+  'Escreva a função.': 'Type the trade.',
+  'Funcionários de {empresa}. Cada empresa cadastra e gerencia os próprios funcionários: a construtora, os dela; cada prestadora, os seus, na própria conta. Os funcionários das prestadoras aparecem para a construtora só como horas por função na obra, nunca com valores.': 'Employees of {empresa}. Each company enters and manages its own employees: the general contractor, its own; each subcontractor, its own, in its own account. A subcontractor\'s employees appear to the general contractor only as hours by trade on the job, never with dollar amounts.',
+  'Empresa (empregador)': 'Company (employer)',
+  'O funcionário fica na conta da empresa que o emprega. Funcionário de prestadora é cadastrado pela própria prestadora.': 'The employee belongs to the account of the company that employs them. A subcontractor\'s employees are entered by the subcontractor itself.',
 };

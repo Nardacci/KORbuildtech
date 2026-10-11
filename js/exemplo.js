@@ -7,7 +7,7 @@
 import { hoje, somarDias, diasEntre, novoId, sha256 } from './util.js';
 import { tr, emIngles } from './i18n.js';
 import { DIAS_TRABALHO, ehDiaDeTrabalho } from './prazos.js';
-import { criarDadosCrew, RAIO_CERCA } from './crew.js';
+import { criarDadosCrew, criarPontoPrestadora, RAIO_CERCA } from './crew.js';
 import { criarSettings } from './settings.js';
 import { criarDadosMeasure } from './measure.js';
 import { retrato } from './cronograma.js';
@@ -203,7 +203,7 @@ function momento(iso, hora, minuto) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 25;
+export const VERSAO_DADOS = 26;
 
 export async function criarDemonstracao() {
   const dia0 = hoje();
@@ -344,7 +344,7 @@ function criarPrestadora(dia0) {
     usuarios: USUARIOS_PRESTADORA.map((u) => ({ ...u, ativo: true, ultimoAcesso: null })), contasDemo: USUARIOS_PRESTADORA.map((u) => u.id),
     interesses: [], contatos: criarContatos(CONTATOS_PRESTADORA), obras, rdos: [], funcionarios,
     settings: criarSettings(inicio, registro, tr('Tom Reilly')),
-    crew: { equipes: [{ id: 'eq-nf', nome: tr('Equipe do José'), encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
+    crew: { equipes: [{ id: 'eq-nf', nome: tr('Equipe do José'), encarregadoUsuarioId: 'u-jose', obraBaseId: 'nf-jardim' }], excursoes: [], ...criarPontoPrestadora(obras, funcionarios) },
     measure: criarDadosMeasure({ projetos: true, estimadores: ['u-tom', 'u-rita'] }),
     cronogramas: { 'nf-jardim': criarCronogramaExemplo(dia0) },
     modelosCronograma: modelosIniciais('prestadora'),

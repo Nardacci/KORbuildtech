@@ -13,6 +13,7 @@ Protótipo de validação da plataforma KORbuild (veja o README). Site estático
 - **Plataforma SaaS** com três módulos: **KORbuild Daily** (diário de obra / RDO), **KORbuild Crew** (ponto da equipe → horas → custo) e **KORbuild Measure** (plantas → medições → quantidades → orçamento). Estes são os nomes definidos; não use "DailyLog", "Workforce", "Takeoff" nem "STACK" (marca de terceiros).
 - Prioridade: Daily (em construção) → Crew → Measure.
 - Tudo é por **empresa** (o cliente da plataforma): usuários, obras, dados e módulos contratados. Nada de dado solto fora de uma empresa. A estrutura está em `docs/saas.md`.
+- **Hierarquia** (`docs/saas.md` §Hierarquia, HS-01 a HS-08): construtora → N prestadoras → N funcionários; a construtora também tem os seus. **Cada empresa cadastra e gerencia os próprios funcionários** e o ponto deles; o funcionário só registra horas; o gestor da empresa vê tudo (custo, encargos). A construtora vê as prestadoras da obra ligada (`vinculo`) só em pessoas e horas por função (`prestadorasNaObra` em `js/crew.js`), nunca valores; o diário traz a equipe por empresa (`r.equipe[].empresa`/`empresaId`).
 - Papéis: `admin` (escritório) e `campo` (canteiro); o cliente final é convidado externo, por link. Telas novas checam o papel em `desenhar()` (`js/app.js`).
 - Obras, pessoas e funções são cadastros da plataforma, compartilhados pelos módulos.
 - O KORbuild Match **não** faz parte deste pacote (por enquanto, só os três módulos acima).

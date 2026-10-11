@@ -13,7 +13,7 @@
  * Tipos de batida: entrada · intervalo-inicio · intervalo-fim · troca (sai rumo a outra obra) · chegada · etapa · saida */
 
 import { hoje, somarDias, diasEntre, novoId, isoDoDia } from './util.js';
-import { estado, salvar } from './armazem.js';
+import { estado, salvar, bancoDeDados, empresaAtualId, emNomeDaEmpresa } from './armazem.js';
 import { tr, tn, emIngles } from './i18n.js';
 import { regraEm, encargosEm, extrasDaSemana, funcionarios as listaFuncionarios, ativos, auditar, ENCARGOS_INICIAIS, segundaDe } from './settings.js';
 
@@ -320,6 +320,41 @@ export function presencaNaObra(obraId, iso) {
   return { total: presentes.length, porFuncao };
 }
 
+/* Prestadoras na obra da construtora: cada prestadora tem a própria obra ligada a esta (vinculo) e registra
+ * o ponto dos próprios funcionários. A construtora recebe só horas por função (sem nomes, sem valores):
+ * custo, salário e encargos são da prestadora (docs/saas.md). */
+export function prestadorasNaObra(obraId, iso, agora) {
+  const b = bancoDeDados();
+  const eu = empresaAtualId();
+  if (!b) return [];
+  const lista = [];
+  for (const [id, d] of Object.entries(b.empresas)) {
+    if (id === eu || !d.crew) continue;
+    for (const o of d.obras.filter((x) => x.vinculo && x.vinculo.empresaId === eu && x.vinculo.obraId === obraId)) {
+      lista.push(emNomeDaEmpresa(id, () => {
+        const fim = agora || Date.now();
+        const minutosNaObra = (fid, dia) => jornada(fid, dia, fim).segmentos
+          .filter((s) => s.tipo === 'trabalho' && s.obraId === o.id)
+          .reduce((t, s) => t + Math.max(0, (s.fim || (s.aberto ? fim : s.ini)) - s.ini) / 60000, 0);
+        const porFuncao = {};
+        let presentes = 0, naObraAgora = 0, minutosDia = 0, minutosSemana = 0;
+        for (const f of listaFuncionarios()) {
+          const min = minutosNaObra(f.id, iso);
+          for (let d2 = inicioDaSemana(iso); d2 <= iso; d2 = somarDias(d2, 1)) minutosSemana += minutosNaObra(f.id, d2);
+          if (!min && !jornada(f.id, iso, fim).segmentos.some((s) => s.obraId === o.id)) continue;
+          const pf = porFuncao[f.funcao] = porFuncao[f.funcao] || { presentes: 0, minutos: 0 };
+          pf.presentes++; pf.minutos += min;
+          presentes++; minutosDia += min;
+          const j = jornada(f.id, iso, fim);
+          if (j.atual && j.atual.obraId === o.id) naObraAgora++;
+        }
+        return { empresaId: id, empresa: d.empresa.nome, servico: o.nome, porFuncao, presentes, naObraAgora, minutosDia, minutosSemana };
+      }));
+    }
+  }
+  return lista;
+}
+
 /* ---------- Registrar ---------- */
 
 export function registrarBatidas(funcIds, dados) {
@@ -538,4 +573,64 @@ export function criarDadosCrew(obras) {
   const aprovacoes = funcionarios.filter((f) => f.equipeId === 'eq-a').map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: tr('Ana Ribeiro'), motivo: '', em: quando(segundaAtual, 9, 10) }));
 
   return { funcionarios, equipes, batidas, excursoes, aprovacoes, historico, orcamentos };
+}
+
+/* Ponto de exemplo da prestadora (equipe do José, framing na obra ligada ao Jardim): semana anterior aprovada
+ * pelo Tom, a atual até ontem e hoje já em campo (entrada às 7h). Mesmo formato das batidas da construtora:
+ * cada empresa registra e enxerga as horas dos próprios funcionários (docs/saas.md). */
+export function criarPontoPrestadora(obras, funcionarios) {
+  const dia0 = hoje();
+  const agora = Date.now();
+  const o = obras[0];
+  const rnd = semente(31);
+  const min = (n) => Math.round(rnd() * n);
+  const batidas = [];
+  const b = (f, tipo, etapa, em) => {
+    const lat = o.lat + (rnd() - 0.5) * 0.0016;
+    const lon = o.lon + (rnd() - 0.5) * 0.0016;
+    batidas.push({
+      id: novoId('bt'), funcionarioId: f.id, tipo, obraId: o.id, etapa, em, lat, lon, precisao: Math.round(6 + rnd() * 20),
+      dentroCerca: dentroDaCerca(o, lat, lon), fonteGps: 'gps', registradoPor: 'u-jose', modo: 'equipe', foto: rnd() > 0.5, ajuste: null, conferida: false,
+    });
+  };
+  const etapaDe = (f) => f.id === 'f-jose' ? tr('Limpeza e apoio') : tr('Estrutura');
+  const segundaAtual = inicioDaSemana(dia0);
+  const segundaAnterior = somarDias(segundaAtual, -7);
+  for (let d = segundaAnterior; d <= dia0; d = somarDias(d, 1)) {
+    const semana = new Date(quando(d, 12, 0)).getDay();
+    if (semana === 0 || semana === 6) continue; // framing: segunda a sexta
+    for (const f of funcionarios) {
+      if (f.id === 'f-andre' && d === somarDias(segundaAnterior, 2)) continue; // faltou na quarta da semana anterior
+      const eventos = [
+        ['entrada', quando(d, 6, 55 + min(8))],
+        ['intervalo-inicio', quando(d, 11, 30 + min(4))],
+        ['intervalo-fim', quando(d, 12, min(4))],
+        ['saida', quando(d, 15, 30 + min(10))],
+      ];
+      for (const [tipo, em] of eventos) if (em <= agora) b(f, tipo, etapaDe(f), em);
+    }
+  }
+  // Semanas anteriores, consolidadas: [data, pessoa, obra, etapa, minutos]
+  const historico = [];
+  const rh = semente(37);
+  for (const f of funcionarios) {
+    for (let d = o.inicio > f.admissao ? o.inicio : f.admissao; d < segundaAnterior; d = somarDias(d, 1)) {
+      const dia = new Date(quando(d, 12, 0)).getDay();
+      if (dia === 0 || dia === 6 || rh() < 0.03) continue;
+      historico.push([d, f.id, o.id, etapaDe(f), 480 + Math.round(rh() * 15)]);
+    }
+  }
+  const aprovacoes = funcionarios.map((f) => ({ funcionarioId: f.id, semana: segundaAnterior, status: 'aprovado', por: tr('Tom Reilly'), motivo: '', em: quando(segundaAtual, 8, 40) }));
+  // Orçamento de mão de obra do contrato de framing e siding: no rumo
+  const enc = ENCARGOS_INICIAIS.reduce((t, i) => t + i.pct, 0) / 100;
+  const semanal = funcionarios.reduce((t, f) => t + f.valores[f.valores.length - 1].valor * 40, 0) * (1 + enc);
+  const valor = Math.round(semanal * (diasEntre(o.inicio, o.prazo) / 7) * 1.06 / 100) * 100;
+  const orcamentos = {
+    [o.id]: {
+      valor, avanco: Math.round(diasEntre(o.inicio, dia0) / diasEntre(o.inicio, o.prazo) * 100),
+      porEtapa: { [tr('Estrutura')]: Math.round(valor * 0.78 / 100) * 100, [tr('Limpeza e apoio')]: Math.round(valor * 0.22 / 100) * 100 },
+      por: tr('Tom Reilly'), em: quando(o.inicio, 9, 0),
+    },
+  };
+  return { batidas, aprovacoes, historico, orcamentos };
 }

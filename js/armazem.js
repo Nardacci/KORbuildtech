@@ -21,9 +21,11 @@ function carregar() {
 export function bancoDeDados() { return carregar(); }
 
 /* A empresa aberta: a do usuário logado; sem ninguém logado, a padrão (tela de entrada). */
+let emNomeDe = null;
 export function empresaAtualId() {
   const b = carregar();
   if (!b) return null;
+  if (emNomeDe) return emNomeDe;
   let sessao = null;
   try { sessao = localStorage.getItem(CHAVE_SESSAO); } catch (e) { sessao = null; }
   if (sessao) for (const [id, d] of Object.entries(b.empresas)) if (d.usuarios.some((u) => u.id === sessao)) return id;
@@ -42,6 +44,14 @@ export function compartilhados() {
   if (!b) return [];
   b.compartilhados = b.compartilhados || [];
   return b.compartilhados;
+}
+/* Calcula algo com os dados de outra empresa e devolve só o resultado (ex.: as horas por função que a
+ * prestadora entrega à construtora na obra ligada). Na versão real é o servidor que faz isso e entrega
+ * apenas o que foi combinado: nunca nomes com valores, salários ou encargos. */
+export function emNomeDaEmpresa(id, fn) {
+  const antes = emNomeDe;
+  emNomeDe = id;
+  try { return fn(); } finally { emNomeDe = antes; }
 }
 export function empresaPorId(id) { const b = carregar(); return b ? b.empresas[id] || null : null; }
 /* Todas as empresas: só para achar o usuário pelo e-mail na entrada. */

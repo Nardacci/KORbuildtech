@@ -14,6 +14,7 @@ import {
   PERMISSOES, perfis, perfilDe, modulosDe, salvarPermissoes, criarPerfil, excluirPerfil, salvarUsuario,
 } from './settings.js';
 import { telaEmpresa, telaContatos, telaFormContato } from './contatos-telas.js';
+import { ATUACOES } from './contatos.js';
 import { telaObras, telaFormObra, telaModelos, telaFormModelo } from './obras-telas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -83,6 +84,16 @@ function situacaoCert(c) {
   return ('<span class="etiqueta etiqueta-verde">' + tr('válida até') + ' ') + dataCurta(c.validade) + '</span>';
 }
 
+/* O funcionário pertence à conta da empresa que o emprega: a construtora cadastra os dela, cada prestadora
+ * cadastra os seus (docs/saas.md). Uma empresa nunca vê nem edita os funcionários de outra. */
+function empregador() {
+  const e = estado().empresa;
+  return '<b>' + esc(e.nome) + '</b> <span class="etiqueta etiqueta-neutro">' + esc(ATUACOES[e.atuacao] || '') + '</span>';
+}
+function avisoEmpregador() {
+  return '<div class="aviso-empresa">' + icone('crew', 18) + '<p>' + tr('Funcionários de {empresa}. Cada empresa cadastra e gerencia os próprios funcionários: a construtora, os dela; cada prestadora, os seus, na própria conta. Os funcionários das prestadoras aparecem para a construtora só como horas por função na obra, nunca com valores.', { empresa: '<b>' + esc(estado().empresa.nome) + '</b>' }) + '</p></div>';
+}
+
 function custoCarregado(f) { return valorAtual(f) * (1 + (f.classificacao === '1099' ? 0 : encargosEm(hoje()))); }
 
 function telaFuncionarios(filtro) {
@@ -103,7 +114,7 @@ function telaFuncionarios(filtro) {
   return moldura({
     ativo: 'funcionarios', titulo: tr('Funcionários'), subtitulo: tr('Cadastro único da empresa: vale para o Crew, o Daily e o Measure'),
     acoes: '<a class="btn btn-primario btn-pequeno" href="#/settings/funcionario/novo">' + icone('mais', 16) + (tr('Novo funcionário') + '</a>'),
-    conteudo: ('<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">') + abas.map(([id, r]) => '<a href="#/settings/funcionarios' + (id ? '/' + id : '') + '"' + ((filtro || '') === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
+    conteudo: avisoEmpregador() + ('<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">') + abas.map(([id, r]) => '<a href="#/settings/funcionarios' + (id ? '/' + id : '') + '"' + ((filtro || '') === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
       ('<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-funcionarios"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Função e equipe') + '</th><th>' + tr('Classificação') + '</th><th class="num">' + tr('Valor hora') + '</th><th class="num">' + tr('Custo carregado') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
       (linhas || ('<tr><td colspan="6" class="mudo">' + tr('Nenhum funcionário.') + '</td></tr>')) + '</tbody></table></div></section>' +
       '<p class="dica">' + tr('Custo carregado = valor hora + {pct} de <a href="#/settings/encargos">encargos</a>. Autônomo (1099) não tem encargos nem hora extra.', { pct: pct(encargosEm(hoje())) }) + '</p>',
@@ -139,7 +150,7 @@ function telaFuncionario(id) {
         ('<div class="kpi"><span>' + tr('Custo carregado')) + (autonomo ? (' ' + tr('(sem encargos: 1099)')) : ' (+' + pct(encargosEm(hoje())) + (' ' + tr('encargos)'))) + '</span><b>' + dinheiro(custoCarregado(f)) + '</b></div>' +
       '</div>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Cadastro') + '</h2><dl class="dados-func">') +
-        dado(tr('Código'), esc(f.codigo)) + dado(tr('Situação'), SITUACOES_FUNC[f.situacao] + (f.desligamento ? ' ' + tr('em') + ' ' + dataCurta(f.desligamento) : '')) +
+        dado(tr('Empresa (empregador)'), empregador()) + dado(tr('Código'), esc(f.codigo)) + dado(tr('Situação'), SITUACOES_FUNC[f.situacao] + (f.desligamento ? ' ' + tr('em') + ' ' + dataCurta(f.desligamento) : '')) +
         dado(tr('Função'), esc(f.funcao)) + dado(tr('Equipe'), esc((equipe(f.equipeId) || {}).nome || '')) +
         dado(tr('Classificação'), CLASSIFICACOES[f.classificacao]) + dado('FLSA', FLSA[f.flsa]) +
         dado(tr('Admissão'), f.admissao ? dataCurta(f.admissao) : '') + dado(tr('Telefone'), esc(f.telefone)) +
@@ -174,6 +185,7 @@ function telaFormFuncionario(id) {
     voltar: f ? { href: '#/settings/funcionario/' + f.id, rotulo: f.nome } : { href: '#/settings/funcionarios', rotulo: tr('Funcionários') },
     conteudo: '<form id="form-func" class="form-settings" data-id="' + (f ? f.id : '') + '" onsubmit="return false">' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Identificação') + '</h2><div class="grade-campos">') +
+        '<div class="campo campo-largo"><span class="rotulo-pequeno">' + tr('Empresa (empregador)') + '</span><p class="valor-fixo">' + empregador() + '</p><span class="mudo pequeno">' + tr('O funcionário fica na conta da empresa que o emprega. Funcionário de prestadora é cadastrado pela própria prestadora.') + '</span></div>' +
         campo('nome', tr('Nome completo'), texto('nome', v.nome, ' autocomplete="off"')) +
         campo('codigo', tr('Código (employee ID)'), texto('codigo', v.codigo), tr('O mesmo do sistema de folha')) +
         campo('telefone', tr('Telefone'), texto('telefone', v.telefone, ' inputmode="tel"')) +

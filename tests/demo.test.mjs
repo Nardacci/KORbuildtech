@@ -130,7 +130,8 @@ await page.waitForFunction(() => document.querySelectorAll('[data-acao="clima-te
 verificar(await page.locator('[data-turno="manha"][data-valor="sol"][aria-pressed="true"]').count() === 1, 'clima automático: manhã de sol');
 verificar(await page.locator('[data-turno="tarde"][data-valor="chuva"][aria-pressed="true"]').count() === 1, 'clima automático: tarde de chuva');
 verificar(await page.locator('[data-turno="tarde"][data-acao="clima-prat"][data-valor="0"][aria-pressed="true"]').count() === 1, 'tarde impraticável (chuva > 2 mm)');
-verificar(await page.locator('#s-equipe .tabela-linha').count() === 5, 'equipe copiada do dia anterior');
+// 5 funções da equipe própria, copiadas de ontem, + 3 da prestadora ligada à obra (pelo ponto dela)
+verificar(await page.locator('#s-equipe .tabela-linha').count() === 8, 'equipe copiada do dia anterior, mais a prestadora pelo ponto dela');
 verificar(await page.locator('#s-equipamentos .equip').count() === 3, 'equipamentos copiados');
 const atividadesCopiadas = await page.locator('#s-atividades .atividade').count();
 verificar(atividadesCopiadas === 2, 'só as atividades em andamento foram copiadas (' + atividadesCopiadas + ')');
@@ -142,7 +143,7 @@ await page.click('[data-acao="equipe-mudar"][data-i="2"][data-campo="faltas"][da
 const totalDepois = await page.textContent('#s-equipe .secao-total');
 verificar(totalAntes !== totalDepois && /falta/.test(totalDepois), 'stepper muda o total: ' + totalDepois);
 await page.click('[data-acao="equipe-add"][data-valor="Carpinteiro"]');
-verificar(await page.locator('#s-equipe .tabela-linha').count() === 6, 'nova função pelo chip');
+verificar(await page.locator('#s-equipe .tabela-linha').count() === 9, 'nova função pelo chip');
 await page.click('[data-acao="equip-status"][data-i="0"][data-valor="manutencao"]');
 verificar(await page.locator('[data-acao="equip-status"][data-i="0"][data-valor="manutencao"][aria-pressed="true"]').count() === 1, 'status de equipamento');
 

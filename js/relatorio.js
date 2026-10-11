@@ -39,6 +39,18 @@ function turnoClima(nome, t) {
     '<span class="' + (t.praticavel ? 'ok' : 'nao') + '">' + (t.praticavel ? tr('Praticável') : tr('Impraticável')) + '</span></div></div>';
 }
 
+/* Mão de obra por empresa: a própria e, quando houver, cada prestadora (subcontractor) com as suas linhas. */
+function linhasEquipe(equipe, propria) {
+  const linha = (e) => '<tr><td>' + esc(e.funcao) + '</td><td class="num">' + Number(e.presentes) + '</td><td class="num">' + (Number(e.faltas) || '–') + '</td></tr>';
+  if (!equipe.some((e) => e.empresa)) return equipe.map(linha).join('');
+  const nomes = [null].concat(Array.from(new Set(equipe.filter((e) => e.empresa).map((e) => e.empresa))));
+  return nomes.map((n) => {
+    const daEmpresa = equipe.filter((e) => (e.empresa || null) === n);
+    if (!daEmpresa.length) return '';
+    return '<tr class="rel-grupo"><td colspan="3">' + esc(n || propria) + (n ? ' · ' + tr('prestadora') : '') + '</td></tr>' + daEmpresa.map(linha).join('');
+  }).join('');
+}
+
 export function htmlRelatorio(r, obra, { verificado } = {}) {
   const totalPresentes = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
   const totalFaltas = r.equipe.reduce((s, e) => s + Number(e.faltas || 0), 0);
@@ -77,7 +89,7 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
     '<div class="rel-duas">' +
     ('<section class="rel-bloco"><h2>' + tr('Mão de obra') + '</h2>') +
       (r.equipe.length ? ('<table class="rel-tabela"><thead><tr><th>' + tr('Função') + '</th><th class="num">' + tr('Presentes') + '</th><th class="num">' + tr('Faltas') + '</th></tr></thead><tbody>') +
-        r.equipe.map((e) => '<tr><td>' + esc(e.funcao) + '</td><td class="num">' + Number(e.presentes) + '</td><td class="num">' + (Number(e.faltas) || '–') + '</td></tr>').join('') +
+        linhasEquipe(r.equipe, empresa.nome) +
         ('</tbody><tfoot><tr><td>' + tr('Total') + '</td><td class="num">') + totalPresentes + '</td><td class="num">' + (totalFaltas || '–') + '</td></tr></tfoot></table>'
         : ('<p class="mudo">' + tr('Nenhuma equipe registrada.') + '</p>')) +
     '</section>' +
