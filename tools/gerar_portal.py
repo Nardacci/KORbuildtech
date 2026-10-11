@@ -62,7 +62,14 @@ MODULOS = [
          {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated today and what comes next.'},
      ]},
     {'id': 'settings', 'nome': 'Settings', 'cor': 'var(--cor-settings)', 'ico': 'S',
-     'resumo': 'Company setup: employees, labor burden, work rules, jobs, contacts, users and access roles, audit log.', 'paginas': []},
+     'resumo': 'Company setup: employees, labor burden, work rules, jobs and their schedules, contacts, users and access roles, audit log.',
+     'paginas': [
+         {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'What is in Settings and who uses it.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'Employees, rules, company, contacts, jobs, the job schedule, users and roles — step by step.'},
+         {'slug': 'business-rules', 'titulo': 'Business rules', 'grupo': 'Rules and access', 'desc': 'Effective dates, employees, jobs, schedule and access rules, with IDs.'},
+         {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'The full permission catalog and the default roles.'},
+         {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated, what is still fixed and what comes next.'},
+     ]},
 ]
 GERAIS = [
     {'slug': 'organization', 'titulo': 'How KORbuild is organized', 'desc': 'Who the customers are (general contractors and subcontractors), '
@@ -261,9 +268,9 @@ def pagina_inicial():
     <div class="publico"><h3>I will present KORbuild to a customer</h3><p>Read the presenter's guide: the story, the order of the screens and what to say.</p>
       <ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="presenting.html">Presenter's guide</a></li><li><a href="../?demo#/entrar">Open the prototype</a></li></ul></div>
     <div class="publico"><h3>I will use KORbuild every day</h3><p>Go to your module and open the user manual: one task at a time, with screenshots.</p>
-      <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li><li><a href="crew/user-manual.html">Crew — user manual</a></li><li><a href="measure/user-manual.html">Measure — user manual</a></li></ul></div>
+      <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li><li><a href="crew/user-manual.html">Crew — user manual</a></li><li><a href="measure/user-manual.html">Measure — user manual</a></li><li><a href="settings/user-manual.html">Settings — user manual</a></li></ul></div>
     <div class="publico"><h3>I need the rules and permissions</h3><p>Each module lists its business rules with IDs and who can do what.</p>
-      <ul><li><a href="daily/business-rules.html">Daily — business rules</a></li><li><a href="daily/roles-and-permissions.html">Daily — roles and permissions</a></li><li><a href="crew/business-rules.html">Crew — business rules</a></li><li><a href="crew/roles-and-permissions.html">Crew — roles and permissions</a></li><li><a href="measure/business-rules.html">Measure — business rules</a></li></ul></div>
+      <ul><li><a href="daily/business-rules.html">Daily — business rules</a></li><li><a href="daily/roles-and-permissions.html">Daily — roles and permissions</a></li><li><a href="crew/business-rules.html">Crew — business rules</a></li><li><a href="crew/roles-and-permissions.html">Crew — roles and permissions</a></li><li><a href="measure/business-rules.html">Measure — business rules</a></li><li><a href="settings/roles-and-permissions.html">Settings — roles and permissions</a></li></ul></div>
   </div>
 </section>
 <div style="height:40px"></div>

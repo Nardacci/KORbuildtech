@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roles and permissions · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html" aria-current=page>Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Roles and permissions</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Roles and permissions.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>In KORbuild, nothing about access is hard-coded. The product defines the <strong>catalog of permissions</strong>; each company decides <strong>which permissions each role has</strong> (Settings › Roles) and <strong>which role each user has</strong> (Settings › Users). Every change goes to the audit log.</p>
+<h2 id="the-permission-catalog">The permission catalog</h2>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Permission</th>
+<th>What it allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Crew · time clock</td>
+<td><strong>Clock in and out (self)</strong></td>
+<td>My time clock: clock in, break and clock out on your own phone, with GPS.</td>
+</tr>
+<tr>
+<td>Crew · time clock</td>
+<td><strong>Clock in the crew</strong></td>
+<td>Foreman: clocks the crew in and sees their hours.</td>
+</tr>
+<tr>
+<td>Crew · office</td>
+<td><strong>View time clock and timesheets</strong></td>
+<td>Now, timesheets and the day map.</td>
+</tr>
+<tr>
+<td>Crew · office</td>
+<td><strong>Approve and edit timesheets</strong></td>
+<td>Approve, return, edit and export to payroll. Includes <em>View</em>.</td>
+</tr>
+<tr>
+<td>Crew · office</td>
+<td><strong>See costs and dollar amounts</strong></td>
+<td>Job costs, budgets, wages on timesheets. Includes <em>View</em>.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Fill out daily reports</strong></td>
+<td>Create and submit daily reports for your jobs.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>View all jobs</strong></td>
+<td>Dashboard, jobs and submitted reports.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Approve reports and send to the client</strong></td>
+<td>Approve, request changes, PDF and client link. Includes <em>View all jobs</em>.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Build the job schedule</strong></td>
+<td>Tasks, baseline, publish to the client and export to Excel. Includes <em>View all jobs</em>.</td>
+</tr>
+<tr>
+<td>Measure</td>
+<td><strong>Measure plans</strong></td>
+<td>Projects, plans, scale, measuring, assemblies, quote lists and proposals.</td>
+</tr>
+<tr>
+<td>Measure</td>
+<td><strong>Items and assemblies</strong></td>
+<td>Catalog, formulas, prices and markups. Includes <em>Measure plans</em>.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Employee records</strong></td>
+<td>Employee records, certifications and hourly rates.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Labor burden and work rules</strong></td>
+<td>New versions, with effective dates.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Users and access roles</strong></td>
+<td>Who signs in and what each role can do; audit log.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Company, account and plan</strong></td>
+<td>Company profile, plan and modules.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Contacts</strong></td>
+<td>The directory of general contractors, clients, suppliers and subcontractors.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Add and edit jobs</strong></td>
+<td>Jobs and task templates.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>See costs and dollar amounts</strong> is separate on purpose: a superintendent can approve hours without seeing anyone's wage.</p>
+<h2 id="default-roles">Default roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>In short</th>
+<th>When they sign in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Worker</strong></td>
+<td>Clock in and out (self).</td>
+<td>Straight to <strong>My time clock</strong> — no modules screen, no menu.</td>
+</tr>
+<tr>
+<td><strong>Foreman</strong></td>
+<td>Own time clock, crew time clock, daily reports.</td>
+<td>Modules screen (Daily and Crew).</td>
+</tr>
+<tr>
+<td><strong>Project manager</strong></td>
+<td>Follows and approves in Daily and Crew, sees costs, measures, creates jobs.</td>
+<td>Modules screen (Daily, Crew, Measure and Settings with Jobs only).</td>
+</tr>
+<tr>
+<td><strong>Admin</strong></td>
+<td>Everything in the office, including Settings. <strong>Locked.</strong></td>
+<td>Modules screen.</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="../img/settings-roles.png" alt="The permission matrix" loading="lazy"><figcaption>The permission matrix</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">Good to know</p>
+<ul>
+<li><strong>The home screen follows the permissions.</strong> Someone with a single module goes straight into it.</li>
+<li><strong>Admin is locked</strong>, so the company never loses the ability to manage access. There must always be at least one active user with <em>Users and access roles</em>, and nobody can remove their own access.</li>
+<li><strong>Dependencies are automatic:</strong> approving includes viewing; seeing costs includes viewing.</li>
+<li><strong>A role in use cannot be deleted:</strong> change the users' role first.</li>
+<li><strong>Without permission, the screen does not open</strong>, even by typing its address.</li>
+<li>A <strong>user</strong> is someone who signs in; an <strong>employee</strong> is someone who works on the jobs. A worker who clocks in on their own phone needs both, linked. Someone the foreman clocks in needs no login.</li>
+</ul>
+</div>
+<h2 id="examples">Examples</h2>
+<ul>
+<li><strong>A worker who also fills out the daily report:</strong> check <em>Fill out daily reports</em> on the Worker role, or create a new role from it. They will see Daily and Crew.</li>
+<li><strong>A foreman who approves timesheets:</strong> create a role from Foreman and check <em>Approve and edit timesheets</em>.</li>
+</ul>
+<h2 id="in-the-prototype">In the prototype</h2>
+<table>
+<thead>
+<tr>
+<th>Demo user</th>
+<th>Company</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ana Ribeiro</td>
+<td>Example Builders (general contractor)</td>
+<td>Admin</td>
+</tr>
+<tr>
+<td>Sandra Lopes</td>
+<td>Ridgeline Concrete &amp; Masonry</td>
+<td>Admin</td>
+</tr>
+<tr>
+<td>Márcia Souza</td>
+<td>Ridgeline Concrete &amp; Masonry</td>
+<td>Project manager (not on the sign-in list)</td>
+</tr>
+<tr>
+<td>Tom Reilly</td>
+<td>Northfield Framing &amp; Siding</td>
+<td>Admin</td>
+</tr>
+<tr>
+<td>Rita Gomes</td>
+<td>Northfield Framing &amp; Siding</td>
+<td>Project manager</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-permission-catalog">The permission catalog</a></li><li><a href="#default-roles">Default roles</a></li><li><a href="#examples">Examples</a></li><li><a href="#in-the-prototype">In the prototype</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html" aria-current=page>Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Start here</nav>
+    <header class="doc-cabecalho">
+      <h1>Overview</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Overview.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p><strong>Settings</strong> is where each company sets up KORbuild once, for every module: the company profile, the people (employees and users), what each role can do, the jobs and their schedules, the contacts, and — for companies that clock in their crews — the labor burden and the work rules. Nothing that a company may want to change is hard-coded.</p>
+<p>Settings comes with every plan, at no extra cost. Each company has its own Settings and never sees another company's (see <a href="../organization.html">How KORbuild is organized</a>).</p>
+<h2 id="why-it-matters">Why it matters</h2>
+<ul>
+<li><strong>Entered once, used everywhere.</strong> Jobs, employees and contacts are the same in Daily, Crew and Measure. A job's location drives the time clock geofence and the weather on the daily report; an employee's hourly rate drives the job cost.</li>
+<li><strong>Nothing rewrites the past.</strong> Hourly rates, labor burden and work rules change <strong>from a date</strong>. Approved weeks and past costs stay exactly as they were.</li>
+<li><strong>Every change has an author.</strong> The audit log records who changed what, when, before and after, and why.</li>
+<li><strong>Access the company decides.</strong> Roles are a matrix of permissions the company can adjust — including a separate permission to see dollar amounts.</li>
+</ul>
+<h2 id="what-is-in-settings">What is in Settings</h2>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>What it holds</th>
+<th>Who has it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Employees</strong></td>
+<td>The people who work on the jobs: trade, crew, W-2 or 1099, FLSA status, hire date, certifications and hourly rate history. <strong>Company (employer)</strong> shows the account they belong to.</td>
+<td>Every company (a general contractor's employees are its management staff)</td>
+</tr>
+<tr>
+<td><strong>Labor burden</strong></td>
+<td>Payroll taxes and benefits on top of wages (FICA, FUTA, SUTA, workers' comp, benefits), with effective dates.</td>
+<td>Companies with Crew</td>
+</tr>
+<tr>
+<td><strong>Work rules</strong></td>
+<td>Overtime (weekly, daily, double time) and breaks, with effective dates and state templates.</td>
+<td>Companies with Crew</td>
+</tr>
+<tr>
+<td><strong>Company</strong></td>
+<td>Logo, legal name, EIN, address, licenses and insurance, default proposal terms.</td>
+<td>Every company</td>
+</tr>
+<tr>
+<td><strong>Jobs</strong></td>
+<td>Every job: client and owner, address and geofence, dates, who fills out the daily report, workdays, status. Task templates for schedules.</td>
+<td>Every company</td>
+</tr>
+<tr>
+<td><strong>Contacts</strong></td>
+<td>One directory of the companies and people outside: general contractors, clients, suppliers, subcontractors.</td>
+<td>Every company</td>
+</tr>
+<tr>
+<td><strong>Users</strong></td>
+<td>Who signs in, with which role, linked to an employee record.</td>
+<td>Every company</td>
+</tr>
+<tr>
+<td><strong>Roles</strong></td>
+<td>The permission matrix: what each role can do in each module.</td>
+<td>Every company</td>
+</tr>
+<tr>
+<td><strong>Audit log</strong></td>
+<td>Every change in Settings, with before and after.</td>
+<td>Every company</td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>job schedule</strong> lives on each job (Daily › Jobs › a job › <strong>Open schedule</strong>); it is described here with the jobs.</p>
+<figure><img src="../img/settings-employees.png" alt="Settings: employees" loading="lazy"><figcaption>Settings: employees</figcaption></figure>
+<h2 id="who-uses-it">Who uses it</h2>
+<table>
+<thead>
+<tr>
+<th>Who</th>
+<th>What they do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Admin</strong> (office manager, owner)</td>
+<td>Everything in Settings.</td>
+</tr>
+<tr>
+<td><strong>Project manager</strong></td>
+<td>By default, only <strong>Jobs</strong> (create and edit jobs) — to keep wages and access with the admin.</td>
+</tr>
+<tr>
+<td><strong>Foreman, worker</strong></td>
+<td>Do not open Settings.</td>
+</tr>
+</tbody>
+</table>
+<p>What each role can do is adjustable: see <a href="../settings/roles-and-permissions.html">Roles and permissions</a>.</p>
+<h2 id="for-a-general-contractor">For a general contractor</h2>
+<p>A general contractor manages the jobs and does not clock anyone in (see <a href="../organization.html">How KORbuild is organized</a>). Its Settings is lighter: no labor burden or work rules, and its jobs have no daily report owner or schedule — those belong to each subcontractor's job linked to it. The jobs list shows the subcontractors working on each job.</p>
+<figure><img src="../img/settings-jobs-gc.png" alt="The general contractor&#x27;s jobs, with their subcontractors" loading="lazy"><figcaption>The general contractor&#x27;s jobs, with their subcontractors</figcaption></figure>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#why-it-matters">Why it matters</a></li><li><a href="#what-is-in-settings">What is in Settings</a></li><li><a href="#who-uses-it">Who uses it</a></li><li><a href="#for-a-general-contractor">For a general contractor</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

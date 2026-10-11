@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business rules · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html" aria-current=page>Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Business rules</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Business rules.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Each rule has an ID (<code>SET-nnn</code>) so it can be quoted in meetings, tests and change requests. The <strong>Status</strong> column says whether the rule works in the prototype today.</p>
+<div class="admonition note">
+<p class="admonition-title">Source</p>
+<p>These rules come from the prototype's code and from the Settings, jobs and schedule specifications in the project documentation. Open points are marked <strong>To be confirmed</strong> at the end.</p>
+</div>
+<h2 id="principles">Principles</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-001</td>
+<td><strong>Nothing a company may want to change is hard-coded.</strong> Rules, percentages, roles and lists live in Settings.</td>
+<td>Working (see Prototype status for what is still fixed)</td>
+</tr>
+<tr>
+<td>SET-002</td>
+<td><strong>Effective dates, never rewriting the past.</strong> Hourly rates, labor burden and work rules change from a date; earlier days keep the values of their time.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-003</td>
+<td><strong>Every change goes to the audit log</strong>: what changed, before and after, who, when and why.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-004</td>
+<td><strong>Fixed by product decision:</strong> a time punch is never edited (a correction is a new punch), the audit log is mandatory, companies are isolated, and the geofence flags but does not block.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="employees">Employees</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-010</td>
+<td><strong>Each company registers and manages its own employees.</strong> The record shows <strong>Company (employer)</strong>, always the account the employee belongs to.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-011</td>
+<td>An employee record holds code (employee ID), phone, emergency contact, <strong>classification</strong> (W-2 employee or 1099 contractor), <strong>FLSA</strong> (non-exempt gets overtime; exempt does not), trade, crew, hire and termination dates, status and the date the location notice was accepted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-012</td>
+<td><strong>SSNs and immigration documents are not stored in KORbuild</strong>: they stay in the payroll system; only the employee ID is kept for matching.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-013</td>
+<td><strong>Hourly rate with history:</strong> a change applies from a date, with a reason, and never deletes the previous rate. Each day's hours are paid and costed at the rate in effect that day.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-014</td>
+<td>A new hourly rate cannot start inside a week that is already approved (it went to payroll).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-015</td>
+<td><strong>Certifications</strong> (OSHA 10/30, licenses…) with an expiration date: KORbuild warns 30 days before, on the menu and in the notifications.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-016</td>
+<td>Terminated employees leave the active lists but keep their history.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="labor-burden-and-work-rules">Labor burden and work rules</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-020</td>
+<td><strong>Labor burden</strong> is a set of percentages on wages (FICA, FUTA, SUTA, workers' comp, benefits) applied to all W-2 employees; 1099 contractors carry none. Default: 32.05%.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-021</td>
+<td>A new burden version applies <strong>from a date, never in the past</strong>: the past weeks' costs do not change.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-022</td>
+<td><strong>Work rules</strong>: weekly overtime (default: over 40 h, Monday to Sunday, 1.5×), optional daily overtime and double time, and the minimum break (New Hampshire default: 30 min after 5 hours).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-023</td>
+<td>Work rules apply to <strong>whole weeks</strong>, starting on a Monday. <strong>Templates</strong> (federal FLSA, New Hampshire, California…) only fill in the form; the company adjusts them.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-024</td>
+<td><strong>No rounding of time</strong>: every minute is paid (product principle).</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="company-and-contacts">Company and contacts</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-030</td>
+<td><strong>Company profile:</strong> logo, legal name, EIN, how the company works (subcontractor, general contractor or both), address, phone, email, licenses, insurance and the default proposal terms. Proposals and daily reports use it.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-031</td>
+<td><strong>One directory of contacts with tags:</strong> general contractor, client (owner), supplier, subcontractor. A contact can have more than one tag (the same company may be your GC on one job and your client on another).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-032</td>
+<td>A <strong>supplier</strong> lists the cost codes it supplies; the Measure quote list sends it only those items.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-033</td>
+<td>Contacts receive documents by link or email and <strong>are not users</strong>: they need no account and do not count as users.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-034</td>
+<td>A contact in use (on a project or a job) cannot be deleted.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="jobs">Jobs</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-040</td>
+<td><strong>The job belongs to the company, not to a module:</strong> Daily (reports and schedule), Crew (time clock, geofence and cost) and Measure (won project) share the same record.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-041</td>
+<td>Fields: name*, client* (and the owner, if different), address, city*, state*, ZIP, <strong>location on the map*</strong>, <strong>geofence radius</strong> (50 to 2,000 m), start* and finish*, <strong>who fills out the daily report*</strong>, <strong>workdays*</strong> and status.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-042</td>
+<td>The location comes from a click on the map, the device's current location (when setting up on site) or typed coordinates. It drives the geofence, the weather on daily reports and the day map.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-043</td>
+<td><strong>Status:</strong> in progress, on hold or completed. Only jobs <strong>in progress</strong> require daily reports and appear on field phones and the time clock. Jobs on hold or completed stay in the office with their history; nothing is deleted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-044</td>
+<td><strong>Task templates:</strong> a list of tasks with each one's <strong>share of the schedule</strong> (%, adding up to 100). When creating a job, a template lays the tasks out in sequence between start and finish and saves the first baseline.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-045</td>
+<td><strong>From Measure:</strong> a won project with no job yet opens the job form pre-filled (name, address, client, owner); project and job stay linked.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-046</td>
+<td><strong>A general contractor's job</strong> has no daily report owner, workdays or schedule template: the daily report, time clock and schedule belong to each subcontractor's job linked to it.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="job-schedule">Job schedule</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-050</td>
+<td>The schedule <strong>belongs to the job</strong> and is built by the company that does the work. Each task has a name, start, finish, an optional person responsible and % complete.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-051</td>
+<td><strong>Baseline:</strong> a snapshot of the dates, saved with date, author and reason. The first is saved automatically; new ones only by decision (<strong>Save new baseline</strong>). Variance is measured against the latest baseline. Nothing is deleted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-052</td>
+<td><strong>% complete from Daily:</strong> an activity on the daily report can point to a schedule task and its %. When the report is <strong>approved</strong>, the % goes to the task, with its history (date, % and source report). The office can also update the % by hand.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-053</td>
+<td><strong>Task status:</strong> completed (100%), behind (past its finish and not 100%), at risk (actual progress 15 points or more below planned for today), in progress, not started.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-054</td>
+<td><strong>Job progress</strong> = the average % of the tasks, weighted by duration. <strong>Planned to date</strong> uses the same math on the baseline dates.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-055</td>
+<td><strong>3-week look-ahead:</strong> tasks in progress or starting/finishing in the next 21 days, on the foreman's job screen.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-056</td>
+<td><strong>Notifications:</strong> one per task behind schedule, for those who follow the jobs.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-057</td>
+<td><strong>Publish to the client:</strong> the subcontractor decides when the general contractor sees it. Each publication is a snapshot (version); the general contractor sees the latest, read-only, with its date, and can export it to Excel.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-058</td>
+<td><strong>Export to Excel:</strong> company header, job and client, task table (dates, duration, %, status, variance) and the Gantt bars week by week.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="users-and-access">Users and access</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-060</td>
+<td><strong>The home screen follows the permissions:</strong> with a single module, the person goes straight into it.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-061</td>
+<td><strong>Admin is locked</strong>; at least one active user must keep <em>Users and access roles</em>; nobody removes their own access.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-062</td>
+<td>Dependencies are automatic: approving includes viewing; seeing costs includes viewing; the catalog includes measuring; the schedule includes viewing all jobs.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-063</td>
+<td><strong>A user who clocks in on their own phone must be linked to an employee record.</strong></td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-064</td>
+<td>A role in use cannot be deleted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>SET-065</td>
+<td>Without permission, the screen does not open — typing its address leads back to the person's home screen.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">To be confirmed</p>
+<ul>
+<li>Permissions <strong>per job</strong> (a foreman sees only his jobs; a project manager only his region).</li>
+<li>Work rules <strong>per job</strong> (prevailing wage, a job in another state) and workers' comp per trade.</li>
+<li>Daily report deadlines, GPS intervals and cost alerts as company settings (today: fixed values, see Prototype status).</li>
+<li>Real email invitations for new users.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#principles">Principles</a></li><li><a href="#employees">Employees</a></li><li><a href="#labor-burden-and-work-rules">Labor burden and work rules</a></li><li><a href="#company-and-contacts">Company and contacts</a></li><li><a href="#jobs">Jobs</a></li><li><a href="#job-schedule">Job schedule</a></li><li><a href="#users-and-access">Users and access</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

@@ -6,7 +6,7 @@ What each person can do in Measure comes from their **access role** (Settings â€
 
 | Permission | What it allows |
 |---|---|
-| **Measure plans (takeoff)** | Open Measure: projects, upload PDFs, set the scale, measure, add and apply assemblies, see quantities and materials, material lists for quotes and proposals. |
+| **Measure plans** | Open Measure: projects, upload PDFs, set the scale, measure, add and apply assemblies, see quantities and materials, material lists for quotes and proposals. |
 | **Items and assemblies** | Create and edit items, assemblies with formulas, prices and markups. Includes **Measure plans**. Without it, formulas and prices are read-only. |
 
 ## Default roles

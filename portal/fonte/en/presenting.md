@@ -1,6 +1,6 @@
 # Presenter's guide
 
-This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A presentation of Daily, Crew and Measure takes about **35 minutes**; with questions, plan for 50.
+This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. The full presentation — Daily, Crew, Measure and Settings — takes about **40 minutes**; with questions, plan for an hour. For a shorter meeting, pick the acts that matter to the customer.
 
 ## The story in one minute
 
@@ -168,14 +168,31 @@ Use a computer. Measure belongs to the subcontractor that estimates the work.
 
 Full details: [Measure user manual](@/measure/user-manual.html).
 
-### Act 8 — The other modules (optional)
+### Act 8 — Settings and the job schedule (5 min)
 
-Detailed scripts for Settings will be added to this guide. Meanwhile, the highlights:
+1. Sign in as **Sandra Lopes** (Ridgeline), open **Settings**. Open **Employees** › **Carlos Mendes**: the employer company, the current hourly rate, overtime and burdened cost, certifications about to expire.
+2. Click **Change hourly rate** to show that a raise applies **from a date**: the hourly rate history keeps every rate, and approved weeks never change. (Cancel it.)
+
+    ![An employee, with the hourly rate cards](img/settings-employee.png)
+
+3. Open **Labor burden** and **Work rules**: versions with effective dates — the New Hampshire rule, overtime over 40 hours, 30-minute break after 5 hours — and the history.
+4. Open **Roles**: the permission matrix. Point out **See costs and dollar amounts**, separate from approving hours.
+5. Sign in as **Tom Reilly** (Northfield) and open Daily › Jobs › **Maple Gardens Residences · framing and siding** › **Open schedule**: actual vs. planned progress, a task behind, the forecast finish against the baseline, the Gantt with the baseline bars.
+
+    ![The job schedule](img/schedule-gantt.png)
+
+6. Show **Publish to client**, then sign in as **Ana** and open the same job: the published version, read-only, with **Export to Excel**.
+
+!!! say "What to say"
+    "Everything the company may want to change lives here — rates, burden, overtime rules, who can do what — and nothing rewrites the past: a raise applies from a date, and last week's payroll stays as it was. The schedule belongs to the job: the progress comes from the approved daily reports, and the sub decides when the general contractor sees a new version."
+
+Full details: [Settings user manual](@/settings/user-manual.html).
+
+### Act 9 — More to show (optional)
 
 - **Measure, more** — as **Tom**: the elevations (siding with the gable, windows and doors deducted, the **Opening** tool) and the **Elm Row Townhouses** project, where one unit plan is measured once and counts × 6.
-- **Job schedule** — as **Tom**, Daily › Jobs › Maple Gardens Residences › **Open schedule**: Gantt chart, baseline, progress from the daily reports, export to Excel and publish to the GC.
-- **Settings** — as **Sandra**: employees (with the employer company), hourly rate history, labor burden, work rules, jobs, users and access roles, audit log. As **Ana**, the general contractor's Settings is lighter: jobs (with their subcontractors), contacts, users and roles.
 - **A sub on its own** — as **Tom**, Daily › Jobs › **Thompson residence**: a homeowner job with no general contractor. Here Northfield approves its own reports.
+- **The general contractor's Settings** — as **Ana**: jobs with their subcontractors, contacts, users and roles; no labor burden or work rules, because the general contractor does not clock anyone in.
 
 ## Questions customers ask
 

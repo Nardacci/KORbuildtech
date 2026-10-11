@@ -25,7 +25,7 @@ verificar((await page.textContent('h1')).includes('Everything KORbuild does'), '
 verificar(await page.locator('.cartao-mod').count() === 4, 'os quatro módulos');
 verificar(await page.locator('a[href="../?demo#/entrar"]').count() >= 1, 'caminho para o protótipo');
 
-for (const p of ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html', 'measure/index.html', 'measure/overview.html', 'measure/user-manual.html', 'measure/business-rules.html', 'measure/roles-and-permissions.html', 'measure/prototype-status.html']) {
+for (const p of ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html', 'measure/index.html', 'measure/overview.html', 'measure/user-manual.html', 'measure/business-rules.html', 'measure/roles-and-permissions.html', 'measure/prototype-status.html', 'settings/index.html', 'settings/overview.html', 'settings/user-manual.html', 'settings/business-rules.html', 'settings/roles-and-permissions.html', 'settings/prototype-status.html']) {
   await page.goto(BASE + p);
   await page.waitForLoadState('networkidle');
   // as imagens carregam conforme a rolagem (lazy): confere cada arquivo direto

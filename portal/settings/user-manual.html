@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html" aria-current=page>User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Using it</nav>
+    <header class="doc-cabecalho">
+      <h1>User manual</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - User manual.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Step by step, one section of Settings at a time. The screenshots come from the prototype, signed in as <strong>Sandra Lopes</strong> (Admin at Ridgeline Concrete &amp; Masonry) for people and rules, and as <strong>Tom Reilly</strong> (Admin at Northfield Framing &amp; Siding) for the company, contacts, jobs and the schedule.</p>
+<p>Open Settings from the modules screen (or the modules button at the top right). The menu on the left shows only the sections your role can open.</p>
+<h2 id="employees">Employees</h2>
+<p><strong>What it is for:</strong> one record per person who works on the jobs, used by the time clock, the timesheets and the job cost.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Employee records</strong> (default role: <strong>Admin</strong>).</p>
+</div>
+<p>The list shows each employee with trade and crew, classification, <strong>hourly rate</strong> and <strong>burdened cost</strong> (hourly rate + labor burden), status and certifications about to expire. The banner at the top says whose employees they are: each company registers and manages its own.</p>
+<figure><img src="../img/settings-employees.png" alt="Employees" loading="lazy"><figcaption>Employees</figcaption></figure>
+<h3 id="add-or-edit-an-employee">Add or edit an employee</h3>
+<ol>
+<li>Click <strong>New employee</strong> (or open an employee and click <strong>Edit profile</strong>).</li>
+<li>Fill in:<ul>
+<li><strong>Identification:</strong> full name, code (the same employee ID as in payroll), phone, emergency contact. <strong>Company (employer)</strong> is fixed: the employee belongs to your account.</li>
+<li><strong>Employment:</strong> classification (<strong>W-2</strong> employee or <strong>1099</strong> contractor — contractors have no overtime and no labor burden), <strong>FLSA</strong> (exempt employees get no overtime), trade, crew, hire date, status and termination date.</li>
+<li>For a new employee, the <strong>starting hourly rate</strong>.</li>
+<li><strong>Certifications:</strong> OSHA 10/30, licenses, equipment operator… with expiration dates.</li>
+<li><strong>Privacy:</strong> the date the employee accepted the location notice (the time clock records location only while clocked in).</li>
+</ul>
+</li>
+<li>Save.</li>
+</ol>
+<figure><img src="../img/settings-employee-form.png" alt="The employee form" loading="lazy"><figcaption>The employee form</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">What KORbuild does not keep</p>
+<p>SSNs and immigration documents stay in your payroll system. KORbuild keeps only the employee ID, for matching.</p>
+</div>
+<h3 id="change-an-hourly-rate">Change an hourly rate</h3>
+<ol>
+<li>Open the employee: the cards show the current hourly rate, the overtime rate and the burdened cost.</li>
+<li>Click <strong>Change hourly rate</strong>, enter the new rate, the date it applies <strong>from</strong> and the reason.</li>
+</ol>
+<figure><img src="../img/settings-employee.png" alt="An employee, with the hourly rate cards" loading="lazy"><figcaption>An employee, with the hourly rate cards</figcaption></figure>
+<figure><img src="../img/settings-hourly-rate-dialog.png" alt="Changing the hourly rate" loading="lazy"><figcaption>Changing the hourly rate</figcaption></figure>
+<p>The <strong>hourly rate history</strong> keeps every rate with its dates, change and reason. Nothing is overwritten: each day's hours are paid at the rate in effect that day. A new rate cannot start inside a week already approved for payroll.</p>
+<h2 id="labor-burden">Labor burden</h2>
+<p><strong>What it is for:</strong> what the company pays on top of wages, so the job cost shows the real cost of an hour.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Labor burden and work rules</strong> (default role: <strong>Admin</strong>). Only for companies with Crew.</p>
+</div>
+<p>The screen shows the version in effect — FICA, FUTA, SUTA, workers' comp and benefits, with the total — and an example (someone earning $30.00/h costs $39.62/h). Below, the <strong>version history</strong>.</p>
+<p>To change it, click <strong>New version</strong>, enter each percentage, the date it applies <strong>from</strong> (never in the past) and the reason.</p>
+<figure><img src="../img/settings-labor-burden.png" alt="Labor burden" loading="lazy"><figcaption>Labor burden</figcaption></figure>
+<figure><img src="../img/settings-labor-burden-new.png" alt="A new labor burden version" loading="lazy"><figcaption>A new labor burden version</figcaption></figure>
+<div class="admonition tip">
+<p class="admonition-title">Ask your accountant</p>
+<p>The percentages depend on your state and insurer. In the prototype, FUTA and SUTA apply to all wages; in practice they stop at each year's wage base.</p>
+</div>
+<h2 id="work-rules">Work rules</h2>
+<p><strong>What it is for:</strong> the overtime and break rules that the time clock, the timesheets and the costs follow.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Labor burden and work rules</strong> (default role: <strong>Admin</strong>). Only for companies with Crew.</p>
+</div>
+<p>The screen shows the rule in effect — weekly overtime, daily overtime, break, rounding — and the history. To change it:</p>
+<ol>
+<li>Click <strong>New version</strong>.</li>
+<li>Start from a <strong>template</strong> (federal FLSA, New Hampshire, California…) or fill in: weekly overtime (hours and factor), daily overtime and double time (optional), the minimum break and after how many hours.</li>
+<li>Choose the <strong>week</strong> it starts (rules apply to whole weeks, from a Monday) and the reason.</li>
+</ol>
+<figure><img src="../img/settings-work-rules.png" alt="Work rules" loading="lazy"><figcaption>Work rules</figcaption></figure>
+<figure><img src="../img/settings-work-rule-new.png" alt="A new work rule" loading="lazy"><figcaption>A new work rule</figcaption></figure>
+<h2 id="company">Company</h2>
+<p><strong>What it is for:</strong> how your company appears on proposals, daily reports and documents.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Company, account and plan</strong> (default role: <strong>Admin</strong>).</p>
+</div>
+<p>Fill in the logo, legal name, EIN, how the company works (subcontractor, general contractor or both), address, phone, email and website, <strong>licenses and insurance</strong>, and the <strong>default proposal terms</strong> (each proposal can still adjust them).</p>
+<figure><img src="../img/settings-company.png" alt="The company profile" loading="lazy"><figcaption>The company profile</figcaption></figure>
+<h2 id="contacts">Contacts</h2>
+<p><strong>What it is for:</strong> one directory of everyone outside the company — general contractors, clients (owners), suppliers and subcontractors.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Contacts</strong> (default role: <strong>Admin</strong>). Choosing or creating a contact inside a project or a job is part of measuring or managing jobs.</p>
+</div>
+<ol>
+<li>Open <strong>Contacts</strong>: the list, with a filter per tag.</li>
+<li><strong>New contact</strong> (or open one): check what it <strong>is</strong> — a contact can have more than one tag — and fill in the details.</li>
+<li>For a <strong>supplier</strong>, check the <strong>cost codes it supplies</strong>: the material list for quotes (Measure) sends it only those items.</li>
+</ol>
+<figure><img src="../img/settings-contacts.png" alt="Contacts" loading="lazy"><figcaption>Contacts</figcaption></figure>
+<figure><img src="../img/settings-contact-supplier.png" alt="A supplier, with its tags" loading="lazy"><figcaption>A supplier, with its tags</figcaption></figure>
+<p>Contacts are not users: they receive daily reports, quote requests and proposals by link or email. A contact in use on a project or a job cannot be deleted.</p>
+<h2 id="jobs">Jobs</h2>
+<p><strong>What it is for:</strong> one record per job, shared by every module.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Add and edit jobs</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>). <strong>New job</strong> also appears on Daily › Jobs, and <strong>Edit job</strong> on each job.</p>
+</div>
+<p><strong>Settings › Jobs</strong> lists every job with its client, dates, the person who fills out the daily report, the schedule (tasks and progress) and the status, with tabs per status.</p>
+<figure><img src="../img/settings-jobs.png" alt="Jobs" loading="lazy"><figcaption>Jobs</figcaption></figure>
+<h3 id="create-a-job">Create a job</h3>
+<ol>
+<li>Click <strong>New job</strong>.</li>
+<li>Fill in:<ul>
+<li><strong>Job:</strong> name and status (<strong>In progress</strong>, <strong>On hold</strong>, <strong>Completed</strong>). Only jobs in progress require daily reports and show up on field phones and the time clock.</li>
+<li><strong>Parties:</strong> the <strong>client</strong> (who receives the daily reports) and the <strong>property owner</strong>, if different. <strong>New</strong> creates a contact without leaving the form.</li>
+<li><strong>Location and time clock geofence:</strong> address, city, state, ZIP; then click the job's location on the map (or <strong>Use current location</strong> if you are on site). The circle is the <strong>geofence</strong>: punches outside it are flagged for the office. The radius goes from 50 to 2,000 m (150 m by default). The same location drives the weather on daily reports.</li>
+<li><strong>Dates and daily reports:</strong> start, finish, <strong>who fills out the daily report</strong>, and the <strong>workdays</strong> (the days that require a report).</li>
+<li><strong>Schedule:</strong> <strong>Start from a template</strong> lays out the tasks between start and finish, in the template's proportions, and saves the first baseline. Or choose none and build it later.</li>
+</ul>
+</li>
+<li>Click <strong>Create job</strong>.</li>
+</ol>
+<figure><img src="../img/settings-job-new.png" alt="A new job" loading="lazy"><figcaption>A new job</figcaption></figure>
+<p>A <strong>won</strong> Measure project has <strong>Create job from this project</strong>, which opens this form already filled in; the project and the job stay linked.</p>
+<div class="admonition note">
+<p class="admonition-title">On a general contractor's account</p>
+<p>The general contractor's job has no daily report owner, workdays or schedule: each subcontractor keeps those on its own job linked to it. The jobs list shows the subcontractors on each job.</p>
+</div>
+<h3 id="task-templates">Task templates</h3>
+<p><strong>Task templates</strong> (button on Settings › Jobs) are your company's standard schedules: a list of tasks with each one's <strong>share of the schedule</strong> (%, adding up to 100). Create them with <strong>New template</strong>; they are offered when creating a job or on a job with no tasks yet.</p>
+<figure><img src="../img/settings-schedule-templates.png" alt="Task templates" loading="lazy"><figcaption>Task templates</figcaption></figure>
+<h2 id="the-job-schedule">The job schedule</h2>
+<p><strong>What it is for:</strong> knowing whether the job is on time, task by task — and telling the general contractor.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Building it: anyone with <strong>Build the job schedule</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>) at the company doing the work. Foremen see the <strong>3-week look-ahead</strong>. The general contractor sees the published versions.</p>
+</div>
+<p>Open it from the job: Daily › Jobs › a job › <strong>Open schedule</strong> (or <strong>Build schedule</strong> when it has no tasks).</p>
+<p>The top cards show the <strong>actual progress</strong> against <strong>planned to date</strong>, the <strong>tasks behind schedule</strong> (and at risk) and the <strong>forecast finish</strong> against the baseline. Below, each task with its dates, duration, person responsible, status, % complete and <strong>variance</strong> against the baseline, and the <strong>Gantt</strong> chart: the colored bar is the task (filled to its %), the gray bar under it is the baseline, the vertical line is today.</p>
+<figure><img src="../img/schedule-gantt.png" alt="The job schedule" loading="lazy"><figcaption>The job schedule</figcaption></figure>
+<h3 id="work-with-the-tasks">Work with the tasks</h3>
+<ul>
+<li><strong>New task:</strong> name, start, finish, person responsible.</li>
+<li><strong>Update %:</strong> the new % complete, with a note; it goes to the task history.</li>
+<li><strong>Edit:</strong> dates and name; the arrows change the order.</li>
+<li><strong>Save new baseline:</strong> when the plan changes for good (with a reason). Variances are always measured against the latest baseline; older baselines are kept.</li>
+<li><strong>Export to Excel:</strong> a real spreadsheet with your company header, the task table and the Gantt bars week by week.</li>
+</ul>
+<figure><img src="../img/schedule-progress-dialog.png" alt="Updating the % of a task" loading="lazy"><figcaption>Updating the % of a task</figcaption></figure>
+<h3 id="complete-from-the-daily-report">% complete from the daily report</h3>
+<p>On the daily report, each activity can point to a schedule task and its % complete. When the report is <strong>approved</strong>, the % goes to the task, with the report as its source. The foreman sees the <strong>3-week look-ahead</strong> on the job screen of the phone.</p>
+<figure><img src="../img/schedule-lookahead.png" alt="The 3-week look-ahead on the foreman&#x27;s phone" loading="lazy"><figcaption>The 3-week look-ahead on the foreman&#x27;s phone</figcaption></figure>
+<h3 id="publish-to-the-general-contractor">Publish to the general contractor</h3>
+<ol>
+<li>Click <strong>Publish to client</strong>.</li>
+<li>Confirm: the general contractor will see this version — dates, progress and variances — without being able to edit it. Later changes only show up when you publish again.</li>
+</ol>
+<figure><img src="../img/schedule-publish-dialog.png" alt="Publishing the schedule" loading="lazy"><figcaption>Publishing the schedule</figcaption></figure>
+<p>The general contractor sees <strong>Subcontractor schedules</strong> on its job, with the version and date of each, opens it read-only and can export it to Excel.</p>
+<figure><img src="../img/schedule-published-gc.png" alt="The published schedule, as the general contractor sees it" loading="lazy"><figcaption>The published schedule, as the general contractor sees it</figcaption></figure>
+<h2 id="users">Users</h2>
+<p><strong>What it is for:</strong> who signs in, and with which role.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Users and access roles</strong> (default role: <strong>Admin</strong>).</p>
+</div>
+<p>The list shows each user with email, role, the employee record linked to them and the last sign-in. To add one:</p>
+<ol>
+<li>Click <strong>New user</strong>.</li>
+<li>Fill in name, <strong>email (sign-in)</strong> and job title.</li>
+<li><strong>Employee record:</strong> link the user to their employee record if they clock in on their own phone (required for that), or choose <em>Not a field employee</em>.</li>
+<li>Choose the <strong>access role</strong>. Each role shows where the person lands when signing in (for example, a Worker goes straight to <strong>My time clock</strong>).</li>
+<li>Save.</li>
+</ol>
+<figure><img src="../img/settings-users.png" alt="Users" loading="lazy"><figcaption>Users</figcaption></figure>
+<figure><img src="../img/settings-user-form.png" alt="A new user" loading="lazy"><figcaption>A new user</figcaption></figure>
+<h2 id="access-roles">Access roles</h2>
+<p><strong>What it is for:</strong> deciding what each role can do.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Users and access roles</strong> (default role: <strong>Admin</strong>).</p>
+</div>
+<p>The matrix shows the permissions (grouped by module) against the roles, with how many users have each role. Check or uncheck and click <strong>Save permissions</strong>. <strong>New role</strong> creates a role from an existing one. The <strong>Admin</strong> role is locked.</p>
+<figure><img src="../img/settings-roles.png" alt="The permission matrix" loading="lazy"><figcaption>The permission matrix</figcaption></figure>
+<p>See <a href="../settings/roles-and-permissions.html">Roles and permissions</a> for the full catalog and the rules.</p>
+<h2 id="audit-log">Audit log</h2>
+<p>Every change in Settings — employees, hourly rates, labor burden, work rules, jobs, users, roles, contacts, prices — with <strong>when</strong>, <strong>who</strong>, <strong>what</strong>, the value <strong>before</strong> and <strong>after</strong>, and the reason.</p>
+<figure><img src="../img/settings-audit.png" alt="The audit log" loading="lazy"><figcaption>The audit log</figcaption></figure>
+<h2 id="messages-and-alerts">Messages and alerts</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>What it means</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Certification <strong>expires in N days</strong></td>
+<td>A certification expires within 30 days (also on the menu and in the notifications).</td>
+<td>Renew it and update the date.</td>
+</tr>
+<tr>
+<td>A rate cannot start in an approved week</td>
+<td>The week already went to payroll.</td>
+<td>Choose a date after it.</td>
+</tr>
+<tr>
+<td>A version cannot start in the past</td>
+<td>Labor burden and work rules apply only forward.</td>
+<td>Choose today or a later date.</td>
+</tr>
+<tr>
+<td>A role in use cannot be deleted</td>
+<td>Users still have it.</td>
+<td>Change their role first.</td>
+</tr>
+<tr>
+<td>The company must keep someone who manages access</td>
+<td>You tried to remove the last user with <em>Users and access roles</em>.</td>
+<td>Give it to another active user first.</td>
+</tr>
+<tr>
+<td>Choose who fills out the daily report</td>
+<td>A job in progress needs a person responsible.</td>
+<td>Pick a user with <em>Fill out daily reports</em>.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#employees">Employees</a></li><li class="sub"><a href="#add-or-edit-an-employee">Add or edit an employee</a></li><li class="sub"><a href="#change-an-hourly-rate">Change an hourly rate</a></li><li><a href="#labor-burden">Labor burden</a></li><li><a href="#work-rules">Work rules</a></li><li><a href="#company">Company</a></li><li><a href="#contacts">Contacts</a></li><li><a href="#jobs">Jobs</a></li><li class="sub"><a href="#create-a-job">Create a job</a></li><li class="sub"><a href="#task-templates">Task templates</a></li><li><a href="#the-job-schedule">The job schedule</a></li><li class="sub"><a href="#work-with-the-tasks">Work with the tasks</a></li><li class="sub"><a href="#complete-from-the-daily-report">% complete from the daily report</a></li><li class="sub"><a href="#publish-to-the-general-contractor">Publish to the general contractor</a></li><li><a href="#users">Users</a></li><li><a href="#access-roles">Access roles</a></li><li><a href="#audit-log">Audit log</a></li><li><a href="#messages-and-alerts">Messages and alerts</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

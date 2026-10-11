@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype status · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html" aria-current=page>Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Prototype status</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Prototype status.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>What is simulated in the prototype today, and what comes next.</p>
+<h2 id="simulated-today">Simulated today</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>In the prototype</th>
+<th>In the product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where the data lives</td>
+<td>In the browser.</td>
+<td>A cloud database, separated by company, with the audit log on the server.</td>
+</tr>
+<tr>
+<td>New users</td>
+<td>Created on the Users screen; no email is sent and there are no real passwords.</td>
+<td>An email invitation; the person sets a password (or signs in with the company's identity provider).</td>
+</tr>
+<tr>
+<td>Map on the job form</td>
+<td>Free public maps (OpenStreetMap), with usage limits.</td>
+<td>A paid map provider and address search.</td>
+</tr>
+<tr>
+<td>Labor burden</td>
+<td>One % for the whole company, with effective dates.</td>
+<td>By state and by trade (workers' comp class).</td>
+</tr>
+<tr>
+<td>Logo</td>
+<td>Stored in the browser.</td>
+<td>The company's cloud storage.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="still-fixed-in-the-code">Still fixed in the code</h2>
+<p>These values are the same for every company today and will move to Settings:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Today</th>
+<th>Will go to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily report deadline and reminders</td>
+<td>6 PM deadline, 4 PM reminder, office alert at 8 AM next day, 3 days back</td>
+<td>Settings › Daily report (and per job)</td>
+</tr>
+<tr>
+<td>Default geofence radius</td>
+<td>150 m</td>
+<td>Settings › Time clock and GPS (and per job)</td>
+</tr>
+<tr>
+<td>Location interval during the workday</td>
+<td>15 min (5 min while traveling)</td>
+<td>Settings › Time clock and GPS</td>
+</tr>
+<tr>
+<td>Cost alerts</td>
+<td>Watch up to 5% over; forecast from the last 4 weeks</td>
+<td>Settings › Costs and forecast</td>
+</tr>
+<tr>
+<td>Lists on the daily report</td>
+<td>Trades, equipment, issue types</td>
+<td>Settings › Lists (the same ones as Crew)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="coming-next">Coming next</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permissions per job</td>
+<td>A foreman sees only his jobs; a project manager only his region.</td>
+</tr>
+<tr>
+<td>Work rules per job</td>
+<td>Prevailing wage (Davis-Bacon), jobs in another state.</td>
+</tr>
+<tr>
+<td>Invitations by email</td>
+<td>For users, and for subcontractors invited by a general contractor.</td>
+</tr>
+<tr>
+<td>Payroll integrations</td>
+<td>QuickBooks, Gusto, ADP.</td>
+</tr>
+<tr>
+<td>Notification preferences</td>
+<td>Per user.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#simulated-today">Simulated today</a></li><li><a href="#still-fixed-in-the-code">Still fixed in the code</a></li><li><a href="#coming-next">Coming next</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

@@ -369,5 +369,73 @@ if (parte('measure')) {
   await ctx.close();
 }
 
+/* ---------- Settings, obras e cronograma (computador) ---------- */
+if (parte('settings')) {
+  const { ctx, page } = await contexto(1440);
+  const dialogo = async (acao, nome) => {
+    await page.click('[data-acao="' + acao + '"]');
+    await page.waitForSelector('dialog[open]');
+    await page.waitForTimeout(250);
+    await foto(page, nome, 'dialog[open]');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+  };
+  // Ridgeline (Sandra, administradora): funcionários, encargos, jornada, usuários, perfis, auditoria
+  await como(page, 'u-sandra', '#/settings/funcionarios');
+  await foto(page, 'settings-employees');
+  await como(page, 'u-sandra', '#/settings/funcionario/f-carlos');
+  await foto(page, 'settings-employee');
+  await dialogo('crew-valor-hora', 'settings-hourly-rate-dialog');
+  await como(page, 'u-sandra', '#/settings/funcionario/f-carlos/editar');
+  await foto(page, 'settings-employee-form');
+  await como(page, 'u-sandra', '#/settings/encargos');
+  await foto(page, 'settings-labor-burden');
+  await como(page, 'u-sandra', '#/settings/encargos/nova');
+  await foto(page, 'settings-labor-burden-new');
+  await como(page, 'u-sandra', '#/settings/regras');
+  await foto(page, 'settings-work-rules');
+  await como(page, 'u-sandra', '#/settings/regras/nova');
+  await foto(page, 'settings-work-rule-new');
+  await como(page, 'u-sandra', '#/settings/usuarios');
+  await foto(page, 'settings-users');
+  await como(page, 'u-sandra', '#/settings/usuario/novo');
+  await foto(page, 'settings-user-form');
+  await como(page, 'u-sandra', '#/settings/perfis');
+  await foto(page, 'settings-roles');
+  await como(page, 'u-sandra', '#/settings/auditoria');
+  await foto(page, 'settings-audit');
+
+  // Northfield (Tom): empresa, contatos, obras, modelos de etapas e cronograma
+  await como(page, 'u-tom', '#/settings/empresa');
+  await foto(page, 'settings-company');
+  await como(page, 'u-tom', '#/settings/contatos');
+  await foto(page, 'settings-contacts');
+  await como(page, 'u-tom', '#/settings/contato/ct-pinewood');
+  await foto(page, 'settings-contact-supplier');
+  await como(page, 'u-tom', '#/settings/obras');
+  await foto(page, 'settings-jobs');
+  await como(page, 'u-tom', '#/settings/obra/nova');
+  await page.waitForTimeout(800);
+  await foto(page, 'settings-job-new');
+  await como(page, 'u-tom', '#/settings/modelos');
+  await foto(page, 'settings-schedule-templates');
+  await como(page, 'u-tom', '#/daily/obras/nf-jardim/cronograma');
+  await page.waitForSelector('.gantt');
+  await foto(page, 'schedule-gantt');
+  const etapa = page.locator('[data-acao="cr-avanco"]').first();
+  if (await etapa.count()) { await etapa.click(); await page.waitForSelector('dialog[open]'); await foto(page, 'schedule-progress-dialog', 'dialog[open]'); await page.keyboard.press('Escape'); }
+  await dialogo('cr-publicar', 'schedule-publish-dialog');
+  await como(page, 'u-jose', '#/daily/campo/obra/nf-jardim');
+  if (await page.locator('.cr-lookahead').count()) await foto(page, 'schedule-lookahead', '.cr-lookahead');
+
+  // Construtora (Ana): obras com as prestadoras e o cronograma publicado
+  await como(page, 'u-ana', '#/settings/obras');
+  await foto(page, 'settings-jobs-gc');
+  await como(page, 'u-ana', '#/daily/obras/jardim');
+  const ver = page.locator('a[href*="/cronograma/recebido/"]').first();
+  if (await ver.count()) { await ver.click(); await page.waitForSelector('.gantt'); await page.waitForTimeout(300); await foto(page, 'schedule-published-gc'); }
+  await ctx.close();
+}
+
 await browser.close();
 console.log(feitas + ' capturas em portal/img/');
