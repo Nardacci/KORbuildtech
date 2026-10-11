@@ -1,4 +1,4 @@
-# KORbuild — Concorrências (bid) e canal construtora ↔ prestadora
+# KORbuild — Concorrências (bid) e canal entre contratante e contratada
 
 > Especificação de outubro de 2026. Versão 2: desenho das telas, estrutura e regras **para o protótipo**. A versão 1 dizia que precisava de servidor; no protótipo, as duas empresas já se encontram no aparelho (como o cronograma publicado em `compartilhados()` e os diários em `diariosDeFora()`), então a concorrência pode ser simulada do mesmo jeito. No produto, esse lugar comum é o servidor.
 >
@@ -6,13 +6,32 @@
 
 ## 1. A ideia
 
-A construtora manda um serviço da obra para a sua lista de prestadoras, com as informações, os desenhos e o escopo. As prestadoras confirmam se vão participar e mandam proposta. A construtora compara, escolhe a melhor e fecha negócio. Daí em diante, as duas ficam **ligadas** naquela obra, com um **canal** de conversa entre elas.
+Quem contrata (a **contratante**) manda um serviço da obra para a sua lista de prestadoras, com as informações, os desenhos e o escopo. As prestadoras confirmam se vão participar e mandam proposta. A contratante compara, escolhe a melhor e fecha negócio. Daí em diante, as duas ficam **ligadas** naquela obra, com um **canal** de conversa entre elas.
+
+**A contratante não é só a construtora.** Uma prestadora também contrata: ela pega um serviço de uma construtora e **quarteiriza** parte dele (ou cota com as suas prestadoras antes de mandar a própria proposta). O canal de proposta vale para **construtora → prestadora** e para **prestadora → prestadora**, com as mesmas telas e regras (§1.1, §3.5).
 
 No mercado americano: *invitation to bid* (ITB), *bid package*, *bid leveling* (comparação), *RFI* (dúvida) e *award* (fechamento).
 
 **O que fecha o ciclo:** o fechamento cria a **mesma ligação de obra** (`vinculo {empresaId, obraId}`) que já existe hoje. A partir dela, tudo o que já funciona entre as empresas passa a valer sozinho: a construtora aprova os diários da prestadora (HS-11), vê a equipe na obra sem valores (HS-10) e recebe o cronograma publicado (SET-057).
 
+### 1.1 Quem contrata quem (a cadeia)
+
+```
+Dono da obra
+  └─ Construtora Exemplo ............ obra: Edifício Atlântico
+       └─ Northfield (contratada) ... obra ligada: Atlântico · framing e drywall
+            └─ Bay State Drywall .... obra ligada: Atlântico · drywall   (quarteirizada)
+```
+
+- Cada elo é uma **concorrência fechada** e uma **ligação de obra** (`vinculo`) da contratada para a obra de quem a contratou. A ligação já é genérica no protótipo: aponta para uma empresa, seja construtora ou prestadora.
+- **Quem contrata aprova.** O diário da Bay State é aprovado pela Northfield, e o da Northfield pela Construtora (generaliza o HS-11). É o que o protótipo já faz: quem está na outra ponta da ligação recebe e aprova.
+- **Cada elo só vê os vizinhos**, com uma exceção, a presença na obra (CO-21): a construtora sabe quem está no canteiro, de todas as empresas da cadeia.
+- Os valores de um elo nunca sobem nem descem: a construtora não vê o preço da Bay State para a Northfield, e a Bay State não vê o preço da Northfield para a construtora.
+- Uma prestadora pode ser contratante e contratada ao mesmo tempo (na mesma obra ou em obras diferentes). Uma prestadora sem construtora (HS-13) também pode contratar outras.
+
 ## 2. Fluxo
+
+Escrito para o caso mais comum (construtora → prestadora); na quarteirização, a "construtora" é a prestadora que contrata.
 
 | # | Quem | O quê |
 | --- | --- | --- |
@@ -27,9 +46,9 @@ No mercado americano: *invitation to bid* (ITB), *bid package*, *bid leveling* (
 
 ## 3. Telas (desenho)
 
-### 3.1 Construtora
+### 3.1 Contratante (construtora ou prestadora)
 
-A concorrência fica no plano da construtora (CO-02), não é um módulo à parte. Ela entra como **Concorrências** no menu do Daily da construtora (ao lado de Painel e Obras) e como uma seção na página de cada obra.
+A concorrência fica no plano (CO-02), não é um módulo à parte. A tela **Concorrências** tem duas abas, **Enviadas** (eu contrato) e **Recebidas** (me convidaram), e mostra só as que a empresa usa. Ela aparece no menu do Daily (ao lado de Painel e Obras) e no menu do Measure (é a mesma tela), e como uma seção na página de cada obra e de cada projeto do Measure.
 
 **Concorrências** (lista)
 
@@ -74,9 +93,9 @@ Pine Ridge Builders           link       Não vai participar · "agenda cheia"
 
 **Fechar** (confirmação): proposta e revisão escolhidas, valor, observação. Depois de confirmar, a concorrência fica **Fechada** e não muda mais (CO-06).
 
-### 3.2 Prestadora
+### 3.2 Convidada (prestadora)
 
-Os convites aparecem no **sininho** e numa aba **Convites** do Measure (é lá que ela cota). Uma prestadora sem o Measure no plano vê o convite pelo sininho e responde como pelo link (anexa o PDF).
+Os convites aparecem no **sininho** e em **Concorrências › Recebidas** (é lá que ela cota). Uma prestadora sem o Measure no plano vê o convite pelo sininho e responde como pelo link (anexa o PDF).
 
 **Convite** (página)
 
@@ -104,15 +123,26 @@ Uma página só, aberta pelo link pessoal do convite, sem menu e sem login: o co
 - **Na prestadora:** a obra nova (ligada) mostra o **Canal** com a construtora.
 - O canal é o mesmo: as perguntas da concorrência ficam como o começo da conversa (só as que essa prestadora via).
 
+### 3.5 Quarteirização (prestadora → prestadora)
+
+A prestadora abre uma concorrência por dois caminhos:
+
+| De onde | Quando | O que acontece |
+| --- | --- | --- |
+| **Projeto do Measure** (em orçamento) | Antes de mandar a própria proposta: cota uma parte com as suas prestadoras (ex.: a Northfield cota o drywall com a Bay State) | A concorrência nasce com as etapas escolhidas do projeto, as folhas e o prazo (que precisa ser **antes** do prazo dela). Na comparação, **Usar no meu orçamento** leva o preço escolhido para o projeto como linha de **subempreiteiro** (categoria que o Measure já tem), por etapa. O fechamento fica para depois de ela ganhar (CO-24). |
+| **Obra** (já contratada) | Depois de ganhar: passa uma parte do serviço adiante | A concorrência nasce da obra dela; quem ganha fica ligado à obra **dela**, não à da construtora. |
+
+Na tela da concorrência da prestadora aparece de onde veio: *Edifício Atlântico · para a Construtora Exemplo*. O escopo e os desenhos que ela repassa são os que ela escolhe; nada da concorrência original (valores, outros convidados) passa adiante.
+
 ## 4. Situações
 
 **Concorrência:** `rascunho` → `aberta` (convites enviados) → `para fechar` (prazo vencido, ou todos responderam) → `fechada` (com a vencedora) ou `cancelada`. **Prorrogar** volta de *para fechar* para *aberta* com o novo prazo.
 
 **Convite:** `enviado` → `visto` → `vai cotar` ou `não vai participar` → `proposta enviada` (rev. 1, 2…) → `vencedora` ou `não escolhida`. Se a concorrência é cancelada: `cancelada`.
 
-## 5. Canal construtora ↔ prestadora
+## 5. Canal contratante ↔ contratada
 
-Um canal de conversa entre as duas empresas, que **nasce no convite** e **continua depois do fechamento**, durante toda a obra.
+Um canal de conversa entre as duas empresas de cada elo (construtora e prestadora, ou prestadora e prestadora), que **nasce no convite** e **continua depois do fechamento**, durante toda a obra.
 
 - **Antes do fechamento (*RFI*):** a prestadora pergunta; a construtora responde e escolhe, em cada resposta, **para todos os convidados** (a pergunta vai junto, sem dizer quem perguntou) ou **só para quem perguntou**.
 - A construtora também pode mandar um **aviso a todos** (ex.: *adendo nº 1: nova folha A-102*). Um adendo com desenho novo entra no projeto do Measure de quem está cotando.
@@ -142,6 +172,13 @@ Um canal de conversa entre as duas empresas, que **nasce no convite** e **contin
 | CO-16 | Uma prestadora só é convidada uma vez por concorrência. Uma obra pode ter várias concorrências (uma por serviço); o mesmo serviço pode ter outra concorrência depois de cancelada. |
 | CO-17 | **Valores na construtora:** os valores das propostas são vistos por quem tem a permissão de concorrências (§8). A visão gerencial (HS-10) continua sem os custos da prestadora: a proposta é preço, não custo. |
 | CO-18 | Toda ação (enviar, prorrogar, convidar, responder, enviar proposta, fechar, cancelar) vai para a **auditoria** da empresa que fez. |
+| CO-19 | **Qualquer empresa pode ser contratante:** construtora, prestadora ou as duas. As telas, as situações e as regras são as mesmas; muda só quem está de cada lado. |
+| CO-20 | **Quem contrata aprova** o diário da contratada e recebe o cronograma dela (generaliza HS-11 e HS-12). A construtora não aprova o diário de quem foi quarteirizado; a prestadora que contratou aprova. |
+| CO-21 | **Presença na obra sobe a cadeia inteira:** a construtora vê, sem valores, quem está no canteiro de todas as empresas abaixo dela (nome, empresa, entrada, horas), agrupado pela contratada direta (*Northfield › Bay State Drywall*). Diários e cronogramas, só da contratada direta. |
+| CO-22 | **Valores não atravessam elos:** cada empresa vê só os preços das propostas que recebeu e das que mandou. |
+| CO-23 | **Quarteirização na concorrência:** a contratante diz, em cada concorrência, se a contratada pode quarteirizar: *permitida* (padrão), *com a minha aprovação* (a contratante aprova cada empresa quarteirizada antes do fechamento dela) ou *não permitida*. |
+| CO-24 | Uma concorrência aberta a partir de um **projeto em orçamento** pode receber propostas e ter os preços usados no orçamento, mas só pode **fechar** depois que o projeto vira *Ganha* (antes disso, a prestadora não tem o serviço). Se o projeto vira *Perdida*, a concorrência é cancelada e os convidados são avisados. |
+| CO-25 | O prazo de uma concorrência aberta a partir de um projeto precisa vencer **antes** do prazo da proposta desse projeto. |
 
 ## 7. Estrutura de dados no protótipo
 
@@ -149,7 +186,10 @@ Fica no aparelho, **fora das empresas**, num lugar comum como os `compartilhados
 
 ```
 banco.concorrencias: [{
-  id, empresaId (construtora), obraId, servico, etapas: [costCode],
+  id, contratanteId (empresa que contrata: construtora ou prestadora),
+  origem: { tipo: 'obra' | 'projeto', id },          // obra da contratante, ou projeto do Measure (CO-24)
+  obraId, servico, etapas: [costCode],
+  quarteirizacao: 'permitida' | 'com-aprovacao' | 'nao-permitida',   // CO-23
   incluso: [texto], excluso: [texto], observacoes, desenhos: [{ nome, arquivoId }],
   prazo, inicio, termino,
   orcamento: { valor, porEtapa: { costCode: valor }, mostrar: 'nao' | 'total' | 'etapa' },
@@ -166,22 +206,24 @@ banco.concorrencias: [{
 }]
 
 banco.canais: [{
-  id, construtoraId, prestadoraId (ou conviteId, se pelo link), concorrenciaId, obraId (depois do fechamento),
+  id, contratanteId, contratadaId (ou conviteId, se pelo link), concorrenciaId, obraId (depois do fechamento),
   mensagens: [{ id, em, de: { empresaId, usuarioId, nome }, texto, anexos: [],
                 para: 'todos' | 'um', respostaDe: mensagemId }]
 }]
 ```
 
 - Uma resposta **para todos** fica no canal de quem perguntou e é **copiada** nos canais dos outros convidados como "pergunta de um convidado", com a resposta (sem o nome de quem perguntou).
-- No projeto do Measure: `concorrencia: { id, conviteId, construtoraId }`. Na obra criada: `vinculo` (já existe) + `concorrenciaId`.
+- No projeto do Measure: `concorrencia: { id, conviteId, contratanteId }`. Na obra criada: `vinculo` (já existe) + `concorrenciaId`.
+- Na quarteirização, o `vinculo` da obra da Bay State aponta para a obra da **Northfield**. A cadeia se descobre seguindo os vínculos; para a presença na obra (CO-21), a construtora sobe a cadeia até a própria obra.
+- Linha do Measure vinda de uma proposta recebida: `{ categoria: 'subempreiteiro', costCode, valor, origem: { concorrenciaId, conviteId, rev } }`.
 - `VERSAO_DADOS` sobe; os dados de exemplo ganham o cenário do §9.
 
 ## 8. Permissões
 
 | Permissão | Grupo | O que libera | Perfis prontos |
 | --- | --- | --- | --- |
-| **Fazer concorrências e fechar** | Daily (construtora) | Criar, enviar, prorrogar, comparar, fechar, cancelar; ver os valores. | Administrador, Gestor de obras |
-| **Responder convites e enviar propostas** | Measure (prestadora) | Ver convites, Vou cotar / Não vou, enviar pela plataforma. Inclui *Medir plantas*. | Administrador, Gestor de obras |
+| **Fazer concorrências e fechar** | Concorrências (qualquer empresa) | Criar, enviar, prorrogar, comparar, fechar, cancelar; ver os valores. | Administrador, Gestor de obras |
+| **Responder convites e enviar propostas** | Concorrências (prestadora) | Ver convites, Vou cotar / Não vou, enviar pela plataforma. Inclui *Medir plantas*. | Administrador, Gestor de obras |
 | **Canal da obra** | Daily | Ler e escrever no canal das obras que acompanha. | Administrador, Gestor de obras (Encarregado: ver *A confirmar*) |
 
 As permissões só aparecem para a atuação certa (como hoje o Crew some para a construtora).
@@ -196,9 +238,11 @@ Na **Construtora Exemplo**, uma concorrência **aberta**: *Framing e drywall* no
 | **Granite State Interiors** | Link | Vai cotar; proposta pelo link (PDF e total) |
 | **Pine Ridge Builders** | Link | Não vai participar ("agenda cheia") |
 
-E duas perguntas no canal: uma respondida para todos, uma só para a Northfield. A concorrência do **siding do Residencial Jardim** aparece como **fechada** com a Northfield (é a ligação que já existe nos dados de exemplo).
+E duas perguntas no canal: uma respondida para todos, uma só para a Northfield.
 
-Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrência e compara → Tom vê o convite e manda a rev. 2 → Ana fecha → Tom cria a obra ligada e o canal continua.
+**Quarteirização:** a **Northfield**, enquanto cota o Atlântico, abre a concorrência *Drywall* a partir do projeto dela no Measure e convida a **Bay State Drywall** (link), que manda a proposta. A Northfield usa o preço no orçamento (linha de subempreiteiro em 09 21 16) e manda a rev. 2 para a construtora. A construtora não vê nada disso, só a proposta da Northfield. A concorrência do **siding do Residencial Jardim** aparece como **fechada** com a Northfield (é a ligação que já existe nos dados de exemplo).
+
+Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrência e compara → Tom vê o convite, cota o drywall com a Bay State e manda a rev. 2 → Ana fecha → Tom cria a obra ligada, fecha com a Bay State e o canal continua nos dois elos.
 
 ## 10. Fatias de entrega
 
@@ -208,7 +252,10 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 | 2 | Telas da construtora: lista, nova concorrência, página com Convidados e Comparar, fechar | Navegador (Ana) |
 | 3 | Lado da prestadora: Convites, Vou cotar → projeto no Measure, Enviar pela plataforma, *Ganha* → obra ligada | Navegador (Tom), ponta a ponta com a 2 |
 | 4 | Canal (antes e depois do fechamento) e sininho | Navegador, as duas empresas |
-| 5 | Link sem conta (página única), inglês, portal (EN e PT) e guia do apresentador | Navegador + teste EN |
+| 5 | Quarteirização: concorrência a partir do projeto ou da obra, **Usar no meu orçamento**, CO-23/24/25, presença da cadeia na construtora (CO-21) | Unidade + navegador, três empresas |
+| 6 | Link sem conta (página única), inglês, portal (EN e PT) e guia do apresentador | Navegador + teste EN |
+
+A fatia 1 já nasce genérica (contratante é qualquer empresa), para a quarteirização não exigir refazer o modelo.
 
 ## 11. A confirmar
 
@@ -216,4 +263,6 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 - **Encarregado no canal:** só lê, lê e escreve, ou não vê.
 - **Visita à obra** obrigatória: só um campo informativo, ou a construtora marca quem foi.
 - **Convidar quem não está nos Contatos**, digitando só o e-mail (cria o contato junto?).
+- **Padrão da quarteirização** (CO-23): *permitida* ou *com a minha aprovação*. Em contratos americanos é comum exigir aprovação dos *sub-tier subcontractors*.
+- **Presença da cadeia** (CO-21): a construtora vê as pessoas de quem foi quarteirizado (proposta: sim, por segurança e acesso ao canteiro), e se vê também os diários delas (proposta: não, só da contratada direta).
 - **Mais de uma vencedora** (dividir o serviço entre duas prestadoras, por etapa).
