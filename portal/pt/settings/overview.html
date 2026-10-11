@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visão geral · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/overview.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html" aria-current=page>Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › Comece aqui</nav>
+    <header class="doc-cabecalho">
+      <h1>Visão geral</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Visão geral.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O <strong>Settings</strong> é onde cada empresa configura o KORbuild uma vez, para todos os módulos: o cadastro da empresa, as pessoas (funcionários e usuários), o que cada perfil pode fazer, as obras e seus cronogramas, os contatos e — para as empresas que batem o ponto das equipes — os encargos e as regras de jornada. Nada que a empresa possa querer mudar fica fixo no código.</p>
+<p>O Settings vem com todo plano, sem custo a mais. Cada empresa tem o seu Settings e nunca vê o de outra (veja <a href="../organization.html">Como o KORbuild se organiza</a>).</p>
+<h2 id="por-que-importa">Por que importa</h2>
+<ul>
+<li><strong>Cadastra uma vez, usa em tudo.</strong> Obras, funcionários e contatos são os mesmos no Daily, no Crew e no Measure. A localização da obra define a cerca do ponto e o clima do diário; o valor hora do funcionário define o custo da obra.</li>
+<li><strong>Nada reescreve o passado.</strong> Valor hora, encargos e regras de jornada mudam <strong>a partir de uma data</strong>. Semanas aprovadas e custos passados ficam exatamente como estavam.</li>
+<li><strong>Toda mudança tem autor.</strong> A auditoria registra quem mudou o quê, quando, antes e depois, e por quê.</li>
+<li><strong>O acesso é a empresa que decide.</strong> Os perfis são uma matriz de permissões que a empresa ajusta — inclusive uma permissão separada para ver valores em dinheiro.</li>
+</ul>
+<h2 id="o-que-tem-no-settings">O que tem no Settings</h2>
+<table>
+<thead>
+<tr>
+<th>Seção</th>
+<th>O que guarda</th>
+<th>Quem tem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Funcionários</strong></td>
+<td>As pessoas que trabalham nas obras: ofício, equipe, W-2 ou 1099, FLSA, data de admissão, certificações e histórico do valor hora. <strong>Empresa (empregador)</strong> mostra a conta a que pertencem.</td>
+<td>Toda empresa (os funcionários de uma construtora são a equipe de gestão dela)</td>
+</tr>
+<tr>
+<td><strong>Encargos</strong></td>
+<td>Impostos e benefícios sobre a folha (FICA, FUTA, SUTA, workers' comp, benefícios), com vigência.</td>
+<td>Empresas com o Crew</td>
+</tr>
+<tr>
+<td><strong>Jornada</strong></td>
+<td>Horas extras (semanais, diárias, dobradas) e intervalos, com vigência e modelos por estado.</td>
+<td>Empresas com o Crew</td>
+</tr>
+<tr>
+<td><strong>Empresa</strong></td>
+<td>Logo, razão social, EIN, endereço, licenças e seguros, condições padrão da proposta.</td>
+<td>Toda empresa</td>
+</tr>
+<tr>
+<td><strong>Obras</strong></td>
+<td>Cada obra: cliente e dono, endereço e cerca, datas, quem preenche o diário, dias de trabalho, situação. Modelos de etapas para os cronogramas.</td>
+<td>Toda empresa</td>
+</tr>
+<tr>
+<td><strong>Contatos</strong></td>
+<td>Um só cadastro das empresas e pessoas de fora: construtoras, clientes, fornecedores, subempreiteiros.</td>
+<td>Toda empresa</td>
+</tr>
+<tr>
+<td><strong>Usuários</strong></td>
+<td>Quem entra no sistema, com qual perfil, ligado a um cadastro de funcionário.</td>
+<td>Toda empresa</td>
+</tr>
+<tr>
+<td><strong>Perfis</strong></td>
+<td>A matriz de permissões: o que cada perfil pode fazer em cada módulo.</td>
+<td>Toda empresa</td>
+</tr>
+<tr>
+<td><strong>Auditoria</strong></td>
+<td>Toda mudança no Settings, com antes e depois.</td>
+<td>Toda empresa</td>
+</tr>
+</tbody>
+</table>
+<p>O <strong>cronograma da obra</strong> fica em cada obra (Daily › Obras › uma obra › <strong>Abrir cronograma</strong>); ele é descrito aqui junto com as obras.</p>
+<figure><img src="../img/settings-employees.png" alt="Settings: funcionários" loading="lazy"><figcaption>Settings: funcionários</figcaption></figure>
+<h2 id="quem-usa">Quem usa</h2>
+<table>
+<thead>
+<tr>
+<th>Quem</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Administrador</strong> (gerente de escritório, dono)</td>
+<td>Tudo no Settings.</td>
+</tr>
+<tr>
+<td><strong>Gestor de obras</strong></td>
+<td>Por padrão, só <strong>Obras</strong> (cadastrar e editar obras) — para salários e acessos ficarem com o administrador.</td>
+</tr>
+<tr>
+<td><strong>Encarregado, trabalhador</strong></td>
+<td>Não abrem o Settings.</td>
+</tr>
+</tbody>
+</table>
+<p>O que cada perfil pode fazer é ajustável: veja <a href="../settings/roles-and-permissions.html">Perfis e permissões</a>.</p>
+<h2 id="para-a-construtora">Para a construtora</h2>
+<p>A construtora gerencia as obras e não bate o ponto de ninguém (veja <a href="../organization.html">Como o KORbuild se organiza</a>). O Settings dela é mais leve: sem encargos nem regras de jornada, e as obras dela não têm responsável pelo diário nem cronograma — esses ficam na obra de cada prestadora ligada a ela. A lista de obras mostra as prestadoras que trabalham em cada uma.</p>
+<figure><img src="../img/settings-jobs-gc.png" alt="As obras da construtora, com as prestadoras" loading="lazy"><figcaption>As obras da construtora, com as prestadoras</figcaption></figure>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#por-que-importa">Por que importa</a></li><li><a href="#o-que-tem-no-settings">O que tem no Settings</a></li><li><a href="#quem-usa">Quem usa</a></li><li><a href="#para-a-construtora">Para a construtora</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

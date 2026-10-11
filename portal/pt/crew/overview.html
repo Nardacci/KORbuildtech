@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visão geral · Crew · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../crew/overview.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-crew)">
+  <aside class="lateral" aria-label="Crew documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">C</span>Crew</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html" aria-current=page>Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Crew</a> › Comece aqui</nav>
+    <header class="doc-cabecalho">
+      <h1>Visão geral</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Visão geral.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O <strong>Crew</strong> é o ponto da equipe. Ele registra <strong>quem trabalhou, onde, em qual etapa e por quanto tempo</strong>, transforma isso em <strong>timesheets semanais aprovados para a folha</strong> e em <strong>custo de mão de obra por obra</strong>: orçado × realizado × projeção até o fim.</p>
+<h2 id="as-tres-perguntas-que-ele-responde">As três perguntas que ele responde</h2>
+<ol>
+<li><strong>Quem trabalhou, onde e quanto?</strong> Batidas com GPS, a cerca da obra e uma foto da equipe, se quiser.</li>
+<li><strong>Quanto eu pago?</strong> O timesheet da semana, com a hora extra calculada pela regra de jornada da empresa, aprovado e exportado para a folha num arquivo CSV.</li>
+<li><strong>Quanto esta obra está custando, e ela vai terminar dentro do orçamento?</strong> O custo de mão de obra por obra e por etapa, com a projeção até o fim — a tempo de agir.</li>
+</ol>
+<p>As mesmas batidas preenchem a equipe do diário do <strong>Daily</strong>, então o campo informa a equipe uma vez só.</p>
+<h2 id="quem-usa">Quem usa</h2>
+<table>
+<thead>
+<tr>
+<th>Quem</th>
+<th>Onde</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trabalhador</strong></td>
+<td>Celular</td>
+<td><strong>Meu ponto</strong>: bate entrada e saída no próprio celular, vê as próprias batidas e as horas da semana (nunca valores em dinheiro).</td>
+</tr>
+<tr>
+<td><strong>Encarregado</strong></td>
+<td>Celular</td>
+<td><strong>Ponto da equipe</strong>: bate o ponto da equipe inteira por um celular só; <strong>Horas</strong>: a semana da equipe, com alertas.</td>
+</tr>
+<tr>
+<td><strong>Escritório</strong> (administrador, gestor de obras)</td>
+<td>Computador</td>
+<td><strong>Agora</strong> (quem está trabalhando onde), <strong>Timesheets</strong> (aprovar, devolver, ajustar, exportar), <strong>Custos</strong> (orçado, realizado, projeção).</td>
+</tr>
+</tbody>
+</table>
+<p>Funcionários, valores hora, encargos e regras de jornada ficam no <strong>Settings</strong>, porque todos os módulos usam. O Crew só lê.</p>
+<p>O Crew é das empresas que executam (as prestadoras). A construtora não bate ponto: ela vê, no Daily, as pessoas e as horas das prestadoras nas obras dela, sem valores (veja <a href="../organization.html">Como o KORbuild se organiza</a>).</p>
+<h2 id="as-telas-principais">As telas principais</h2>
+<table>
+<thead>
+<tr>
+<th>Tela</th>
+<th>Quem vê</th>
+<th>O que mostra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Meu ponto</strong></td>
+<td>Trabalhador</td>
+<td>O relógio, a situação de hoje, um botão grande com o que cabe agora (entrada, intervalo, troca de obra, saída), as batidas de hoje e a semana.</td>
+</tr>
+<tr>
+<td><strong>Ponto da equipe</strong></td>
+<td>Encarregado</td>
+<td>A equipe, com a situação de cada pessoa; selecione as pessoas e use <strong>Entrada · Intervalo · Volta · Trocar de obra · Chegou · Saída</strong>.</td>
+</tr>
+<tr>
+<td><strong>Horas</strong></td>
+<td>Encarregado</td>
+<td>As horas da semana da equipe, por pessoa e por dia, com alertas.</td>
+</tr>
+<tr>
+<td><strong>Agora</strong></td>
+<td>Escritório</td>
+<td>Quem está trabalhando em cada obra, em intervalo ou em deslocamento, e as batidas fora da obra para conferir.</td>
+</tr>
+<tr>
+<td><strong>Timesheets</strong></td>
+<td>Escritório</td>
+<td>A semana de todos: horas por dia, total, hora extra, custo e situação; aprovar, devolver e exportar.</td>
+</tr>
+<tr>
+<td><strong>Semana do funcionário</strong></td>
+<td>Escritório</td>
+<td>Os dias de uma pessoa, com <strong>Ajustar</strong> (uma batida nova, com motivo) e o <strong>Mapa do dia</strong>.</td>
+</tr>
+<tr>
+<td><strong>Mapa do dia</strong></td>
+<td>Escritório</td>
+<td>O dia num mapa de ruas: batidas, a cerca da obra, o trajeto, <strong>Reproduzir</strong> e a linha do tempo.</td>
+</tr>
+<tr>
+<td><strong>Custos</strong></td>
+<td>Escritório (com a permissão de custos)</td>
+<td>Por obra (orçado, realizado, projeção, gráfico), por mês e por semana.</td>
+</tr>
+</tbody>
+</table>
+<figure class="celular"><img src="../img/crew-my-clock-before-mobile.png" alt="Meu ponto, no celular do trabalhador" loading="lazy"><figcaption>Meu ponto, no celular do trabalhador</figcaption></figure>
+<figure><img src="../img/crew-now.png" alt="Agora: quem está trabalhando em cada obra" loading="lazy"><figcaption>Agora: quem está trabalhando em cada obra</figcaption></figure>
+<h2 id="ideias-principais">Ideias principais</h2>
+<table>
+<thead>
+<tr>
+<th>Termo</th>
+<th>O que é</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Batida</strong></td>
+<td>Um registro do ponto: entrada, início do intervalo, fim do intervalo, troca de obra, chegada, saída. Uma batida <strong>nunca é editada nem apagada</strong>; a correção é uma batida nova, marcada como ajuste, com quem fez e por quê.</td>
+</tr>
+<tr>
+<td><strong>Cerca</strong></td>
+<td>Um círculo em volta da obra (150 m por padrão, definido em cada obra). A batida fora dele é aceita, mas fica marcada para o escritório conferir.</td>
+</tr>
+<tr>
+<td><strong>Etapa (cost code)</strong></td>
+<td>O serviço em que a hora foi gasta (fundação, estrutura, alvenaria…). Toda hora pertence a uma obra e a uma etapa.</td>
+</tr>
+<tr>
+<td><strong>Deslocamento</strong></td>
+<td>Ir de uma obra para outra durante a jornada. É hora paga.</td>
+</tr>
+<tr>
+<td><strong>Timesheet</strong></td>
+<td>A semana de uma pessoa, de segunda a domingo: horas totais, normais e extras, custo e situação.</td>
+</tr>
+<tr>
+<td><strong>Encargos</strong></td>
+<td>O que a empresa paga além do salário (FICA, desemprego, workers' comp, benefícios), como % da folha.</td>
+</tr>
+<tr>
+<td><strong>Custo carregado</strong></td>
+<td>Valor hora × (1 + encargos): o que uma hora realmente custa à empresa.</td>
+</tr>
+<tr>
+<td><strong>Projeção ao final</strong></td>
+<td>Para onde vai o custo de mão de obra da obra, pelo que foi gasto e pelo quanto da obra já foi executado.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ligado-aos-outros-modulos">Ligado aos outros módulos</h2>
+<ul>
+<li><strong>Daily:</strong> a equipe do diário pode vir de quem bateu ponto na obra naquele dia.</li>
+<li><strong>Obras</strong> (Settings › Obras): a localização da obra e o raio da cerca vêm do cadastro da obra. Só obras <strong>em andamento</strong> aparecem no ponto.</li>
+<li><strong>Settings:</strong> funcionários e valores hora (com vigência), encargos, regras de jornada (hora extra e intervalo).</li>
+</ul>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#as-tres-perguntas-que-ele-responde">As três perguntas que ele responde</a></li><li><a href="#quem-usa">Quem usa</a></li><li><a href="#as-telas-principais">As telas principais</a></li><li><a href="#ideias-principais">Ideias principais</a></li><li><a href="#ligado-aos-outros-modulos">Ligado aos outros módulos</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

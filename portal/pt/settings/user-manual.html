@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do usuário · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/user-manual.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html" aria-current=page>Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › No dia a dia</nav>
+    <header class="doc-cabecalho">
+      <h1>Manual do usuário</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Manual do usuário.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Passo a passo, uma seção do Settings de cada vez. As capturas vêm do protótipo, com <strong>Sandra Lopes</strong> (administradora da Ridgeline Concrete &amp; Masonry) para pessoas e regras, e com <strong>Tom Reilly</strong> (administrador da Northfield Framing &amp; Siding) para a empresa, os contatos, as obras e o cronograma.</p>
+<p>Abra o Settings pela tela de módulos (ou pelo botão de módulos no canto superior direito). O menu da esquerda mostra só as seções que o seu perfil pode abrir.</p>
+<h2 id="funcionarios">Funcionários</h2>
+<p><strong>Para que serve:</strong> um cadastro por pessoa que trabalha nas obras, usado pelo ponto, pelas timesheets e pelo custo da obra.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Cadastro de funcionários</strong> (perfil padrão: <strong>Administrador</strong>).</p>
+</div>
+<p>A lista mostra cada funcionário com ofício e equipe, classificação, <strong>valor hora</strong> e <strong>custo carregado</strong> (valor hora + encargos), situação e as certificações perto de vencer. A faixa no topo diz de quem são os funcionários: cada empresa cadastra e cuida dos seus.</p>
+<figure><img src="../img/settings-employees.png" alt="Funcionários" loading="lazy"><figcaption>Funcionários</figcaption></figure>
+<h3 id="cadastrar-ou-editar-um-funcionario">Cadastrar ou editar um funcionário</h3>
+<ol>
+<li>Clique em <strong>Novo funcionário</strong> (ou abra um funcionário e clique em <strong>Editar cadastro</strong>).</li>
+<li>Preencha:<ul>
+<li><strong>Identificação:</strong> nome completo, código (a mesma matrícula da folha), telefone, contato de emergência. <strong>Empresa (empregador)</strong> é fixo: o funcionário pertence à sua conta.</li>
+<li><strong>Contrato e trabalho:</strong> classificação (empregado <strong>W-2</strong> ou autônomo <strong>1099</strong> — autônomos não têm hora extra nem encargos), <strong>FLSA</strong> (funcionários exempt não recebem hora extra), ofício, equipe, data de admissão, situação e data de desligamento.</li>
+<li>Para um funcionário novo, o <strong>valor hora inicial</strong>.</li>
+<li><strong>Certificações:</strong> OSHA 10/30, licenças, operador de equipamento… com a data de validade.</li>
+<li><strong>Privacidade:</strong> a data em que o funcionário aceitou o aviso de localização (o ponto só registra a localização com o ponto aberto).</li>
+</ul>
+</li>
+<li>Salve.</li>
+</ol>
+<figure><img src="../img/settings-employee-form.png" alt="O cadastro do funcionário" loading="lazy"><figcaption>O cadastro do funcionário</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">O que o KORbuild não guarda</p>
+<p>SSN e documentos de imigração ficam no seu sistema de folha. O KORbuild guarda só a matrícula, para fazer a ligação.</p>
+</div>
+<h3 id="alterar-o-valor-hora">Alterar o valor hora</h3>
+<ol>
+<li>Abra o funcionário: os cartões mostram o valor hora atual, o valor da hora extra e o custo carregado.</li>
+<li>Clique em <strong>Alterar valor hora</strong>, informe o valor novo, a data <strong>a partir</strong> da qual vale e o motivo.</li>
+</ol>
+<figure><img src="../img/settings-employee.png" alt="Um funcionário, com os cartões do valor hora" loading="lazy"><figcaption>Um funcionário, com os cartões do valor hora</figcaption></figure>
+<figure><img src="../img/settings-hourly-rate-dialog.png" alt="Alterando o valor hora" loading="lazy"><figcaption>Alterando o valor hora</figcaption></figure>
+<p>O <strong>histórico do valor hora</strong> guarda cada valor com as datas, a mudança e o motivo. Nada é sobrescrito: as horas de cada dia são pagas pelo valor vigente naquele dia. Um valor novo não pode começar dentro de uma semana já aprovada para a folha.</p>
+<h2 id="encargos">Encargos</h2>
+<p><strong>Para que serve:</strong> o que a empresa paga além do salário, para o custo da obra mostrar o custo real de uma hora.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Encargos e regras de jornada</strong> (perfil padrão: <strong>Administrador</strong>). Só para empresas com o Crew.</p>
+</div>
+<p>A tela mostra a versão vigente — FICA, FUTA, SUTA, workers' comp e benefícios, com o total — e um exemplo (quem ganha US$ 30,00/h custa US$ 39,62/h). Abaixo, o <strong>histórico de versões</strong>.</p>
+<p>Para mudar, clique em <strong>Nova versão</strong>, informe cada percentual, a data <strong>a partir</strong> da qual vale (nunca no passado) e o motivo.</p>
+<figure><img src="../img/settings-labor-burden.png" alt="Encargos" loading="lazy"><figcaption>Encargos</figcaption></figure>
+<figure><img src="../img/settings-labor-burden-new.png" alt="Uma nova versão dos encargos" loading="lazy"><figcaption>Uma nova versão dos encargos</figcaption></figure>
+<div class="admonition tip">
+<p class="admonition-title">Pergunte ao seu contador</p>
+<p>Os percentuais dependem do estado e da seguradora. No protótipo, FUTA e SUTA valem sobre todo o salário; na prática, param no teto de cada ano.</p>
+</div>
+<h2 id="jornada">Jornada</h2>
+<p><strong>Para que serve:</strong> as regras de hora extra e de intervalo que o ponto, as timesheets e os custos seguem.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Encargos e regras de jornada</strong> (perfil padrão: <strong>Administrador</strong>). Só para empresas com o Crew.</p>
+</div>
+<p>A tela mostra a regra vigente — hora extra semanal, hora extra diária, intervalo, arredondamento — e o histórico. Para mudar:</p>
+<ol>
+<li>Clique em <strong>Nova versão</strong>.</li>
+<li>Comece por um <strong>modelo</strong> (FLSA federal, New Hampshire, Califórnia…) ou preencha: hora extra semanal (horas e fator), hora extra diária e dobrada (opcionais), o intervalo mínimo e depois de quantas horas.</li>
+<li>Escolha a <strong>semana</strong> em que começa (as regras valem para semanas inteiras, a partir de uma segunda-feira) e o motivo.</li>
+</ol>
+<figure><img src="../img/settings-work-rules.png" alt="Regras de jornada" loading="lazy"><figcaption>Regras de jornada</figcaption></figure>
+<figure><img src="../img/settings-work-rule-new.png" alt="Uma nova regra de jornada" loading="lazy"><figcaption>Uma nova regra de jornada</figcaption></figure>
+<h2 id="empresa">Empresa</h2>
+<p><strong>Para que serve:</strong> como a sua empresa aparece nas propostas, nos diários e nos documentos.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Empresa, conta e plano</strong> (perfil padrão: <strong>Administrador</strong>).</p>
+</div>
+<p>Preencha o logo, a razão social, o EIN, como a empresa atua (prestadora, construtora ou as duas), endereço, telefone, e-mail e site, <strong>licenças e seguros</strong>, e os <strong>termos padrão da proposta</strong> (cada proposta ainda pode ajustá-los).</p>
+<figure><img src="../img/settings-company.png" alt="O cadastro da empresa" loading="lazy"><figcaption>O cadastro da empresa</figcaption></figure>
+<h2 id="contatos">Contatos</h2>
+<p><strong>Para que serve:</strong> um só cadastro de todos de fora da empresa — construtoras, clientes (donos), fornecedores e subempreiteiros.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Contatos</strong> (perfil padrão: <strong>Administrador</strong>). Escolher ou criar um contato dentro de um projeto ou de uma obra faz parte de medir ou de cuidar das obras.</p>
+</div>
+<ol>
+<li>Abra <strong>Contatos</strong>: a lista, com um filtro por marcador.</li>
+<li><strong>Novo contato</strong> (ou abra um): marque o que ele <strong>é</strong> — um contato pode ter mais de um marcador — e preencha os dados.</li>
+<li>Para um <strong>fornecedor</strong>, marque as <strong>etapas (cost codes) que ele fornece</strong>: a lista para cotação (Measure) manda para ele só esses itens.</li>
+</ol>
+<figure><img src="../img/settings-contacts.png" alt="Contatos" loading="lazy"><figcaption>Contatos</figcaption></figure>
+<figure><img src="../img/settings-contact-supplier.png" alt="Um fornecedor, com os marcadores" loading="lazy"><figcaption>Um fornecedor, com os marcadores</figcaption></figure>
+<p>Contatos não são usuários: recebem diários, pedidos de cotação e propostas por link ou e-mail. Um contato em uso num projeto ou numa obra não pode ser excluído.</p>
+<h2 id="obras">Obras</h2>
+<p><strong>Para que serve:</strong> um cadastro por obra, usado por todos os módulos.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Cadastrar e editar obras</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>). <strong>Nova obra</strong> também aparece em Daily › Obras, e <strong>Editar a obra</strong> em cada obra.</p>
+</div>
+<p><strong>Settings › Obras</strong> lista todas as obras com o cliente, as datas, quem preenche o diário, o cronograma (etapas e avanço) e a situação, com abas por situação.</p>
+<figure><img src="../img/settings-jobs.png" alt="Obras" loading="lazy"><figcaption>Obras</figcaption></figure>
+<h3 id="criar-uma-obra">Criar uma obra</h3>
+<ol>
+<li>Clique em <strong>Nova obra</strong>.</li>
+<li>Preencha:<ul>
+<li><strong>Obra:</strong> nome e situação (<strong>Em andamento</strong>, <strong>Paralisada</strong>, <strong>Concluída</strong>). Só as obras em andamento exigem diário e aparecem nos celulares de campo e no ponto.</li>
+<li><strong>Partes:</strong> o <strong>cliente</strong> (quem recebe os diários) e o <strong>dono da obra</strong>, se for outro. <strong>Novo</strong> cria um contato sem sair do formulário.</li>
+<li><strong>Local e cerca do ponto:</strong> endereço, cidade, estado, ZIP; depois clique no local da obra no mapa (ou em <strong>Usar a localização atual</strong>, se estiver na obra). O círculo é a <strong>cerca</strong>: batidas fora dela são sinalizadas para o escritório. O raio vai de 50 a 2.000 m (150 m por padrão). O mesmo local define o clima nos diários.</li>
+<li><strong>Prazo e diário de obra:</strong> início, término, <strong>quem preenche o diário</strong>, e os <strong>dias de trabalho</strong> (os dias que exigem diário).</li>
+<li><strong>Cronograma:</strong> <strong>Começar com um modelo</strong> distribui as etapas entre o início e o término, nas proporções do modelo, e salva a primeira linha de base. Ou não escolha nenhum e monte depois.</li>
+</ul>
+</li>
+<li>Clique em <strong>Criar obra</strong>.</li>
+</ol>
+<figure><img src="../img/settings-job-new.png" alt="Uma obra nova" loading="lazy"><figcaption>Uma obra nova</figcaption></figure>
+<p>Um projeto <strong>ganho</strong> no Measure tem <strong>Criar obra a partir deste projeto</strong>, que abre este formulário já preenchido; o projeto e a obra ficam ligados.</p>
+<div class="admonition note">
+<p class="admonition-title">Na conta de uma construtora</p>
+<p>A obra da construtora não tem responsável pelo diário, dias de trabalho nem cronograma: cada prestadora mantém isso na própria obra ligada a ela. A lista de obras mostra as prestadoras de cada obra.</p>
+</div>
+<h3 id="modelos-de-etapas">Modelos de etapas</h3>
+<p>Os <strong>Modelos de etapas</strong> (botão em Settings › Obras) são os cronogramas padrão da sua empresa: uma lista de etapas com a <strong>parte do prazo</strong> de cada uma (%, somando 100). Crie com <strong>Novo modelo</strong>; eles são oferecidos ao criar uma obra ou numa obra ainda sem etapas.</p>
+<figure><img src="../img/settings-schedule-templates.png" alt="Modelos de etapas" loading="lazy"><figcaption>Modelos de etapas</figcaption></figure>
+<h2 id="o-cronograma-da-obra">O cronograma da obra</h2>
+<p><strong>Para que serve:</strong> saber se a obra está no prazo, etapa por etapa — e mostrar isso à construtora.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Montar: quem tem <strong>Montar o cronograma da obra</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>) na empresa que executa. Os encarregados veem as <strong>Próximas 3 semanas</strong>. A construtora vê as versões publicadas.</p>
+</div>
+<p>Abra pela obra: Daily › Obras › uma obra › <strong>Abrir cronograma</strong> (ou <strong>Montar cronograma</strong> quando ela não tem etapas).</p>
+<p>Os cartões do topo mostram o <strong>avanço real</strong> contra o <strong>planejado para hoje</strong>, as <strong>etapas atrasadas</strong> (e em risco) e o <strong>término previsto</strong> contra a linha de base. Abaixo, cada etapa com datas, duração, responsável, situação, % concluído e <strong>desvio</strong> em relação à linha de base, e o gráfico de <strong>Gantt</strong>: a barra colorida é a etapa (preenchida até o %), a barra cinza embaixo é a linha de base, a linha vertical é hoje.</p>
+<figure><img src="../img/schedule-gantt.png" alt="O cronograma da obra" loading="lazy"><figcaption>O cronograma da obra</figcaption></figure>
+<h3 id="trabalhar-com-as-etapas">Trabalhar com as etapas</h3>
+<ul>
+<li><strong>Nova etapa:</strong> nome, início, término, responsável.</li>
+<li><strong>Atualizar %:</strong> o novo % concluído, com uma observação; vai para o histórico da etapa.</li>
+<li><strong>Editar:</strong> datas e nome; as setas mudam a ordem.</li>
+<li><strong>Salvar nova linha de base:</strong> quando o plano muda de vez (com um motivo). Os desvios são sempre medidos contra a linha de base mais recente; as anteriores ficam guardadas.</li>
+<li><strong>Exportar Excel:</strong> uma planilha de verdade com o cabeçalho da sua empresa, a tabela de etapas e as barras do Gantt semana a semana.</li>
+</ul>
+<figure><img src="../img/schedule-progress-dialog.png" alt="Atualizando o % de uma etapa" loading="lazy"><figcaption>Atualizando o % de uma etapa</figcaption></figure>
+<h3 id="concluido-pelo-diario">% concluído pelo diário</h3>
+<p>No diário, cada atividade pode apontar para uma etapa do cronograma e o % concluído dela. Quando o diário é <strong>aprovado</strong>, o % vai para a etapa, com o diário como origem. O encarregado vê as <strong>Próximas 3 semanas</strong> na tela da obra no celular.</p>
+<figure><img src="../img/schedule-lookahead.png" alt="As próximas 3 semanas no celular do encarregado" loading="lazy"><figcaption>As próximas 3 semanas no celular do encarregado</figcaption></figure>
+<h3 id="publicar-para-a-construtora">Publicar para a construtora</h3>
+<ol>
+<li>Clique em <strong>Publicar para o contratante</strong>.</li>
+<li>Confirme: a construtora vai ver esta versão — datas, avanço e desvios — sem poder editar. Mudanças depois só aparecem quando você publicar de novo.</li>
+</ol>
+<figure><img src="../img/schedule-publish-dialog.png" alt="Publicando o cronograma" loading="lazy"><figcaption>Publicando o cronograma</figcaption></figure>
+<p>A construtora vê os <strong>Cronogramas das prestadoras</strong> na obra dela, com a versão e a data de cada um, abre só para consulta e pode exportar para o Excel.</p>
+<figure><img src="../img/schedule-published-gc.png" alt="O cronograma publicado, como a construtora vê" loading="lazy"><figcaption>O cronograma publicado, como a construtora vê</figcaption></figure>
+<h2 id="usuarios">Usuários</h2>
+<p><strong>Para que serve:</strong> quem entra no sistema, e com qual perfil.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Usuários e perfis de acesso</strong> (perfil padrão: <strong>Administrador</strong>).</p>
+</div>
+<p>A lista mostra cada usuário com e-mail, perfil, o cadastro de funcionário ligado a ele e o último acesso. Para incluir um:</p>
+<ol>
+<li>Clique em <strong>Novo usuário</strong>.</li>
+<li>Preencha nome, <strong>e-mail (login)</strong> e cargo.</li>
+<li><strong>Cadastro de funcionário:</strong> ligue o usuário ao cadastro de funcionário dele se ele bate o ponto no próprio celular (obrigatório nesse caso), ou escolha <em>Não é funcionário de obra</em>.</li>
+<li>Escolha o <strong>perfil de acesso</strong>. Cada perfil mostra onde a pessoa cai ao entrar (por exemplo, um Trabalhador vai direto para o <strong>Meu ponto</strong>).</li>
+<li>Salve.</li>
+</ol>
+<figure><img src="../img/settings-users.png" alt="Usuários" loading="lazy"><figcaption>Usuários</figcaption></figure>
+<figure><img src="../img/settings-user-form.png" alt="Um usuário novo" loading="lazy"><figcaption>Um usuário novo</figcaption></figure>
+<h2 id="perfis-de-acesso">Perfis de acesso</h2>
+<p><strong>Para que serve:</strong> decidir o que cada perfil pode fazer.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Usuários e perfis de acesso</strong> (perfil padrão: <strong>Administrador</strong>).</p>
+</div>
+<p>A matriz mostra as permissões (agrupadas por módulo) contra os perfis, com quantos usuários têm cada perfil. Marque ou desmarque e clique em <strong>Salvar permissões</strong>. <strong>Novo perfil</strong> cria um perfil a partir de um existente. O perfil <strong>Administrador</strong> é travado.</p>
+<figure><img src="../img/settings-roles.png" alt="A matriz de permissões" loading="lazy"><figcaption>A matriz de permissões</figcaption></figure>
+<p>Veja <a href="../settings/roles-and-permissions.html">Perfis e permissões</a> para o catálogo completo e as regras.</p>
+<h2 id="auditoria">Auditoria</h2>
+<p>Toda mudança no Settings — funcionários, valores hora, encargos, regras de jornada, obras, usuários, perfis, contatos, preços — com <strong>quando</strong>, <strong>quem</strong>, <strong>o quê</strong>, o valor <strong>antes</strong> e <strong>depois</strong>, e o motivo.</p>
+<figure><img src="../img/settings-audit.png" alt="A auditoria" loading="lazy"><figcaption>A auditoria</figcaption></figure>
+<h2 id="mensagens-e-alertas">Mensagens e alertas</h2>
+<table>
+<thead>
+<tr>
+<th>Mensagem</th>
+<th>O que significa</th>
+<th>O que fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Certificação <strong>vence em N dias</strong></td>
+<td>Uma certificação vence em até 30 dias (também no menu e nas notificações).</td>
+<td>Renove e atualize a data.</td>
+</tr>
+<tr>
+<td>Um valor não pode começar numa semana aprovada</td>
+<td>A semana já foi para a folha.</td>
+<td>Escolha uma data depois dela.</td>
+</tr>
+<tr>
+<td>Uma versão não pode começar no passado</td>
+<td>Encargos e regras de jornada só valem para a frente.</td>
+<td>Escolha hoje ou uma data depois.</td>
+</tr>
+<tr>
+<td>Um perfil em uso não pode ser excluído</td>
+<td>Ainda há usuários com ele.</td>
+<td>Troque antes o perfil deles.</td>
+</tr>
+<tr>
+<td>A empresa precisa manter alguém que cuide dos acessos</td>
+<td>Você tentou tirar o último usuário com <em>Usuários e perfis de acesso</em>.</td>
+<td>Dê essa permissão antes a outro usuário ativo.</td>
+</tr>
+<tr>
+<td>Escolha quem preenche o diário</td>
+<td>Uma obra em andamento precisa de um responsável.</td>
+<td>Escolha um usuário com <em>Preencher o diário de obra</em>.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#funcionarios">Funcionários</a></li><li class="sub"><a href="#cadastrar-ou-editar-um-funcionario">Cadastrar ou editar um funcionário</a></li><li class="sub"><a href="#alterar-o-valor-hora">Alterar o valor hora</a></li><li><a href="#encargos">Encargos</a></li><li><a href="#jornada">Jornada</a></li><li><a href="#empresa">Empresa</a></li><li><a href="#contatos">Contatos</a></li><li><a href="#obras">Obras</a></li><li class="sub"><a href="#criar-uma-obra">Criar uma obra</a></li><li class="sub"><a href="#modelos-de-etapas">Modelos de etapas</a></li><li><a href="#o-cronograma-da-obra">O cronograma da obra</a></li><li class="sub"><a href="#trabalhar-com-as-etapas">Trabalhar com as etapas</a></li><li class="sub"><a href="#concluido-pelo-diario">% concluído pelo diário</a></li><li class="sub"><a href="#publicar-para-a-construtora">Publicar para a construtora</a></li><li><a href="#usuarios">Usuários</a></li><li><a href="#perfis-de-acesso">Perfis de acesso</a></li><li><a href="#auditoria">Auditoria</a></li><li><a href="#mensagens-e-alertas">Mensagens e alertas</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

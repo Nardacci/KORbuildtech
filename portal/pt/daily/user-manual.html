@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do usuário · Daily · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../daily/user-manual.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html" aria-current=page>Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Daily</a> › No dia a dia</nav>
+    <header class="doc-cabecalho">
+      <h1>Manual do usuário</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Manual do usuário.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Este manual mostra o Daily uma tarefa por vez. A primeira parte é para o <strong>campo</strong> (no celular); a segunda, para o <strong>escritório</strong> (no computador). Os nomes de telas, botões e mensagens estão escritos exatamente como aparecem no KORbuild, em <strong>negrito</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">Antes de começar</p>
+<p>O Daily abre na área do seu perfil: o campo começa em <strong>Hoje</strong>, o escritório no <strong>Painel</strong>. No celular, o menu fica embaixo da tela; no computador, à esquerda. Se você não vê uma tela descrita aqui, o seu perfil não a inclui — veja <a href="../daily/roles-and-permissions.html">Perfis e permissões</a>.</p>
+</div>
+<h2 id="campo-ver-o-que-falta-hoje">Campo: ver o que falta hoje</h2>
+<p><strong>Para que serve:</strong> saber, de relance, quais diários você deve e quais voltaram com pedido de ajuste.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem preenche o diário de obra (perfil padrão: <strong>Encarregado</strong>).</p>
+</div>
+<ol>
+<li>Abra o KORbuild e toque em <strong>Daily</strong> na tela de módulos. Ele abre em <strong>Hoje</strong>.</li>
+<li>Leia os quadros do alto, do mais urgente para o menos:<ul>
+<li><strong>vermelho — RDO atrasado:</strong> um dia de trabalho passado sem diário. Toque na obra para preencher agora.</li>
+<li><strong>amarelo — falta o RDO de hoje:</strong> obras sem o diário de hoje, com o prazo e o tempo que falta (por exemplo, <em>Prazo: hoje às 18h · faltam 1h30</em>).</li>
+<li><strong>vermelho — o escritório pediu ajustes:</strong> um diário devolvido, com o motivo entre aspas. Toque em <strong>Corrigir agora →</strong>.</li>
+</ul>
+</li>
+<li>Abaixo, <strong>Suas obras</strong> lista cada obra com a situação do diário de hoje.</li>
+</ol>
+<figure class="celular"><img src="../img/daily-field-today-mobile.png" alt="Hoje: diários atrasados, os de hoje que faltam e um pedido de ajuste" loading="lazy"><figcaption>Hoje: diários atrasados, os de hoje que faltam e um pedido de ajuste</figcaption></figure>
+<p>O número na aba <strong>Hoje</strong> (e no ícone do app, onde o celular permite) é o total de pendências: dias atrasados, obras sem o diário de hoje e pedidos de ajuste.</p>
+<h2 id="campo-preencher-o-diario-de-obra">Campo: preencher o diário de obra</h2>
+<p><strong>Para que serve:</strong> registrar o dia na obra: clima, equipe, equipamentos, o que foi feito, o que atrapalhou e as fotos.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>O responsável pelo diário da obra, ou quem tem <strong>Preencher o diário de obra</strong> (perfil padrão: <strong>Encarregado</strong>).</p>
+</div>
+<ol>
+<li>Em <strong>Hoje</strong>, toque na obra. A tela da obra mostra a data, o prazo e os diários anteriores.</li>
+<li>
+<p>Toque em <strong>Adicionar nova RDO</strong> para começar em branco, ou em <strong>ou copiar de um RDO anterior</strong> para partir de outro dia (veja <a href="#copiar-um-diario-anterior">Copiar um diário anterior</a>).</p>
+<figure class="celular"><img src="../img/daily-field-job-mobile.png" alt="A tela da obra: começar um diário, copiar um anterior ou registrar sem atividade" loading="lazy"><figcaption>A tela da obra: começar um diário, copiar um anterior ou registrar sem atividade</figcaption></figure>
+</li>
+<li>
+<p>O diário abre. No alto, as etiquetas de progresso (<strong>Clima</strong>, <strong>Equipe</strong>, <strong>Atividades</strong>, <strong>Fotos</strong>) ficam verdes à medida que cada parte fica completa. Preencha as seções abaixo, em qualquer ordem.</p>
+<figure class="celular"><img src="../img/daily-report-top-mobile.png" alt="O alto do diário, com as etiquetas de progresso" loading="lazy"><figcaption>O alto do diário, com as etiquetas de progresso</figcaption></figure>
+</li>
+</ol>
+<h3 id="clima">Clima</h3>
+<p>O clima <strong>vem sozinho, pela localização da obra</strong>, para a manhã (7h–12h) e a tarde (13h–17h). Com mais de 2 mm de chuva num período, o período fica <strong>Impraticável</strong>.</p>
+<ul>
+<li>Confira ou corrija cada período: <strong>Sol</strong>, <strong>Nublado</strong> ou <strong>Chuva</strong>, e <strong>Praticável</strong> ou <strong>Impraticável</strong>.</li>
+<li><strong>Buscar clima automático</strong> busca de novo (precisa de sinal).</li>
+<li>O relatório mostra se o clima foi automático, ajustado à mão ou informado à mão.</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-clima-mobile.png" alt="Clima da manhã e da tarde" loading="lazy"><figcaption>Clima da manhã e da tarde</figcaption></figure>
+<h3 id="equipe">Equipe</h3>
+<ul>
+<li>Toque nas funções (<strong>+ Pedreiro</strong>, <strong>+ Servente</strong>, <strong>+ Carpinteiro</strong>…) para incluí-las e use <strong>−</strong> e <strong>+</strong> para dizer quantos estão <strong>Presentes</strong> e quantas <strong>Faltas</strong>.</li>
+<li>Função que não está na lista: escreva em <strong>Outra função</strong> e toque em <strong>Adicionar</strong>.</li>
+<li><strong>Atualizar pela equipe que bateu ponto</strong> preenche a equipe com as pessoas que bateram ponto nesta obra hoje no <strong>Crew</strong> (o ponto).</li>
+<li>A seção mostra o total de presentes (por exemplo, <strong>13 presentes</strong>).</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-equipe-mobile.png" alt="Equipe: presentes e faltas por função" loading="lazy"><figcaption>Equipe: presentes e faltas por função</figcaption></figure>
+<h3 id="equipamentos">Equipamentos</h3>
+<p>Inclua os equipamentos da obra com a quantidade e a situação: <strong>Operando</strong>, <strong>Parado</strong> ou <strong>Em manutenção</strong>.</p>
+<figure class="celular"><img src="../img/daily-report-equipamentos-mobile.png" alt="Equipamentos na obra" loading="lazy"><figcaption>Equipamentos na obra</figcaption></figure>
+<h3 id="atividades">Atividades</h3>
+<p>Cada atividade tem:</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>O que informar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Descrição</td>
+<td>O que foi feito. Exemplo: <em>concretagem da laje do 2º pavimento, 45 m³</em>.</td>
+</tr>
+<tr>
+<td><strong>Local / etapa</strong></td>
+<td>Onde, na obra (pavimento, bloco, área).</td>
+</tr>
+<tr>
+<td>Situação</td>
+<td><strong>Em andamento</strong> ou <strong>Concluída</strong>.</td>
+</tr>
+<tr>
+<td><strong>Etapa do cronograma</strong> e <strong>% concluído</strong></td>
+<td>Só quando a obra tem cronograma: a etapa que esta atividade avançou e quanto ela está agora. O cronograma é atualizado quando o diário é aprovado.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Ditar</strong>: fale em vez de digitar (usa o reconhecimento de voz do celular).</li>
+<li><strong>Melhorar texto</strong>: reescreve o que você digitou ou ditou numa linguagem clara e técnica. Uma janela mostra o antes e o depois; toque em <strong>Usar este texto</strong> para ficar com ele.</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-atividades-mobile.png" alt="Atividades, com Ditar e Melhorar texto" loading="lazy"><figcaption>Atividades, com Ditar e Melhorar texto</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p><strong>Melhorar texto</strong> é simulado com regras simples no celular. No produto, ele usará inteligência artificial, e o texto original fica guardado ao lado.</p>
+</div>
+<h3 id="ocorrencias">Ocorrências</h3>
+<p>Tudo o que atrapalhou o dia: toque no tipo (<strong>Material / entrega</strong>, <strong>Chuva</strong>, <strong>Equipamento</strong>, <strong>Segurança / acidente</strong>, <strong>Equipe / faltas</strong>, <strong>Visita / fiscalização</strong>, <strong>Projeto / interferência</strong>, <strong>Outro</strong>) e descreva o que aconteceu e o impacto.</p>
+<div class="admonition tip">
+<p class="admonition-title">Por que importa</p>
+<p>É a seção que protege a empresa numa disputa por atraso: a chuva que parou a concretagem, a entrega que atrasou, a vistoria que não veio — registradas no dia em que aconteceram.</p>
+</div>
+<figure class="celular"><img src="../img/daily-report-ocorrencias-mobile.png" alt="Ocorrências" loading="lazy"><figcaption>Ocorrências</figcaption></figure>
+<h3 id="fotos">Fotos</h3>
+<ul>
+<li><strong>Tirar foto</strong> abre a câmera; <strong>Da galeria</strong> escolhe fotos que já existem.</li>
+<li>Cada foto ganha um carimbo <strong>dentro da imagem</strong> com a obra, a data, a hora e as coordenadas do GPS, e é reduzida no celular (por exemplo, 4,2 MB viram cerca de 300 KB) para subir rápido mesmo com sinal fraco.</li>
+<li>Ponha uma legenda em cada foto (por exemplo, <em>armação antes da concretagem</em>).</li>
+<li>Se o celular estiver sem GPS, vale a localização da obra, e o carimbo avisa.</li>
+</ul>
+<figure class="celular"><img src="../img/daily-report-fotos-mobile.png" alt="Fotos: câmera ou galeria" loading="lazy"><figcaption>Fotos: câmera ou galeria</figcaption></figure>
+<h3 id="enviar">Enviar</h3>
+<p>A barra de baixo diz o que ainda falta — por exemplo, <em>Falta: pelo menos uma pessoa na equipe, pelo menos uma atividade descrita</em> — ou que o diário está pronto. Aí é só tocar em <strong>Enviar para aprovação</strong>.</p>
+<figure class="celular"><img src="../img/daily-report-submit-bar-mobile.png" alt="A barra de baixo: o que falta e Enviar para aprovação" loading="lazy"><figcaption>A barra de baixo: o que falta e Enviar para aprovação</figcaption></figure>
+<p>O diário precisa, no mínimo: do clima da manhã e da tarde, de uma pessoa na equipe e de uma atividade descrita. Sem fotos, o KORbuild pergunta antes de enviar:</p>
+<figure class="celular"><img src="../img/daily-report-send-check-mobile.png" alt="Enviar sem fotos pede confirmação" loading="lazy"><figcaption>Enviar sem fotos pede confirmação</figcaption></figure>
+<p>Tudo o que você digita fica guardado no celular na hora, mesmo sem sinal. Você pode sair do diário e voltar depois.</p>
+<h2 id="copiar-um-diario-anterior">Copiar um diário anterior</h2>
+<p><strong>Para que serve:</strong> a maioria dos dias se parece com o anterior. Copiar poupa digitação.</p>
+<ol>
+<li>Na tela da obra, toque em <strong>ou copiar de um RDO anterior</strong>.</li>
+<li>Escolha o diário de onde copiar (o mais recente já vem marcado) e toque em <strong>Copiar</strong>.</li>
+</ol>
+<figure class="celular"><img src="../img/daily-copy-previous-mobile.png" alt="Escolher qual diário copiar" loading="lazy"><figcaption>Escolher qual diário copiar</figcaption></figure>
+<p>O diário novo traz a <strong>equipe</strong> (com as faltas zeradas), os <strong>equipamentos</strong> e as <strong>atividades ainda em andamento</strong>. Clima, fotos e ocorrências não são copiados: são do dia.</p>
+<h2 id="registrar-sem-atividade-hoje">Registrar "sem atividade hoje"</h2>
+<p><strong>Para que serve:</strong> um dia de trabalho sem serviço na obra (chuva, feriado, obra paralisada) também precisa de registro — ele justifica o dia e para os lembretes.</p>
+<ol>
+<li>Na tela da obra, toque em <strong>Sem atividade hoje</strong>.</li>
+<li>Escolha o motivo: <strong>Chuva / tempo impraticável</strong>, <strong>Feriado ou folga</strong>, <strong>Obra paralisada pelo cliente</strong>, <strong>Falta de material</strong>, <strong>Greve ou paralisação</strong> ou <strong>Outro motivo</strong>, e escreva uma observação, se quiser.</li>
+<li>Toque em <strong>Registrar</strong>.</li>
+</ol>
+<p>O dia fica registrado como o diário daquele dia, vai para o escritório e os lembretes do dia param.</p>
+<h2 id="preencher-um-diario-atrasado">Preencher um diário atrasado</h2>
+<p>Se um dia de trabalho passado ficou sem diário, ele aparece no quadro vermelho de <strong>RDO atrasado</strong> em <strong>Hoje</strong> (até os últimos 3 dias de trabalho). Toque e preencha normalmente — dá para copiar de um anterior também.</p>
+<p>O diário enviado depois do prazo é aceito, mas fica marcado <strong>Enviado com atraso</strong> no relatório e no PDF, com a data e a hora do primeiro envio e o prazo que passou.</p>
+<h2 id="corrigir-um-diario-devolvido">Corrigir um diário devolvido</h2>
+<ol>
+<li>Em <strong>Hoje</strong>, o quadro vermelho <strong>O escritório pediu ajustes no RDO nº…</strong> mostra a obra, a data e o motivo, entre aspas.</li>
+<li>Toque em <strong>Corrigir agora →</strong>. O diário abre com o pedido no alto.</li>
+<li>Faça os ajustes e toque em <strong>Reenviar</strong>.</li>
+</ol>
+<figure class="celular"><img src="../img/daily-field-changes-requested-mobile.png" alt="Um pedido de ajuste na tela Hoje do encarregado" loading="lazy"><figcaption>Um pedido de ajuste na tela Hoje do encarregado</figcaption></figure>
+<p>O reenvio depois de um pedido de ajuste não conta como atraso: vale o primeiro envio.</p>
+<h2 id="trabalhar-sem-sinal">Trabalhar sem sinal</h2>
+<p>Não há nada especial a fazer: o KORbuild funciona sem internet.</p>
+<ul>
+<li>Enquanto você preenche, tudo fica guardado no celular.</li>
+<li>Se enviar sem sinal, o diário fica <strong>Guardado no aparelho</strong> e espera numa fila. Assim que a conexão volta, ele sobe sozinho, foto por foto, e o escritório recebe.</li>
+<li>Depois da primeira visita, o app inteiro abre sem internet.</li>
+</ul>
+<p>O indicador no alto da tela (<strong>Online</strong>) mostra a conexão.</p>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p>Toque em <strong>Online</strong> para simular a falta de sinal, e toque de novo para voltar.</p>
+</div>
+<h2 id="ver-os-seus-diarios-historico">Ver os seus diários (Histórico)</h2>
+<p>O <strong>Histórico</strong> lista todos os diários que você preencheu, do mais novo ao mais antigo, com a situação (<strong>Rascunho</strong>, <strong>Aguardando aprovação</strong>, <strong>Ajustes pedidos</strong>, <strong>Aprovado</strong>). Toque num deles para abrir.</p>
+<figure class="celular"><img src="../img/daily-field-history-mobile.png" alt="O Histórico no celular" loading="lazy"><figcaption>O Histórico no celular</figcaption></figure>
+<h2 id="escritorio-acompanhar-as-obras-no-painel">Escritório: acompanhar as obras no Painel</h2>
+<p><strong>Para que serve:</strong> ver, de relance, quais obras mandaram o diário hoje e o que está esperando por você.</p>
+<div class="admonition note">
+<p class="admonition-title">Construtora ou prestadora</p>
+<p>As telas do escritório são as mesmas para as duas, mas a <strong>construtora</strong> vê todas as prestadoras das obras dela: um farol por prestadora em cada obra, e os diários de todas na fila. A <strong>prestadora</strong> vê os próprios diários; os das obras de uma construtora esperam a aprovação da construtora.</p>
+</div>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Acompanhar todas as obras</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>).</p>
+</div>
+<p>O <strong>Painel</strong> mostra:</p>
+<ul>
+<li><strong>Os números do dia:</strong> diários de hoje recebidos, aguardando aprovação, obras com diário atrasado, fotos recebidas hoje.</li>
+<li><strong>Obras que ficaram sem diário no último dia de trabalho</strong>, com o responsável (aparece a partir das 8h do dia seguinte).</li>
+<li><strong>O farol das obras</strong>, uma cor por obra: <strong>verde</strong> (em dia: o diário de hoje chegou), <strong>amarelo</strong> (1 dia de atraso), <strong>vermelho</strong> (2 dias ou mais). <strong>Abrir</strong> leva à obra.</li>
+<li><strong>Aguardando aprovação:</strong> a fila, com <strong>Revisar</strong> em cada diário.</li>
+</ul>
+<figure><img src="../img/daily-dashboard.png" alt="O Painel do escritório" loading="lazy"><figcaption>O Painel do escritório</figcaption></figure>
+<h2 id="escritorio-revisar-e-aprovar-um-diario">Escritório: revisar e aprovar um diário</h2>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Aprovar RDO e enviar ao contratante</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>) — na <strong>construtora</strong> da obra, ou na prestadora quando a obra é direto com o dono.</p>
+</div>
+<ol>
+<li>
+<p>Abra <strong>Aprovações</strong> (ou <strong>Revisar</strong> no Painel).</p>
+<figure><img src="../img/daily-approvals.png" alt="Aprovações: a fila de diários" loading="lazy"><figcaption>Aprovações: a fila de diários</figcaption></figure>
+</li>
+<li>
+<p>O diário abre exatamente como o cliente vai ver: obra, contratante, quem preparou, etapa atual, prazo, clima, mão de obra, equipamentos, atividades, ocorrências, fotos. À direita, o painel de <strong>Revisão</strong> e o <strong>Histórico</strong> do diário (quem começou, quem enviou, quando chegou).</p>
+<figure><img src="../img/daily-review.png" alt="Revisão de um diário" loading="lazy"><figcaption>Revisão de um diário</figcaption></figure>
+</li>
+<li>
+<p>Escolha:</p>
+<ul>
+<li><strong>Aprovar e lacrar</strong> — confirme na janela. O diário é lacrado: recebe um <strong>código de verificação</strong> e ninguém mais consegue mudá-lo.</li>
+<li><strong>Pedir ajustes ao canteiro</strong> — veja a próxima tarefa.</li>
+</ul>
+</li>
+</ol>
+<figure><img src="../img/daily-approve-confirm.png" alt="Confirmação da aprovação" loading="lazy"><figcaption>Confirmação da aprovação</figcaption></figure>
+<p>Depois da aprovação, o painel mostra <strong>Aprovado e lacrado</strong>, o código de verificação e as opções para compartilhar. O encarregado da prestadora vê o diário aprovado, com quem aprovou e a empresa.</p>
+<p>Na obra de uma construtora, o escritório da prestadora vê o diário, mas não consegue aprovar: o painel diz <strong>Com a construtora</strong>.</p>
+<figure><img src="../img/daily-sub-waiting-gc.png" alt="A visão da prestadora enquanto a construtora revisa" loading="lazy"><figcaption>A visão da prestadora enquanto a construtora revisa</figcaption></figure>
+<figure><img src="../img/daily-approved.png" alt="Um diário aprovado, com o código de verificação" loading="lazy"><figcaption>Um diário aprovado, com o código de verificação</figcaption></figure>
+<div class="admonition tip">
+<p class="admonition-title">Como funciona o lacre</p>
+<p>Na aprovação, todo o conteúdo do diário — inclusive a impressão digital de cada foto — recebe uma impressão digital (SHA-256). Os primeiros caracteres viram o código de verificação. Se alguém mudar uma palavra ou uma foto depois, o link do cliente mostra que o documento não bate mais com o que foi aprovado.</p>
+</div>
+<h2 id="escritorio-pedir-ajustes-ao-canteiro">Escritório: pedir ajustes ao canteiro</h2>
+<ol>
+<li>No diário, clique em <strong>Pedir ajustes ao canteiro</strong>.</li>
+<li>Em <strong>O que precisa ser corrigido?</strong>, escreva o motivo (por exemplo, <em>falta a foto da armação antes da concretagem</em>).</li>
+<li>Clique em <strong>Enviar pedido</strong>.</li>
+</ol>
+<figure><img src="../img/daily-request-changes.png" alt="Pedido de ajustes" loading="lazy"><figcaption>Pedido de ajustes</figcaption></figure>
+<p>O diário volta para o campo com o motivo e aparece em vermelho na tela <strong>Hoje</strong> do encarregado. Quando ele reenviar, o diário volta para a sua fila.</p>
+<h2 id="escritorio-compartilhar-com-o-cliente">Escritório: compartilhar com o cliente</h2>
+<p>No diário aprovado:</p>
+<ul>
+<li><strong>Copiar link para o contratante</strong> — copia um link para mandar por e-mail ou mensagem. O cliente abre em qualquer navegador, sem conta.</li>
+<li><strong>Ver como o contratante vê</strong> — abre esse link, para você ver o que o cliente vê.</li>
+<li><strong>Baixar PDF</strong> — o diário em PDF, com o logo da empresa, a obra, o clima, as tabelas, as fotos com legenda, data e GPS, o lacre e as assinaturas.</li>
+</ul>
+<p>A página do cliente confere o lacre toda vez que abre. Se o conteúdo bate com o que foi aprovado, ela mostra <strong>Documento autêntico</strong>, com quem aprovou e quando.</p>
+<figure><img src="../img/daily-client-link.png" alt="O que o cliente vê" loading="lazy"><figcaption>O que o cliente vê</figcaption></figure>
+<figure><img src="../img/daily-pdf.png" alt="A prévia do PDF" loading="lazy"><figcaption>A prévia do PDF</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p>O PDF é impresso pelo navegador (escolha <strong>Salvar como PDF</strong> na janela de impressão). No produto, ele é gerado no servidor, pronto para baixar. O link do cliente só funciona no mesmo navegador, porque o protótipo não tem servidor.</p>
+</div>
+<h2 id="escritorio-acompanhar-uma-obra">Escritório: acompanhar uma obra</h2>
+<ol>
+<li>Abra <strong>Obras</strong>: todas as obras ativas, com o farol e o número de diários recebidos.</li>
+<li>
+<p>Abra uma obra: endereço, contratante e partes, o cartão do <strong>Cronograma</strong> (quando a obra tem cronograma), a configuração do diário (responsável, prazo, dias de trabalho) e todos os diários recebidos.</p>
+<p>Para a <strong>construtora</strong>, a obra mostra no lugar disso <strong>Prestadoras nesta obra</strong> — para cada prestadora, quem está na obra agora, quem veio hoje, as horas de hoje e da semana, e a lista de pessoas com função, entrada e horas (nunca valores em dinheiro) —, os cronogramas publicados pelas prestadoras e os diários recebidos, separados por prestadora.</p>
+<figure><img src="../img/daily-job-subcontractors.png" alt="Prestadoras numa obra da construtora" loading="lazy"><figcaption>Prestadoras numa obra da construtora</figcaption></figure>
+</li>
+</ol>
+<figure><img src="../img/daily-jobs.png" alt="Obras" loading="lazy"><figcaption>Obras</figcaption></figure>
+<figure><img src="../img/daily-job.png" alt="Uma obra" loading="lazy"><figcaption>Uma obra</figcaption></figure>
+<p>Na obra, <strong>Editar a obra</strong> (para quem pode cadastrar obras) abre o cadastro: endereço, cerca, prazo, responsável e dias de trabalho.</p>
+<h2 id="notificacoes">Notificações</h2>
+<p>O sininho no alto de todas as telas reúne os alertas de todos os módulos, com o número de não lidas e <strong>Marcar todas como lidas</strong>. No Daily:</p>
+<table>
+<thead>
+<tr>
+<th>Quando</th>
+<th>Quem</th>
+<th>Mensagem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16h</td>
+<td>Responsável pela obra</td>
+<td>Falta o diário de hoje; prazo às 18h.</td>
+</tr>
+<tr>
+<td>18h</td>
+<td>Responsável pela obra</td>
+<td>O diário de hoje está atrasado.</td>
+</tr>
+<tr>
+<td>8h do dia seguinte</td>
+<td>Escritório</td>
+<td>Obras sem diário no último dia de trabalho, com o responsável.</td>
+</tr>
+<tr>
+<td>Na hora</td>
+<td>Campo</td>
+<td>O escritório pediu ajustes num diário.</td>
+</tr>
+<tr>
+<td>Na hora</td>
+<td>Campo</td>
+<td>O seu diário foi aprovado.</td>
+</tr>
+<tr>
+<td>Na hora</td>
+<td>Escritório</td>
+<td>Um diário aguarda aprovação.</td>
+</tr>
+<tr>
+<td>8h, depois do fim de uma etapa</td>
+<td>Escritório</td>
+<td>Uma etapa do cronograma está atrasada (quando a obra tem cronograma).</td>
+</tr>
+</tbody>
+</table>
+<p>No celular, os mesmos lembretes chegam também como notificações do aparelho (quando permitidas). Em <strong>Hoje</strong>, <strong>Como funcionam os lembretes? Testar no celular</strong> mostra os horários e manda uma notificação de teste de verdade.</p>
+<figure><img src="../img/daily-notifications.png" alt="O sininho, com os alertas de todos os módulos" loading="lazy"><figcaption>O sininho, com os alertas de todos os módulos</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p>Os lembretes das 16h e das 18h só disparam com o app aberto. No produto, o servidor envia mesmo com o app fechado. Por enquanto não há SMS nem e-mail.</p>
+</div>
+<h2 id="mensagens-e-alertas">Mensagens e alertas</h2>
+<table>
+<thead>
+<tr>
+<th>Mensagem</th>
+<th>Onde</th>
+<th>O que fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><em>Falta: pelo menos uma pessoa na equipe, pelo menos uma atividade descrita</em></td>
+<td>Barra de baixo do diário</td>
+<td>Preencha o que está listado; o botão envia quando nada faltar.</td>
+</tr>
+<tr>
+<td><strong>Enviar sem fotos?</strong></td>
+<td>Ao enviar</td>
+<td><strong>Voltar</strong> e incluir fotos, ou <strong>Enviar sem fotos</strong>.</td>
+</tr>
+<tr>
+<td><em>O RDO é obrigatório em todo dia de trabalho. Preencha agora; ele fica registrado como enviado com atraso.</em></td>
+<td>Hoje, quadro vermelho</td>
+<td>Abra a obra e preencha o diário.</td>
+</tr>
+<tr>
+<td><em>Falta o RDO de hoje… Prazo: hoje às 18h</em></td>
+<td>Hoje, quadro amarelo</td>
+<td>Preencha o diário de hoje ou registre <strong>Sem atividade hoje</strong>.</td>
+</tr>
+<tr>
+<td><strong>O escritório pediu ajustes no RDO nº…</strong></td>
+<td>Hoje, quadro vermelho</td>
+<td><strong>Corrigir agora →</strong>, ajuste e <strong>Reenviar</strong>.</td>
+</tr>
+<tr>
+<td><strong>Guardado no aparelho</strong></td>
+<td>Situação do diário</td>
+<td>Nada: ele sobe quando o sinal voltar.</td>
+</tr>
+<tr>
+<td><strong>Documento autêntico</strong></td>
+<td>Link do cliente</td>
+<td>O relatório é exatamente o que foi aprovado.</td>
+</tr>
+<tr>
+<td>O link do cliente diz que o documento não bate</td>
+<td>Link do cliente</td>
+<td>O conteúdo foi mudado depois da aprovação: fale com a empresa.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#campo-ver-o-que-falta-hoje">Campo: ver o que falta hoje</a></li><li><a href="#campo-preencher-o-diario-de-obra">Campo: preencher o diário de obra</a></li><li class="sub"><a href="#clima">Clima</a></li><li class="sub"><a href="#equipe">Equipe</a></li><li class="sub"><a href="#equipamentos">Equipamentos</a></li><li class="sub"><a href="#atividades">Atividades</a></li><li class="sub"><a href="#ocorrencias">Ocorrências</a></li><li class="sub"><a href="#fotos">Fotos</a></li><li class="sub"><a href="#enviar">Enviar</a></li><li><a href="#copiar-um-diario-anterior">Copiar um diário anterior</a></li><li><a href="#registrar-sem-atividade-hoje">Registrar &quot;sem atividade hoje&quot;</a></li><li><a href="#preencher-um-diario-atrasado">Preencher um diário atrasado</a></li><li><a href="#corrigir-um-diario-devolvido">Corrigir um diário devolvido</a></li><li><a href="#trabalhar-sem-sinal">Trabalhar sem sinal</a></li><li><a href="#ver-os-seus-diarios-historico">Ver os seus diários (Histórico)</a></li><li><a href="#escritorio-acompanhar-as-obras-no-painel">Escritório: acompanhar as obras no Painel</a></li><li><a href="#escritorio-revisar-e-aprovar-um-diario">Escritório: revisar e aprovar um diário</a></li><li><a href="#escritorio-pedir-ajustes-ao-canteiro">Escritório: pedir ajustes ao canteiro</a></li><li><a href="#escritorio-compartilhar-com-o-cliente">Escritório: compartilhar com o cliente</a></li><li><a href="#escritorio-acompanhar-uma-obra">Escritório: acompanhar uma obra</a></li><li><a href="#notificacoes">Notificações</a></li><li><a href="#mensagens-e-alertas">Mensagens e alertas</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

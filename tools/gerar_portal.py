@@ -3,7 +3,7 @@
 Uso:
   pip install markdown python-docx
   node tools/capturas-portal.mjs          # (opcional) refaz as capturas das telas em portal/img/
-  python3 tools/gerar_portal.py           # gera as páginas, a busca, os Word e confere os links
+  python3 tools/gerar_portal.py           # gera as páginas (inglês em portal/, português em portal/pt/), a busca, os Word e confere os links
 
 O texto é escrito uma vez só (portal/fonte/<idioma>/...). Daqui saem a página web e o Word de cada documento.
 Markdown aceito, além do comum (títulos, listas, tabelas, negrito, links):
@@ -26,8 +26,97 @@ import markdown
 RAIZ = Path(__file__).resolve().parent.parent
 PORTAL = RAIZ / 'portal'
 FONTE = PORTAL / 'fonte'
-IDIOMA = 'en'   # um idioma por vez (decisão de outubro de 2026); o português entra depois em fonte/pt
-HOJE = date.today().strftime('%B %-d, %Y')
+# Dois idiomas: inglês na raiz (portal/) e português em portal/pt/, cada um com as suas capturas (img/).
+IDIOMAS = ['en', 'pt']
+IDIOMA = 'en'
+SAIDA = PORTAL      # onde as páginas do idioma são gravadas
+TOPO = ''           # caminho de SAIDA até portal/ ('' no inglês, '../' no português)
+MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
+
+
+def hoje():
+    d = date.today()
+    return f'{d.day} de {MESES[d.month - 1]} de {d.year}' if IDIOMA == 'pt' else d.strftime('%B %-d, %Y')
+
+
+def definir_idioma(idioma):
+    global IDIOMA, SAIDA, TOPO
+    IDIOMA = idioma
+    SAIDA = PORTAL if idioma == 'en' else PORTAL / idioma
+    TOPO = '' if idioma == 'en' else '../'
+
+
+# Textos da moldura (o conteúdo vem do Markdown de cada idioma). Chave = o texto em inglês.
+PT = {
+    'Daily construction reports from the field: crew, weather, work performed, GPS-stamped photos and issues. The office reviews, approves and shares a sealed PDF with the client. Also home to the job list and the job schedule.':
+        'O diário de obra feito no canteiro: equipe, clima, serviços executados, fotos com GPS e ocorrências. A aprovação lacra o relatório e ele é compartilhado com o cliente em PDF. Aqui também ficam as obras e o cronograma.',
+    'Crew time clock with GPS and geofence, weekly timesheets with overtime, approval and payroll export, and labor cost by job: budget × actual × forecast to completion.':
+        'Ponto da equipe com GPS e cerca, timesheets semanais com hora extra, aprovação e exportação para a folha, e custo de mão de obra por obra: orçado × realizado × projeção.',
+    'Plan takeoff in feet and inches: scale, measure, assemblies, quantities, quote lists and proposals.':
+        'Medição de plantas em pés e polegadas: escala, medição, assemblies, quantidades, lista para cotação e proposta.',
+    'Company setup: employees, labor burden, work rules, jobs and their schedules, contacts, users and access roles, audit log.':
+        'Configuração da empresa: funcionários, encargos, regras de jornada, obras e cronogramas, contatos, usuários e perfis de acesso, auditoria.',
+    'Overview': 'Visão geral', 'User manual': 'Manual do usuário', 'Business rules': 'Regras de negócio',
+    'Roles and permissions': 'Perfis e permissões', 'Prototype status': 'Situação do protótipo',
+    'Start here': 'Comece aqui', 'Using it': 'No dia a dia', 'Rules and access': 'Regras e acesso',
+    'What Daily does, who uses it and the main screens.': 'O que o Daily faz, quem usa e as telas principais.',
+    'Step by step, task by task, with screenshots.': 'Passo a passo, tarefa por tarefa, com as telas.',
+    'Every rule the system enforces, with an ID.': 'Cada regra que o sistema aplica, com um código.',
+    'Who can do what in Daily.': 'Quem pode fazer o quê no Daily.',
+    'What is simulated today and what comes next.': 'O que é simulado hoje e o que vem depois.',
+    'What Crew does, who uses it and the main screens.': 'O que o Crew faz, quem usa e as telas principais.',
+    'Clock in, approve timesheets, follow labor cost — step by step.': 'Bater o ponto, aprovar timesheets, acompanhar o custo — passo a passo.',
+    'Punches, geofence, overtime, cost and forecast rules, with IDs.': 'Regras de batidas, cerca, hora extra, custo e projeção, com códigos.',
+    'Who can do what in Crew.': 'Quem pode fazer o quê no Crew.',
+    'What Measure does, who uses it and how a takeoff becomes a proposal.': 'O que o Measure faz, quem usa e como a medição vira proposta.',
+    'From the PDF plan to the proposal, step by step, with screenshots.': 'Do PDF da planta à proposta, passo a passo, com as telas.',
+    'Units, scale, measuring, formulas, pricing, reports and typicals, with IDs.': 'Unidades, escala, medição, fórmulas, preços, relatórios e typicals, com códigos.',
+    'Who can measure and who can change the catalog.': 'Quem pode medir e quem pode mudar o catálogo.',
+    'What is in Settings and who uses it.': 'O que há no Settings e quem usa.',
+    'Employees, rules, company, contacts, jobs, the job schedule, users and roles — step by step.': 'Funcionários, regras, empresa, contatos, obras, cronograma, usuários e perfis — passo a passo.',
+    'Effective dates, employees, jobs, schedule and access rules, with IDs.': 'Vigência, funcionários, obras, cronograma e acesso, com códigos.',
+    'The full permission catalog and the default roles.': 'O catálogo completo de permissões e os perfis prontos.',
+    'What is simulated, what is still fixed and what comes next.': 'O que é simulado, o que ainda é fixo e o que vem depois.',
+    'Who the customers are (general contractors and subcontractors), who registers what and what each company sees of the others.':
+        'Quem são os clientes (construtoras e prestadoras), quem cadastra o quê e o que cada empresa vê da outra.',
+    'How to present KORbuild to a customer: the story, the order of the screens, which demo user to sign in with and what to say at each step.':
+        'Como apresentar o KORbuild a um cliente: a história, a ordem das telas, com qual usuário entrar e o que dizer em cada passo.',
+    'KORbuild product guide': 'Guia do produto KORbuild',
+    'KORbuild product guide: specifications, business rules and user manual for each module.': 'Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.',
+    'KORbuild product guide, home': 'Guia do produto KORbuild, início', 'Guide': 'Guia', 'Main': 'Principal',
+    'Modules': 'Módulos', 'How it is organized': 'Como se organiza', "Presenter's guide": 'Guia do apresentador',
+    'Search rules, screens, tasks…': 'Buscar regras, telas, tarefas…', 'Search the guide': 'Buscar no guia',
+    'Open the prototype': 'Abrir o protótipo', 'Menu and search': 'Menu e busca',
+    'updated': 'atualizado em', 'Main sign-in': 'Entrada principal', 'Prototype': 'Protótipo',
+    'Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.':
+        'As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.',
+    'Back to top': 'Voltar ao topo', 'On this page': 'Nesta página', 'You are here': 'Você está aqui', 'Home': 'Início',
+    'documents': 'documentos', 'Download Word': 'Baixar Word', 'Print': 'Imprimir', 'KORbuild guide': 'Guia KORbuild',
+    'Coming soon': 'Em breve',
+    'Documentation coming soon': 'Documentação em breve',
+    'Everything KORbuild does, in one place.': 'Tudo o que o KORbuild faz, num lugar só.',
+    'KORbuild is a platform for construction companies in the United States: general contractors and the trade contractors they hire. This guide explains each module — what it is for, the rules it enforces, who can do what — and walks through every task with screenshots, so anyone can present the product with confidence.':
+        'O KORbuild é uma plataforma para empresas de construção nos Estados Unidos: construtoras e as prestadoras de serviço que elas contratam. Este guia explica cada módulo — para que serve, as regras que aplica, quem pode fazer o quê — e mostra cada tarefa com as telas, para qualquer pessoa apresentar o produto com segurança.',
+    'Presenter\'s guide →': 'Guia do apresentador →', 'How KORbuild is organized': 'Como o KORbuild se organiza',
+    'Explore the modules': 'Conhecer os módulos', 'Open the prototype ↗': 'Abrir o protótipo ↗',
+    'One account, one set of jobs and people, shared by every module. Each company turns on the modules it needs.':
+        'Uma conta, um cadastro de obras e de pessoas, usado por todos os módulos. Cada empresa liga os módulos de que precisa.',
+    'Where to start': 'Por onde começar', 'Pick the path that matches why you are here.': 'Escolha o caminho que combina com o motivo de estar aqui.',
+    'I will present KORbuild to a customer': 'Vou apresentar o KORbuild a um cliente',
+    "Read the presenter's guide: the story, the order of the screens and what to say.": 'Leia o guia do apresentador: a história, a ordem das telas e o que dizer.',
+    'I will use KORbuild every day': 'Vou usar o KORbuild no dia a dia',
+    'Go to your module and open the user manual: one task at a time, with screenshots.': 'Vá ao seu módulo e abra o manual do usuário: uma tarefa por vez, com as telas.',
+    'I need the rules and permissions': 'Preciso das regras e das permissões',
+    'Each module lists its business rules with IDs and who can do what.': 'Cada módulo lista as regras de negócio, com códigos, e quem pode fazer o quê.',
+    'user manual': 'manual do usuário', 'business rules': 'regras de negócio', 'roles and permissions': 'perfis e permissões',
+    'The documentation of this module is being written. Meanwhile, see it working in the': 'A documentação deste módulo está sendo escrita. Enquanto isso, veja-o funcionando no',
+    'prototype': 'protótipo',
+}
+
+
+def L(texto):
+    """O texto da moldura no idioma em geração."""
+    return texto if IDIOMA == 'en' else PT.get(texto, texto)
 
 # ---------------------------------------------------------------- catálogo
 
@@ -109,32 +198,39 @@ def titulo_e_corpo(caminho):
 
 # ---------------------------------------------------------------- moldura
 
-def cabecalho(titulo, raiz, ativo=''):
+def cabecalho(titulo, raiz, ativo='', caminho='index.html'):
     def nav(id_, href, rotulo):
         return f'<a href="{raiz}{href}"{" aria-current=page" if ativo == id_ else ""}>{rotulo}</a>'
+    # a mesma página no outro idioma
+    outro = 'pt' if IDIOMA == 'en' else 'en'
+    href_outro = f'{raiz}pt/{caminho}' if IDIOMA == 'en' else f'{raiz}../{caminho}'
+    idiomas = (f'<span class="idioma-topo" aria-label="Language / Idioma">'
+               f'<a href="{href_outro if IDIOMA == "pt" else "#"}"{" aria-current=true" if IDIOMA == "en" else ""} lang="en">EN</a>'
+               f'<a href="{href_outro if IDIOMA == "en" else "#"}"{" aria-current=true" if IDIOMA == "pt" else ""} lang="pt-BR">PT</a></span>')
     return f"""<!DOCTYPE html>
-<html lang="{IDIOMA}">
+<html lang="{'pt-BR' if IDIOMA == 'pt' else 'en'}">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{E(titulo)}</title>
-<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
-<link rel="icon" href="{raiz}../icons/icon-192.png">
+<meta name="description" content="{L('KORbuild product guide: specifications, business rules and user manual for each module.')}">
+<link rel="icon" href="{raiz}{TOPO}../icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{raiz}assets/portal.css">
+<link rel="stylesheet" href="{raiz}{TOPO}assets/portal.css">
 </head>
 <body data-raiz="{raiz}">
 <header class="topo">
-  <a class="marca" href="{raiz}index.html" aria-label="KORbuild product guide, home"><img src="{raiz}../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
-  <nav class="topo-nav" aria-label="Main">
-    {nav('modulos', 'index.html#modules', 'Modules')}
-    {nav('organization', 'organization.html', 'How it is organized')}
-    {nav('presenting', 'presenting.html', "Presenter's guide")}
+  <a class="marca" href="{raiz}index.html" aria-label="{L('KORbuild product guide, home')}"><img src="{raiz}{TOPO}../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>{L('Guide')}</small></a>
+  <nav class="topo-nav" aria-label="{L('Main')}">
+    {nav('modulos', 'index.html#modules', L('Modules'))}
+    {nav('organization', 'organization.html', L('How it is organized'))}
+    {nav('presenting', 'presenting.html', L("Presenter's guide"))}
   </nav>
   <div class="topo-acoes">
-    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
-    <a class="btn-topo" href="{raiz}../?demo#/entrar">Open the prototype</a>
-    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="{L('Search rules, screens, tasks…')}" aria-label="{L('Search the guide')}" autocomplete="off"></label>
+    {idiomas}
+    <a class="btn-topo" href="{raiz}{TOPO}../?demo#/entrar">{L('Open the prototype')}</a>
+    <button class="menu-celular" type="button" aria-label="{L('Menu and search')}">☰</button>
   </div>
   <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
 </header>
@@ -143,11 +239,11 @@ def cabecalho(titulo, raiz, ativo=''):
 
 def rodape(raiz):
     return f"""<footer class="rodape">
-  <div><b>KORbuild</b> product guide · updated {HOJE} · <a href="{raiz}../">Main sign-in</a> · <a href="{raiz}../?demo#/entrar">Prototype</a></div>
-  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+  <div><b>KORbuild</b> · {L('KORbuild product guide')} · {L('updated')} {hoje()} · <a href="{raiz}{TOPO}../">{L('Main sign-in')}</a> · <a href="{raiz}{TOPO}../?demo#/entrar">{L('Prototype')}</a></div>
+  <div>{L('Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.')}</div>
 </footer>
-<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
-<script src="{raiz}assets/portal.js"></script>
+<button class="voltar-topo" type="button" aria-label="{L('Back to top')}">↑</button>
+<script src="{raiz}{TOPO}assets/portal.js"></script>
 </body></html>
 """
 
@@ -159,7 +255,7 @@ def toc_html(toc):
     for t in toc:
         itens.append(f'<li><a href="#{t["id"]}">{E(html.unescape(t["name"]))}</a></li>')
         itens += [f'<li class="sub"><a href="#{c["id"]}">{E(html.unescape(c["name"]))}</a></li>' for c in t['children'][:14]]
-    return f'<nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul>{"".join(itens)}</ul></nav>'
+    return f'<nav class="toc" aria-label="{L("On this page")}"><div class="toc-titulo">{L("On this page")}</div><ul>{"".join(itens)}</ul></nav>'
 
 
 # ---------------------------------------------------------------- páginas
@@ -170,19 +266,19 @@ def pagina_documento(mod, p, corpo, toc, palavra_word):
     for g in GRUPOS:
         itens = [x for x in mod['paginas'] if x['grupo'] == g]
         if itens:
-            lat.append(f'<div class="lat-titulo">{g}</div><ul>' + ''.join(
+            lat.append(f'<div class="lat-titulo">{L(g)}</div><ul>' + ''.join(
                 f'<li><a href="{x["slug"]}.html"{" aria-current=page" if x is p else ""}>{E(x["titulo"])}</a></li>' for x in itens) + '</ul>')
-    return cabecalho(f"{p['titulo']} · {mod['nome']} · KORbuild guide", raiz, 'modulos') + f"""
+    return cabecalho(f"{p['titulo']} · {mod['nome']} · {L('KORbuild guide')}", raiz, 'modulos', f"{mod['id']}/{p['slug']}.html") + f"""
 <div class="doc-layout" style="--cor:{mod['cor']}">
-  <aside class="lateral" aria-label="{mod['nome']} documents">
+  <aside class="lateral" aria-label="{mod['nome']} {L('documents')}">
     <a class="lat-modulo" href="index.html"><span class="ico">{mod['ico']}</span>{mod['nome']}</a>
     {''.join(lat)}
   </aside>
   <main class="doc" id="conteudo">
-    <nav class="trilha" aria-label="You are here"><a href="{raiz}index.html">Home</a> › <a href="index.html">{mod['nome']}</a> › {E(p['grupo'])}</nav>
+    <nav class="trilha" aria-label="{L('You are here')}"><a href="{raiz}index.html">{L('Home')}</a> › <a href="index.html">{mod['nome']}</a> › {E(L(p['grupo']))}</nav>
     <header class="doc-cabecalho">
       <h1>{E(p['titulo'])}</h1>
-      <div class="doc-acoes"><a class="botao" href="{raiz}files/{palavra_word}" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+      <div class="doc-acoes"><a class="botao" href="{raiz}files/{palavra_word}" download>⤓ {L('Download Word')}</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ {L('Print')}</button></div>
     </header>
     <article class="texto">
 {corpo}
@@ -195,18 +291,18 @@ def pagina_documento(mod, p, corpo, toc, palavra_word):
 
 def pagina_geral(g, corpo, toc, palavra_word):
     raiz = ''
-    return cabecalho(f"{g['titulo']} · KORbuild guide", raiz, g['slug']) + f"""
+    return cabecalho(f"{g['titulo']} · {L('KORbuild guide')}", raiz, g['slug'], f"{g['slug']}.html") + f"""
 <div class="doc-layout" style="--cor:var(--cor-geral)">
-  <aside class="lateral" aria-label="Modules">
+  <aside class="lateral" aria-label="{L('Modules')}">
     <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
-    <div class="lat-titulo">Guide</div><ul>{''.join(f'<li><a href="{x["slug"]}.html"{" aria-current=page" if x is g else ""}>{E(x["titulo"])}</a></li>' for x in GERAIS)}</ul>
-    <div class="lat-titulo">Modules</div><ul>{''.join(f'<li><a href="{m["id"]}/index.html">{m["nome"]}</a></li>' for m in MODULOS)}</ul>
+    <div class="lat-titulo">{L('Guide')}</div><ul>{''.join(f'<li><a href="{x["slug"]}.html"{" aria-current=page" if x is g else ""}>{E(x["titulo"])}</a></li>' for x in GERAIS)}</ul>
+    <div class="lat-titulo">{L('Modules')}</div><ul>{''.join(f'<li><a href="{m["id"]}/index.html">{m["nome"]}</a></li>' for m in MODULOS)}</ul>
   </aside>
   <main class="doc" id="conteudo">
-    <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
+    <nav class="trilha" aria-label="{L('You are here')}"><a href="index.html">{L('Home')}</a> › {L('Guide')}</nav>
     <header class="doc-cabecalho">
       <h1>{E(g['titulo'])}</h1>
-      <div class="doc-acoes"><a class="botao" href="files/{palavra_word}" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+      <div class="doc-acoes"><a class="botao" href="files/{palavra_word}" download>⤓ {L('Download Word')}</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ {L('Print')}</button></div>
     </header>
     <article class="texto">
 {corpo}
@@ -223,15 +319,15 @@ def pagina_modulo(mod):
     for g in GRUPOS:
         itens = [x for x in mod['paginas'] if x['grupo'] == g]
         if itens:
-            grupos.append(f'<h2>{g}</h2><div class="cartoes">' + ''.join(
-                f'<a class="cartao-doc" href="{x["slug"]}.html"><b>{E(x["titulo"])}</b><span>{E(x["desc"])}</span></a>' for x in itens) + '</div>')
+            grupos.append(f'<h2>{L(g)}</h2><div class="cartoes">' + ''.join(
+                f'<a class="cartao-doc" href="{x["slug"]}.html"><b>{E(x["titulo"])}</b><span>{E(L(x["desc"]))}</span></a>' for x in itens) + '</div>')
     if not grupos:
-        grupos.append('<h2>Coming soon</h2><p>The documentation of this module is being written. Meanwhile, see it working in the '
-                      f'<a href="{raiz}../?demo#/entrar">prototype</a>.</p>')
-    return cabecalho(f"{mod['nome']} · KORbuild guide", raiz, 'modulos') + f"""
+        grupos.append(f'<h2>{L("Coming soon")}</h2><p>{L("The documentation of this module is being written. Meanwhile, see it working in the")} '
+                      f'<a href="{raiz}{TOPO}../?demo#/entrar">{L("prototype")}</a>.</p>')
+    return cabecalho(f"{mod['nome']} · {L('KORbuild guide')}", raiz, 'modulos', f"{mod['id']}/index.html") + f"""
 <div class="mod-cabeca" style="--cor:{mod['cor']}">
-  <nav class="trilha" aria-label="You are here"><a href="{raiz}index.html">Home</a> › {mod['nome']}</nav>
-  <div class="mod-caixa"><span class="ico">{mod['ico']}</span><div><h1>{mod['nome']}</h1><p>{E(mod['resumo'])}</p></div></div>
+  <nav class="trilha" aria-label="{L('You are here')}"><a href="{raiz}index.html">{L('Home')}</a> › {mod['nome']}</nav>
+  <div class="mod-caixa"><span class="ico">{mod['ico']}</span><div><h1>{mod['nome']}</h1><p>{E(L(mod['resumo']))}</p></div></div>
 </div>
 <div class="mod-grupos" style="--cor:{mod['cor']}">{''.join(grupos)}</div>
 """ + rodape(raiz)
@@ -240,37 +336,38 @@ def pagina_modulo(mod):
 def pagina_inicial():
     cartoes = ''.join(
         f'<a class="cartao-mod" href="{m["id"]}/index.html" style="--cor:{m["cor"]}"><span class="ico">{m["ico"]}</span><b>{m["nome"]}</b>'
-        f'<span>{E(m["resumo"])}</span>' + ('' if m['paginas'] else '<span class="em-breve">Documentation coming soon</span>') + '</a>'
+        f'<span>{E(L(m["resumo"]))}</span>' + ('' if m['paginas'] else f'<span class="em-breve">{L("Documentation coming soon")}</span>') + '</a>'
         for m in MODULOS)
-    return cabecalho('KORbuild product guide', '', 'inicio') + f"""
+    prot = TOPO + '../?demo#/entrar'
+    lista = lambda pares: '<ul>' + ''.join(f'<li><a href="{h}">{t}</a></li>' for h, t in pares) + '</ul>'
+    mods = [m['nome'] for m in MODULOS]
+    return cabecalho(L('KORbuild product guide'), '', 'inicio', 'index.html') + f"""
 <section class="heroi"><div class="heroi-dentro">
-  <p class="sobrescrito">KORbuild product guide</p>
-  <h1>Everything KORbuild does, in one place.</h1>
-  <p class="lead">KORbuild is a platform for construction companies in the United States: general contractors and the trade contractors
-  they hire. This guide explains each module — what it is for, the rules it enforces, who can do what — and walks through every task
-  with screenshots, so anyone can present the product with confidence.</p>
+  <p class="sobrescrito">{L('KORbuild product guide')}</p>
+  <h1>{L('Everything KORbuild does, in one place.')}</h1>
+  <p class="lead">{L('KORbuild is a platform for construction companies in the United States: general contractors and the trade contractors they hire. This guide explains each module — what it is for, the rules it enforces, who can do what — and walks through every task with screenshots, so anyone can present the product with confidence.')}</p>
   <div class="botoes">
-    <a class="botao" href="presenting.html">Presenter's guide →</a>
-    <a class="botao botao-secundario" href="organization.html">How KORbuild is organized</a>
-    <a class="botao botao-secundario" href="#modules">Explore the modules</a>
-    <a class="botao botao-secundario" href="../?demo#/entrar">Open the prototype ↗</a>
+    <a class="botao" href="presenting.html">{L("Presenter's guide →")}</a>
+    <a class="botao botao-secundario" href="organization.html">{L('How KORbuild is organized')}</a>
+    <a class="botao botao-secundario" href="#modules">{L('Explore the modules')}</a>
+    <a class="botao botao-secundario" href="{prot}">{L('Open the prototype ↗')}</a>
   </div>
 </div></section>
 <section class="faixa" id="modules">
-  <h2>Modules</h2>
-  <p>One account, one set of jobs and people, shared by every module. Each company turns on the modules it needs.</p>
+  <h2>{L('Modules')}</h2>
+  <p>{L('One account, one set of jobs and people, shared by every module. Each company turns on the modules it needs.')}</p>
   <div class="cartoes">{cartoes}</div>
 </section>
 <section class="faixa">
-  <h2>Where to start</h2>
-  <p>Pick the path that matches why you are here.</p>
+  <h2>{L('Where to start')}</h2>
+  <p>{L('Pick the path that matches why you are here.')}</p>
   <div class="publicos">
-    <div class="publico"><h3>I will present KORbuild to a customer</h3><p>Read the presenter's guide: the story, the order of the screens and what to say.</p>
-      <ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="presenting.html">Presenter's guide</a></li><li><a href="../?demo#/entrar">Open the prototype</a></li></ul></div>
-    <div class="publico"><h3>I will use KORbuild every day</h3><p>Go to your module and open the user manual: one task at a time, with screenshots.</p>
-      <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li><li><a href="crew/user-manual.html">Crew — user manual</a></li><li><a href="measure/user-manual.html">Measure — user manual</a></li><li><a href="settings/user-manual.html">Settings — user manual</a></li></ul></div>
-    <div class="publico"><h3>I need the rules and permissions</h3><p>Each module lists its business rules with IDs and who can do what.</p>
-      <ul><li><a href="daily/business-rules.html">Daily — business rules</a></li><li><a href="daily/roles-and-permissions.html">Daily — roles and permissions</a></li><li><a href="crew/business-rules.html">Crew — business rules</a></li><li><a href="crew/roles-and-permissions.html">Crew — roles and permissions</a></li><li><a href="measure/business-rules.html">Measure — business rules</a></li><li><a href="settings/roles-and-permissions.html">Settings — roles and permissions</a></li></ul></div>
+    <div class="publico"><h3>{L('I will present KORbuild to a customer')}</h3><p>{L("Read the presenter's guide: the story, the order of the screens and what to say.")}</p>
+      {lista([('organization.html', L('How KORbuild is organized')), ('presenting.html', L("Presenter's guide")), (prot, L('Open the prototype'))])}</div>
+    <div class="publico"><h3>{L('I will use KORbuild every day')}</h3><p>{L('Go to your module and open the user manual: one task at a time, with screenshots.')}</p>
+      {lista([(f"{m['id']}/user-manual.html", f"{m['nome']} — {L('user manual')}") for m in MODULOS])}</div>
+    <div class="publico"><h3>{L('I need the rules and permissions')}</h3><p>{L('Each module lists its business rules with IDs and who can do what.')}</p>
+      {lista([(f"{m['id']}/{pg}.html", f"{m['nome']} — {L(rot)}") for m in MODULOS for pg, rot in (('business-rules', 'business rules'), ('roles-and-permissions', 'roles and permissions'))])}</div>
   </div>
 </section>
 <div style="height:40px"></div>
@@ -491,44 +588,62 @@ def conferir_links():
 
 # ---------------------------------------------------------------- principal
 
-def main():
-    origem = FONTE / IDIOMA
-    (PORTAL / 'files').mkdir(exist_ok=True)
-    busca = []
-    faltando = []
+def gerar_idioma(idioma):
+    definir_idioma(idioma)
+    origem = FONTE / idioma
+    (SAIDA / 'files').mkdir(parents=True, exist_ok=True)
+    busca, faltando = [], []
+    sub = L('KORbuild product guide')
+    # os títulos de todas as páginas antes de desenhar (o menu lateral mostra os das outras páginas)
+    for g in GERAIS:
+        arq = origem / f'{g["slug"]}.md'
+        if arq.exists():
+            g['titulo'] = titulo_e_corpo(arq)[0]
+    for mod in MODULOS:
+        for p in mod['paginas']:
+            arq = origem / mod['id'] / f'{p["slug"]}.md'
+            if arq.exists():
+                p['titulo'] = titulo_e_corpo(arq)[0]
     for g in GERAIS:
         arq = origem / f'{g["slug"]}.md'
         if not arq.exists():
             faltando.append(str(arq)); continue
         titulo, md = titulo_e_corpo(arq)
-        g['titulo'] = titulo
         corpo, toc = converter(md, '')
         word = f'KORbuild - {titulo}.docx'.replace("'", '')
-        (PORTAL / f'{g["slug"]}.html').write_text(pagina_geral(g, corpo, toc, word), encoding='utf-8')
-        gerar_word(titulo, 'KORbuild product guide', corpo, PORTAL / 'files' / word, PORTAL / 'img')
+        (SAIDA / f'{g["slug"]}.html').write_text(pagina_geral(g, corpo, toc, word), encoding='utf-8')
+        gerar_word(titulo, sub, corpo, SAIDA / 'files' / word, SAIDA / 'img')
         busca += entradas_de_busca(f'{g["slug"]}.html', titulo, corpo)
     for mod in MODULOS:
-        pasta = PORTAL / mod['id']; pasta.mkdir(exist_ok=True)
+        pasta = SAIDA / mod['id']; pasta.mkdir(exist_ok=True)
         for p in mod['paginas']:
             arq = origem / mod['id'] / f'{p["slug"]}.md'
             if not arq.exists():
                 faltando.append(str(arq)); continue
             titulo, md = titulo_e_corpo(arq)
-            p['titulo'] = titulo
             corpo, toc = converter(md, '../')
             word = f'KORbuild {mod["nome"]} - {titulo}.docx'
             (pasta / f'{p["slug"]}.html').write_text(pagina_documento(mod, p, corpo, toc, word), encoding='utf-8')
-            gerar_word(f'{mod["nome"]} — {titulo}', 'KORbuild product guide', corpo, PORTAL / 'files' / word, PORTAL / 'img')
+            gerar_word(f'{mod["nome"]} — {titulo}', sub, corpo, SAIDA / 'files' / word, SAIDA / 'img')
             busca += entradas_de_busca(f'{mod["id"]}/{p["slug"]}.html', f'{mod["nome"]} · {titulo}', corpo)
         (pasta / 'index.html').write_text(pagina_modulo(mod), encoding='utf-8')
-    (PORTAL / 'index.html').write_text(pagina_inicial(), encoding='utf-8')
-    (PORTAL / 'search.json').write_text(json.dumps(busca, ensure_ascii=False), encoding='utf-8')
+    (SAIDA / 'index.html').write_text(pagina_inicial(), encoding='utf-8')
+    (SAIDA / 'search.json').write_text(json.dumps(busca, ensure_ascii=False), encoding='utf-8')
+    return busca, faltando
+
+
+def main():
+    so = [a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('--idioma=')]
+    total, faltando = {}, []
+    for idioma in (so or IDIOMAS):
+        busca, falta = gerar_idioma(idioma)
+        total[idioma] = len(busca); faltando += falta
     erros = conferir_links()
     for f in faltando:
         print('falta a fonte:', f)
     for e in erros:
         print('LINK QUEBRADO', e)
-    print(f'portal gerado: {len(busca)} trechos na busca, {len(erros)} links quebrados')
+    print('portal gerado: ' + ', '.join(f'{k} {v} trechos na busca' for k, v in total.items()) + f', {len(erros)} links quebrados')
     sys.exit(1 if erros or faltando else 0)
 
 

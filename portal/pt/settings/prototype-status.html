@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Situação do protótipo · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/prototype-status.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html" aria-current=page>Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Situação do protótipo</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Situação do protótipo.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O que é simulado no protótipo hoje, e o que vem depois.</p>
+<h2 id="simulado-hoje">Simulado hoje</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>No protótipo</th>
+<th>No produto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Onde ficam os dados</td>
+<td>No navegador.</td>
+<td>Um banco de dados na nuvem, separado por empresa, com a auditoria no servidor.</td>
+</tr>
+<tr>
+<td>Novos usuários</td>
+<td>Criados na tela Usuários; nenhum e-mail é enviado e não há senhas de verdade.</td>
+<td>Um convite por e-mail; a pessoa cria a senha (ou entra pelo provedor de identidade da empresa).</td>
+</tr>
+<tr>
+<td>Mapa no cadastro da obra</td>
+<td>Mapas públicos gratuitos (OpenStreetMap), com limite de uso.</td>
+<td>Um provedor de mapas pago e busca de endereço.</td>
+</tr>
+<tr>
+<td>Encargos</td>
+<td>Um % para a empresa toda, com vigência.</td>
+<td>Por estado e por ofício (classe do workers' comp).</td>
+</tr>
+<tr>
+<td>Logo</td>
+<td>Guardado no navegador.</td>
+<td>O armazenamento na nuvem da empresa.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ainda-fixo-no-codigo">Ainda fixo no código</h2>
+<p>Estes valores são iguais para todas as empresas hoje e vão passar para o Settings:</p>
+<table>
+<thead>
+<tr>
+<th>Valor</th>
+<th>Hoje</th>
+<th>Vai para</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prazo e lembretes do diário</td>
+<td>Prazo às 18h, lembrete às 16h, alerta ao escritório às 8h do dia seguinte, 3 dias para trás</td>
+<td>Settings › Diário de obra (e por obra)</td>
+</tr>
+<tr>
+<td>Raio padrão da cerca</td>
+<td>150 m</td>
+<td>Settings › Ponto e GPS (e por obra)</td>
+</tr>
+<tr>
+<td>Intervalo da localização durante o dia</td>
+<td>15 min (5 min em deslocamento)</td>
+<td>Settings › Ponto e GPS</td>
+</tr>
+<tr>
+<td>Alertas de custo</td>
+<td>Atenção até 5% acima; previsão pelas últimas 4 semanas</td>
+<td>Settings › Custos e previsão</td>
+</tr>
+<tr>
+<td>Listas do diário</td>
+<td>Ofícios, equipamentos, tipos de ocorrência</td>
+<td>Settings › Listas (as mesmas do Crew)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="o-que-vem-depois">O que vem depois</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Observações</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permissões por obra</td>
+<td>Um encarregado vê só as obras dele; um gestor de obras só a região dele.</td>
+</tr>
+<tr>
+<td>Regras de jornada por obra</td>
+<td>Prevailing wage (Davis-Bacon), obras em outro estado.</td>
+</tr>
+<tr>
+<td>Convites por e-mail</td>
+<td>Para usuários, e para prestadoras convidadas por uma construtora.</td>
+</tr>
+<tr>
+<td>Integração com a folha</td>
+<td>QuickBooks, Gusto, ADP.</td>
+</tr>
+<tr>
+<td>Preferências de notificação</td>
+<td>Por usuário.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#simulado-hoje">Simulado hoje</a></li><li><a href="#ainda-fixo-no-codigo">Ainda fixo no código</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia do apresentador · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="Guia do produto KORbuild, início"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="index.html#modules">Módulos</a>
+    <a href="organization.html">Como se organiza</a>
+    <a href="presenting.html" aria-current=page>Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../presenting.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Módulos">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guia</div><ul><li><a href="organization.html">Como o KORbuild se organiza</a></li><li><a href="presenting.html" aria-current=page>Guia do apresentador</a></li></ul>
+    <div class="lat-titulo">Módulos</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="index.html">Início</a> › Guia</nav>
+    <header class="doc-cabecalho">
+      <h1>Guia do apresentador</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Guia do apresentador.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Este guia é para quem vai apresentar o KORbuild a um cliente. Não é preciso conhecer o sistema antes: siga a ordem abaixo, entre com os usuários indicados e use os quadros "O que dizer" como roteiro. A apresentação completa — Daily, Crew, Measure e Settings — leva cerca de <strong>40 minutos</strong>; com perguntas, reserve uma hora. Numa reunião mais curta, escolha os atos que interessam ao cliente.</p>
+<h2 id="a-historia-em-um-minuto">A história em um minuto</h2>
+<p>Nos Estados Unidos, as empresas de construção tocam as obras com papel, mensagem de celular e planilha. O encarregado escreve o diário à noite (ou não escreve), o escritório corre atrás das pessoas por telefone e, quando o cliente contesta um atraso, não há um registro confiável do que aconteceu no canteiro.</p>
+<p>O KORbuild é <strong>uma plataforma, um cadastro de obras e de pessoas</strong>, com módulos que a empresa liga conforme precisa:</p>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Em uma frase</th>
+<th>Quem usa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Daily</strong></td>
+<td>O diário de obra, preenchido no celular em minutos, aprovado e compartilhado com o cliente em PDF lacrado.</td>
+<td>Encarregado (celular), escritório (computador)</td>
+</tr>
+<tr>
+<td><strong>Crew</strong></td>
+<td>O ponto da equipe com GPS e cerca, timesheets e custo de mão de obra por obra.</td>
+<td>Encarregado (celular), escritório</td>
+</tr>
+<tr>
+<td><strong>Measure</strong></td>
+<td>Medição de plantas em pés e polegadas, assemblies, quantidades, lista para cotação e proposta.</td>
+<td>Orçamentistas (computador)</td>
+</tr>
+<tr>
+<td><strong>Settings</strong></td>
+<td>A configuração da empresa: funcionários, encargos, regras de jornada, obras, contatos, usuários e perfis.</td>
+<td>Administrador do escritório</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"O KORbuild substitui o diário de papel, o cartão de ponto de papel e a medição em planilha por um sistema só. Tudo o que o campo faz no celular chega ao escritório no mesmo dia — e funciona até sem sinal no canteiro."</p>
+</div>
+<p>O KORbuild atende os dois lados da obra: a <strong>construtora</strong> (general contractor), que <strong>gerencia</strong> a obra, e as <strong>prestadoras de serviço</strong> (subcontractors), que <strong>executam</strong>. Cada prestadora tem o próprio diário, o próprio ponto e o próprio cronograma; a construtora aprova os diários e vê quem está na obra e as horas — nunca quanto a prestadora paga ao seu pessoal. Uma prestadora também pode ser cliente sozinha, com obras direto com o dono. Leia <a href="organization.html">Como o KORbuild se organiza</a> antes da reunião: leva três minutos.</p>
+<p>O protótipo tem três empresas: a <strong>Construtora Exemplo</strong> (a construtora), a <strong>Ridgeline Concrete &amp; Masonry</strong> e a <strong>Northfield Framing &amp; Siding</strong> (duas prestadoras).</p>
+<h2 id="antes-de-comecar">Antes de começar</h2>
+<ol>
+<li>Abra o link do protótipo: na página de entrada principal, clique em <strong>Abrir o protótipo</strong>. Também dá para ir direto ao endereço do protótipo (ele termina em <code>?demo</code>).</li>
+<li>Use <strong>Chrome ou Edge</strong> no computador. Para mostrar o lado do campo num celular de verdade, abra o mesmo link no celular (Chrome no Android, Safari no iPhone).</li>
+<li>Confira o botão de idioma <strong>EN | PT</strong> no alto do cartão de entrada.</li>
+<li>Se alguém já mexeu no protótipo naquele navegador, recomece: menu do usuário (as suas iniciais, no canto de cima) › <strong>Recomeçar demonstração</strong>. Tudo volta aos dados de exemplo originais.</li>
+</ol>
+<figure><img src="img/entry-main.png" alt="A página de entrada principal: a entrada das contas, o guia do produto e o protótipo" loading="lazy"><figcaption>A página de entrada principal: a entrada das contas, o guia do produto e o protótipo</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p>O protótipo guarda tudo <strong>no navegador</strong> (ainda não há servidor). Duas consequências: o que você faz no celular não aparece no computador, e duas pessoas nunca veem as mudanças uma da outra. Para mostrar o caminho campo → construtora, troque de usuário <strong>no mesmo navegador</strong>: menu do usuário › <strong>Sair</strong> e entre com o outro usuário. As contas dos clientes, com banco de dados de verdade, estão sendo construídas; a página de entrada principal já mostra onde eles vão entrar.</p>
+</div>
+<h2 id="usuarios-da-demonstracao">Usuários da demonstração</h2>
+<p>No protótipo não há senha: na tela de entrada, clique no e-mail do usuário que quer e depois em <strong>Entrar</strong>.</p>
+<figure><img src="img/entry-prototype.png" alt="A tela de entrada do protótipo, com os usuários de exemplo" loading="lazy"><figcaption>A tela de entrada do protótipo, com os usuários de exemplo</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>Usuário</th>
+<th>Empresa</th>
+<th>Perfil</th>
+<th>Use para mostrar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ana Ribeiro</strong> · ana@construtoraexemplo.com</td>
+<td>Construtora Exemplo (construtora)</td>
+<td>Administradora</td>
+<td>A construtora: painel com todas as prestadoras, aprovações, obras com as pessoas no canteiro, link do cliente</td>
+</tr>
+<tr>
+<td><strong>Carlos Mendes</strong> · carlos@estruturaexemplo.com</td>
+<td>Ridgeline (prestadora)</td>
+<td>Encarregado</td>
+<td>O celular: diário de obra e ponto da equipe</td>
+</tr>
+<tr>
+<td><strong>Diego Santos</strong> · diego@estruturaexemplo.com</td>
+<td>Ridgeline (prestadora)</td>
+<td>Trabalhador</td>
+<td>Quem só bate o próprio ponto</td>
+</tr>
+<tr>
+<td><strong>Sandra Lopes</strong> · sandra@estruturaexemplo.com</td>
+<td>Ridgeline (prestadora)</td>
+<td>Administradora</td>
+<td>O escritório da prestadora: timesheets, custo de mão de obra, funcionários, encargos</td>
+</tr>
+<tr>
+<td><strong>Tom Reilly</strong> · tom@prestadoraexemplo.com</td>
+<td>Northfield (prestadora)</td>
+<td>Administrador</td>
+<td>Uma prestadora com todos os módulos: Measure, cronograma, preços, uma obra própria com o dono</td>
+</tr>
+<tr>
+<td><strong>Rita Gomes</strong> · rita@prestadoraexemplo.com</td>
+<td>Northfield (prestadora)</td>
+<td>Gestora de obras</td>
+<td>Uma orçamentista</td>
+</tr>
+<tr>
+<td><strong>José Pereira</strong> · jose@prestadoraexemplo.com</td>
+<td>Northfield (prestadora)</td>
+<td>Encarregado</td>
+<td>O campo da segunda prestadora</td>
+</tr>
+<tr>
+<td><strong>Luis Ortega</strong> · luis@prestadoraexemplo.com</td>
+<td>Northfield (prestadora)</td>
+<td>Trabalhador</td>
+<td>Um trabalhador da segunda prestadora</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Dica</p>
+<p>Antes da reunião, abra o protótipo uma vez no aparelho que vai usar. Depois da primeira visita ele funciona também sem internet — um ótimo ponto para mostrar (ato 3).</p>
+</div>
+<h2 id="a-apresentacao-ato-por-ato">A apresentação, ato por ato</h2>
+<h3 id="ato-1-uma-plataforma-varios-modulos-2-min">Ato 1 — Uma plataforma, vários módulos (2 min)</h3>
+<ol>
+<li>Entre como <strong>Tom Reilly</strong> (administrador da Northfield, uma prestadora com todos os módulos).</li>
+<li>Mostre a <strong>tela de módulos</strong>: Daily, Crew, Measure e Settings, cada um com uma descrição curta.</li>
+</ol>
+<figure><img src="img/modules-home.png" alt="A tela de módulos de uma prestadora com todos os módulos" loading="lazy"><figcaption>A tela de módulos de uma prestadora com todos os módulos</figcaption></figure>
+<ol start="3">
+<li>Comente que a construtora vê menos módulos: ela gerencia as obras, então tem o <strong>Daily</strong> (para acompanhar e aprovar) e o <strong>Settings</strong>, mas não tem ponto nem medição próprios.</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"Cada empresa liga os módulos de que precisa. As obras, as pessoas e os contatos são cadastrados uma vez e usados por todos os módulos. As prestadoras executam e registram; a construtora acompanha e aprova."</p>
+</div>
+<h3 id="ato-2-o-campo-o-diario-em-minutos-5-min">Ato 2 — O campo: o diário em minutos (5 min)</h3>
+<p>Mostre no celular, se puder; se não, deixe a janela do navegador estreita.</p>
+<ol>
+<li>Saia e entre como <strong>Carlos Mendes</strong> (encarregado da Ridgeline, a prestadora de estrutura e alvenaria). O Daily abre em <strong>Hoje</strong>.</li>
+<li>Mostre o quadro vermelho (<strong>RDO atrasado</strong>), o amarelo (<strong>falta o RDO de hoje</strong>, com o tempo que falta até as 18h) e o pedido de ajustes enviado pela construtora.</li>
+<li>Abra o <strong>Residencial Jardim das Flores</strong> e toque em <strong>ou copiar de um RDO anterior</strong> → escolha o de ontem → <strong>Copiar</strong>. A equipe, os equipamentos e as atividades em andamento vêm de ontem.</li>
+<li>Percorra o relatório: clima (vem sozinho, pela localização da obra), equipe (botões + e −), equipamentos, <strong>Atividades</strong> com <strong>Ditar</strong> e <strong>Melhorar texto</strong>, <strong>Ocorrências</strong>, fotos.</li>
+<li>Toque em <strong>Enviar para aprovação</strong>. O relatório vai para a construtora, que aprova.</li>
+</ol>
+<figure class="celular"><img src="img/daily-field-today-mobile.png" alt="A tela Hoje do encarregado, com RDOs atrasados e faltando" loading="lazy"><figcaption>A tela Hoje do encarregado, com RDOs atrasados e faltando</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"O encarregado da prestadora faz o diário no fim do dia, no celular, em três ou quatro minutos — copiando o de ontem, ajustando a equipe, ditando o que foi feito. As fotos ganham um carimbo com data, hora e GPS dentro da imagem. Se ele esquecer, o app lembra às 16h, marca o atraso às 18h e avisa a construtora na manhã seguinte."</p>
+</div>
+<p>Detalhes: <a href="daily/user-manual.html#campo-preencher-o-diario-de-obra">Manual do Daily — Preencher o diário</a>.</p>
+<h3 id="ato-3-sem-sinal-no-canteiro-1-min">Ato 3 — Sem sinal no canteiro (1 min)</h3>
+<ol>
+<li>Na barra de cima, toque em <strong>Online</strong>: ele passa para sem internet (simula a falta de sinal).</li>
+<li>Envie um relatório: ele fica guardado no celular.</li>
+<li>Toque de novo para voltar a ficar online: o relatório sobe sozinho, foto por foto.</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"Canteiro muitas vezes não tem sinal. Nada se perde: tudo fica guardado no celular e sobe assim que houver conexão."</p>
+</div>
+<h3 id="ato-4-a-construtora-revisar-aprovar-e-lacrar-5-min">Ato 4 — A construtora: revisar, aprovar e lacrar (5 min)</h3>
+<ol>
+<li>Saia e entre como <strong>Ana Ribeiro</strong> (Construtora Exemplo). O Daily abre no <strong>Painel</strong>: os números do dia, um farol (verde, amarelo, vermelho) <strong>para cada prestadora em cada obra</strong> e a fila de aprovação com os diários das duas prestadoras.</li>
+<li>
+<p>Abra <strong>Obras › Residencial Jardim das Flores</strong>. Mostre <strong>Prestadoras nesta obra</strong>: a Ridgeline e a Northfield, quem está na obra agora, desde quando, e as horas — <strong>sem valores em dinheiro</strong>. Abaixo, os diários de cada prestadora.</p>
+<figure><img src="img/daily-job-subcontractors.png" alt="A visão da construtora: cada prestadora com as pessoas na obra e as horas" loading="lazy"><figcaption>A visão da construtora: cada prestadora com as pessoas na obra e as horas</figcaption></figure>
+</li>
+<li>
+<p>Abra um relatório em <strong>Aguardando aprovação</strong> e clique em <strong>Revisar</strong>.</p>
+</li>
+<li>Mostre <strong>Pedir ajustes ao canteiro</strong>: o motivo volta para o encarregado da prestadora. (Cancele, para a demonstração.)</li>
+<li>Clique em <strong>Aprovar e lacrar</strong> → confirme. O relatório ganha um <strong>código de verificação</strong> e ninguém mais consegue mudá-lo.</li>
+</ol>
+<figure><img src="img/daily-dashboard.png" alt="O painel da construtora: números do dia, farol das obras e fila de aprovação" loading="lazy"><figcaption>O painel da construtora: números do dia, farol das obras e fila de aprovação</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"Você vê de relance qual prestadora mandou o diário hoje em cada obra, quem está no canteiro e quantas horas — sem ver quanto elas pagam ao pessoal. Você aprova os diários das prestadoras; a aprovação lacra o relatório com uma impressão digital: se alguém mudar uma palavra ou uma foto depois, o link do dono mostra que o documento foi alterado."</p>
+</div>
+<h3 id="ato-5-o-cliente-recebe-o-relatorio-2-min">Ato 5 — O cliente recebe o relatório (2 min)</h3>
+<ol>
+<li>No relatório aprovado, clique em <strong>Ver como o contratante vê</strong> (ou <strong>Copiar link para o contratante</strong>).</li>
+<li>Mostre o quadro verde <strong>Documento autêntico</strong> e o relatório completo, com as fotos.</li>
+<li>Mostre <strong>Baixar PDF</strong>.</li>
+</ol>
+<figure><img src="img/daily-client-link.png" alt="O que o cliente vê: documento autêntico, com o relatório completo" loading="lazy"><figcaption>O que o cliente vê: documento autêntico, com o relatório completo</figcaption></figure>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"O cliente não precisa de conta nem de aplicativo: só de um link. E o link prova que o relatório é exatamente o que foi aprovado. É isso que protege a empresa numa disputa por atraso."</p>
+</div>
+<h3 id="ato-6-crew-o-ponto-e-o-custo-de-mao-de-obra-6-min">Ato 6 — Crew: o ponto e o custo de mão de obra (6 min)</h3>
+<p>O ponto é de cada prestadora: ela bate o ponto do próprio pessoal e vê o próprio custo.</p>
+<ol>
+<li>
+<p>Entre como <strong>Diego Santos</strong> (trabalhador da Ridgeline). O KORbuild abre direto no <strong>Meu ponto</strong>: um botão grande com o que cabe agora.</p>
+<figure class="celular"><img src="img/crew-my-clock-before-mobile.png" alt="Meu ponto: o trabalhador vê só o próprio ponto" loading="lazy"><figcaption>Meu ponto: o trabalhador vê só o próprio ponto</figcaption></figure>
+</li>
+<li>
+<p>Entre como <strong>Carlos Mendes</strong> (encarregado), abra o <strong>Crew</strong>: o <strong>Ponto da equipe</strong>. Toque em <strong>Selecionar todos</strong> e em <strong>Bater entrada</strong>: a janela mostra a distância até a obra e <em>dentro da cerca ✓</em>. Escolha a etapa (cost code) e confirme.</p>
+<figure class="celular"><img src="img/crew-team-clock-in-dialog-mobile.png" alt="A entrada da equipe inteira por um celular só" loading="lazy"><figcaption>A entrada da equipe inteira por um celular só</figcaption></figure>
+</li>
+<li>
+<p>Mostre <strong>Trocar de obra</strong>: o deslocamento até a outra obra é hora paga.</p>
+</li>
+<li>Entre como <strong>Sandra Lopes</strong> (administradora da Ridgeline), abra o <strong>Crew</strong>: <strong>Agora</strong> mostra quem está trabalhando em cada obra e as <strong>batidas fora da obra para conferir</strong>.</li>
+<li>Abra <strong>Timesheets</strong> e vá para a semana anterior: horas por dia, hora extra, custo e situação. Abra <strong>Roberto Lima</strong> (aguardando aprovação) e mostre <strong>Ajustar</strong> (uma batida nova, com motivo — a original fica) e <strong>Aprovar semana</strong>.</li>
+<li>
+<p>Abra <strong>Custos</strong>: o <strong>Edifício Atlântico</strong> gastou 34% do orçamento e executou 31% — o KORbuild já mostra um <strong>estouro previsto</strong> de cerca de US$ 111 mil, com um terço do prazo decorrido.</p>
+<figure><img src="img/crew-costs-jobs.png" alt="Custo de mão de obra por obra, com a projeção até o fim" loading="lazy"><figcaption>Custo de mão de obra por obra, com a projeção até o fim</figcaption></figure>
+</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"O encarregado bate o ponto da equipe inteira em segundos, com GPS e a cerca da obra — sem cartão de papel, sem um batendo pelo outro. O escritório da prestadora aprova a semana e exporta para a folha. E o dono da prestadora vê, com um terço da obra, que a mão de obra vai estourar — enquanto ainda dá tempo de agir. A construtora vê as pessoas e as horas na obra dela, nunca os salários."</p>
+</div>
+<p>Detalhes: <a href="crew/user-manual.html">Manual do Crew</a>.</p>
+<h3 id="ato-7-measure-da-planta-a-proposta-7-min">Ato 7 — Measure: da planta à proposta (7 min)</h3>
+<p>Use o computador. O Measure é da prestadora que orça o serviço.</p>
+<ol>
+<li>Entre como <strong>Tom Reilly</strong> (Northfield) e abra o <strong>Measure</strong>: a lista de <strong>Projetos</strong>, com clientes, prazos das propostas e situação.</li>
+<li>Abra a <strong>Casa modelo</strong> e a folha <strong>A-101 · First Floor Plan</strong>. A planta ocupa a tela.</li>
+<li>Clique em <strong>Definir escala</strong>, escolha <code>1/4" = 1'-0"</code> e confira na cota de 40'-0" do alto: clique nas duas pontas e digite <code>40'</code>. A barra mostra <strong>conferida</strong>.</li>
+<li>
+<p><strong>Incluir assembly</strong> › <strong>Parede externa 2x6 @ 16" (com altura)</strong> › nome <em>Paredes externas</em>, altura <code>9'-0"</code> › <strong>Incluir no desenho</strong>. Clique nos quatro cantos da casa e aperte <strong>Enter</strong>: cerca de 136 lin ft e 1.224 sq ft de parede.</p>
+<figure><img src="img/measure-viewer-plan.png" alt="Medição na planta baixa" loading="lazy"><figcaption>Medição na planta baixa</figcaption></figure>
+</li>
+<li>
+<p>Volte ao projeto e abra <strong>Materiais e mão de obra</strong>: montantes, guias, OSB, house wrap, isolamento, drywall e as horas de carpinteiro. Clique em <strong>OSB</strong> para mostrar a conta: superfície da parede ÷ 32 + 10% de perda, arredondado para chapas inteiras.</p>
+<figure><img src="img/measure-materials.png" alt="Materiais e mão de obra, com a conta de um item" loading="lazy"><figcaption>Materiais e mão de obra, com a conta de um item</figcaption></figure>
+</li>
+<li>
+<p>Abra a <strong>Lista para cotação</strong>: cada fornecedor recebe só os itens dele, na unidade de compra, sem preço. Mostre <strong>Enviar por e-mail</strong> e <strong>PDF</strong>.</p>
+</li>
+<li>Abra a <strong>Proposta</strong>: uma linha por etapa, com o preço calculado pelo catálogo e pelas margens; digite outro valor numa linha para mostrar o preço fechado. <strong>Ver o documento</strong> mostra o PDF que o cliente recebe.</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"O orçamentista abre as plantas em PDF no navegador e mede com o mouse, em pés e polegadas. Uma medição da parede vira todos os materiais e as horas — e cada número mostra a sua conta. Os fornecedores recebem as listas com um clique, e a proposta sai com o preço dos seus custos e das suas margens. Custo e lucro nunca saem da empresa."</p>
+</div>
+<p>Detalhes: <a href="measure/user-manual.html">Manual do Measure</a>.</p>
+<h3 id="ato-8-settings-e-o-cronograma-da-obra-5-min">Ato 8 — Settings e o cronograma da obra (5 min)</h3>
+<ol>
+<li>Entre como <strong>Sandra Lopes</strong> (Ridgeline) e abra o <strong>Settings</strong>. Abra <strong>Funcionários</strong> › <strong>Carlos Mendes</strong>: a empresa empregadora, o valor hora atual, a hora extra e o custo carregado, as certificações perto de vencer.</li>
+<li>
+<p>Clique em <strong>Alterar valor hora</strong> para mostrar que um aumento vale <strong>a partir de uma data</strong>: o histórico guarda todos os valores, e as semanas aprovadas nunca mudam. (Cancele.)</p>
+<figure><img src="img/settings-employee.png" alt="Um funcionário, com os cartões do valor hora" loading="lazy"><figcaption>Um funcionário, com os cartões do valor hora</figcaption></figure>
+</li>
+<li>
+<p>Abra <strong>Encargos</strong> e <strong>Jornada</strong>: versões com vigência — a regra de New Hampshire, hora extra acima de 40 horas, intervalo de 30 minutos depois de 5 horas — e o histórico.</p>
+</li>
+<li>Abra <strong>Perfis</strong>: a matriz de permissões. Mostre <strong>Ver custos e valores em dinheiro</strong>, separada da aprovação das horas.</li>
+<li>
+<p>Entre como <strong>Tom Reilly</strong> (Northfield) e abra Daily › Obras › <strong>Residencial Jardim das Flores · framing e siding</strong> › <strong>Abrir cronograma</strong>: avanço real × planejado, uma etapa atrasada, a previsão de término contra a linha de base, o Gantt com as barras da linha de base.</p>
+<figure><img src="img/schedule-gantt.png" alt="O cronograma da obra" loading="lazy"><figcaption>O cronograma da obra</figcaption></figure>
+</li>
+<li>
+<p>Mostre <strong>Publicar para o contratante</strong>; depois entre como <strong>Ana</strong> e abra a mesma obra: a versão publicada, só leitura, com <strong>Exportar Excel</strong>.</p>
+</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"Tudo o que a empresa pode querer mudar fica aqui — valores, encargos, regras de hora extra, quem pode fazer o quê — e nada reescreve o passado: um aumento vale a partir de uma data, e a folha da semana passada continua como estava. O cronograma é da obra: o avanço vem dos diários aprovados, e a prestadora decide quando a construtora vê uma versão nova."</p>
+</div>
+<p>Detalhes: <a href="settings/user-manual.html">Manual do Settings</a>.</p>
+<h3 id="ato-9-mais-para-mostrar-opcional">Ato 9 — Mais para mostrar (opcional)</h3>
+<ul>
+<li><strong>Mais do Measure</strong> — como <strong>Tom</strong>: as fachadas (siding com a empena, janelas e portas descontadas, a ferramenta <strong>Vão</strong>) e o projeto <strong>Townhouses Elm Row</strong>, em que a planta de uma unidade é medida uma vez e vale × 6.</li>
+<li><strong>Uma prestadora sozinha</strong> — como <strong>Tom</strong>, Daily › Obras › <strong>Residência Thompson</strong>: uma obra direto com o dono, sem construtora. Aqui a própria Northfield aprova os diários.</li>
+<li><strong>O Settings da construtora</strong> — como <strong>Ana</strong>: obras com as prestadoras, contatos, usuários e perfis; sem encargos nem jornada, porque a construtora não bate ponto de ninguém.</li>
+</ul>
+<h2 id="perguntas-que-os-clientes-fazem">Perguntas que os clientes fazem</h2>
+<table>
+<thead>
+<tr>
+<th>Pergunta</th>
+<th>Resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Funciona sem internet?</td>
+<td>Sim. Depois da primeira visita o app fica guardado no celular; diários e batidas ficam no aparelho e sobem quando houver sinal.</td>
+</tr>
+<tr>
+<td>Preciso instalar um aplicativo?</td>
+<td>No protótipo, não: ele roda no navegador e pode ser colocado na tela inicial. As versões na App Store e no Google Play estão previstas.</td>
+</tr>
+<tr>
+<td>O encarregado consegue mudar o diário depois de aprovado?</td>
+<td>Não. A aprovação lacra. Ajustes são pedidos <strong>antes</strong> da aprovação ("Pedir ajustes ao canteiro").</td>
+</tr>
+<tr>
+<td>O que o cliente precisa ter?</td>
+<td>Nada: ele recebe um link e pode baixar o PDF. Sem conta, sem custo.</td>
+</tr>
+<tr>
+<td>A construtora vê quanto a prestadora paga ao pessoal?</td>
+<td>Não. Ela vê nomes, horário na obra e horas. Salários, encargos e custo ficam com a prestadora.</td>
+</tr>
+<tr>
+<td>Preciso de uma construtora para usar o KORbuild?</td>
+<td>Não. Uma prestadora pode assinar sozinha e tocar as obras direto com o dono.</td>
+</tr>
+<tr>
+<td>Quem aprova o diário da prestadora?</td>
+<td>A construtora da obra. Numa obra direto com o dono, a própria prestadora aprova.</td>
+</tr>
+<tr>
+<td>Dá para falsificar uma foto ou uma data?</td>
+<td>Cada foto leva um carimbo com data, hora e GPS dentro da imagem, além da impressão digital do arquivo original. O relatório aprovado é lacrado; qualquer mudança aparece no link do cliente.</td>
+</tr>
+<tr>
+<td>Manda lembrete por SMS ou e-mail?</td>
+<td>Ainda não: os lembretes vão para as notificações do app (o sininho) e do celular. SMS e e-mail estão em avaliação.</td>
+</tr>
+<tr>
+<td>Onde ficam os meus dados?</td>
+<td>No protótipo, só no navegador. No produto, num banco de dados seguro na nuvem, separado por empresa.</td>
+</tr>
+<tr>
+<td>Quanto custa?</td>
+<td>Preço não faz parte do protótipo.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">A confirmar</p>
+<p>Preços, planos, a data dos aplicativos nas lojas e as integrações (folha, contabilidade) são decisões comerciais ainda abertas. Não assuma compromissos sobre elas na apresentação.</p>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#a-historia-em-um-minuto">A história em um minuto</a></li><li><a href="#antes-de-comecar">Antes de começar</a></li><li><a href="#usuarios-da-demonstracao">Usuários da demonstração</a></li><li><a href="#a-apresentacao-ato-por-ato">A apresentação, ato por ato</a></li><li class="sub"><a href="#ato-1-uma-plataforma-varios-modulos-2-min">Ato 1 — Uma plataforma, vários módulos (2 min)</a></li><li class="sub"><a href="#ato-2-o-campo-o-diario-em-minutos-5-min">Ato 2 — O campo: o diário em minutos (5 min)</a></li><li class="sub"><a href="#ato-3-sem-sinal-no-canteiro-1-min">Ato 3 — Sem sinal no canteiro (1 min)</a></li><li class="sub"><a href="#ato-4-a-construtora-revisar-aprovar-e-lacrar-5-min">Ato 4 — A construtora: revisar, aprovar e lacrar (5 min)</a></li><li class="sub"><a href="#ato-5-o-cliente-recebe-o-relatorio-2-min">Ato 5 — O cliente recebe o relatório (2 min)</a></li><li class="sub"><a href="#ato-6-crew-o-ponto-e-o-custo-de-mao-de-obra-6-min">Ato 6 — Crew: o ponto e o custo de mão de obra (6 min)</a></li><li class="sub"><a href="#ato-7-measure-da-planta-a-proposta-7-min">Ato 7 — Measure: da planta à proposta (7 min)</a></li><li class="sub"><a href="#ato-8-settings-e-o-cronograma-da-obra-5-min">Ato 8 — Settings e o cronograma da obra (5 min)</a></li><li class="sub"><a href="#ato-9-mais-para-mostrar-opcional">Ato 9 — Mais para mostrar (opcional)</a></li><li><a href="#perguntas-que-os-clientes-fazem">Perguntas que os clientes fazem</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../">Entrada principal</a> · <a href="../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regras de negócio · Daily · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../daily/business-rules.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html" aria-current=page>Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Daily</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Regras de negócio</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Regras de negócio.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Cada regra tem um código (<code>DLY-nnn</code>) para ser citada em reuniões, testes e pedidos de mudança. A coluna <strong>Situação</strong> diz se a regra já funciona no protótipo.</p>
+<div class="admonition note">
+<p class="admonition-title">Origem</p>
+<p>Estas regras vêm do código do protótipo e das decisões de produto registradas na documentação do projeto (alertas do diário, obras, cronograma). O que ainda não foi decidido está marcado como <strong>A confirmar</strong>.</p>
+</div>
+<h2 id="quem-faz-o-diario-e-quando">Quem faz o diário e quando</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-001</td>
+<td>Cada obra tem <strong>um responsável</strong> pelo diário. Lembretes e alertas vão para essa pessoa.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-002</td>
+<td>O diário é obrigatório em cada <strong>dia de trabalho do calendário da obra</strong> (padrão: segunda a sábado). Dia que não é de trabalho não gera alerta; se houver serviço, o diário pode ser feito assim mesmo.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-003</td>
+<td>Só obras <strong>em andamento</strong> cobram diário. Obras <strong>paralisadas</strong> ou <strong>concluídas</strong> não aparecem no campo nem geram alerta. A obra também não cobra nada antes da data de início.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-004</td>
+<td>O <strong>prazo diário é 18h</strong> do próprio dia.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-005</td>
+<td>O dia está <strong>cumprido</strong> quando o diário foi enviado (mesmo que ainda guardado no celular, sem sinal) ou registrado como <strong>Sem atividade</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-006</td>
+<td><strong>Sem atividade</strong> exige o motivo (chuva, feriado ou folga, obra paralisada, falta de material, greve, outro) e pode ter uma observação. Vale como o diário do dia e para os alertas daquele dia.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="alertas">Alertas</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-010</td>
+<td>Às <strong>16h</strong>, o responsável recebe um lembrete: falta o diário de hoje.</td>
+<td>Funcionando (com o app aberto)</td>
+</tr>
+<tr>
+<td>DLY-011</td>
+<td>Às <strong>18h</strong>, o diário do dia está <strong>atrasado</strong>: o responsável recebe um alerta.</td>
+<td>Funcionando (com o app aberto)</td>
+</tr>
+<tr>
+<td>DLY-012</td>
+<td>Às <strong>8h do dia seguinte</strong>, o escritório vê no Painel e nas notificações cada obra que ficou sem diário no último dia de trabalho, com o responsável.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-013</td>
+<td>Os alertas vão para as notificações do app (o sininho) e do celular. <strong>Sem SMS nem e-mail</strong> por enquanto.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-014</td>
+<td>O número de pendências do campo (dias atrasados + obras sem o diário de hoje + pedidos de ajuste) aparece na aba <strong>Hoje</strong> e, onde o celular permite, no ícone do app.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="diario-atrasado">Diário atrasado</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-020</td>
+<td>Os <strong>últimos 3 dias de trabalho</strong> sem diário aparecem como atrasados e podem ser preenchidos.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-021</td>
+<td>O diário enviado depois do prazo é aceito, mas fica marcado <strong>Enviado com atraso</strong> no relatório e no PDF, com a data e a hora do envio e o prazo que passou.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-022</td>
+<td>O atraso é medido no <strong>primeiro envio</strong>: reenviar depois de um pedido de ajuste não conta como atraso.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="preenchimento">Preenchimento</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-030</td>
+<td>O diário só pode ser enviado com: o clima da manhã e da tarde, pelo menos uma pessoa presente na equipe e pelo menos uma atividade descrita.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-031</td>
+<td>Um diário sem fotos pode ser enviado, depois de uma confirmação.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-032</td>
+<td>O clima vem sozinho, pela localização da obra, para a manhã (7h–12h) e a tarde (13h–17h). Mais de 2 mm de chuva num período o marca como <strong>Impraticável</strong>. Tudo pode ser corrigido à mão; o relatório mostra se o clima foi automático, ajustado ou informado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-033</td>
+<td><strong>Copiar de um RDO anterior</strong> traz a equipe (as faltas voltam a zero), os equipamentos e as atividades ainda em andamento. Clima, fotos e ocorrências nunca são copiados.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-034</td>
+<td>A equipe pode vir das pessoas que bateram ponto na obra naquele dia, no Crew.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-035</td>
+<td>Tudo o que é digitado fica guardado no celular na hora, com ou sem sinal.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-036</td>
+<td>O diário enviado sem sinal espera numa fila no celular e sobe sozinho, foto por foto, quando a conexão volta.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-037</td>
+<td>Uma atividade pode apontar uma etapa do cronograma da obra, com o % concluído. O cronograma só recebe quando o diário é <strong>aprovado</strong>.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fotos-como-prova">Fotos como prova</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-040</td>
+<td>Cada foto ganha um carimbo <strong>dentro da imagem</strong> com a obra, a data, a hora e as coordenadas do GPS.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-041</td>
+<td>Sem GPS, vale a localização da obra, e o carimbo avisa.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-042</td>
+<td>As fotos são reduzidas no celular (cerca de 1.600 px e 300 KB) antes de subir.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-043</td>
+<td>Uma impressão digital (SHA-256) do arquivo <strong>original</strong> fica guardada com cada foto.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="aprovacao-e-lacre">Aprovação e lacre</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-050</td>
+<td>Só quem tem <strong>Aprovar RDO e enviar ao contratante</strong> pode aprovar ou pedir ajustes.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-051</td>
+<td>O pedido de ajuste exige o motivo, que aparece no celular do campo. O diário volta para <strong>Ajustes pedidos</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-052</td>
+<td>Na aprovação, todo o conteúdo do diário (inclusive a impressão digital de cada foto) recebe uma impressão digital SHA-256. Os 12 primeiros caracteres viram o <strong>código de verificação</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-053</td>
+<td>O diário aprovado <strong>não pode ser mudado por ninguém</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-054</td>
+<td>Cada diário guarda o histórico: quem começou, quem enviou, quando chegou ao escritório, quem pediu ajustes e quem aprovou.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-055</td>
+<td><strong>A construtora aprova.</strong> Na obra da prestadora ligada a uma obra da construtora, o diário vai para a fila de aprovação da construtora. O diário fica na conta da prestadora, com quem aprovou e a empresa (<em>Ana Ribeiro (Construtora Exemplo)</em>). A prestadora não consegue aprovar.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-056</td>
+<td><strong>Nas obras próprias, a prestadora aprova.</strong> Numa obra direto com o dono (sem construtora ligada), o próprio pessoal da prestadora aprova.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-057</td>
+<td>Quando a construtora aprova, o % concluído informado no diário vai para o cronograma <strong>da prestadora</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-058</td>
+<td>A construtora não preenche diário: as obras dela são registradas pelas prestadoras que trabalham nelas.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="compartilhar-com-o-cliente">Compartilhar com o cliente</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-060</td>
+<td>Só diários <strong>aprovados</strong> podem ser compartilhados.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-061</td>
+<td>O cliente abre o relatório por um link, só leitura, <strong>sem conta</strong>.</td>
+<td>Funcionando (só no mesmo navegador; veja Situação do protótipo)</td>
+</tr>
+<tr>
+<td>DLY-062</td>
+<td>Toda vez que o link abre, o lacre é conferido: se o conteúdo mudou depois da aprovação, a página avisa que o documento não bate com o que foi aprovado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-063</td>
+<td>O PDF tem o logo da empresa, a obra, o clima, as tabelas, as fotos com legenda, data e GPS, o lacre e as assinaturas.</td>
+<td>Funcionando (impresso pelo navegador)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="acompanhamento-do-escritorio">Acompanhamento do escritório</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DLY-070</td>
+<td><strong>Farol da obra:</strong> verde quando o diário de hoje chegou, amarelo com 1 dia de atraso, vermelho com 2 dias ou mais.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-071</td>
+<td>O Painel mostra os diários do dia, os que aguardam aprovação, as obras com diário atrasado e as fotos recebidas hoje.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-072</td>
+<td>Para a construtora, o farol, o aviso da manhã seguinte e as notificações são <strong>por prestadora em cada obra</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>DLY-073</td>
+<td>Em cada obra, a construtora vê as pessoas de cada prestadora no canteiro: nome, função, horário de entrada, quem está lá agora e as horas. <strong>Nunca salários, encargos ou custo.</strong></td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">A confirmar</p>
+<ul>
+<li>Se o prazo das 18h e o lembrete das 16h viram uma configuração por empresa ou por obra.</li>
+<li>Se um diário aprovado por engano pode ser reaberto (hoje: nunca).</li>
+<li>Lembretes por SMS e e-mail (fora por enquanto: SMS nos EUA exige o registro A2P 10DLC e consentimento).</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#quem-faz-o-diario-e-quando">Quem faz o diário e quando</a></li><li><a href="#alertas">Alertas</a></li><li><a href="#diario-atrasado">Diário atrasado</a></li><li><a href="#preenchimento">Preenchimento</a></li><li><a href="#fotos-como-prova">Fotos como prova</a></li><li><a href="#aprovacao-e-lacre">Aprovação e lacre</a></li><li><a href="#compartilhar-com-o-cliente">Compartilhar com o cliente</a></li><li><a href="#acompanhamento-do-escritorio">Acompanhamento do escritório</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

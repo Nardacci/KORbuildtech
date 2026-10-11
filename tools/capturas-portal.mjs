@@ -12,7 +12,10 @@ const RAIZ = process.argv.find((a) => a.startsWith('http')) || 'http://localhost
 const SO = ((process.argv.find((a) => a.startsWith('--so=')) || '').slice(5)).split(',').filter(Boolean);
 const parte = (nome) => !SO.length || SO.includes(nome);
 const DEMO = RAIZ + '?demo';
-const PASTA = new URL('../portal/img/', import.meta.url).pathname;
+// --idioma=pt refaz as capturas do protótipo em português, para o portal em português (portal/pt/img/)
+const IDIOMA = ((process.argv.find((a) => a.startsWith('--idioma=')) || '').slice(9)) || 'en';
+const T = (en, pt) => (IDIOMA === 'pt' ? pt : en);
+const PASTA = new URL(IDIOMA === 'pt' ? '../portal/pt/img/' : '../portal/img/', import.meta.url).pathname;
 mkdirSync(PASTA, { recursive: true });
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
@@ -24,7 +27,7 @@ async function contexto(largura, quando = '2026-10-07T16:30:00', altura) {
     viewport: { width: largura, height: altura || (celular ? 844 : 860) }, deviceScaleFactor: celular ? 2 : 1.25,
     geolocation: { latitude: 43.00411, longitude: -71.46353, accuracy: 8 }, permissions: ['geolocation'],
   });
-  await ctx.addInitScript(() => { try { localStorage.setItem('kbt.idioma', 'en'); } catch { /* */ } });
+  await ctx.addInitScript((idioma) => { try { localStorage.setItem('kbt.idioma', idioma); } catch { /* */ } }, IDIOMA);
   await ctx.route('https://api.open-meteo.com/**', (r) => r.fulfill({ json: { hourly: { time: [], weather_code: [], precipitation: [], temperature_2m: [] } } }));
   await ctx.route(/fonts\.|tile\.openstreetmap|router\.project-osrm|nominatim/, (r) => r.abort());
   const page = await ctx.newPage();
@@ -191,10 +194,10 @@ if (parte('crew')) {
   await como(page, 'u-sandra', '#/crew/timesheets/2026-09-28');
   await foto(page, 'crew-timesheets');
   // a semana de quem ainda espera aprovação (Roberto): ajustar e devolver ficam ali
-  const semana = await page.$$eval('#conteudo tr', (linhas) => {
-    const l = linhas.find((tr) => /Awaiting approval/.test(tr.textContent) && tr.querySelector('a[href^="#/crew/semana/"]'));
+  const semana = await page.$$eval('#conteudo tr', (linhas, aguardando) => {
+    const l = linhas.find((tr) => tr.textContent.includes(aguardando) && tr.querySelector('a[href^="#/crew/semana/"]'));
     return l ? l.querySelector('a[href^="#/crew/semana/"]').getAttribute('href') : null;
-  });
+  }, T('Awaiting approval', 'Aguardando aprovação'));
   if (semana) {
     await como(page, 'u-sandra', semana);
     await foto(page, 'crew-employee-week');
@@ -275,20 +278,20 @@ if (parte('measure')) {
   await abrirFolha('fl-a101');
   await foto(page, 'measure-viewer-empty');
   await escala([0, 31], [40, 31], PLANTA, '40\'-0"', true);
-  await incluir('as-parede', 'Exterior walls', { altura: '9\'-0"' }, [], 'measure-add-assembly');
-  await incluir('as-lvp', 'Floor (LVP)');
-  await incluir('as-porta', 'Interior doors', { vaoLargura: '2\'-6"', vaoAltura: '6\'-8"' });
-  await painel('Exterior walls').locator('.mz-cond-topo').click();
+  await incluir('as-parede', T('Exterior walls', 'Paredes externas'), { altura: '9\'-0"' }, [], 'measure-add-assembly');
+  await incluir('as-lvp', T('Floor (LVP)', 'Piso (LVP)'));
+  await incluir('as-porta', T('Interior doors', 'Portas internas'), { vaoLargura: '2\'-6"', vaoAltura: '6\'-8"' });
+  await painel(T('Exterior walls', 'Paredes externas')).locator('.mz-cond-topo').click();
   for (const p of [[0, 0], [40, 0], [40, 28], [0, 28], [0, 0]]) await clicar(p);
   await page.keyboard.press('Enter');
-  await painel('Floor (LVP)').locator('.mz-cond-topo').click();
+  await painel(T('Floor (LVP)', 'Piso (LVP)')).locator('.mz-cond-topo').click();
   for (const p of [[0.5, 0.5], [39.5, 0.5], [39.5, 27.5], [0.5, 27.5]]) await clicar(p);
   await clicar([0.5, 0.5]);
   await page.click('[data-acao="mz-ferramenta"][data-ferramenta="recortar"]');
   for (const p of [[22, 12], [30, 12], [30, 18]]) await clicar(p);
   const fim = await naTela([22, 18]);
   await page.mouse.dblclick(fim.x, fim.y);
-  await painel('Interior doors').locator('.mz-cond-topo').click();
+  await painel(T('Interior doors', 'Portas internas')).locator('.mz-cond-topo').click();
   for (const p of [[22, 8.5], [27.5, 12], [32.5, 18]]) await clicar(p);
   await page.waitForTimeout(400);
   await foto(page, 'measure-viewer-plan');
@@ -298,24 +301,24 @@ if (parte('measure')) {
   // fachadas: janelas contadas com o vão e siding descontando os vãos
   await abrirFolha('fl-a201');
   await escala([0, -2.5], [40, -2.5], SUL, '40\'');
-  await incluir('as-jan-w1', 'Windows W1', { vaoLargura: '5\'-0"', vaoAltura: '4\'-0"' });
-  await incluir('as-jan-w2', 'Windows W2', { vaoLargura: '4\'-0"', vaoAltura: '4\'-0"' });
-  await incluir('as-porta-ext', 'Entry door D1', { vaoLargura: '3\'-0"', vaoAltura: '6\'-8"' });
-  await incluir('as-siding', 'Siding (elevations)', {}, ['Windows W1', 'Windows W2', 'Entry door D1'], 'measure-add-siding');
-  await painel('Siding (elevations)').locator('.mz-cond-topo').click();
+  await incluir('as-jan-w1', T('Windows W1', 'Janelas W1'), { vaoLargura: '5\'-0"', vaoAltura: '4\'-0"' });
+  await incluir('as-jan-w2', T('Windows W2', 'Janelas W2'), { vaoLargura: '4\'-0"', vaoAltura: '4\'-0"' });
+  await incluir('as-porta-ext', T('Entry door D1', 'Porta de entrada D1'), { vaoLargura: '3\'-0"', vaoAltura: '6\'-8"' });
+  await incluir('as-siding', T('Siding (elevations)', 'Siding (fachadas)'), {}, [T('Windows W1', 'Janelas W1'), T('Windows W2', 'Janelas W2'), T('Entry door D1', 'Porta de entrada D1')], 'measure-add-siding');
+  await painel(T('Siding (elevations)', 'Siding (fachadas)')).locator('.mz-cond-topo').click();
   for (const p of [[0, 0], [40, 0], [40, 9], [0, 9]]) await clicar(p, SUL);
   await clicar([0, 0], SUL);
   for (const p of [[0, 0], [28, 0], [28, 9], [14, 16], [0, 9]]) await clicar(p, LESTE);
   await clicar([0, 0], LESTE);
-  await painel('Windows W1').locator('.mz-cond-topo').click();
+  await painel(T('Windows W1', 'Janelas W1')).locator('.mz-cond-topo').click();
   await clicar([16.5, 5], SUL); await clicar([32.5, 5], SUL);
-  await painel('Entry door D1').locator('.mz-cond-topo').click();
+  await painel(T('Entry door D1', 'Porta de entrada D1')).locator('.mz-cond-topo').click();
   await clicar([7.5, 3.3], SUL);
   // a janela W2 da fachada leste, desenhada com a ferramenta Vão: conta e recorta o siding
   await page.click('[data-acao="mz-ferramenta"][data-ferramenta="vao"]');
   await clicar([4, 3], LESTE); await clicar([8, 7], LESTE);
   await page.waitForSelector('dialog select[name="contagem"]');
-  await page.selectOption('dialog select[name="contagem"]', { label: 'Windows W2 · 4\'-0" × 4\'-0"' });
+  await page.selectOption('dialog select[name="contagem"]', { label: T('Windows W2', 'Janelas W2') + ' · 4\'-0" × 4\'-0"' });
   await foto(page, 'measure-opening-dialog', 'dialog[open]');
   await confirmar();
   await page.waitForTimeout(400);
@@ -359,7 +362,7 @@ if (parte('measure')) {
   // typicals
   await abrirFolha('fl-th-a101');
   await escala([0, 31], [40, 31], PLANTA, '40\'');
-  await incluir('as-parede', 'Exterior walls', { altura: '9\'-0"' });
+  await incluir('as-parede', T('Exterior walls', 'Paredes externas'), { altura: '9\'-0"' });
   for (const p of [[0, 0], [40, 0], [40, 28], [0, 28], [0, 0]]) await clicar(p);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(400);
@@ -438,4 +441,4 @@ if (parte('settings')) {
 }
 
 await browser.close();
-console.log(feitas + ' capturas em portal/img/');
+console.log(feitas + ' capturas em ' + PASTA);

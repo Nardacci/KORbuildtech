@@ -25,7 +25,8 @@ verificar((await page.textContent('h1')).includes('Everything KORbuild does'), '
 verificar(await page.locator('.cartao-mod').count() === 4, 'os quatro módulos');
 verificar(await page.locator('a[href="../?demo#/entrar"]').count() >= 1, 'caminho para o protótipo');
 
-for (const p of ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html', 'measure/index.html', 'measure/overview.html', 'measure/user-manual.html', 'measure/business-rules.html', 'measure/roles-and-permissions.html', 'measure/prototype-status.html', 'settings/index.html', 'settings/overview.html', 'settings/user-manual.html', 'settings/business-rules.html', 'settings/roles-and-permissions.html', 'settings/prototype-status.html']) {
+const PAGINAS = ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html', 'measure/index.html', 'measure/overview.html', 'measure/user-manual.html', 'measure/business-rules.html', 'measure/roles-and-permissions.html', 'measure/prototype-status.html', 'settings/index.html', 'settings/overview.html', 'settings/user-manual.html', 'settings/business-rules.html', 'settings/roles-and-permissions.html', 'settings/prototype-status.html'];
+for (const p of [...PAGINAS, ...PAGINAS.map((x) => 'pt/' + x)]) {
   await page.goto(BASE + p);
   await page.waitForLoadState('networkidle');
   // as imagens carregam conforme a rolagem (lazy): confere cada arquivo direto
@@ -43,6 +44,23 @@ verificar(await page.locator('#busca-resultados a').count() > 0, 'busca encontra
 await page.locator('#busca-resultados a').first().click();
 await page.waitForLoadState();
 verificar(page.url().includes('#'), 'resultado da busca leva à seção');
+
+// português: início, troca de idioma, Word e busca
+await page.goto(BASE + 'pt/index.html');
+verificar((await page.textContent('h1')).includes('Tudo o que o KORbuild faz'), 'início do portal em português');
+await page.goto(BASE + 'daily/overview.html');
+await page.locator('.idioma-topo a[lang="pt-BR"]').click();
+await page.waitForLoadState();
+verificar(page.url().endsWith('/portal/pt/daily/overview.html') && (await page.textContent('h1')).includes('Visão geral'), 'EN → PT na mesma página');
+await page.locator('.idioma-topo a[lang="en"]').click();
+await page.waitForLoadState();
+verificar(page.url().endsWith('/portal/daily/overview.html'), 'PT → EN na mesma página');
+const wordPt = await page.request.get(BASE + 'pt/files/' + encodeURIComponent('KORbuild Daily - Manual do usuário.docx'));
+verificar(wordPt.ok() && (await wordPt.body()).length > 50000, 'o Word do manual em português existe');
+await page.goto(BASE + 'pt/index.html');
+await page.fill('#busca', 'linha de base');
+await page.waitForSelector('#busca-resultados a');
+verificar(await page.locator('#busca-resultados a').count() > 0, 'busca em português encontra "linha de base"');
 
 const cel = await browser.newPage({ viewport: { width: 390, height: 844 } });
 await cel.route(/fonts\./, (r) => r.abort());

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfis e permissões · Daily · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../daily/roles-and-permissions.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html" aria-current=page>Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Daily</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Perfis e permissões</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Perfis e permissões.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>No KORbuild, o que cada pessoa pode fazer vem do seu <strong>perfil de acesso</strong>. Um perfil é um conjunto de permissões; a empresa ajusta os perfis prontos ou cria novos em <strong>Settings › Perfis</strong>. Nada é fixo no código.</p>
+<h2 id="permissoes-do-daily">Permissões do Daily</h2>
+<table>
+<thead>
+<tr>
+<th>Permissão</th>
+<th>O que libera</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Preencher o diário de obra</strong></td>
+<td>Criar e enviar os diários das suas obras (a área do campo: <strong>Hoje</strong> e <strong>Histórico</strong>).</td>
+</tr>
+<tr>
+<td><strong>Acompanhar todas as obras</strong></td>
+<td>A área do escritório: <strong>Painel</strong>, <strong>Obras</strong> e os diários recebidos.</td>
+</tr>
+<tr>
+<td><strong>Aprovar RDO e enviar ao contratante</strong></td>
+<td>Aprovar, pedir ajustes, baixar o PDF e compartilhar o link do cliente. Inclui <strong>Acompanhar todas as obras</strong>.</td>
+</tr>
+<tr>
+<td><strong>Montar o cronograma da obra</strong></td>
+<td>Etapas, linha de base, publicar para o contratante e exportar Excel. Inclui <strong>Acompanhar todas as obras</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="perfis-prontos">Perfis prontos</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th style="text-align: center;">Preencher</th>
+<th style="text-align: center;">Acompanhar todas</th>
+<th style="text-align: center;">Aprovar</th>
+<th style="text-align: center;">Montar o cronograma</th>
+<th>Onde o Daily abre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Administrador</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Painel</td>
+</tr>
+<tr>
+<td><strong>Gestor de obras</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Painel</td>
+</tr>
+<tr>
+<td><strong>Encarregado</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Hoje</td>
+</tr>
+<tr>
+<td><strong>Trabalhador</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>(sem Daily: vai direto para o <strong>Meu ponto</strong>)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Bom saber</p>
+<ul>
+<li>O perfil <strong>Administrador</strong> é fixo, para a empresa sempre ter quem gerencie os acessos. Um administrador que também preenche diários precisa de um perfil novo criado a partir dele, com <strong>Preencher o diário de obra</strong> marcado.</li>
+<li>Quem não tem <strong>Acompanhar todas as obras</strong> nunca abre as telas do escritório; quem não tem <strong>Preencher o diário de obra</strong> nunca abre as telas do campo. Digitar o endereço da tela não resolve.</li>
+<li>O <strong>cliente</strong> não é usuário: ele recebe o link do relatório aprovado e não precisa de conta.</li>
+<li><strong>Quem aprova depende da obra, não só do perfil.</strong> Na obra da prestadora ligada a uma construtora, quem aprova é o pessoal da construtora com <strong>Aprovar RDO</strong>; a prestadora vê <em>Com a construtora</em> e não consegue aprovar. Numa obra que a prestadora tem direto com o dono, o próprio pessoal dela aprova.</li>
+<li>A <strong>construtora</strong> não preenche diário: o Daily dela é o Painel, as Aprovações e as Obras, com todas as prestadoras das obras dela.</li>
+</ul>
+</div>
+<h2 id="no-prototipo">No protótipo</h2>
+<table>
+<thead>
+<tr>
+<th>Usuário de exemplo</th>
+<th>Perfil</th>
+<th>Empresa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ana Ribeiro</td>
+<td>Administradora</td>
+<td>Construtora Exemplo (construtora)</td>
+</tr>
+<tr>
+<td>Sandra Lopes</td>
+<td>Administradora</td>
+<td>Ridgeline Concrete &amp; Masonry (prestadora)</td>
+</tr>
+<tr>
+<td>Carlos Mendes</td>
+<td>Encarregado</td>
+<td>Ridgeline Concrete &amp; Masonry (prestadora)</td>
+</tr>
+<tr>
+<td>Diego Santos</td>
+<td>Trabalhador</td>
+<td>Ridgeline Concrete &amp; Masonry (prestadora)</td>
+</tr>
+<tr>
+<td>Tom Reilly</td>
+<td>Administrador</td>
+<td>Northfield Framing &amp; Siding (prestadora)</td>
+</tr>
+<tr>
+<td>Rita Gomes</td>
+<td>Gestora de obras</td>
+<td>Northfield Framing &amp; Siding (prestadora)</td>
+</tr>
+<tr>
+<td>José Pereira</td>
+<td>Encarregado</td>
+<td>Northfield Framing &amp; Siding (prestadora)</td>
+</tr>
+<tr>
+<td>Luis Ortega</td>
+<td>Trabalhador</td>
+<td>Northfield Framing &amp; Siding (prestadora)</td>
+</tr>
+</tbody>
+</table>
+<p>Laura Pires (gestora de obras da Construtora Exemplo), Márcia Souza (gestora de obras da Ridgeline) e Roberto Lima (um segundo encarregado da Ridgeline) existem nos dados de exemplo, mas não estão na lista de entrada.</p>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#permissoes-do-daily">Permissões do Daily</a></li><li><a href="#perfis-prontos">Perfis prontos</a></li><li><a href="#no-prototipo">No protótipo</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

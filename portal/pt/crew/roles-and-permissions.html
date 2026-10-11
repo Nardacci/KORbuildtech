@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfis e permissões · Crew · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../crew/roles-and-permissions.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-crew)">
+  <aside class="lateral" aria-label="Crew documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">C</span>Crew</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html" aria-current=page>Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Crew</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Perfis e permissões</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Perfis e permissões.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O que cada pessoa pode fazer no Crew vem do seu <strong>perfil de acesso</strong> (Settings › Perfis). A empresa ajusta os perfis prontos ou cria novos.</p>
+<h2 id="permissoes-do-crew">Permissões do Crew</h2>
+<table>
+<thead>
+<tr>
+<th>Permissão</th>
+<th>O que libera</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bater o próprio ponto</strong></td>
+<td><strong>Meu ponto</strong>: entrada, intervalo e saída no próprio celular, com GPS.</td>
+</tr>
+<tr>
+<td><strong>Bater o ponto da equipe</strong></td>
+<td><strong>Ponto da equipe</strong> e <strong>Horas</strong>: bater o ponto da equipe e ver as horas dela.</td>
+</tr>
+<tr>
+<td><strong>Acompanhar ponto e timesheets</strong></td>
+<td><strong>Agora</strong>, <strong>Timesheets</strong> e o <strong>Mapa do dia</strong> (só leitura).</td>
+</tr>
+<tr>
+<td><strong>Aprovar e ajustar timesheets</strong></td>
+<td>Aprovar, devolver, ajustar e exportar para a folha. Inclui <strong>Acompanhar ponto e timesheets</strong>.</td>
+</tr>
+<tr>
+<td><strong>Ver custos e valores em dinheiro</strong></td>
+<td><strong>Custos</strong>, orçamentos e salários nos timesheets. Inclui <strong>Acompanhar ponto e timesheets</strong>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="perfis-prontos">Perfis prontos</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th style="text-align: center;">Próprio</th>
+<th style="text-align: center;">Equipe</th>
+<th style="text-align: center;">Acompanhar</th>
+<th style="text-align: center;">Aprovar</th>
+<th style="text-align: center;">Custos</th>
+<th>Onde o Crew abre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Administrador</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Agora</td>
+</tr>
+<tr>
+<td><strong>Gestor de obras</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Agora</td>
+</tr>
+<tr>
+<td><strong>Encarregado</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Ponto da equipe</td>
+</tr>
+<tr>
+<td><strong>Trabalhador</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Meu ponto (direto, sem tela de módulos)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Bom saber</p>
+<ul>
+<li>O <strong>trabalhador</strong> só bate o ponto: o KORbuild abre direto no <strong>Meu ponto</strong> e não abre nenhuma outra tela, nem digitando o endereço.</li>
+<li><strong>Usuário</strong> é quem entra no sistema; <strong>funcionário</strong> é quem trabalha nas obras (Settings › Funcionários). O trabalhador que bate o ponto no próprio celular precisa dos dois, ligados. Quem tem o ponto batido pelo encarregado não precisa de login.</li>
+<li>Trabalhadores e encarregados veem horas, nunca valores em dinheiro.</li>
+</ul>
+</div>
+<h2 id="no-prototipo">No protótipo</h2>
+<p>O Crew é das empresas que executam (as prestadoras). A construtora não tem Crew: ela vê as pessoas e as horas das prestadoras nas obras dela, no Daily, sem valores (veja <a href="../organization.html">Como o KORbuild se organiza</a>).</p>
+<table>
+<thead>
+<tr>
+<th>Usuário de exemplo</th>
+<th>Empresa</th>
+<th>Perfil</th>
+<th>Use para mostrar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diego Santos</td>
+<td>Ridgeline (prestadora)</td>
+<td>Trabalhador</td>
+<td><strong>Meu ponto</strong></td>
+</tr>
+<tr>
+<td>Carlos Mendes</td>
+<td>Ridgeline (prestadora)</td>
+<td>Encarregado</td>
+<td><strong>Ponto da equipe</strong> e <strong>Horas</strong> (a equipe do Carlos)</td>
+</tr>
+<tr>
+<td>Sandra Lopes</td>
+<td>Ridgeline (prestadora)</td>
+<td>Administradora</td>
+<td><strong>Agora</strong>, <strong>Timesheets</strong>, <strong>Custos</strong></td>
+</tr>
+<tr>
+<td>Márcia Souza</td>
+<td>Ridgeline (prestadora)</td>
+<td>Gestora de obras</td>
+<td>O escritório sem o Settings (não está na lista de entrada)</td>
+</tr>
+<tr>
+<td>Tom Reilly</td>
+<td>Northfield (prestadora)</td>
+<td>Administrador</td>
+<td>Uma segunda prestadora, com a própria equipe, timesheets e custos</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#permissoes-do-crew">Permissões do Crew</a></li><li><a href="#perfis-prontos">Perfis prontos</a></li><li><a href="#no-prototipo">No protótipo</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

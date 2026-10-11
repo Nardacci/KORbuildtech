@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regras de negócio · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/business-rules.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html" aria-current=page>Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Regras de negócio</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Regras de negócio.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Cada regra tem um código (<code>SET-nnn</code>) para ser citada em reuniões, testes e pedidos de mudança. A coluna <strong>Situação</strong> diz se a regra já funciona no protótipo.</p>
+<div class="admonition note">
+<p class="admonition-title">Origem</p>
+<p>Estas regras vêm do código do protótipo e das especificações do Settings, das obras e do cronograma na documentação do projeto. Os pontos em aberto estão marcados como <strong>A confirmar</strong> no fim.</p>
+</div>
+<h2 id="principios">Princípios</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-001</td>
+<td><strong>Nada que a empresa possa querer mudar fica fixo no código.</strong> Regras, percentuais, perfis e listas ficam no Settings.</td>
+<td>Funcionando (veja a Situação do protótipo para o que ainda é fixo)</td>
+</tr>
+<tr>
+<td>SET-002</td>
+<td><strong>Vigência, nunca reescrever o passado.</strong> Valor hora, encargos e regras de jornada mudam a partir de uma data; os dias anteriores mantêm os valores da época.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-003</td>
+<td><strong>Toda mudança vai para a auditoria</strong>: o que mudou, antes e depois, quem, quando e por quê.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-004</td>
+<td><strong>Fixo por decisão de produto:</strong> uma batida de ponto nunca é editada (a correção é uma batida nova), a auditoria é obrigatória, as empresas são isoladas e a cerca sinaliza, mas não bloqueia.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="funcionarios">Funcionários</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-010</td>
+<td><strong>Cada empresa cadastra e cuida dos seus funcionários.</strong> O cadastro mostra <strong>Empresa (empregador)</strong>, sempre a conta a que o funcionário pertence.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-011</td>
+<td>O cadastro tem código (matrícula), telefone, contato de emergência, <strong>classificação</strong> (empregado W-2 ou autônomo 1099), <strong>FLSA</strong> (non-exempt recebe hora extra; exempt não), ofício, equipe, datas de admissão e desligamento, situação e a data em que o aviso de localização foi aceito.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-012</td>
+<td><strong>SSN e documentos de imigração não ficam no KORbuild</strong>: ficam no sistema da folha; só a matrícula é guardada, para fazer a ligação.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-013</td>
+<td><strong>Valor hora com histórico:</strong> a mudança vale a partir de uma data, com motivo, e nunca apaga o valor anterior. As horas de cada dia são pagas e custeadas pelo valor vigente naquele dia.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-014</td>
+<td>Um valor hora novo não pode começar dentro de uma semana já aprovada (ela já foi para a folha).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-015</td>
+<td><strong>Certificações</strong> (OSHA 10/30, licenças…) com data de validade: o KORbuild avisa 30 dias antes, no menu e nas notificações.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-016</td>
+<td>Funcionários desligados saem das listas ativas, mas mantêm o histórico.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="encargos-e-regras-de-jornada">Encargos e regras de jornada</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-020</td>
+<td><strong>Encargos</strong> são percentuais sobre os salários (FICA, FUTA, SUTA, workers' comp, benefícios) aplicados a todos os funcionários W-2; os autônomos 1099 não têm. Padrão: 32,05%.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-021</td>
+<td>Uma nova versão dos encargos vale <strong>a partir de uma data, nunca no passado</strong>: o custo das semanas passadas não muda.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-022</td>
+<td><strong>Regras de jornada</strong>: hora extra semanal (padrão: acima de 40 h, de segunda a domingo, 1,5×), hora extra diária e dobrada opcionais, e o intervalo mínimo (padrão de New Hampshire: 30 min depois de 5 horas).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-023</td>
+<td>As regras de jornada valem para <strong>semanas inteiras</strong>, começando numa segunda-feira. Os <strong>modelos</strong> (FLSA federal, New Hampshire, Califórnia…) só preenchem o formulário; a empresa ajusta.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-024</td>
+<td><strong>Sem arredondar o tempo</strong>: todo minuto é pago (princípio do produto).</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="empresa-e-contatos">Empresa e contatos</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-030</td>
+<td><strong>Cadastro da empresa:</strong> logo, razão social, EIN, como a empresa atua (prestadora, construtora ou as duas), endereço, telefone, e-mail, licenças, seguros e as condições padrão da proposta. Propostas e diários usam esses dados.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-031</td>
+<td><strong>Um só cadastro de contatos, com marcadores:</strong> construtora, cliente (dono), fornecedor, subempreiteiro. Um contato pode ter mais de um marcador (a mesma empresa pode ser a sua construtora numa obra e o seu cliente em outra).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-032</td>
+<td>Um <strong>fornecedor</strong> lista as etapas (cost codes) que fornece; a lista para cotação do Measure manda para ele só esses itens.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-033</td>
+<td>Contatos recebem documentos por link ou e-mail e <strong>não são usuários</strong>: não precisam de conta e não contam como usuários.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-034</td>
+<td>Um contato em uso (num projeto ou numa obra) não pode ser excluído.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="obras">Obras</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-040</td>
+<td><strong>A obra é da empresa, não de um módulo:</strong> o Daily (diários e cronograma), o Crew (ponto, cerca e custo) e o Measure (projeto ganho) usam o mesmo cadastro.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-041</td>
+<td>Campos: nome*, cliente* (e o dono, se for outro), endereço, cidade*, estado*, ZIP, <strong>local no mapa*</strong>, <strong>raio da cerca</strong> (50 a 2.000 m), início* e término*, <strong>quem preenche o diário*</strong>, <strong>dias de trabalho*</strong> e situação.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-042</td>
+<td>O local vem de um clique no mapa, da localização atual do aparelho (quando se cadastra na obra) ou de coordenadas digitadas. Ele define a cerca, o clima nos diários e o mapa do dia.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-043</td>
+<td><strong>Situação:</strong> em andamento, paralisada ou concluída. Só as obras <strong>em andamento</strong> exigem diário e aparecem nos celulares de campo e no ponto. Obras paralisadas ou concluídas ficam no escritório com o histórico; nada é apagado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-044</td>
+<td><strong>Modelos de etapas:</strong> uma lista de etapas com a <strong>parte do prazo</strong> de cada uma (%, somando 100). Ao criar a obra, o modelo distribui as etapas em sequência entre o início e o término e salva a primeira linha de base.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-045</td>
+<td><strong>Vindo do Measure:</strong> um projeto ganho ainda sem obra abre o cadastro da obra já preenchido (nome, endereço, cliente, dono); projeto e obra ficam ligados.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-046</td>
+<td><strong>A obra da construtora</strong> não tem responsável pelo diário, dias de trabalho nem modelo de cronograma: o diário, o ponto e o cronograma ficam na obra de cada prestadora ligada a ela.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cronograma-da-obra">Cronograma da obra</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-050</td>
+<td>O cronograma <strong>é da obra</strong> e é montado pela empresa que executa. Cada etapa tem nome, início, término, um responsável opcional e o % concluído.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-051</td>
+<td><strong>Linha de base:</strong> uma foto das datas, salva com data, autor e motivo. A primeira é salva sozinha; as novas, só por decisão (<strong>Salvar nova linha de base</strong>). O desvio é medido contra a linha de base mais recente. Nada é apagado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-052</td>
+<td><strong>% concluído vindo do Daily:</strong> uma atividade do diário pode apontar para uma etapa do cronograma e o % dela. Quando o diário é <strong>aprovado</strong>, o % vai para a etapa, com histórico (data, % e diário de origem). O escritório também pode atualizar o % à mão.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-053</td>
+<td><strong>Situação da etapa:</strong> concluída (100%), atrasada (passou do término sem chegar a 100%), em risco (avanço real 15 pontos ou mais abaixo do previsto para hoje), em andamento, não iniciada.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-054</td>
+<td><strong>Avanço da obra</strong> = a média do % das etapas, ponderada pela duração. O <strong>previsto até hoje</strong> usa a mesma conta sobre as datas da linha de base.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-055</td>
+<td><strong>Próximas 3 semanas:</strong> etapas em andamento ou que começam/terminam nos próximos 21 dias, na tela da obra do encarregado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-056</td>
+<td><strong>Notificações:</strong> uma por etapa atrasada, para quem acompanha as obras.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-057</td>
+<td><strong>Publicar para o contratante:</strong> a prestadora decide quando a construtora vê. Cada publicação é uma foto (versão); a construtora vê a mais recente, só para consulta, com a data, e pode exportar para o Excel.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-058</td>
+<td><strong>Exportar Excel:</strong> cabeçalho da empresa, obra e cliente, tabela de etapas (datas, duração, %, situação, desvio) e as barras do Gantt semana a semana.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="usuarios-e-acesso">Usuários e acesso</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-060</td>
+<td><strong>A tela inicial segue as permissões:</strong> com um só módulo, a pessoa entra direto nele.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-061</td>
+<td><strong>O Administrador é travado</strong>; pelo menos um usuário ativo precisa manter <em>Usuários e perfis de acesso</em>; ninguém tira o próprio acesso.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-062</td>
+<td>As dependências são automáticas: aprovar inclui acompanhar; ver custos inclui acompanhar; o catálogo inclui medir; o cronograma inclui acompanhar todas as obras.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-063</td>
+<td><strong>Um usuário que bate o ponto no próprio celular precisa estar ligado a um cadastro de funcionário.</strong></td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-064</td>
+<td>Um perfil em uso não pode ser excluído.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>SET-065</td>
+<td>Sem permissão, a tela não abre — digitar o endereço leva de volta à tela inicial da pessoa.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">A confirmar</p>
+<ul>
+<li>Permissões <strong>por obra</strong> (um encarregado vê só as obras dele; um gestor de obras só a região dele).</li>
+<li>Regras de jornada <strong>por obra</strong> (prevailing wage, obra em outro estado) e workers' comp por ofício.</li>
+<li>Prazos do diário, intervalos do GPS e alertas de custo como configurações da empresa (hoje: valores fixos, veja a Situação do protótipo).</li>
+<li>Convites de verdade por e-mail para novos usuários.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#principios">Princípios</a></li><li><a href="#funcionarios">Funcionários</a></li><li><a href="#encargos-e-regras-de-jornada">Encargos e regras de jornada</a></li><li><a href="#empresa-e-contatos">Empresa e contatos</a></li><li><a href="#obras">Obras</a></li><li><a href="#cronograma-da-obra">Cronograma da obra</a></li><li><a href="#usuarios-e-acesso">Usuários e acesso</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

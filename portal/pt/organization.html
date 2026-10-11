@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Como o KORbuild se organiza · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="Guia do produto KORbuild, início"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="index.html#modules">Módulos</a>
+    <a href="organization.html" aria-current=page>Como se organiza</a>
+    <a href="presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../organization.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Módulos">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guia</div><ul><li><a href="organization.html" aria-current=page>Como o KORbuild se organiza</a></li><li><a href="presenting.html">Guia do apresentador</a></li></ul>
+    <div class="lat-titulo">Módulos</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="index.html">Início</a> › Guia</nav>
+    <header class="doc-cabecalho">
+      <h1>Como o KORbuild se organiza</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Como o KORbuild se organiza.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O KORbuild é vendido como assinatura (SaaS). Cada cliente é uma <strong>empresa</strong>, com a própria conta, as próprias pessoas e os próprios dados. Esta página explica quem são os clientes, quem cadastra o quê e o que cada empresa vê das outras. Leia antes do guia do apresentador: todas as telas da demonstração seguem estas regras.</p>
+<h2 id="dois-tipos-de-cliente">Dois tipos de cliente</h2>
+<table>
+<thead>
+<tr>
+<th>Cliente</th>
+<th>No mercado americano</th>
+<th>O que faz no KORbuild</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Construtora</strong></td>
+<td><em>General contractor</em> (GC)</td>
+<td><strong>Gerencia</strong> as obras. Cadastra as obras, liga as prestadoras a elas e acompanha tudo o que fazem. Não faz diário nem bate ponto de ninguém.</td>
+</tr>
+<tr>
+<td><strong>Prestadora de serviço</strong></td>
+<td><em>Subcontractor</em> / <em>trade contractor</em> (estrutura, framing, siding, drywall…)</td>
+<td><strong>Executa.</strong> Faz o diário de obra, o ponto da equipe e o cronograma do próprio serviço, mede plantas e envia propostas.</td>
+</tr>
+</tbody>
+</table>
+<p>Uma prestadora pode ser cliente <strong>sozinha</strong>, sem construtora nenhuma: por exemplo, uma empresa de siding contratada direto pelo dono da casa, ou que trabalha para uma construtora que não usa o KORbuild.</p>
+<h2 id="quem-cadastra-o-que">Quem cadastra o quê</h2>
+<p><code>Construtora
+├── Funcionários próprios ....... cadastrados e gerenciados pela construtora
+└── Prestadoras (quantas forem)
+    └── Funcionários delas ...... cadastrados e gerenciados por cada prestadora</code></p>
+<table>
+<thead>
+<tr>
+<th>A construtora cadastra</th>
+<th>A prestadora cadastra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>As prestadoras</td>
+<td>O cronograma do serviço dela em cada obra</td>
+</tr>
+<tr>
+<td>Os próprios funcionários (gestão: engenheiros, gerentes, escritório)</td>
+<td>Os próprios funcionários e equipes (valor hora, encargos, certificações)</td>
+</tr>
+<tr>
+<td>As obras, e quais prestadoras trabalham em cada uma</td>
+<td>O diário de obra (<strong>Daily</strong>)</td>
+</tr>
+<tr>
+<td>Os perfis de acesso do seu pessoal</td>
+<td>O ponto e o custo de mão de obra (<strong>Crew</strong>)</td>
+</tr>
+<tr>
+<td>O Settings: empresa, obras, contatos, usuários</td>
+<td>A medição e as propostas (<strong>Measure</strong>)</td>
+</tr>
+<tr>
+<td></td>
+<td>O Settings: empresa, usuários, encargos, regras de jornada, contatos</td>
+</tr>
+<tr>
+<td></td>
+<td>As obras próprias, quando trabalha direto com o dono</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Cada empresa cuida do próprio pessoal</p>
+<p>A construtora nunca vê nem edita o cadastro dos funcionários de uma prestadora, e uma prestadora nunca vê os de outra empresa. Em cada cadastro de funcionário, <strong>Empresa (empregador)</strong> mostra a conta a que ele pertence.</p>
+</div>
+<h2 id="o-que-cada-empresa-ve-da-outra">O que cada empresa vê da outra</h2>
+<p>Quando a prestadora é contratada, ela liga a obra dela à obra da construtora. A partir daí:</p>
+<table>
+<thead>
+<tr>
+<th>O quê</th>
+<th>A prestadora</th>
+<th>A construtora</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diário de obra</td>
+<td>Preenche e envia</td>
+<td><strong>Aprova</strong> (ou pede ajustes) e compartilha com o dono</td>
+</tr>
+<tr>
+<td>Pessoas na obra</td>
+<td>Bate o ponto de entrada e saída</td>
+<td>Vê <strong>nomes, função, horário de entrada, quem está na obra agora e as horas</strong></td>
+</tr>
+<tr>
+<td>Salários, encargos, custo de mão de obra</td>
+<td>Vê tudo</td>
+<td><strong>Nunca vê</strong></td>
+</tr>
+<tr>
+<td>Cronograma</td>
+<td>Monta e publica versões</td>
+<td>Vê as versões publicadas, só leitura</td>
+</tr>
+</tbody>
+</table>
+<p>Numa obra que a prestadora tem <strong>direto com o dono</strong> (sem construtora), a própria prestadora aprova os diários.</p>
+<div class="admonition say">
+<p class="admonition-title">O que dizer</p>
+<p>"Cada empresa cuida da própria casa — o seu pessoal, os seus salários, os seus custos. A construtora vê o que importa para tocar a obra: quem está no canteiro, quantas horas, o que foi feito em cada dia — e aprova os diários. O que a prestadora paga ao seu pessoal fica com a prestadora."</p>
+</div>
+<h2 id="as-empresas-da-demonstracao">As empresas da demonstração</h2>
+<table>
+<thead>
+<tr>
+<th>Empresa</th>
+<th>Tipo</th>
+<th>Com quem entrar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Construtora Exemplo</strong></td>
+<td>Construtora (gerencia, não executa)</td>
+<td>Ana Ribeiro (administradora)</td>
+</tr>
+<tr>
+<td><strong>Ridgeline Concrete &amp; Masonry</strong></td>
+<td>Prestadora: estrutura, alvenaria e pisos nas três obras da Construtora Exemplo</td>
+<td>Sandra Lopes (administradora), Carlos Mendes (encarregado), Diego Santos (trabalhador)</td>
+</tr>
+<tr>
+<td><strong>Northfield Framing &amp; Siding</strong></td>
+<td>Prestadora: framing e siding no Residencial Jardim das Flores, e uma obra própria com o dono (Residência Thompson)</td>
+<td>Tom Reilly (administrador), Rita Gomes (gestora de obras), José Pereira (encarregado), Luis Ortega (trabalhador)</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="img/daily-job-subcontractors.png" alt="A visão da construtora numa obra: cada prestadora com as pessoas no canteiro e as horas, sem valores em dinheiro" loading="lazy"><figcaption>A visão da construtora numa obra: cada prestadora com as pessoas no canteiro e as horas, sem valores em dinheiro</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p>As três empresas ficam no mesmo navegador, para você entrar como cada uma, uma de cada vez. No produto, cada empresa tem a própria conta no servidor, e a construtora recebe só o que as regras acima permitem.</p>
+</div>
+<div class="admonition confirm">
+<p class="admonition-title">A confirmar</p>
+<ul>
+<li>Como a construtora convida a prestadora e como as obras se ligam (hoje elas já vêm ligadas nos dados de exemplo). Isso vem com as concorrências e o banco de dados.</li>
+<li>Se a prestadora pode escolher compartilhar menos (por exemplo, horas sem os nomes).</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#dois-tipos-de-cliente">Dois tipos de cliente</a></li><li><a href="#quem-cadastra-o-que">Quem cadastra o quê</a></li><li><a href="#o-que-cada-empresa-ve-da-outra">O que cada empresa vê da outra</a></li><li><a href="#as-empresas-da-demonstracao">As empresas da demonstração</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../">Entrada principal</a> · <a href="../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

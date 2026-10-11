@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visão geral · Daily · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../daily/overview.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html" aria-current=page>Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Daily</a> › Comece aqui</nav>
+    <header class="doc-cabecalho">
+      <h1>Visão geral</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Visão geral.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O <strong>Daily</strong> é o diário de obra (RDO, relatório diário de obra). Em cada dia de trabalho, o responsável da prestadora no canteiro registra o clima, a equipe, os equipamentos, as atividades, as ocorrências e as fotos. A <strong>construtora</strong> da obra revisa e aprova o relatório — ou a própria prestadora, numa obra que ela tem direto com o dono — e o relatório aprovado é lacrado e compartilhado com o cliente por link ou em PDF. Veja <a href="../organization.html">Como o KORbuild se organiza</a>.</p>
+<h2 id="por-que-importa">Por que importa</h2>
+<ul>
+<li><strong>Um registro que se sustenta.</strong> Quando o cliente contesta um atraso, os diários são a prova da empresa: a chuva que parou a concretagem, a entrega atrasada, a vistoria que não veio. As fotos levam data, hora e GPS dentro da imagem, e o relatório aprovado é lacrado.</li>
+<li><strong>Diários que realmente são feitos.</strong> Cada obra tem um responsável pelo diário, um prazo diário (18h) e lembretes. Na manhã seguinte, o escritório vê quais obras ficaram sem diário.</li>
+<li><strong>Minutos, não uma noite.</strong> No celular, o encarregado copia o diário de ontem, ajusta a equipe, dita o que foi feito e tira as fotos. Funciona sem sinal.</li>
+</ul>
+<h2 id="quem-usa">Quem usa</h2>
+<table>
+<thead>
+<tr>
+<th>Quem</th>
+<th>Onde</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Encarregado da prestadora</strong></td>
+<td>Celular</td>
+<td>Preenche e envia o diário de cada obra, em cada dia de trabalho; corrige os que voltam com pedido de ajuste.</td>
+</tr>
+<tr>
+<td><strong>Construtora</strong> (administrador, gestor de obras)</td>
+<td>Computador</td>
+<td>Acompanha todas as prestadoras em cada obra, revisa, aprova ou pede ajustes, compartilha com o dono. Não preenche diário.</td>
+</tr>
+<tr>
+<td><strong>Escritório da prestadora</strong></td>
+<td>Computador</td>
+<td>Acompanha os próprios diários; aprova só nas obras que tem direto com o dono.</td>
+</tr>
+<tr>
+<td><strong>Cliente</strong> (dono ou construtora)</td>
+<td>Qualquer navegador</td>
+<td>Abre o link do relatório aprovado, confere que é autêntico e baixa o PDF. Sem conta.</td>
+</tr>
+</tbody>
+</table>
+<p>Quem pode fazer o quê depende do perfil de acesso: veja <a href="../daily/roles-and-permissions.html">Perfis e permissões</a>.</p>
+<h2 id="as-telas-principais">As telas principais</h2>
+<table>
+<thead>
+<tr>
+<th>Tela</th>
+<th>Quem vê</th>
+<th>O que mostra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Hoje</strong></td>
+<td>Campo</td>
+<td>As obras do dia, os diários atrasados, o que ainda falta hoje e os pedidos de ajuste.</td>
+</tr>
+<tr>
+<td><strong>Histórico</strong></td>
+<td>Campo</td>
+<td>Todos os diários que você preencheu, do mais novo ao mais antigo.</td>
+</tr>
+<tr>
+<td><strong>RDO</strong> (editor)</td>
+<td>Campo</td>
+<td>O formulário: clima, equipe, equipamentos, atividades, ocorrências, fotos, observações.</td>
+</tr>
+<tr>
+<td><strong>Painel</strong></td>
+<td>Escritório</td>
+<td>Os números do dia, o farol das obras (verde, amarelo, vermelho), as obras sem diário, a fila de aprovação.</td>
+</tr>
+<tr>
+<td><strong>Aprovações</strong></td>
+<td>Escritório</td>
+<td>Diários aguardando aprovação, devolvidos para ajustes e aprovados.</td>
+</tr>
+<tr>
+<td><strong>Obras</strong></td>
+<td>Escritório</td>
+<td>Todas as obras ativas, com o farol; cada obra abre os seus diários e o cronograma.</td>
+</tr>
+<tr>
+<td><strong>Link do cliente</strong></td>
+<td>Cliente</td>
+<td>O relatório aprovado, só leitura, com a conferência de autenticidade e o PDF.</td>
+</tr>
+</tbody>
+</table>
+<figure class="celular"><img src="../img/daily-field-today-mobile.png" alt="A tela Hoje no celular do encarregado" loading="lazy"><figcaption>A tela Hoje no celular do encarregado</figcaption></figure>
+<figure><img src="../img/daily-dashboard.png" alt="O painel do escritório" loading="lazy"><figcaption>O painel do escritório</figcaption></figure>
+<h2 id="o-caminho-de-um-diario">O caminho de um diário</h2>
+<table>
+<thead>
+<tr>
+<th>Situação</th>
+<th>O que significa</th>
+<th>Quem age</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Rascunho</strong></td>
+<td>Sendo preenchido; guardado no celular.</td>
+<td>Campo: enviar.</td>
+</tr>
+<tr>
+<td><strong>Guardado no aparelho</strong></td>
+<td>Enviado sem sinal; sobe sozinho quando a conexão voltar.</td>
+<td>Ninguém: é automático.</td>
+</tr>
+<tr>
+<td><strong>Aguardando aprovação</strong></td>
+<td>Recebido por quem aprova.</td>
+<td>A construtora (ou a prestadora, na obra própria): aprovar ou pedir ajustes.</td>
+</tr>
+<tr>
+<td><strong>Ajustes pedidos</strong></td>
+<td>Devolvido com o motivo.</td>
+<td>Campo: corrigir e reenviar.</td>
+</tr>
+<tr>
+<td><strong>Aprovado</strong></td>
+<td>Lacrado com um código de verificação. Ninguém consegue mudar.</td>
+<td>Compartilhar com o cliente.</td>
+</tr>
+<tr>
+<td><strong>Sem atividade</strong></td>
+<td>O dia foi registrado como "sem atividade", com o motivo (chuva, feriado…).</td>
+<td>Ninguém.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ligado-aos-outros-modulos">Ligado aos outros módulos</h2>
+<ul>
+<li><strong>Crew:</strong> ao começar o diário, a equipe pode vir das pessoas que bateram ponto na obra naquele dia (<strong>Atualizar pela equipe que bateu ponto</strong>).</li>
+<li><strong>Cronograma:</strong> cada atividade do diário pode apontar uma etapa do cronograma da obra, com o % concluído; quando o diário é aprovado, o cronograma é atualizado.</li>
+<li><strong>Obras</strong> são cadastradas uma vez por empresa (Settings › Obras). A construtora cadastra as obras dela; cada prestadora tem a própria obra ligada à da construtora, com quem preenche o diário e os dias de trabalho.</li>
+</ul>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#por-que-importa">Por que importa</a></li><li><a href="#quem-usa">Quem usa</a></li><li><a href="#as-telas-principais">As telas principais</a></li><li><a href="#o-caminho-de-um-diario">O caminho de um diário</a></li><li><a href="#ligado-aos-outros-modulos">Ligado aos outros módulos</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

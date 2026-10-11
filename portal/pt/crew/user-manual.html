@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do usuário · Crew · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../crew/user-manual.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-crew)">
+  <aside class="lateral" aria-label="Crew documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">C</span>Crew</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html" aria-current=page>Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Crew</a> › No dia a dia</nav>
+    <header class="doc-cabecalho">
+      <h1>Manual do usuário</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Manual do usuário.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Este manual mostra o Crew uma tarefa por vez: primeiro o <strong>trabalhador</strong> e o <strong>encarregado</strong> (no celular), depois o <strong>escritório</strong> (no computador). Os nomes de telas, botões e mensagens estão escritos exatamente como aparecem no KORbuild, em <strong>negrito</strong>.</p>
+<div class="admonition note">
+<p class="admonition-title">Antes de começar</p>
+<p>O Crew abre na área do seu perfil: o trabalhador vai direto para o <strong>Meu ponto</strong> (sem tela de módulos); o encarregado abre no <strong>Ponto da equipe</strong>; o escritório abre em <strong>Agora</strong>. Se você não vê uma tela descrita aqui, o seu perfil não a inclui — veja <a href="../crew/roles-and-permissions.html">Perfis e permissões</a>.</p>
+</div>
+<h2 id="trabalhador-bater-o-ponto-no-proprio-celular">Trabalhador: bater o ponto no próprio celular</h2>
+<p><strong>Para que serve:</strong> registrar o próprio dia, com a hora e o local de cada batida.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Bater o próprio ponto</strong> (perfil padrão: <strong>Trabalhador</strong>).</p>
+</div>
+<ol>
+<li>Abra o KORbuild. O <strong>Meu ponto</strong> abre direto, com a <strong>Hora oficial do ponto</strong>, a situação de hoje (por exemplo, <em>Ainda não bateu entrada</em>) e um botão grande com o que cabe agora.</li>
+<li>Toque em <strong>Bater entrada</strong>. Abre uma janela:<ul>
+<li><strong>Obra</strong> — onde você está trabalhando (só aparecem obras em andamento).</li>
+<li>A distância até a obra, em verde quando você está <strong>dentro da cerca ✓</strong>, ou em vermelho quando está fora.</li>
+<li><strong>Etapa (cost code)</strong> — o serviço em que você vai trabalhar.</li>
+<li><strong>Foto da equipe</strong> (opcional) — abre a câmera.</li>
+<li><strong>Nota (opcional)</strong> — por exemplo, <em>o material atrasou; saí mais cedo com autorização do encarregado</em>.</li>
+</ul>
+</li>
+<li>Confirme. A sua batida fica registrada com a hora, a posição do GPS e a precisão.</li>
+<li>Ao longo do dia, o mesmo botão muda para o que cabe: começar o intervalo, voltar do intervalo, trocar de obra, bater a saída.</li>
+</ol>
+<figure class="celular"><img src="../img/crew-my-clock-before-mobile.png" alt="Meu ponto antes da entrada" loading="lazy"><figcaption>Meu ponto antes da entrada</figcaption></figure>
+<figure class="celular"><img src="../img/crew-my-clock-in-dialog-mobile.png" alt="A janela da entrada: obra, cerca, etapa, foto e nota" loading="lazy"><figcaption>A janela da entrada: obra, cerca, etapa, foto e nota</figcaption></figure>
+<p>Abaixo do botão, <strong>Hoje</strong> lista as suas batidas e <strong>Minha semana</strong> mostra as horas por dia e o total. O trabalhador nunca vê valores em dinheiro.</p>
+<figure class="celular"><img src="../img/crew-my-clock-working-mobile.png" alt="Meu ponto durante a jornada" loading="lazy"><figcaption>Meu ponto durante a jornada</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">A sua localização</p>
+<p>A localização só é registrada com o ponto aberto: em cada batida e durante a jornada. Nada é registrado no intervalo nem depois da saída. A tela avisa isso embaixo.</p>
+</div>
+<h2 id="encarregado-bater-o-ponto-da-equipe-inteira">Encarregado: bater o ponto da equipe inteira</h2>
+<p><strong>Para que serve:</strong> um celular bate o ponto da equipe toda de uma vez — o jeito mais comum de trabalhar no canteiro.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Bater o ponto da equipe</strong> (perfil padrão: <strong>Encarregado</strong>).</p>
+</div>
+<ol>
+<li>Abra o <strong>Crew</strong>. O <strong>Ponto da equipe</strong> mostra a <strong>Hora oficial do ponto</strong>, quantos estão <strong>trabalhando</strong>, <strong>em intervalo</strong>, <strong>em deslocamento</strong> e <strong>fora</strong>, e a lista da equipe com a situação de cada pessoa.</li>
+<li>Selecione as pessoas: toque em cada uma, ou em <strong>Selecionar todos</strong>. A barra de baixo diz quantas estão selecionadas e liga os botões que fazem sentido para elas (por exemplo, <strong>Entrada (6)</strong>).</li>
+<li>Toque em <strong>Entrada</strong>. O KORbuild localiza o celular e mostra a distância até a obra ("dentro da cerca ✓" ou "fora da cerca. A batida fica marcada para o escritório conferir."). Escolha a <strong>etapa</strong>, tire uma foto da equipe se quiser, escreva uma nota e confirme.</li>
+</ol>
+<figure class="celular"><img src="../img/crew-team-before-mobile.png" alt="A equipe antes de começar o dia" loading="lazy"><figcaption>A equipe antes de começar o dia</figcaption></figure>
+<figure class="celular"><img src="../img/crew-team-selected-mobile.png" alt="Todos selecionados: Entrada (6)" loading="lazy"><figcaption>Todos selecionados: Entrada (6)</figcaption></figure>
+<figure class="celular"><img src="../img/crew-team-clock-in-dialog-mobile.png" alt="A entrada da equipe" loading="lazy"><figcaption>A entrada da equipe</figcaption></figure>
+<p>Cada pessoa recebe a própria batida, que registra <strong>quem bateu</strong> (o encarregado). Sem ninguém selecionado, os botões ficam desligados.</p>
+<figure class="celular"><img src="../img/crew-team-working-mobile.png" alt="A equipe depois da entrada" loading="lazy"><figcaption>A equipe depois da entrada</figcaption></figure>
+<h3 id="intervalo-e-saida">Intervalo e saída</h3>
+<ul>
+<li><strong>Intervalo</strong> e <strong>Volta</strong> cobrem o intervalo de refeição (um toque, sem janela).</li>
+<li><strong>Saída</strong> encerra o dia. O KORbuild pergunta antes de bater — se alguém continua trabalhando, deixe essa pessoa fora da seleção.</li>
+</ul>
+<h3 id="trocar-de-obra">Trocar de obra</h3>
+<ol>
+<li>Selecione as pessoas e toque em <strong>Trocar de obra</strong>.</li>
+<li>Escolha <strong>Para qual obra?</strong> e toque em <strong>Sair para a obra</strong>. A batida é feita <strong>onde vocês estão</strong> (a obra de onde estão saindo), e começa o <strong>deslocamento</strong>. O tempo até a outra obra conta como hora trabalhada.</li>
+<li>Ao chegar, toque em <strong>Chegou</strong>, escolha a <strong>Etapa nesta obra</strong> e <strong>Registrar chegada</strong>. A chegada é conferida pela cerca da obra nova.</li>
+</ol>
+<figure class="celular"><img src="../img/crew-switch-job-dialog-mobile.png" alt="Trocar de obra: o deslocamento até a outra obra é hora paga" loading="lazy"><figcaption>Trocar de obra: o deslocamento até a outra obra é hora paga</figcaption></figure>
+<h2 id="encarregado-conferir-as-horas-da-equipe">Encarregado: conferir as horas da equipe</h2>
+<p><strong>Horas</strong> mostra a semana da equipe: horas por pessoa e por dia. Um <strong>!</strong> vermelho indica algo para conferir — uma saída que faltou, uma batida fora da obra ou um intervalo que não foi feito. Quem aprova as horas é o escritório.</p>
+<figure class="celular"><img src="../img/crew-team-hours-mobile.png" alt="Horas da equipe, com os alertas" loading="lazy"><figcaption>Horas da equipe, com os alertas</figcaption></figure>
+<h2 id="escritorio-ver-quem-esta-trabalhando-agora">Escritório: ver quem está trabalhando agora</h2>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Acompanhar ponto e timesheets</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>).</p>
+</div>
+<p><strong>Agora</strong> mostra:</p>
+<ul>
+<li><strong>Trabalhando agora</strong>, <strong>Em intervalo</strong>, <strong>Em deslocamento</strong> e <strong>Horas hoje</strong>.</li>
+<li><strong>Batidas fora da obra para conferir</strong>: batidas fora da cerca, com a distância até a obra. <strong>Ver dia</strong> abre o mapa do dia da pessoa; <strong>Conferido</strong> marca como verificada (a batida continua registrada como fora da cerca).</li>
+<li>Cada obra com as pessoas que bateram ponto nela, desde que horas e em qual etapa.</li>
+</ul>
+<figure><img src="../img/crew-now.png" alt="Agora" loading="lazy"><figcaption>Agora</figcaption></figure>
+<h2 id="escritorio-aprovar-a-semana-timesheets">Escritório: aprovar a semana (timesheets)</h2>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Aprovar e ajustar timesheets</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>).</p>
+</div>
+<ol>
+<li>Abra <strong>Timesheets</strong>. Use <strong>Anterior</strong> e <strong>Próxima</strong> para trocar de semana (segunda a domingo).</li>
+<li>No alto: <strong>Horas na semana</strong>, <strong>Horas extras</strong>, <strong>Custo de mão de obra</strong> (com a permissão de custos) e <strong>Aguardando aprovação</strong>.</li>
+<li>A tabela tem uma linha por pessoa: horas por dia, <strong>Total</strong>, <strong>Extra</strong>, <strong>Custo</strong> e <strong>Situação</strong> (<strong>Aprovado</strong>, <strong>Aguardando aprovação</strong>…).</li>
+<li>Marque as pessoas e clique em <strong>Aprovar selecionados</strong>, ou abra uma pessoa e clique em <strong>Aprovar semana</strong>.</li>
+</ol>
+<figure><img src="../img/crew-timesheets.png" alt="Timesheets da semana" loading="lazy"><figcaption>Timesheets da semana</figcaption></figure>
+<p>A semana não pode ser aprovada enquanto alguém estiver <strong>sem saída</strong>: o KORbuild lista quem precisa ser corrigido antes. As horas aprovadas ficam liberadas para a folha.</p>
+<h3 id="abrir-a-semana-de-uma-pessoa">Abrir a semana de uma pessoa</h3>
+<p>Clique numa pessoa para ver a semana dela: total, horas normais, extras e custo, e cada dia com os trechos (trabalho numa obra e etapa, intervalo, deslocamento), o <strong>Mapa do dia</strong> e <strong>Ajustar</strong>.</p>
+<figure><img src="../img/crew-employee-week.png" alt="A semana de uma pessoa, aguardando aprovação" loading="lazy"><figcaption>A semana de uma pessoa, aguardando aprovação</figcaption></figure>
+<h3 id="devolver-uma-semana">Devolver uma semana</h3>
+<p><strong>Devolver</strong> manda a semana de volta para o encarregado. Escreva <strong>O que precisa ser revisto?</strong> (por exemplo, <em>confirmar a saída de terça com o encarregado</em>) e clique em <strong>Devolver</strong>.</p>
+<figure><img src="../img/crew-return-dialog.png" alt="Devolver um timesheet com o motivo" loading="lazy"><figcaption>Devolver um timesheet com o motivo</figcaption></figure>
+<h3 id="ajustar-um-dia-por-exemplo-uma-saida-esquecida">Ajustar um dia (por exemplo, uma saída esquecida)</h3>
+<ol>
+<li>Na semana da pessoa, clique em <strong>Ajustar</strong> no dia.</li>
+<li>Escolha a <strong>Batida</strong> (saída, início do intervalo, fim do intervalo, entrada), a <strong>Hora</strong> e o <strong>Motivo</strong> (por exemplo, <em>esqueceu de bater a saída; confirmado com o encarregado</em>).</li>
+<li>Clique em <strong>Registrar ajuste</strong>.</li>
+</ol>
+<p>O ajuste entra como uma <strong>batida nova</strong>, marcada como ajuste, com o seu nome e o motivo. As batidas originais continuam à vista.</p>
+<figure><img src="../img/crew-adjust-dialog.png" alt="Ajustar um dia: uma batida nova, com hora e motivo" loading="lazy"><figcaption>Ajustar um dia: uma batida nova, com hora e motivo</figcaption></figure>
+<h3 id="exportar-para-a-folha">Exportar para a folha</h3>
+<p><strong>Exportar CSV (aprovados)</strong> baixa as horas aprovadas da semana, uma linha por trecho (semana, funcionário, função, data, obra, etapa, tipo, início, fim, horas, situação), pronto para sistemas de folha como QuickBooks, Gusto ou ADP.</p>
+<h2 id="escritorio-ver-o-dia-de-uma-pessoa-no-mapa">Escritório: ver o dia de uma pessoa no mapa</h2>
+<p>O <strong>Mapa do dia</strong> (em <strong>Agora</strong> › <strong>Ver dia</strong>, ou na semana da pessoa) mostra o dia num mapa de ruas:</p>
+<ul>
+<li>a <strong>Entrada</strong> (<strong>E</strong> verde) e a <strong>Saída</strong> (<strong>S</strong> escuro), o número de registros e a distância percorrida;</li>
+<li>as obras, numeradas na ordem da visita, com a cerca;</li>
+<li>os pontos de localização registrados durante a jornada, ligados por setas no sentido do trajeto;</li>
+<li>as batidas fora da obra, em vermelho;</li>
+<li><strong>Reproduzir</strong> repassa o dia, com o relógio na tela; <strong>Tela cheia</strong> amplia o mapa.</li>
+</ul>
+<p>Abaixo do mapa: o <strong>percurso do dia</strong> (obra → deslocamento → obra, com a distância e os minutos), a lista dos <strong>registros de localização</strong> (toque num deles para vê-lo no mapa) e a <strong>linha do tempo</strong> das batidas, com cerca, precisão, quem bateu, foto e ajustes.</p>
+<figure><img src="../img/crew-day-map.png" alt="O mapa do dia" loading="lazy"><figcaption>O mapa do dia</figcaption></figure>
+<div class="admonition simulated">
+<p class="admonition-title">No protótipo</p>
+<p>O trajeto entre as batidas é <strong>simulado</strong> a partir delas (o mapa mostra <em>Trilha simulada</em>). No produto, ele vem do GPS do celular durante a jornada, o que exige o app das lojas. Mapas de ruas, rotas e endereços usam serviços públicos gratuitos no protótipo; sem internet, o mapa vira um desenho simples.</p>
+</div>
+<h2 id="escritorio-acompanhar-o-custo-de-mao-de-obra-por-obra">Escritório: acompanhar o custo de mão de obra por obra</h2>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Ver custos e valores em dinheiro</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>).</p>
+</div>
+<p><strong>Custos › Obras</strong> mostra, de todas as obras, o <strong>Orçamento de mão de obra</strong>, o <strong>Realizado até hoje</strong>, a <strong>Projeção ao final</strong> e o <strong>Estouro previsto</strong>, e para cada obra:</p>
+<ul>
+<li>a situação: <strong>No rumo</strong>, <strong>Atenção</strong> ou <strong>Estouro previsto</strong>;</li>
+<li><strong>Orçado</strong>, <strong>Realizado</strong> (% do orçamento), <strong>Projeção ao final</strong> e o estouro ou a economia;</li>
+<li>as barras de <strong>Prazo decorrido</strong>, <strong>Orçamento consumido</strong> e <strong>Avanço físico</strong>;</li>
+<li>o gráfico do <strong>Realizado (acumulado)</strong>, do <strong>Planejado</strong> e da <strong>Projeção</strong> até o fim da obra;</li>
+<li>as tabelas por etapa e semana a semana.</li>
+</ul>
+<figure><img src="../img/crew-costs-jobs.png" alt="Custo de mão de obra por obra" loading="lazy"><figcaption>Custo de mão de obra por obra</figcaption></figure>
+<p><strong>Editar orçamento</strong> define o <strong>Orçamento total de mão de obra (US$)</strong> e o <strong>Avanço físico da obra (%)</strong>. A projeção e a situação são recalculadas na hora.</p>
+<figure><img src="../img/crew-budget-dialog.png" alt="Editar o orçamento e o avanço físico" loading="lazy"><figcaption>Editar o orçamento e o avanço físico</figcaption></figure>
+<p><strong>Mês</strong> e <strong>Semana</strong> mostram o custo do período por obra e por etapa, separado em salários, adicional de hora extra e encargos — para o fechamento e a conferência.</p>
+<figure><img src="../img/crew-costs-month.png" alt="Custo do mês" loading="lazy"><figcaption>Custo do mês</figcaption></figure>
+<div class="admonition tip">
+<p class="admonition-title">Como funciona a projeção</p>
+<p>Com o avanço físico, projeção = realizado ÷ avanço (gastou 34% e executou 31% quer dizer cerca de 10% acima do orçamento). Sem ele, o KORbuild usa o ritmo das últimas 4 semanas completas até a data de término.</p>
+</div>
+<h2 id="notificacoes">Notificações</h2>
+<table>
+<thead>
+<tr>
+<th>Quando</th>
+<th>Quem</th>
+<th>Mensagem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A semana passada tem timesheets sem aprovar</td>
+<td>Escritório</td>
+<td><em>N timesheets da semana passada aguardando aprovação</em></td>
+</tr>
+<tr>
+<td>Uma batida fora da obra nas últimas 48 horas, não conferida</td>
+<td>Escritório</td>
+<td><em>Nome: entrada fora da obra</em></td>
+</tr>
+<tr>
+<td>Alguém da equipe ficou sem saída ontem</td>
+<td>Encarregado</td>
+<td><em>Nome ficou sem saída ontem: avise o escritório</em></td>
+</tr>
+<tr>
+<td>8h de um dia de trabalho e ninguém da equipe bateu entrada</td>
+<td>Encarregado</td>
+<td><em>Sua equipe ainda não bateu a entrada hoje</em></td>
+</tr>
+</tbody>
+</table>
+<h2 id="mensagens-e-alertas">Mensagens e alertas</h2>
+<table>
+<thead>
+<tr>
+<th>Mensagem</th>
+<th>Onde</th>
+<th>O que fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>dentro da cerca ✓</strong> / <strong>fora da cerca</strong></td>
+<td>Janela da entrada</td>
+<td>Fora é aceito: a batida fica marcada para o escritório.</td>
+</tr>
+<tr>
+<td><strong>!</strong> ao lado das horas</td>
+<td>Horas, Timesheets</td>
+<td>Algo para conferir: saída que faltou, batida fora da obra ou intervalo não feito.</td>
+</tr>
+<tr>
+<td><em>Antes de aprovar, ajuste as batidas sem saída de: …</em></td>
+<td>Ao aprovar</td>
+<td>Abra a semana da pessoa e <strong>Ajustar</strong> o dia.</td>
+</tr>
+<tr>
+<td>Confirmação da saída</td>
+<td>Saída</td>
+<td>Deixe fora quem ainda está trabalhando.</td>
+</tr>
+<tr>
+<td><em>Batida conferida. Ela continua registrada como fora da cerca.</em></td>
+<td>Agora</td>
+<td>Nada: ela foi marcada como verificada.</td>
+</tr>
+<tr>
+<td><em>Não é possível começar dentro de uma semana já aprovada (já foi para a folha).</em></td>
+<td>Ao alterar um valor hora (Settings)</td>
+<td>Escolha uma data a partir da próxima semana em aberto.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#trabalhador-bater-o-ponto-no-proprio-celular">Trabalhador: bater o ponto no próprio celular</a></li><li><a href="#encarregado-bater-o-ponto-da-equipe-inteira">Encarregado: bater o ponto da equipe inteira</a></li><li class="sub"><a href="#intervalo-e-saida">Intervalo e saída</a></li><li class="sub"><a href="#trocar-de-obra">Trocar de obra</a></li><li><a href="#encarregado-conferir-as-horas-da-equipe">Encarregado: conferir as horas da equipe</a></li><li><a href="#escritorio-ver-quem-esta-trabalhando-agora">Escritório: ver quem está trabalhando agora</a></li><li><a href="#escritorio-aprovar-a-semana-timesheets">Escritório: aprovar a semana (timesheets)</a></li><li class="sub"><a href="#abrir-a-semana-de-uma-pessoa">Abrir a semana de uma pessoa</a></li><li class="sub"><a href="#devolver-uma-semana">Devolver uma semana</a></li><li class="sub"><a href="#ajustar-um-dia-por-exemplo-uma-saida-esquecida">Ajustar um dia (por exemplo, uma saída esquecida)</a></li><li class="sub"><a href="#exportar-para-a-folha">Exportar para a folha</a></li><li><a href="#escritorio-ver-o-dia-de-uma-pessoa-no-mapa">Escritório: ver o dia de uma pessoa no mapa</a></li><li><a href="#escritorio-acompanhar-o-custo-de-mao-de-obra-por-obra">Escritório: acompanhar o custo de mão de obra por obra</a></li><li><a href="#notificacoes">Notificações</a></li><li><a href="#mensagens-e-alertas">Mensagens e alertas</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

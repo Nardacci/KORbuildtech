@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Situação do protótipo · Daily · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../daily/prototype-status.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-daily)">
+  <aside class="lateral" aria-label="Daily documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">D</span>Daily</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html" aria-current=page>Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Daily</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Situação do protótipo</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Situação do protótipo.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O protótipo mostra o produto funcionando com dados de exemplo. Algumas coisas são simuladas porque ainda não há servidor. Esta página lista essas coisas, para ninguém prometer mais do que existe — e para o cliente saber o que vem por aí.</p>
+<h2 id="simulado-hoje">Simulado hoje</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>No protótipo</th>
+<th>No produto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Onde ficam os dados</td>
+<td>Só no navegador de cada aparelho. O celular do campo e o computador do escritório não veem os dados um do outro.</td>
+<td>Um banco de dados na nuvem, separado por empresa; todos veem os mesmos dados.</td>
+</tr>
+<tr>
+<td>Lembretes das 16h e das 18h</td>
+<td>Só com o app aberto.</td>
+<td>Enviados pelo servidor, mesmo com o app fechado.</td>
+</tr>
+<tr>
+<td><strong>Melhorar texto</strong></td>
+<td>Regras simples no celular.</td>
+<td>Inteligência artificial, guardando o texto original ao lado.</td>
+</tr>
+<tr>
+<td>PDF</td>
+<td>Impresso pelo navegador (<strong>Salvar como PDF</strong>).</td>
+<td>Gerado no servidor, pronto para baixar.</td>
+</tr>
+<tr>
+<td>Link do cliente</td>
+<td>Abre só no mesmo navegador.</td>
+<td>Abre em qualquer lugar.</td>
+</tr>
+<tr>
+<td>Falta de sinal</td>
+<td>Simulada tocando em <strong>Online</strong>.</td>
+<td>Real.</td>
+</tr>
+<tr>
+<td>Entrada</td>
+<td>Usuários de exemplo, sem senha.</td>
+<td>E-mail e senha da empresa.</td>
+</tr>
+<tr>
+<td>Clima</td>
+<td>Real (Open-Meteo), quando há internet.</td>
+<td>Igual.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="o-que-vem-depois">O que vem depois</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Observações</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contas dos clientes no banco de dados</td>
+<td>A página de entrada principal está pronta; as contas chegam com o banco de dados.</td>
+</tr>
+<tr>
+<td>Aplicativos nas lojas (App Store, Google Play)</td>
+<td>Previstos; o protótipo já se instala na tela inicial.</td>
+</tr>
+<tr>
+<td>Configurar prazo e horários dos lembretes</td>
+<td>A confirmar.</td>
+</tr>
+<tr>
+<td>Lembretes por SMS e e-mail</td>
+<td>Avaliados depois (regras dos EUA para SMS de empresas).</td>
+</tr>
+<tr>
+<td>A construtora convida a prestadora (concorrência) e um canal entre as duas</td>
+<td>Especificado; chega com o banco de dados.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#simulado-hoje">Simulado hoje</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

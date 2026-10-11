@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfis e permissões · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/roles-and-permissions.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html" aria-current=page>Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Perfis e permissões</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Perfis e permissões.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>No KORbuild, nada de acesso fica fixo no código. O produto define o <strong>catálogo de permissões</strong>; cada empresa decide <strong>quais permissões cada perfil tem</strong> (Settings › Perfis) e <strong>qual perfil cada usuário tem</strong> (Settings › Usuários). Toda mudança vai para a auditoria.</p>
+<h2 id="o-catalogo-de-permissoes">O catálogo de permissões</h2>
+<table>
+<thead>
+<tr>
+<th>Grupo</th>
+<th>Permissão</th>
+<th>O que libera</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Crew · ponto</td>
+<td><strong>Bater o próprio ponto</strong></td>
+<td>Meu ponto: entrada, intervalo e saída no próprio celular, com GPS.</td>
+</tr>
+<tr>
+<td>Crew · ponto</td>
+<td><strong>Bater o ponto da equipe</strong></td>
+<td>Encarregado: bate o ponto da equipe e vê as horas dela.</td>
+</tr>
+<tr>
+<td>Crew · escritório</td>
+<td><strong>Acompanhar ponto e timesheets</strong></td>
+<td>Agora, timesheets e o mapa do dia.</td>
+</tr>
+<tr>
+<td>Crew · escritório</td>
+<td><strong>Aprovar e ajustar timesheets</strong></td>
+<td>Aprovar, devolver, ajustar e exportar para a folha. Inclui <em>Acompanhar</em>.</td>
+</tr>
+<tr>
+<td>Crew · escritório</td>
+<td><strong>Ver custos e valores em dinheiro</strong></td>
+<td>Custos das obras, orçamentos, salários nas timesheets. Inclui <em>Acompanhar</em>.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Preencher o diário de obra</strong></td>
+<td>Criar e enviar os diários das suas obras.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Acompanhar todas as obras</strong></td>
+<td>Painel, obras e diários enviados.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Aprovar RDO e enviar ao contratante</strong></td>
+<td>Aprovar, pedir ajuste, PDF e link do contratante. Inclui <em>Acompanhar todas as obras</em>.</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td><strong>Montar o cronograma da obra</strong></td>
+<td>Etapas, linha de base, publicar para o contratante e exportar para o Excel. Inclui <em>Acompanhar todas as obras</em>.</td>
+</tr>
+<tr>
+<td>Measure</td>
+<td><strong>Medir plantas (takeoff)</strong></td>
+<td>Projetos, plantas, escala, medição, assemblies, listas para cotação e propostas.</td>
+</tr>
+<tr>
+<td>Measure</td>
+<td><strong>Itens e assemblies</strong></td>
+<td>Catálogo, fórmulas, preços e margens. Inclui <em>Medir plantas</em>.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Cadastro de funcionários</strong></td>
+<td>Cadastros, certificações e valores hora.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Encargos e regras de jornada</strong></td>
+<td>Novas versões, com vigência.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Usuários e perfis de acesso</strong></td>
+<td>Quem entra e o que cada perfil pode fazer; auditoria.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Empresa, conta e plano</strong></td>
+<td>Cadastro da empresa, plano e módulos.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Contatos</strong></td>
+<td>O cadastro de construtoras, clientes, fornecedores e subempreiteiros.</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td><strong>Cadastrar e editar obras</strong></td>
+<td>Obras e modelos de etapas.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ver custos e valores em dinheiro</strong> é separada de propósito: um superintendente pode aprovar horas sem ver o salário de ninguém.</p>
+<h2 id="perfis-prontos">Perfis prontos</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>Em resumo</th>
+<th>Ao entrar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trabalhador</strong></td>
+<td>Bater o próprio ponto.</td>
+<td>Direto no <strong>Meu ponto</strong> — sem tela de módulos, sem menu.</td>
+</tr>
+<tr>
+<td><strong>Encarregado</strong></td>
+<td>O próprio ponto, o ponto da equipe, diários de obra.</td>
+<td>Tela de módulos (Daily e Crew).</td>
+</tr>
+<tr>
+<td><strong>Gestor de obras</strong></td>
+<td>Acompanha e aprova no Daily e no Crew, vê custos, mede, cadastra obras.</td>
+<td>Tela de módulos (Daily, Crew, Measure e Settings só com Obras).</td>
+</tr>
+<tr>
+<td><strong>Administrador</strong></td>
+<td>Tudo no escritório, inclusive o Settings. <strong>Travado.</strong></td>
+<td>Tela de módulos.</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="../img/settings-roles.png" alt="A matriz de permissões" loading="lazy"><figcaption>A matriz de permissões</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">Bom saber</p>
+<ul>
+<li><strong>A tela inicial segue as permissões.</strong> Quem tem um só módulo entra direto nele.</li>
+<li><strong>O Administrador é travado</strong>, para a empresa nunca perder a gestão dos acessos. Sempre precisa haver pelo menos um usuário ativo com <em>Usuários e perfis de acesso</em>, e ninguém tira o próprio acesso.</li>
+<li><strong>As dependências são automáticas:</strong> aprovar inclui acompanhar; ver custos inclui acompanhar.</li>
+<li><strong>Um perfil em uso não pode ser excluído:</strong> troque antes o perfil dos usuários.</li>
+<li><strong>Sem permissão, a tela não abre</strong>, nem digitando o endereço.</li>
+<li><strong>Usuário</strong> é quem entra no sistema; <strong>funcionário</strong> é quem trabalha nas obras. Um trabalhador que bate o ponto no próprio celular precisa dos dois, ligados. Quem tem o ponto batido pelo encarregado não precisa de login.</li>
+</ul>
+</div>
+<h2 id="exemplos">Exemplos</h2>
+<ul>
+<li><strong>Um trabalhador que também preenche o diário:</strong> marque <em>Preencher o diário de obra</em> no perfil Trabalhador, ou crie um perfil novo a partir dele. Ele vai ver o Daily e o Crew.</li>
+<li><strong>Um encarregado que aprova timesheets:</strong> crie um perfil a partir do Encarregado e marque <em>Aprovar e ajustar timesheets</em>.</li>
+</ul>
+<h2 id="no-prototipo">No protótipo</h2>
+<table>
+<thead>
+<tr>
+<th>Usuário de exemplo</th>
+<th>Empresa</th>
+<th>Perfil</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ana Ribeiro</td>
+<td>Construtora Exemplo (construtora)</td>
+<td>Administradora</td>
+</tr>
+<tr>
+<td>Sandra Lopes</td>
+<td>Ridgeline Concrete &amp; Masonry</td>
+<td>Administradora</td>
+</tr>
+<tr>
+<td>Márcia Souza</td>
+<td>Ridgeline Concrete &amp; Masonry</td>
+<td>Gestora de obras (fora da lista de entrada)</td>
+</tr>
+<tr>
+<td>Tom Reilly</td>
+<td>Northfield Framing &amp; Siding</td>
+<td>Administrador</td>
+</tr>
+<tr>
+<td>Rita Gomes</td>
+<td>Northfield Framing &amp; Siding</td>
+<td>Gestora de obras</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#o-catalogo-de-permissoes">O catálogo de permissões</a></li><li><a href="#perfis-prontos">Perfis prontos</a></li><li><a href="#exemplos">Exemplos</a></li><li><a href="#no-prototipo">No protótipo</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 11 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>
