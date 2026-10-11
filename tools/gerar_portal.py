@@ -53,7 +53,14 @@ MODULOS = [
          {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated today and what comes next.'},
      ]},
     {'id': 'measure', 'nome': 'Measure', 'cor': 'var(--cor-measure)', 'ico': 'M',
-     'resumo': 'Plan takeoff in feet and inches: scale, measure, assemblies, quantities, quote lists and proposals.', 'paginas': []},
+     'resumo': 'Plan takeoff in feet and inches: scale, measure, assemblies, quantities, quote lists and proposals.',
+     'paginas': [
+         {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'What Measure does, who uses it and how a takeoff becomes a proposal.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'From the PDF plan to the proposal, step by step, with screenshots.'},
+         {'slug': 'business-rules', 'titulo': 'Business rules', 'grupo': 'Rules and access', 'desc': 'Units, scale, measuring, formulas, pricing, reports and typicals, with IDs.'},
+         {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'Who can measure and who can change the catalog.'},
+         {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated today and what comes next.'},
+     ]},
     {'id': 'settings', 'nome': 'Settings', 'cor': 'var(--cor-settings)', 'ico': 'S',
      'resumo': 'Company setup: employees, labor burden, work rules, jobs, contacts, users and access roles, audit log.', 'paginas': []},
 ]
@@ -254,9 +261,9 @@ def pagina_inicial():
     <div class="publico"><h3>I will present KORbuild to a customer</h3><p>Read the presenter's guide: the story, the order of the screens and what to say.</p>
       <ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="presenting.html">Presenter's guide</a></li><li><a href="../?demo#/entrar">Open the prototype</a></li></ul></div>
     <div class="publico"><h3>I will use KORbuild every day</h3><p>Go to your module and open the user manual: one task at a time, with screenshots.</p>
-      <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li><li><a href="crew/user-manual.html">Crew — user manual</a></li></ul></div>
+      <ul><li><a href="daily/user-manual.html">Daily — user manual</a></li><li><a href="crew/user-manual.html">Crew — user manual</a></li><li><a href="measure/user-manual.html">Measure — user manual</a></li></ul></div>
     <div class="publico"><h3>I need the rules and permissions</h3><p>Each module lists its business rules with IDs and who can do what.</p>
-      <ul><li><a href="daily/business-rules.html">Daily — business rules</a></li><li><a href="daily/roles-and-permissions.html">Daily — roles and permissions</a></li><li><a href="crew/business-rules.html">Crew — business rules</a></li><li><a href="crew/roles-and-permissions.html">Crew — roles and permissions</a></li></ul></div>
+      <ul><li><a href="daily/business-rules.html">Daily — business rules</a></li><li><a href="daily/roles-and-permissions.html">Daily — roles and permissions</a></li><li><a href="crew/business-rules.html">Crew — business rules</a></li><li><a href="crew/roles-and-permissions.html">Crew — roles and permissions</a></li><li><a href="measure/business-rules.html">Measure — business rules</a></li></ul></div>
   </div>
 </section>
 <div style="height:40px"></div>

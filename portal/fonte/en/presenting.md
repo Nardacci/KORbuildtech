@@ -1,6 +1,6 @@
 # Presenter's guide
 
-This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A presentation of Daily and Crew takes about **25 minutes**; with questions, plan for 40.
+This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A presentation of Daily, Crew and Measure takes about **35 minutes**; with questions, plan for 50.
 
 ## The story in one minute
 
@@ -145,11 +145,34 @@ The time clock belongs to each subcontractor: it clocks in its own people and se
 
 Full details: [Crew user manual](@/crew/user-manual.html).
 
-### Act 7 — The other modules (optional)
+### Act 7 — Measure: from the plan to the proposal (7 min)
 
-Detailed scripts for Measure and Settings will be added to this guide. Meanwhile, the highlights:
+Use a computer. Measure belongs to the subcontractor that estimates the work.
 
-- **Measure** — sign in as **Tom**, open a project, then a sheet: set the scale, measure walls and floors on the PDF plan, and see the materials and labor calculated by the assemblies; then the **Material list for quotes** and the **Proposal**.
+1. Sign in as **Tom Reilly** (Northfield), open **Measure**: the **Projects** list with clients, bid due dates and status.
+2. Open **Model home** and the sheet **A-101 · First Floor Plan**. The plan fills the screen.
+3. Click **Set scale**, choose `1/4" = 1'-0"`, then check it on the 40'-0" dimension at the top: click both ends, type `40'`. The toolbar says **checked**.
+4. **Add assembly** › **Exterior wall 2x6 @ 16"** › name *Exterior walls*, height `9'-0"` › **Add to drawing**. Click the four corners of the house and press **Enter**: about 136 lin ft and 1,224 sq ft of wall surface.
+
+    ![Measuring on the first floor plan](img/measure-viewer-plan.png)
+
+5. Go back to the project and open **Materials and labor**: studs, plates, OSB, house wrap, insulation, drywall and the carpenter hours. Click **OSB** to show the math: wall surface ÷ 32 + 10% waste, rounded up to whole sheets.
+
+    ![Materials and labor, with the math of one item](img/measure-materials.png)
+
+6. Open **Material list for quotes**: each supplier gets only its items, in purchase units, without prices. Show **Send by email** and **PDF**.
+7. Open **Proposal**: one line per cost code, priced from the catalog and the markups; type a different amount on a line to show a closed price. **View document** shows the PDF the client receives.
+
+!!! say "What to say"
+    "The estimator opens the PDF plans in the browser and measures with the mouse, in feet and inches. One measurement of a wall becomes every material and the labor hours — and every number shows its math. The suppliers get their lists in one click, and the proposal is priced from your own costs and markups. Cost and profit never leave the company."
+
+Full details: [Measure user manual](@/measure/user-manual.html).
+
+### Act 8 — The other modules (optional)
+
+Detailed scripts for Settings will be added to this guide. Meanwhile, the highlights:
+
+- **Measure, more** — as **Tom**: the elevations (siding with the gable, windows and doors deducted, the **Opening** tool) and the **Elm Row Townhouses** project, where one unit plan is measured once and counts × 6.
 - **Job schedule** — as **Tom**, Daily › Jobs › Maple Gardens Residences › **Open schedule**: Gantt chart, baseline, progress from the daily reports, export to Excel and publish to the GC.
 - **Settings** — as **Sandra**: employees (with the employer company), hourly rate history, labor burden, work rules, jobs, users and access roles, audit log. As **Ana**, the general contractor's Settings is lighter: jobs (with their subcontractors), contacts, users and roles.
 - **A sub on its own** — as **Tom**, Daily › Jobs › **Thompson residence**: a homeowner job with no general contractor. Here Northfield approves its own reports.

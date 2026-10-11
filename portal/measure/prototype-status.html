@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype status · Measure · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html" aria-current=page>Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Measure</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Prototype status</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure - Prototype status.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>What is simulated in the prototype today, and what comes next.</p>
+<h2 id="simulated-today">Simulated today</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>In the prototype</th>
+<th>In the product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where the data and the PDFs live</td>
+<td>In the browser (the PDFs in the browser's storage).</td>
+<td>The company's cloud storage, shared by its estimators.</td>
+</tr>
+<tr>
+<td>Sending email (quote requests, proposals)</td>
+<td>Your email program opens with the message ready; you attach the PDF.</td>
+<td>Sent by KORbuild, with the PDF attached and a record of what was sent.</td>
+</tr>
+<tr>
+<td>PDF of the quote request and the proposal</td>
+<td>Printed from the browser (<strong>Save as PDF</strong>).</td>
+<td>Generated on the server, ready to download.</td>
+</tr>
+<tr>
+<td>Catalog, prices and markups</td>
+<td>Sample items, prices and markups for the demo — <strong>not market references</strong>.</td>
+<td>Each company's own catalog and supplier prices.</td>
+</tr>
+<tr>
+<td>Click precision</td>
+<td>Each click falls on a whole screen pixel; at normal zoom that is about 3/4" per point. The scale check shows the error, and a larger zoom reduces it.</td>
+<td>Snapping to the lines of vector PDFs.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="coming-next">Coming next</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Labor budget for Crew</td>
+<td>Estimated hours per cost code become the job's labor budget.</td>
+</tr>
+<tr>
+<td>Progress for Daily</td>
+<td>Measured quantities as the reference for physical progress.</td>
+</tr>
+<tr>
+<td>Measure on the phone</td>
+<td>Read-only: projects, quantities, materials, quote lists and issued proposals, with PDF and email. Drawing stays on the computer.</td>
+</tr>
+<tr>
+<td>More assemblies and trades</td>
+<td>Roofing, drywall, concrete and others, with formulas from each trade.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#simulated-today">Simulated today</a></li><li><a href="#coming-next">Coming next</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

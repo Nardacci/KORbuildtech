@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business rules · Measure · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html" aria-current=page>Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Measure</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Business rules</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure - Business rules.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Each rule has an ID (<code>MSR-nnn</code>) so it can be quoted in meetings, tests and change requests. The <strong>Status</strong> column says whether the rule works in the prototype today.</p>
+<div class="admonition note">
+<p class="admonition-title">Source</p>
+<p>These rules come from the prototype's code and from the Measure specification in the project documentation. Open points are marked <strong>To be confirmed</strong> at the end.</p>
+</div>
+<h2 id="units-and-measuring">Units and measuring</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-001</td>
+<td><strong>No fractions or text in the math.</strong> Lengths are stored in inches, areas in square inches, volumes in cubic inches. Feet and inches appear only on screen.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-002</td>
+<td><strong>Points are stored in the PDF page's coordinates</strong>, never in screen pixels. Zoom and screen resolution never change a measurement.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-003</td>
+<td><strong>The scale belongs to the sheet.</strong> It comes from the list (architectural and engineering scales) or from calibrating on a known dimension. Each sheet has its own scale.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-004</td>
+<td><strong>Scale check:</strong> after setting the scale, measure another known dimension. A difference above 1% is flagged.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-005</td>
+<td><strong>A measurement is always calculated from the drawing</strong>, never typed in, so every quantity can be traced back to the plan.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-006</td>
+<td><strong>Rounding only on screen:</strong> feet and inches to 1/16", square feet to whole numbers. The stored value does not change.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-007</td>
+<td>Accepted entries: <code>12'-6 1/2"</code>, <code>12' 6.5"</code>, <code>12'6"</code>, <code>12'</code>, <code>6"</code>, <code>150"</code>, <code>12.54'</code>, <code>12-6</code>, <code>12-6-1/2</code>. A number without a unit is read as feet. <code>12'-14"</code> is refused (inches must be under 12 when feet are given).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-008</td>
+<td>Roof pitch is entered as <code>6/12</code>, <code>6:12</code> or <code>6</code>; the factor is √(1 + (6/12)²) = 1.118.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conditions">Conditions</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-010</td>
+<td>A <strong>condition</strong> is what you measure (exterior walls, LVP floor, siding, windows W1). It has a name, a type, a color and properties, and measurements on one or more sheets.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-011</td>
+<td><strong>Three types:</strong> linear (with height → surface; with pitch → pitched length), area (with pitch → roof area; with thickness → volume) and count.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-012</td>
+<td><strong>Openings:</strong> a count (window, door) can have a width and a height. A wall or an area can <strong>deduct the openings</strong> of chosen counts, from any sheet of the project. Counting one more window updates the sheathing, the drywall and the siding.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-013</td>
+<td><strong>Deduct (eraser):</strong> on an area, a drawn polygon is subtracted from the total (stairs, chimney, cut-out).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-014</td>
+<td><strong>Drawn opening:</strong> the Opening tool draws the window or door rectangle, adds 1 to the chosen count and cuts the same area out of the areas behind it. An opening already cut out is not deducted again (no double deduction). Deleting one deletes the other.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-015</td>
+<td><strong>Conditions per sheet:</strong> each sheet shows only the conditions added to it. A condition can be reused on another sheet; its measurements add up to the same total.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-016</td>
+<td>The drawing starts <strong>empty</strong>: conditions are created by adding an assembly from the catalog (or "Just measure, no assembly").</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-017</td>
+<td><strong>Show on the drawing:</strong> hiding a condition is only visual; quantities and materials do not change.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="items-assemblies-and-formulas">Items, assemblies and formulas</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-020</td>
+<td>An <strong>item</strong> is what you buy or pay for, in its <strong>purchase unit</strong> (sheet, box, roll, piece, cu yd, hour), with a category (material, labor, equipment, subcontractor) and a cost code (CSI MasterFormat).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-021</td>
+<td>An <strong>assembly</strong> is a set of lines for one type of condition. One measurement feeds many items.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-022</td>
+<td>A <strong>formula</strong> only calculates the <strong>raw</strong> quantity. <strong>Waste %</strong> and <strong>rounding</strong> (none, or up to 1, 0.5 or 0.25) are separate columns, never numbers hidden in the formula.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-023</td>
+<td><strong>Variables in trade units</strong>, with the names US estimators use: <code>MeasuredLinear</code>, <code>MeasuredArea</code>, <code>MeasuredCount</code>, <code>WallHeight</code>, <code>SurfaceArea</code>, <code>NetSurfaceArea</code>, <code>NetArea</code>, <code>OpeningArea</code>, <code>OpeningPerimeter</code>, <code>VolumeCY</code>, <code>PitchedArea</code>…</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-024</td>
+<td><strong>Safe formulas:</strong> only numbers, + − × ÷ ^, parentheses, the variables of the type and <code>ceil floor round min max sqrt abs</code>. Anything else is refused when typing and when saving; formulas are never executed as code.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-025</td>
+<td>A formula is tested with sample values when saved; division by zero and negative results are refused, and the error names the line.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-026</td>
+<td><strong>A missing property does not break the takeoff:</strong> if an assembly needs <code>SurfaceArea</code> and the condition has no height, the line becomes a <strong>to-do</strong> ("missing on the condition: height").</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-027</td>
+<td>Rounding is applied <strong>per line</strong> (the way each trade buys); the item total adds up the lines.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-028</td>
+<td><strong>Full trace:</strong> each material shows condition · assembly → formula = raw → + waste → rounded, with the values of the variables. The CSV export carries the same trace.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="projects">Projects</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-030</td>
+<td>Name, client, city and state are required; state with 2 letters, ZIP with 5 digits (or 5+4).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-031</td>
+<td><strong>Status:</strong> Estimating → Proposal sent → Won or Lost. The bid due date alerts (overdue, today, within 3 days) only while Estimating.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-032</td>
+<td>Deleting a project deletes its sheets and conditions, after confirmation.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-033</td>
+<td>A <strong>won</strong> project can create the job (Settings › Jobs), with the client and address filled in; project and job stay linked.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="typicals-what-repeats">Typicals (what repeats)</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-040</td>
+<td>A <strong>typical</strong> has a name, a region of the sheet (or the whole sheet) and its <strong>occurrences</strong>: where it repeats and how many times, counting the one drawn (e.g., Building A 3 + Building B 3 = × 6).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-041</td>
+<td>A measurement belongs to the typical when its <strong>center</strong> falls inside the region; it counts × the total of occurrences.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-042</td>
+<td>The multiplication applies <strong>everywhere</strong>: condition totals, openings, formula variables, materials, quote lists and the proposal.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-043</td>
+<td>Typicals do not overlap, and a whole-sheet typical cannot coexist with regions on the same sheet (it would multiply twice).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-044</td>
+<td>Changing the occurrences recalculates immediately; deleting the typical makes the measurements count once again.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quotes-and-proposals">Quotes and proposals</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-050</td>
+<td>The <strong>material list for quotes</strong> has only materials (no labor), in purchase units, with waste and rounding, <strong>split by supplier</strong>: each supplier gets only the cost codes it supplies (Settings › Contacts). Items nobody supplies go to "No supplier".</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-051</td>
+<td>Suppliers never see selling prices, labor or formulas.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-052</td>
+<td>Prices a supplier sends back can be entered on the list; they become the item's price from that date, with the source "Quote · supplier".</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-053</td>
+<td><strong>Prices have effective dates:</strong> a new price applies from a date; old prices stay in the history. The proposal uses the price in effect on the day.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-054</td>
+<td><strong>Markups have effective dates:</strong> overhead % on cost; profit as <strong>markup</strong> (% on cost + overhead) or as <strong>margin</strong> (% of the selling price); sales tax on materials (a setting; 0 in the New Hampshire example).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-055</td>
+<td><strong>Calculated line price</strong> = (materials × (1 + tax) + labor + other) × (1 + overhead), then + profit (markup: × (1 + profit); margin: ÷ (1 − profit)).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-056</td>
+<td>The proposal has <strong>one line per cost code</strong>, materials and labor together. Any line price can be typed instead of the calculated one; clearing it goes back to the calculated price. Lines can be left out, and other items (mobilization, dumpster…) added.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-057</td>
+<td><strong>Issuing</strong> requires a client, at least one line and a price on every included line. The issued proposal gets a <strong>number</strong> (<code>P-YYYY-NNN</code>) and is <strong>frozen</strong>: later changes do not affect what was sent. Each issue is a new version.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-058</td>
+<td>Issuing moves the project from Estimating to <strong>Proposal sent</strong>.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>MSR-059</td>
+<td>The proposal document shows only the price of each line: <strong>cost, overhead and profit never go to the client</strong>; they stay in the issued version for internal reference.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">To be confirmed</p>
+<ul>
+<li>Whether the client sees material quantities on the proposal by default (today: an option per proposal).</li>
+<li>Changing a project's status and entering supplier prices from the phone.</li>
+<li>Snapping clicks to the lines of vector PDFs, for more precision.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#units-and-measuring">Units and measuring</a></li><li><a href="#conditions">Conditions</a></li><li><a href="#items-assemblies-and-formulas">Items, assemblies and formulas</a></li><li><a href="#projects">Projects</a></li><li><a href="#typicals-what-repeats">Typicals (what repeats)</a></li><li><a href="#quotes-and-proposals">Quotes and proposals</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

@@ -38,7 +38,7 @@
       <div class="doc-acoes"><a class="botao" href="files/KORbuild - Presenters guide.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
     </header>
     <article class="texto">
-<p>This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A presentation of Daily and Crew takes about <strong>25 minutes</strong>; with questions, plan for 40.</p>
+<p>This guide is for the person who will present KORbuild to a customer. You do not need to know the system beforehand: follow the order below, sign in with the users indicated, and use the "what to say" boxes as your script. A presentation of Daily, Crew and Measure takes about <strong>35 minutes</strong>; with questions, plan for 50.</p>
 <h2 id="the-story-in-one-minute">The story in one minute</h2>
 <p>Construction companies in the US run their jobs on paper, text messages and spreadsheets. The superintendent writes the daily report at night (or not at all), the office chases people by phone, and when a client disputes a delay there is no reliable record of what happened on site.</p>
 <p>KORbuild is <strong>one platform, one set of jobs and people</strong>, with modules the company turns on as it needs them:</p>
@@ -252,10 +252,34 @@
 <p>"The foreman clocks in the whole crew in seconds, with GPS and the job's geofence — no paper card, no buddy punching. The sub's office approves the week and exports it to payroll. And the sub's owner sees, a third of the way into the job, that labor is going to run over — while there is still time to act. The general contractor sees the people and the hours on its job, never the wages."</p>
 </div>
 <p>Full details: <a href="crew/user-manual.html">Crew user manual</a>.</p>
-<h3 id="act-7-the-other-modules-optional">Act 7 — The other modules (optional)</h3>
-<p>Detailed scripts for Measure and Settings will be added to this guide. Meanwhile, the highlights:</p>
+<h3 id="act-7-measure-from-the-plan-to-the-proposal-7-min">Act 7 — Measure: from the plan to the proposal (7 min)</h3>
+<p>Use a computer. Measure belongs to the subcontractor that estimates the work.</p>
+<ol>
+<li>Sign in as <strong>Tom Reilly</strong> (Northfield), open <strong>Measure</strong>: the <strong>Projects</strong> list with clients, bid due dates and status.</li>
+<li>Open <strong>Model home</strong> and the sheet <strong>A-101 · First Floor Plan</strong>. The plan fills the screen.</li>
+<li>Click <strong>Set scale</strong>, choose <code>1/4" = 1'-0"</code>, then check it on the 40'-0" dimension at the top: click both ends, type <code>40'</code>. The toolbar says <strong>checked</strong>.</li>
+<li>
+<p><strong>Add assembly</strong> › <strong>Exterior wall 2x6 @ 16"</strong> › name <em>Exterior walls</em>, height <code>9'-0"</code> › <strong>Add to drawing</strong>. Click the four corners of the house and press <strong>Enter</strong>: about 136 lin ft and 1,224 sq ft of wall surface.</p>
+<figure><img src="img/measure-viewer-plan.png" alt="Measuring on the first floor plan" loading="lazy"><figcaption>Measuring on the first floor plan</figcaption></figure>
+</li>
+<li>
+<p>Go back to the project and open <strong>Materials and labor</strong>: studs, plates, OSB, house wrap, insulation, drywall and the carpenter hours. Click <strong>OSB</strong> to show the math: wall surface ÷ 32 + 10% waste, rounded up to whole sheets.</p>
+<figure><img src="img/measure-materials.png" alt="Materials and labor, with the math of one item" loading="lazy"><figcaption>Materials and labor, with the math of one item</figcaption></figure>
+</li>
+<li>
+<p>Open <strong>Material list for quotes</strong>: each supplier gets only its items, in purchase units, without prices. Show <strong>Send by email</strong> and <strong>PDF</strong>.</p>
+</li>
+<li>Open <strong>Proposal</strong>: one line per cost code, priced from the catalog and the markups; type a different amount on a line to show a closed price. <strong>View document</strong> shows the PDF the client receives.</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"The estimator opens the PDF plans in the browser and measures with the mouse, in feet and inches. One measurement of a wall becomes every material and the labor hours — and every number shows its math. The suppliers get their lists in one click, and the proposal is priced from your own costs and markups. Cost and profit never leave the company."</p>
+</div>
+<p>Full details: <a href="measure/user-manual.html">Measure user manual</a>.</p>
+<h3 id="act-8-the-other-modules-optional">Act 8 — The other modules (optional)</h3>
+<p>Detailed scripts for Settings will be added to this guide. Meanwhile, the highlights:</p>
 <ul>
-<li><strong>Measure</strong> — sign in as <strong>Tom</strong>, open a project, then a sheet: set the scale, measure walls and floors on the PDF plan, and see the materials and labor calculated by the assemblies; then the <strong>Material list for quotes</strong> and the <strong>Proposal</strong>.</li>
+<li><strong>Measure, more</strong> — as <strong>Tom</strong>: the elevations (siding with the gable, windows and doors deducted, the <strong>Opening</strong> tool) and the <strong>Elm Row Townhouses</strong> project, where one unit plan is measured once and counts × 6.</li>
 <li><strong>Job schedule</strong> — as <strong>Tom</strong>, Daily › Jobs › Maple Gardens Residences › <strong>Open schedule</strong>: Gantt chart, baseline, progress from the daily reports, export to Excel and publish to the GC.</li>
 <li><strong>Settings</strong> — as <strong>Sandra</strong>: employees (with the employer company), hourly rate history, labor burden, work rules, jobs, users and access roles, audit log. As <strong>Ana</strong>, the general contractor's Settings is lighter: jobs (with their subcontractors), contacts, users and roles.</li>
 <li><strong>A sub on its own</strong> — as <strong>Tom</strong>, Daily › Jobs › <strong>Thompson residence</strong>: a homeowner job with no general contractor. Here Northfield approves its own reports.</li>
@@ -321,7 +345,7 @@
 </div>
     </article>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-general-contractor-review-approve-and-seal-5-min">Act 4 — The general contractor: review, approve and seal (5 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</a></li><li class="sub"><a href="#act-7-the-other-modules-optional">Act 7 — The other modules (optional)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-general-contractor-review-approve-and-seal-5-min">Act 4 — The general contractor: review, approve and seal (5 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</a></li><li class="sub"><a href="#act-7-measure-from-the-plan-to-the-proposal-7-min">Act 7 — Measure: from the plan to the proposal (7 min)</a></li><li class="sub"><a href="#act-8-the-other-modules-optional">Act 8 — The other modules (optional)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
 </div>
 <footer class="rodape">
   <div><b>KORbuild</b> product guide · updated October 11, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>

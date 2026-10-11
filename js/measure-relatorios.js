@@ -213,7 +213,7 @@ export function telaProposta(id, moldura) {
             '<td class="pequeno">' + (l.materiais.map((g) => qtd(g.total) + ' ' + esc(g.item.unidade) + ' ' + esc(g.item.nome)).join('<br>') || ('<span class="mudo">' + tr('sem material') + '</span>')) +
               (l.horas ? ('<span class="bloco mudo">' + tr('Mão de obra estimada:') + ' ') + qtd(l.horas) + ' h</span>' : '') + base(l) + '</td>' +
             '<td class="num">' + campoValor('valor', l.digitado, l.calculado).replace('name="valor"', 'name="valor" data-etapa="' + esc(l.etapa) + '"') +
-              '<span class="prop-origem" data-etapa="' + esc(l.etapa) + '">' + (l.digitado != null ? 'digitado' + (l.calculado ? (' ' + tr('· calculado') + ' ') + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : tr('sem preço')) + '</span></td></tr>').join('') + '</tbody></table></div>'
+              '<span class="prop-origem" data-etapa="' + esc(l.etapa) + '">' + (l.digitado != null ? tr('digitado') + (l.calculado ? (' ' + tr('· calculado') + ' ') + dinheiro(l.calculado) : '') : l.calculado ? tr('calculado') : tr('sem preço')) + '</span></td></tr>').join('') + '</tbody></table></div>'
           : ('<p class="vazio">' + tr('Meça as condições com assemblies para gerar as linhas.') + '</p>')) + '</section>' +
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Outros itens') + '</h2><button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-extra">') + icone('mais', 14) + (tr('Linha') + '</button></div>') +
         ('<p class="mudo pequeno">' + tr('O que não vem da planta: mobilização, caçamba, andaime, licença…') + '</p>') +
@@ -333,7 +333,7 @@ document.addEventListener('change', (ev) => {
   if (resumo) resumo.innerHTML = htmlResumo(t);
   for (const l of linhasDaProposta(p)) {
     const el = document.querySelector('.prop-origem[data-etapa="' + CSS.escape(l.etapa) + '"]');
-    if (el) el.textContent = l.digitado != null ? 'digitado' + (l.calculado ? (' ' + tr('· calculado') + ' ') + dinheiro(l.calculado) : '') : l.calculado ? 'calculado' : tr('sem preço');
+    if (el) el.textContent = l.digitado != null ? tr('digitado') + (l.calculado ? (' ' + tr('· calculado') + ' ') + dinheiro(l.calculado) : '') : l.calculado ? tr('calculado') : tr('sem preço');
   }
   if (ev.target.name === 'incluir') ev.target.closest('tr').classList.toggle('prop-fora', !ev.target.checked);
   // o valor digitado volta formatado
