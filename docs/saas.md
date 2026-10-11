@@ -34,11 +34,42 @@ Construtora (empresa assinante)
 | HS-03 | **O funcionário só registra as horas** (Meu ponto, ou o encarregado bate pela equipe). Não vê valores. | Funcionando |
 | HS-04 | **O gestor da empresa vê tudo dos funcionários dela**: horas, valor hora, encargos e impostos, custo por obra e timesheets. Vale para a construtora e para a prestadora, cada uma com os seus. | Funcionando |
 | HS-05 | **A prestadora tem a própria obra, ligada à da construtora** (`vinculo`). Ela registra o ponto dos funcionários dela nessa obra. | Funcionando |
-| HS-06 | **A construtora vê as prestadoras da obra só em pessoas e horas por função**: quem está na obra agora, quantos vieram, horas do dia e da semana. Sem nomes e sem valores: salário, encargos e custo são da prestadora. (Obra › Prestadoras nesta obra.) | Funcionando · **a confirmar** |
-| HS-07 | **O diário da construtora traz a equipe por empresa**: a própria, pelo ponto dela; cada prestadora ligada, pelo ponto da prestadora; e a prestadora que não usa o KORbuild, lançada à mão (empresa, função, quantas pessoas). O relatório, o PDF e o link do cliente separam a mão de obra por empresa. | Funcionando |
+| HS-06 | **(Primeira versão, substituída pelo HS-10.)** A construtora vê as prestadoras da obra em pessoas e horas por função: quem está na obra agora, quantos vieram, horas do dia e da semana. Sem nomes e sem valores: salário, encargos e custo são da prestadora. (Obra › Prestadoras nesta obra.) | Funcionando · **a confirmar** |
+| HS-07 | **(Revisto pelo HS-09 e HS-11: quem faz o diário é a prestadora.)** O diário da construtora traz a equipe por empresa: a própria, pelo ponto dela; cada prestadora ligada, pelo ponto da prestadora; e a prestadora que não usa o KORbuild, lançada à mão (empresa, função, quantas pessoas). O relatório, o PDF e o link do cliente separam a mão de obra por empresa. | Funcionando |
 | HS-08 | **Prestadora sem KORbuild** é um contato da construtora (marcador prestadora). A equipe dela entra no diário à mão. | Funcionando |
 
-**A confirmar (HS-06):** se a construtora deve ver os **nomes** das pessoas da prestadora na obra (controle de acesso ao canteiro, segurança) e se a prestadora escolhe o que compartilha. Hoje: só pessoas e horas por função.
+### Quem cadastra o quê (confirmado em outubro de 2026)
+
+**A construtora** é quem gerencia a obra. **Não executa:** não usa o Daily nem o Crew com equipe própria, só acompanha as prestadoras.
+
+| # | A construtora cadastra | Observação |
+| --- | --- | --- |
+| 1 | **Prestadoras** | Vínculo com a empresa da prestadora (convite). Prestadora sem KORbuild continua como contato |
+| 2 | **Os próprios funcionários** | São dela, nunca da prestadora. São o pessoal de gestão (engenheiros, gerentes, administrativo), que entra como usuário. Não batem ponto no KORbuild |
+| 3 | **Obras (projetos)** | E quais prestadoras trabalham em cada uma |
+| 4 | **Perfis de acesso** dos funcionários dela | Com a visão gerencial de todas as prestadoras (HS-10) |
+| 5 | **Settings** | Empresa, obras, usuários, perfis, contatos (dono da obra, fornecedores) |
+| + | Concorrência e plano | A concorrência vem com o banco de dados (`docs/concorrencias.md`) |
+
+**A prestadora** executa o serviço.
+
+| # | A prestadora cadastra | Observação |
+| --- | --- | --- |
+| 1 | **O cronograma do serviço** em cada obra | Publicado para a construtora |
+| 2 | **Os próprios funcionários** e as equipes | Valor hora, encargos, certificações |
+| 3 | **Daily** | O diário do serviço dela na obra, **aprovado pela construtora** (HS-11) |
+| 4 | **Crew** | Ponto, timesheets, custos |
+| 5 | **Measure** | Medição, preços, propostas |
+| 6 | **Settings** | Empresa, usuários, encargos, regras de jornada, contatos |
+| 7 | **Perfis de acesso** | |
+| + | Obras próprias | Quando o dono contrata direto ou a construtora não usa o KORbuild |
+
+| ID | Regra | Situação |
+| --- | --- | --- |
+| HS-09 | **A construtora não usa o Daily nem o Crew com equipe própria.** Os módulos dela são de acompanhamento: obras, prestadoras, diários recebidos, cronogramas e o Settings. | A construir (hoje a construtora de exemplo ainda faz diário e ponto) |
+| HS-10 | **Visão gerencial da construtora: tudo das prestadoras, menos valores.** Nomes, presença, horas, diários, cronogramas e avanço de todas as prestadoras das obras dela. Salário, encargos e custo ficam só com a prestadora. Substitui a primeira versão do HS-06 (só horas por função, sem nomes). | A construir |
+| HS-11 | **O diário da prestadora é aprovado pela construtora.** A prestadora preenche e envia; o diário cai na fila de aprovação da construtora, que aprova e lacra ou pede ajustes. O lacre e o link do cliente continuam iguais. | A construir |
+| HS-12 | **O cronograma é só das prestadoras.** A construtora não monta um cronograma geral: vê os cronogramas publicados por cada prestadora na obra. | Funcionando (publicação para a construtora) |
 
 **No protótipo**, a construtora calcula essa visão lendo os dados da prestadora em nome dela (`emNomeDaEmpresa` em `js/armazem.js`) e recebe só o resumo. **Na versão real**, quem faz isso é o servidor: a construtora nunca recebe as batidas nem os valores da prestadora; recebe uma visão pronta (pessoas e horas por função, por obra ligada), como já acontece com o cronograma publicado.
 
