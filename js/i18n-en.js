@@ -2394,7 +2394,7 @@ export const EN = {
   'Ridgeline Concrete & Masonry': 'Ridgeline Concrete & Masonry',
   'Ridgeline Concrete & Masonry LLC': 'Ridgeline Concrete & Masonry LLC',
   'Estrutura de concreto, alvenaria e pisos industriais': 'Concrete structures, masonry and industrial floors',
-  'Laura Pires': 'Laura Pierce',
+  'Laura Pires': 'Laura Pires',
   'Gerente de projetos': 'Project manager',
   'Sócia e gerente de obras': 'Partner and operations manager',
   'Pistola de pregos': 'Framing nailer',

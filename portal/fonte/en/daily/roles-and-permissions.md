@@ -40,4 +40,4 @@ In KORbuild, what each person can do comes from their **access role**. A role is
 | José Pereira | Foreman | Northfield Framing & Siding (sub) |
 | Luis Ortega | Worker | Northfield Framing & Siding (sub) |
 
-Laura Pierce (project manager at Example Builders), Márcia Souza (project manager at Ridgeline) and Roberto Lima (a second foreman at Ridgeline) exist in the sample data but are not on the sign-in list.
+Laura Pires (project manager at Example Builders), Márcia Souza (project manager at Ridgeline) and Roberto Lima (a second foreman at Ridgeline) exist in the sample data but are not on the sign-in list.
