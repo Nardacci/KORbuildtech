@@ -61,3 +61,4 @@ node tests/demo.test.mjs http://localhost:8123/
 ```
 
 Ao mudar arquivos do app, suba a versão do cache em `sw.js` (`korbuild-rdo-vN`).
+- **Banco de dados (Supabase `gbdmtgephszxhaprpiss`)**: o desenho está em `docs/banco.md` (uma empresa por conta, RLS em tudo, entre empresas só por funções do banco). Migrações em `supabase/migrations/`, uma fatia por vez. Nunca apague nada no banco sem mostrar o SQL e ter o ok do usuário; o acesso é pelo token `SUPABASE_ACCESS_TOKEN` (API de gerenciamento), nunca no código nem no chat. `tools/supabase-estrutura.mjs` refaz o backup da estrutura.
