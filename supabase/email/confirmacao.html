@@ -1,8 +1,124 @@
-<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#101828">
-  <p style="font-size:20px;margin:0 0 16px"><b>KOR</b>build</p>
-  <h2 style="font-size:18px;margin:0 0 12px">Confirm your email</h2>
-  <p style="margin:0 0 20px;line-height:1.5">Welcome to KORbuild. Confirm your email address to finish creating your account.</p>
-  <p style="margin:0 0 24px"><a href="{{ .ConfirmationURL }}" style="background:#C2410C;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Confirm my email</a></p>
-  <p style="margin:0 0 8px;font-size:13px;color:#5D6B82;line-height:1.5">If you didn't sign up for KORbuild, you can ignore this email. The link expires in 1 hour.</p>
-  <p style="margin:0;font-size:12px;color:#98A2B3">KORbuild · Daily reports, crew time and takeoff for construction</p>
+{{/*
+  KORbuild — e-mail de confirmação de cadastro (Supabase Auth → Confirm signup).
+  Um modelo só, nos dois idiomas: o app grava o idioma da tela no cadastro (user_metadata.idioma, js/conta.js);
+  "pt" sai em português, qualquer outro valor (ou nenhum) sai em inglês.
+  Cores da identidade do app (css/app.css): grafite #141B26, marca #F26A1B, primário #C2410C.
+*/}}{{ $pt := false }}{{ with .Data.idioma }}{{ if eq . "pt" }}{{ $pt = true }}{{ end }}{{ end }}<!DOCTYPE html>
+<html lang="{{ if $pt }}pt-BR{{ else }}en{{ end }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ if $pt }}Confirme sua conta no KORbuild{{ else }}Confirm your KORbuild account{{ end }}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F5F6F8; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+  {{ if $pt }}Falta só um passo para colocar a sua empresa no KORbuild.{{ else }}One more step to bring your company into KORbuild.{{ end }}
 </div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F6F8; padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#FFFFFF; border-radius:12px; overflow:hidden; border:1px solid #E4E7EC;">
+
+        <!-- Cabeçalho: a marca do app (símbolo K laranja + KORbuild) no grafite -->
+        <tr>
+          <td style="padding:26px 40px; text-align:center; background-color:#141B26;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="width:34px; height:34px; background-color:#F26A1B; border-radius:4px 10px 4px 4px; text-align:center; vertical-align:middle; font-size:20px; font-weight:800; color:#FFFFFF; line-height:34px;">K</td>
+                <td style="padding-left:10px; vertical-align:middle; font-size:22px; line-height:1; color:#FFFFFF; letter-spacing:-0.01em;">
+                  <strong style="font-weight:800;">KOR</strong><span style="font-weight:400;">build</span>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:10px 0 0 0; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#98A2B3;">
+              {{ if $pt }}Plataforma de operação das equipes{{ else }}Team operations platform{{ end }}
+            </p>
+          </td>
+        </tr>
+
+        <!-- Corpo -->
+        <tr>
+          <td style="padding:36px 40px 8px 40px;">
+            <h1 style="margin:0 0 16px 0; font-size:22px; line-height:30px; color:#101828; font-weight:700;">
+              {{ if $pt }}Bem-vindo(a): falta só um passo{{ else }}Welcome, just one more step{{ end }}
+            </h1>
+            <p style="margin:0 0 16px 0; font-size:15px; line-height:24px; color:#344054;">
+              {{ if $pt }}Que bom ter você por aqui. O KORbuild coloca a operação das suas obras num lugar só: o <strong>Daily</strong> com os diários de obra, o <strong>Crew</strong> com o ponto das equipes, o <strong>Measure</strong> com as medições nas plantas, o cronograma e as concorrências, do escritório ao canteiro, no celular e no computador.{{ else }}Glad to have you here. KORbuild brings your jobsite operations into one place: <strong>Daily</strong> for daily reports, <strong>Crew</strong> for crew time, <strong>Measure</strong> for quantities from your plans, plus the schedule and bids, from the office to the field, on phone and desktop.{{ end }}
+            </p>
+            <p style="margin:0 0 28px 0; font-size:15px; line-height:24px; color:#344054;">
+              {{ if $pt }}Antes de começar, confirme o seu e-mail. É rápido e garante que só você tenha acesso à sua conta.{{ else }}Before you start, confirm your email. It only takes a second and makes sure only you can access your account.{{ end }}
+            </p>
+
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 32px 0;">
+              <tr>
+                <td style="border-radius:8px; background-color:#C2410C;">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 32px; font-size:15px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:8px;">
+                    {{ if $pt }}Confirmar meu e-mail →{{ else }}Confirm my email →{{ end }}
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Próximos passos -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9FAFB; border:1px solid #E4E7EC; border-radius:10px; margin-bottom:8px;">
+              <tr>
+                <td style="padding:22px 24px;">
+                  <p style="margin:0 0 14px 0; font-size:13px; font-weight:700; color:#9A3412; text-transform:uppercase; letter-spacing:0.04em;">
+                    {{ if $pt }}O que vem depois{{ else }}What comes next{{ end }}
+                  </p>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding-bottom:12px; vertical-align:top; width:24px; font-size:14px; color:#C2410C; font-weight:700;">1.</td>
+                      <td style="padding-bottom:12px; font-size:14px; line-height:21px; color:#344054;">
+                        {{ if $pt }}Confirme o seu e-mail e entre no KORbuild.{{ else }}Confirm your email and sign in to KORbuild.{{ end }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding-bottom:12px; vertical-align:top; width:24px; font-size:14px; color:#C2410C; font-weight:700;">2.</td>
+                      <td style="padding-bottom:12px; font-size:14px; line-height:21px; color:#344054;">
+                        {{ if $pt }}Cadastre a sua empresa: você entra como Administrador.{{ else }}Set up your company. You'll be its Administrator.{{ end }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="vertical-align:top; width:24px; font-size:14px; color:#C2410C; font-weight:700;">3.</td>
+                      <td style="font-size:14px; line-height:21px; color:#344054;">
+                        {{ if $pt }}Convide a sua equipe e escolha o que cada pessoa pode ver e fazer.{{ else }}Invite your team and choose what each person can see and do.{{ end }}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Aviso de segurança -->
+        <tr>
+          <td style="padding:8px 40px 32px 40px;">
+            <p style="margin:0; font-size:13px; line-height:20px; color:#5D6B82;">
+              {{ if $pt }}O link vale por 1 hora. Se você não criou uma conta no KORbuild, pode ignorar este e-mail com segurança: nada será feito.{{ else }}The link is valid for 1 hour. If you didn't create a KORbuild account, you can safely ignore this email. Nothing will happen.{{ end }}
+            </p>
+          </td>
+        </tr>
+
+        <!-- Rodapé -->
+        <tr>
+          <td style="padding:24px 40px; background-color:#F9FAFB; border-top:1px solid #E4E7EC; text-align:center;">
+            <p style="margin:0 0 4px 0; font-size:12px; color:#98A2B3;">
+              {{ if $pt }}Você recebeu este e-mail porque criou uma conta no <strong>KORbuild</strong>.{{ else }}You received this email because you created a <strong>KORbuild</strong> account.{{ end }}
+            </p>
+            <p style="margin:0; font-size:12px; color:#98A2B3;">
+              KORbuild · Build better teams. Run better operations.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
  * O app navega por "#/…", então o login usa o fluxo PKCE: o Supabase volta com "?code=" e não mexe no "#". */
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
-import { tr } from './i18n.js';
+import { tr, idioma } from './i18n.js';
 
 let sb = null;
 let carregando = null;
@@ -103,11 +103,12 @@ export async function entrar(email, senha) {
   if (r.ok) { conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); }
   return r;
 }
+/* O idioma da tela vai junto: o e-mail de confirmação sai em português ou em inglês (supabase/email/confirmacao.html). */
 export async function cadastrar(nome, email, senha) {
   await iniciar();
   if (String(nome).trim().length < 2) return { erro: tr('Diga o seu nome.') };
   if (String(senha).length < 8) return { erro: tr('A senha precisa ter pelo menos 8 caracteres.') };
-  return resultado(await sb.auth.signUp({ email: String(email).trim(), password: senha, options: { data: { nome: String(nome).trim() }, emailRedirectTo: enderecoBase() } }));
+  return resultado(await sb.auth.signUp({ email: String(email).trim(), password: senha, options: { data: { nome: String(nome).trim(), idioma: idioma() }, emailRedirectTo: enderecoBase() } }));
 }
 export async function pedirNovaSenha(email) {
   await iniciar();
