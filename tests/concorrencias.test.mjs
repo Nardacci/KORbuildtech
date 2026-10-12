@@ -233,6 +233,85 @@ r = await rodar(async () => {
 verificar(r.ok && r.requer.includes('measure.medir'), 'as duas permissões existem; responder inclui medir plantas');
 verificar(r.adm && r.gestor && !r.enc, 'administrador e gestor de obras têm as duas; o encarregado, nenhuma');
 
+console.log('Telas da contratante (fatia 2)');
+const ir = async (usuario, hash) => {
+  await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), usuario);
+  await page.goto('about:blank');
+  await page.goto(BASE + hash);
+  await page.waitForTimeout(400);
+};
+// dados limpos: refaz a demonstração
+await page.evaluate(() => { localStorage.removeItem('kbt.rdo.v1'); localStorage.removeItem('kbt.sessao'); });
+await page.goto('about:blank');
+await page.goto(BASE);
+await page.waitForSelector('#form-login', { timeout: 30000 });
+await ir('u-ana', '#/daily/concorrencias');
+verificar(await page.locator('nav a[href="#/daily/concorrencias"]').count() > 0, 'Concorrências no menu do Daily da construtora');
+verificar(await page.locator('.tabela-concorrencias tbody tr').count() === 1 && (await page.locator('.tabela-concorrencias').innerText()).includes('Framing e drywall'), 'a lista abre nas abertas: Framing e drywall');
+await page.locator('.abas-segmento a', { hasText: 'Fechadas' }).click();
+await page.waitForTimeout(300);
+verificar((await page.locator('.tabela-concorrencias').innerText()).includes('Northfield Framing & Siding'), 'em Fechadas, o siding do Jardim com a vencedora');
+await ir('u-ana', '#/daily/concorrencias/co-atlantico-framing');
+let txt = await page.locator('main').innerText();
+verificar(txt.includes('Pine Ridge Builders') && txt.includes('Agenda cheia até dezembro') && (await page.locator('.tabela-convidados tbody tr').count()) === 3, 'Convidados: as três, com a resposta e o motivo da Pine Ridge');
+await page.locator('.abas-segmento a', { hasText: 'Comparar' }).click();
+await page.waitForTimeout(300);
+verificar(await page.locator('.co-nao-cotada').count() === 1 && await page.locator('.co-menor').count() === 2, 'Comparar: uma etapa não cotada e o menor valor de cada etapa destacado');
+verificar((await page.locator('.co-exclusoes .texto-alerta').innerText()).includes('Andaimes'), 'Comparar: a exclusão que está no escopo vem com alerta');
+await page.locator('.abas-segmento a', { hasText: 'Detalhes' }).click();
+await page.waitForTimeout(300);
+txt = await page.locator('main').innerText();
+verificar(txt.includes('Andaimes e equipamentos de acesso') && txt.includes('Convites enviados'), 'Detalhes: o escopo e o histórico');
+
+await ir('u-ana', '#/daily/obras/atlantico');
+verificar((await page.locator('main').innerText()).includes('Framing e drywall') && await page.locator('a[href="#/daily/concorrencias/nova/atlantico"]').count() === 1, 'a página da obra mostra as concorrências dela e "Nova concorrência"');
+await page.locator('a[href="#/daily/concorrencias/nova/atlantico"]').click();
+await page.waitForTimeout(400);
+verificar(await page.locator('#co-obraId').inputValue() === 'atlantico', 'a nova concorrência já vem com a obra');
+await page.fill('#co-servico', 'Pintura das áreas comuns');
+await page.locator('[data-acao="co-salvar"][data-enviar]').click();
+await page.waitForTimeout(400);
+verificar(page.url().includes('#/daily/concorrencias/co-') && (await page.locator('.aviso').innerText()).includes('Rascunho'), 'sem o resto, "Enviar convites" salva o rascunho e diz o que falta');
+await page.locator('a', { hasText: 'Editar' }).first().click();
+await page.waitForTimeout(400);
+await page.fill('#co-outrasEtapas', '09 91 00 · Painting');
+await page.fill('#co-incluso', 'Pintura de paredes e tetos\nFundo preparador');
+await page.fill('#co-prazoData', '2026-10-15');
+await page.fill('#co-orcamento', '42000');
+await page.locator('[name="convidados"][value="ct-northfield"]').check();
+await page.locator('[name="convidados"][value="ct-pineridge"]').check();
+await page.locator('[data-acao="co-salvar"][data-enviar]').click();
+await page.waitForTimeout(400);
+verificar((await page.locator('main h1, .cabeca h1, h1').first().innerText()).includes('Pintura') && (await page.locator('main').innerText()).includes('Aberta'), 'completo, é enviado: fica aberta');
+verificar(await page.locator('.tabela-convidados tbody tr').count() === 2, 'com as duas convidadas');
+const novaUrl = page.url();
+await page.locator('[data-acao="co-convidar"]').click();
+await page.locator('dialog [name="cv-ct-bayside"]').check();
+await page.locator('dialog button', { hasText: 'Convidar' }).click();
+await page.waitForTimeout(400);
+verificar(await page.locator('.tabela-convidados tbody tr').count() === 3, 'Convidar mais: a Bayside entra');
+await page.locator('[data-acao="co-prorrogar"]').click();
+await page.fill('dialog #pr-data', '2026-10-19');
+await page.fill('dialog #pr-motivo', 'visita remarcada');
+await page.locator('dialog button', { hasText: 'Prorrogar' }).click();
+await page.waitForTimeout(400);
+verificar((await page.locator('body').innerText()).includes('19/10/2026 às 17:00'), 'Prorrogar: o novo prazo aparece no topo');
+// a Northfield manda proposta (pelo motor; a tela dela é a fatia 3) e a construtora fecha pela tela
+await rodar((m, a, h) => h.como(h.NF, () => m.enviarProposta(m.recebidas().find((x) => x.servico.startsWith('Pintura')).id, { porEtapa: { '09 91 00 · Painting': 39800 }, prazoExecucaoDias: 30 }, 'Tom Reilly', null)));
+await page.goto(novaUrl + '/comparar');
+await page.waitForTimeout(400);
+await page.locator('[data-acao="co-fechar"]').first().click();
+verificar((await page.locator('dialog').innerText()).includes('39.800,00'), 'Fechar: a confirmação mostra o valor da proposta');
+await page.locator('dialog button', { hasText: 'Fechar negócio' }).click();
+await page.waitForTimeout(400);
+txt = await page.locator('main').innerText();
+verificar(page.url() === novaUrl && txt.includes('Fechada com Northfield Framing & Siding') && await page.locator('[data-acao="co-prorrogar"]').count() === 0, 'fechada: o aviso com a vencedora, e não dá mais para prorrogar');
+
+await ir('u-laura', '#/daily/concorrencias');
+verificar(page.url().endsWith('#/daily/concorrencias') && await page.locator('.tabela-concorrencias').count() === 1, 'a gestora de obras (Laura) também abre as concorrências');
+await ir('u-carlos', '#/daily/concorrencias');
+verificar(!page.url().includes('concorrencias') && await page.locator('nav a[href="#/daily/concorrencias"]').count() === 0, 'o encarregado não vê nem abre as concorrências');
+
 verificar(erros.length === 0, 'sem erros na página' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
 await browser.close();
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');

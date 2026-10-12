@@ -1370,3 +1370,19 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .titulo-com-farol .mudo { text-transform: none; letter-spacing: 0; font-weight: 400; }
 .tabela-pessoas-obra td, .tabela-pessoas-obra th { white-space: nowrap; }
 .aviso-empresa > span { font-size: 14px; line-height: 1.45; }
+
+/* ---------- Concorrências (docs/concorrencias.md) ---------- */
+.co-etapas { display: flex; flex-direction: column; gap: 6px; border: 0; padding: 0; margin: 12px 0; }
+.co-etapas legend { margin-bottom: 6px; }
+.co-convidados { display: flex; flex-direction: column; gap: 8px; }
+.co-convidados .check { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tabela-comparar td, .tabela-comparar th { vertical-align: top; }
+.tabela-comparar .co-menor { background: var(--verde-claro); color: var(--verde); font-weight: 700; }
+.tabela-comparar .co-nao-cotada { color: var(--mudo); font-style: italic; text-align: right; }
+.tabela-comparar .co-total td { border-top: 2px solid var(--borda-forte); }
+.tabela-comparar th.co-vencedora { color: var(--verde); }
+.tabela-comparar .co-exclusoes { font-size: 13px; min-width: 140px; }
+.lista-dados { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0; }
+.lista-dados dt { color: var(--mudo); font-size: 13px; font-weight: 600; }
+.lista-dados dd { margin: 0; }
+@media (max-width: 560px) { .lista-dados { grid-template-columns: 1fr; } .lista-dados dd { margin-bottom: 6px; } }

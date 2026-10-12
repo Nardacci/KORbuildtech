@@ -201,7 +201,7 @@ await page.waitForSelector('.faroes');
 verificar(page.url().endsWith('#/daily/painel'), 'administradora entra no Daily pelo painel');
 // um farol por prestadora em cada obra: Ridgeline nas três, Northfield no Jardim (último diário ontem)
 verificar(await page.locator('.faroes .farol-amarelo').count() === 2, 'construtora: Jardim ainda amarelo para a Ridgeline (RDO não chegou) e para a Northfield');
-verificar(await page.locator('.abas .abas-item').count() === 3, 'abas do escritório: Painel, Aprovações e Obras');
+verificar(await page.locator('.abas .abas-item').count() === 4, 'abas do escritório: Painel, Aprovações, Obras e Concorrências');
 
 // Internet volta → sobe sozinho
 await page.click('#conexao');

@@ -23,6 +23,7 @@ import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
+import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, acoesConcorrencias, ligarConcorrencias } from './concorrencias-telas.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
@@ -202,7 +203,7 @@ function desenhar() {
     // Dentro do Daily, cada perfil tem a sua área: quem acompanha (painel, aprovações, obras) e quem preenche (hoje, histórico).
     const inicioDoPapel = pode(u, 'daily.acompanhar') ? '#/daily/painel' : '#/daily/campo';
     if (!q.length) return trocarRota(inicioDoPapel);
-    const precisa = { painel: 'daily.acompanhar', obras: 'daily.acompanhar', aprovacoes: 'daily.aprovar', campo: 'daily.preencher', historico: 'daily.preencher', pdf: 'daily.acompanhar' }[q[0]];
+    const precisa = { concorrencias: 'concorrencias.gerir', painel: 'daily.acompanhar', obras: 'daily.acompanhar', aprovacoes: 'daily.aprovar', campo: 'daily.preencher', historico: 'daily.preencher', pdf: 'daily.acompanhar' }[q[0]];
     if (precisa && !pode(u, precisa) && !(q[0] === 'pdf' && pode(u, 'daily.preencher'))) return trocarRota(inicioDoPapel);
     modo = q[0];
     if (q[0] === 'campo' && q[1] === 'obra') html = telaObraCampo(q[2]);
@@ -217,6 +218,10 @@ function desenhar() {
     else if (q[0] === 'obras' && q[1] === 'encerradas') html = telaObrasAdmin('encerradas');
     else if (q[0] === 'obras' && q[1]) html = telaObraAdmin(q[1]);
     else if (q[0] === 'obras') html = telaObrasAdmin();
+    else if (q[0] === 'concorrencias' && q[1] === 'nova') html = telaFormConcorrencia(moldura, null, q[2]);
+    else if (q[0] === 'concorrencias' && q[1] && q[2] === 'editar') html = telaFormConcorrencia(moldura, q[1]) || naoEncontrado('#/daily/concorrencias');
+    else if (q[0] === 'concorrencias' && q[1] && q[1].startsWith('co-')) html = telaConcorrencia(moldura, q[1], q[2]) || naoEncontrado('#/daily/concorrencias');
+    else if (q[0] === 'concorrencias') html = telaConcorrencias(moldura, q[1]);
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
     else return trocarRota(inicioDoPapel);
   } else if (p[0] === 'cliente') html = telaCliente(p[1]);
@@ -288,6 +293,7 @@ function navDaily() {
     if (pode(u, 'daily.aprovar')) itens.push({ id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: tr('Aprovações'), icone: 'aprovacoes', contador: rdos.filter((r) => recebido(r) && r.status === 'enviado').length });
     itens.push({ id: 'obras', href: '#/daily/obras', rotulo: tr('Obras'), icone: 'obras' });
   }
+  if (pode(u, 'concorrencias.gerir')) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
   if (pode(u, 'daily.preencher')) {
     // Contador de Hoje: dias atrasados, obras sem RDO hoje e ajustes pedidos.
     itens.push({ id: 'hoje', href: '#/daily/campo', rotulo: tr('Hoje'), icone: 'hoje', contador: pendenciasDoCampo().total });
@@ -989,7 +995,7 @@ function telaObraAdmin(id) {
   return moldura({
     ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
     conteudo: (situacaoDaObra(o) !== 'andamento' ? '<div class="aviso aviso-ambar"><b>' + tr('Obra {situacao}', { situacao: SITUACOES_OBRA[situacaoDaObra(o)].nome.toLowerCase() }) + '</b><span>' + tr('Não cobra o diário e não aparece no campo nem no ponto. O histórico continua aqui.') + '</span></div>' : '') +
-      resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) +
+      resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) + htmlConcorrenciasDaObra(o) +
       (soAcompanha() ? (pode(usuarioAtual(), 'settings.obras') ? '<p class="dica"><a href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a></p>' : '') + htmlDiariosPorPrestadora(o, lista) : htmlRdoObrigatorio(o, lista, item)),
   });
 }
@@ -1676,7 +1682,7 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
@@ -1685,6 +1691,7 @@ async function iniciar() {
   ligarRelatorios({ desenhar, ir });
   ligarPrecos({ desenhar, ir });
   ligarCronograma({ desenhar, ir });
+  ligarConcorrencias({ desenhar, ir });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
     return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));

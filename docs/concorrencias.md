@@ -2,7 +2,9 @@
 
 > Especificação de outubro de 2026. Versão 2: desenho das telas, estrutura e regras **para o protótipo**. A versão 1 dizia que precisava de servidor; no protótipo, as duas empresas já se encontram no aparelho (como o cronograma publicado em `compartilhados()` e os diários em `diariosDeFora()`), então a concorrência pode ser simulada do mesmo jeito. No produto, esse lugar comum é o servidor.
 >
-> **Situação:** fatia 1 pronta (o motor, em `js/concorrencias.js`, com os dados de exemplo e as permissões; `tests/concorrencias.test.mjs`, 50 verificações). Ainda sem telas: as próximas fatias estão no §10.
+> **Situação:** fatias 1 e 2 prontas: o motor (`js/concorrencias.js`) e as telas da contratante (`js/concorrencias-telas.js`: Daily › Concorrências, a seção na página da obra, nova concorrência, Convidados, Comparar, Detalhes, prorrogar, convidar mais, fechar e cancelar). `tests/concorrencias.test.mjs`, 68 verificações. O lado da convidada, o canal, a quarteirização pelas telas e o link vêm nas próximas fatias (§10).
+>
+> **Simplificações da fatia 2:** dos desenhos, o protótipo guarda só o nome do PDF; o orçamento aparece no formulário como total (o *por etapa* já existe no motor, sem campo ainda); a aba **Perguntas** entra com o canal (fatia 4).
 
 ## 1. A ideia
 
@@ -250,7 +252,7 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 | Fatia | O que entra | Testes |
 | --- | --- | --- |
 | 1 ✓ | `js/concorrencias.js` (modelo, situações, regras CO-04/05/08/09/10/12/13/15/16/18/19, visão por empresa e pelo link), dados de exemplo, permissões | `tests/concorrencias.test.mjs` (50): criar, enviar, responder, revisões, prazo e prorrogação, comparar, fechar, cancelar, isolamento entre empresas, prestadora contratante |
-| 2 | Telas da construtora: lista, nova concorrência, página com Convidados e Comparar, fechar | Navegador (Ana) |
+| 2 ✓ | Telas da contratante: lista com abas, nova concorrência (rascunho e envio), página com Convidados, Comparar e Detalhes, prorrogar, convidar mais, fechar, cancelar; seção na página da obra | Navegador (Ana; Laura entra, Carlos não) |
 | 3 | Lado da prestadora: Convites, Vou cotar → projeto no Measure, Enviar pela plataforma, *Ganha* → obra ligada | Navegador (Tom), ponta a ponta com a 2 |
 | 4 | Canal (antes e depois do fechamento) e sininho | Navegador, as duas empresas |
 | 5 | Quarteirização: concorrência a partir do projeto ou da obra, **Usar no meu orçamento**, CO-23/24/25, presença da cadeia na construtora (CO-21) | Unidade + navegador, três empresas |
