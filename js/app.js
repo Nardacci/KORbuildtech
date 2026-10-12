@@ -10,6 +10,11 @@ import {
   diariosDeFora, origemDe, obraDoRdo, obraLocalDoRdo, naEmpresaDoRdo, obrasLigadas, emNomeDaEmpresa, empresaAtualId, empresaPorId,
 } from './armazem.js';
 import { criarDemonstracao, VERSAO_DADOS } from './exemplo.js';
+import { conta, cliente as clienteDaConta, traduzir } from './conta.js';
+import { espelho, montar as montarEspelho, usarOQueTemNoAparelho, espelhoDoLinkPublico } from './espelho.js';
+import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily } from './sincronizacao.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { usarArmazem, mostrarSemGuardar } from './armazem.js';
 import { tr, tn, idioma, definirIdioma } from './i18n.js';
 import {
   usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, registrarInteresse, modulo, definirPodeInstalar,
@@ -58,11 +63,14 @@ let pedidoInstalar = null;
 /* ---------- Conexão (real + simulada) ---------- */
 
 function semInternet() {
-  return !navigator.onLine || !!bancoDeDados().offlineSimulado;
+  return !navigator.onLine || !!(bancoDeDados() && bancoDeDados().offlineSimulado);
 }
+const ehOficial = () => !MODO_DEMO && !!(estado() && estado().oficial);
 
 function htmlConexao() {
-  const pendentes = filaDoAparelho().length;
+  const pendentes = ehOficial() ? pendentesNoAparelho() : filaDoAparelho().length;
+  if (ehOficial() && subindoDaily()) return '<span class="pontinho azul"></span>' + tr('Enviando');
+  if (ehOficial() && !semInternet() && pendentes) return '<span class="pontinho ambar"></span>' + tn(pendentes, '{n} diário para enviar', '{n} diários para enviar');
   if (sincronizando) {
     return ('<span class="pontinho azul"></span>' + tr('Enviando') + ' ') + esc(sincronizando.nome) + ' · ' + sincronizando.feito + '/' + sincronizando.total;
   }
@@ -88,6 +96,7 @@ function filaDoAparelho(sync) {
 }
 
 async function sincronizar() {
+  if (ehOficial()) return sincronizarOficial();
   if (sincronizando || semInternet()) return;
   const fila = filaDoAparelho();
   if (!fila.length) return;
@@ -182,6 +191,24 @@ function trocarRota(hash) {
 function desenhar() {
   // Página oficial: as contas reais, no Supabase (docs/banco.md, fatia 1). O protótipo é "?demo".
   if (!MODO_DEMO) {
+    const p0 = rota();
+    if (p0[0] === 'cliente') { desenharLinkPublico(p0[1]); return; }
+    // o Daily da conta de verdade: as telas do protótipo, com o espelho do banco no aparelho (docs/banco.md §10.4)
+    if (p0[0] === 'daily' && conta.pronto && conta.membro && conta.membro.ativo) {
+      if (!espelho.pronto || !estado() || !estado().oficial || estado().empresa.id !== conta.empresa.id) { app.innerHTML = carregando(); abrirDailyOficial(); return; }
+      const q0 = rotaDaily();
+      // concorrências e cronograma ainda não estão no banco (fatias 5 e 7)
+      if (q0[0] === 'concorrencias' || (q0[0] === 'obras' && q0[2] === 'cronograma')) return trocarRota('#/daily');
+      // diário aberto pelo endereço (link, notificação) que ainda não está no aparelho: relê o banco uma vez
+      const idRdo = q0[1] === 'rdo' ? q0[2] : q0[0] === 'pdf' ? q0[1] : null;
+      if (idRdo && !acharRdo(idRdo) && !relidoPorRdo.has(idRdo) && !semInternet()) {
+        relidoPorRdo.add(idRdo);
+        app.innerHTML = carregando();
+        montarEspelho().catch(() => {}).finally(desenhar);
+        return;
+      }
+      return desenharPrototipo();
+    }
     const r = telaOficial(rota());
     if (r.trocar) return trocarRota(r.trocar);
     app.innerHTML = r.html;
@@ -190,6 +217,10 @@ function desenhar() {
     if (r.depois) r.depois();
     return;
   }
+  desenharPrototipo();
+}
+
+function desenharPrototipo() {
   const p = rota();
   const u = usuarioAtual();
   // O link do cliente é público; todo o resto pede login.
@@ -299,7 +330,8 @@ function navDaily() {
     if (pode(u, 'daily.aprovar')) itens.push({ id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: tr('Aprovações'), icone: 'aprovacoes', contador: rdos.filter((r) => recebido(r) && r.status === 'enviado').length });
     itens.push({ id: 'obras', href: '#/daily/obras', rotulo: tr('Obras'), icone: 'obras' });
   }
-  if (pode(u, 'concorrencias.gerir')) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
+  // concorrências: ainda só no protótipo (no banco, na fatia 7)
+  if (pode(u, 'concorrencias.gerir') && !estado().oficial) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
   if (pode(u, 'daily.preencher')) {
     // Contador de Hoje: dias atrasados, obras sem RDO hoje e ajustes pedidos.
     itens.push({ id: 'hoje', href: '#/daily/campo', rotulo: tr('Hoje'), icone: 'hoje', contador: pendenciasDoCampo().total });
@@ -309,6 +341,8 @@ function navDaily() {
 }
 
 function botaoConexao() {
+  // na página oficial, o botão envia o que está no aparelho; no protótipo, simula a falta de internet
+  if (ehOficial()) return ('<button type="button" class="conexao" id="conexao" data-acao="sincronizar" title="' + tr('Enviar agora o que está no aparelho') + '">') + htmlConexao() + '</button>';
   return ('<button type="button" class="conexao" id="conexao" data-acao="alternar-internet" title="' + tr('Tocar para simular a falta de internet') + '">') + htmlConexao() + '</button>';
 }
 
@@ -1059,7 +1093,7 @@ function telaRdoPainel(id) {
       (contratanteDe(obraLocalDoRdo(r)) ? ('<p class="mudo pequeno">' + tr('Contratante:') + ' <b>') + esc(contratanteDe(obraLocalDoRdo(r)).nome) + '</b>' + (contratanteDe(obraLocalDoRdo(r)).email ? ' · ' + esc(contratanteDe(obraLocalDoRdo(r)).email) : '') + '</p>' : '');
   }
   const historico = ('<h3 class="subtitulo">' + tr('Histórico') + '</h3><ol class="historico">') + r.historico.map((h) =>
-    '<li><span class="mudo">' + dataHora(h.em) + '</span><b>' + esc(h.quem) + '</b><span>' + esc(h.acao) + '</span></li>').join('') + '</ol>';
+    '<li><span class="mudo">' + dataHora(h.em) + '</span><b>' + esc(h.quem) + '</b><span>' + esc(acaoNoIdioma(h.acao)) + '</span></li>').join('') + '</ol>';
   // Voltar para onde a pessoa estava: a fila (se ainda pendente) ou a obra.
   const local = obraLocalDoRdo(r);
   const naFila = r.status === 'enviado' && aprovaAqui(r);
@@ -1126,11 +1160,119 @@ function htmlCliente(r, o) {
     '</main>';
 }
 
+/* ---------- Página oficial: o Daily com o banco (docs/banco.md §10) ---------- */
+
+/* As ações que o banco registra no histórico vêm em português (enviar_rdo, aprovar_rdo…): na tela, no idioma escolhido. */
+function acaoNoIdioma(acao) {
+  const texto = String(acao || '');
+  for (const prefixo of ['Aprovou · código', 'Pediu ajustes:', 'Registrou dia sem atividade:']) {
+    if (texto.startsWith(prefixo + ' ')) return tr(prefixo) + texto.slice(prefixo.length);
+  }
+  return ['Enviou para aprovação', 'Reenviou com os ajustes'].includes(texto) ? tr(texto) : texto;
+}
+
+let diarioPublico = null; // { codigo, lacre } do link do cliente aberto
+const relidoPorRdo = new Set();
+async function abrirDailyOficial() {
+  try {
+    await montarEspelho();
+  } catch (e) {
+    // sem internet: segue com o que já está no aparelho desta conta
+    if (!usarOQueTemNoAparelho()) { toast(tr('Sem conexão com o servidor. Confira a internet e tente de novo.')); trocarRota('#/conta'); return; }
+  }
+  desenhar();
+  sincronizarOficial();
+}
+
+async function sincronizarOficial() {
+  if (!ehOficial() || semInternet()) { atualizarConexao(); return; }
+  const promessa = sincronizarDaily({
+    aoConflito: escolherVersao,
+    aoErro: (r, e) => toast(tr('O RDO nº {n} não foi enviado: {erro}', { n: r.numero, erro: traduzir(e) })),
+  });
+  atualizarConexao();
+  const subiram = await promessa;
+  // relê o banco: numeração, aprovações e ajustes pedidos pelo escritório, diários de outros aparelhos
+  await montarEspelho().catch(() => {});
+  if (location.hash.startsWith('#/daily')) desenhar(); else atualizarConexao();
+  if (subiram) toast(tn(subiram, '{n} diário enviado ao servidor.', '{n} diários enviados ao servidor.'));
+}
+
+/* Outro aparelho mudou o mesmo diário sem sinal (decisão de outubro de 2026): a pessoa escolhe a versão. */
+async function escolherVersao(r, doBanco) {
+  const resumo = (x) => tn(x.atividades.filter((a) => (a.descricao || '').trim()).length, '{n} atividade', '{n} atividades') + ' · ' + tn(x.fotos.length, '{n} foto', '{n} fotos');
+  const res = await abrirDialogo({
+    titulo: tr('Este diário mudou em outro aparelho'),
+    corpo: '<p>' + tr('O RDO de {data} ({obra}) foi alterado em outro aparelho enquanto este estava sem internet. Escolha qual versão fica.', { data: dataCurta(r.data), obra: esc((acharObra(r.obraId) || {}).nome || '') }) + '</p>' +
+      '<ul class="lista-falta"><li><b>' + tr('Neste aparelho') + ':</b> ' + resumo(r) + '</li><li><b>' + tr('No outro aparelho') + ':</b> ' + resumo(doBanco) + '</li></ul>',
+    acoes: [{ rotulo: tr('Ficar com a do outro aparelho'), valor: 'banco' }, { rotulo: tr('Ficar com a deste aparelho'), valor: 'meu', classe: 'btn-primario' }],
+  });
+  return (res && res.valor) || 'banco';
+}
+
+/* Aprovar e pedir ajustes passam pelo banco (aprovar_rdo, pedir_ajustes): o lacre e o código saem de lá. */
+const acoesDailyOficial = {
+  async aprovar() {
+    const r = rdoDaTela();
+    if (!r || !aprovaAqui(r)) return;
+    if (semInternet()) { toast(tr('Para aprovar, o escritório precisa estar com internet.')); return; }
+    if (!(await confirmar(tr('Aprovar e lacrar o RDO nº {n}?', { n: r.numero }), tr('Depois de aprovado, o relatório não pode mais ser alterado por ninguém. Ele recebe um código de verificação para o cliente conferir.'), tr('Aprovar e lacrar')))) return;
+    const { data, error } = await clienteDaConta().rpc('aprovar_rdo', { p_id: r.id });
+    if (error) { toast(traduzir(error)); return; }
+    await montarEspelho().catch(() => {});
+    desenhar();
+    toast((tr('RDO aprovado e lacrado. Código') + ' ') + data.codigo + '.');
+  },
+  async 'pedir-ajustes'() {
+    const r = rdoDaTela();
+    if (!r || !aprovaAqui(r)) return;
+    if (semInternet()) { toast(tr('Para pedir ajustes, o escritório precisa estar com internet.')); return; }
+    const res = await abrirDialogo({
+      titulo: tr('Pedir ajustes ao canteiro'),
+      corpo: ('<label class="rotulo-pequeno" for="motivo">' + tr('O que precisa ser corrigido?') + '</label>') +
+        ('<textarea id="motivo" name="motivo" rows="4" placeholder="' + tr('Ex.: falta a foto da armação antes da concretagem.') + '"></textarea>'),
+      acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Enviar pedido'), valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const motivo = res.campos.motivo.trim();
+    if (!motivo) { toast(tr('Escreva o que precisa ser corrigido.')); return; }
+    const { error } = await clienteDaConta().rpc('pedir_ajustes', { p_id: r.id, p_motivo: motivo });
+    if (error) { toast(traduzir(error)); return; }
+    await montarEspelho().catch(() => {});
+    desenhar();
+    toast(r.autor + (' ' + tr('vai ver o pedido no app do canteiro.')));
+  },
+};
+
+/* O link do cliente na página oficial: o diário vem da função de borda diario-publico (sem login), com as fotos por
+ * links temporários, e é desenhado pelo mesmo relatório do protótipo, num banco só em memória. */
+async function desenharLinkPublico(codigo) {
+  app.innerHTML = carregando();
+  document.body.dataset.modo = 'cliente';
+  const naoAchou = () => {
+    app.innerHTML = '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>' + tr('Relatório não encontrado') + '</b><span>' + tr('Confira o link: o código pode estar errado, ou o relatório ainda não foi aprovado.') + '</span></div></main>';
+  };
+  let x = null;
+  try {
+    const resp = await fetch(SUPABASE_URL + '/functions/v1/diario-publico?codigo=' + encodeURIComponent(codigo || ''), { headers: { apikey: SUPABASE_ANON_KEY } });
+    if (resp.ok) x = await resp.json();
+  } catch (e) { x = null; }
+  if (location.hash !== '#/cliente/' + codigo) return;   // a pessoa já saiu daqui
+  if (!x || !x.codigo) { naoAchou(); return; }
+  usarArmazem({ chave: 'kbt.publico', fotos: 'kbt-publico-fotos', sessao: 'kbt.publico.sessao' });
+  mostrarSemGuardar(espelhoDoLinkPublico(x));
+  diarioPublico = { codigo: x.codigo, lacre: !!x.lacre_confere };
+  app.innerHTML = telaCliente(x.codigo);
+  hidratarFotos(app);
+  verificarLacreNaTela(x.codigo);
+}
+
 async function verificarLacreNaTela(codigo) {
   const achado = diarioPorCodigo(codigo);
   if (!achado) return;
   const { r, o } = achado;
-  const ok = await conferirLacre(r, o);
+  // na página oficial, quem confere o lacre é o banco (diario_por_codigo); no protótipo, o próprio navegador
+  const ok = !MODO_DEMO ? !!(diarioPublico && diarioPublico.lacre) : await conferirLacre(r, o);
   const el = document.getElementById('verificacao');
   if (!el) return;
   el.className = 'aviso ' + (ok ? 'aviso-verde' : 'aviso-alerta');
@@ -1531,7 +1673,7 @@ const acoes = {
   },
   async 'copiar-link'() {
     const r = rdoDaTela();
-    const link = location.origin + location.pathname + '?demo#/cliente/' + r.codigo;
+    const link = location.origin + location.pathname + (MODO_DEMO ? '?demo' : '') + '#/cliente/' + r.codigo;
     try {
       await navigator.clipboard.writeText(link);
       const ct = contratanteDe(obraLocalDoRdo(r));
@@ -1648,7 +1790,7 @@ function atualizarRodape(r) {
 /* ---------- Partida ---------- */
 
 function carregando() {
-  return ('<div class="carregando"><span class="girando grande"></span><p>' + tr('Preparando a demonstração…') + '</p></div>');
+  return ('<div class="carregando"><span class="girando grande"></span><p>' + (MODO_DEMO ? tr('Preparando a demonstração…') : tr('Carregando…')) + '</p></div>');
 }
 
 /* ---------- Notificações do Daily (para o sininho) ---------- */
@@ -1711,7 +1853,18 @@ async function iniciar() {
     pedidoInstalar = ev;
     definirPodeInstalar(true);
   });
-  if (!MODO_DEMO) { ligarOficial(desenhar); window.addEventListener('hashchange', desenhar); desenhar(); return; }
+  if (!MODO_DEMO) {
+    Object.assign(acoes, acoesDailyOficial);
+    ligarOficial(desenhar);
+    window.addEventListener('hashchange', desenhar);
+    window.addEventListener('online', () => { atualizarConexao(); sincronizarOficial(); });
+    window.addEventListener('offline', atualizarConexao);
+    // de tempos em tempos (e ao voltar para o app), envia o que ficou no aparelho e relê o banco
+    setInterval(() => { if (location.hash.startsWith('#/daily')) sincronizarOficial(); }, 60000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && location.hash.startsWith('#/daily')) sincronizarOficial(); });
+    desenhar();
+    return;
+  }
   // Dados de uma versão antiga do protótipo são recriados no formato novo. Na tela de entrada (ninguém
   // logado), a demonstração também é recriada quando foi gerada em outro idioma (botão PT/EN).
   const ninguemLogado = (() => { try { return !localStorage.getItem('kbt.sessao'); } catch { return true; } })();

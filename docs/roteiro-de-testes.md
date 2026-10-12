@@ -48,6 +48,11 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `oficial-simulado` | navegador | As telas oficiais (conta e cadastros) com um Supabase **falso** em memória | ~5 s |
 | `sql 0001_acesso`, `sql 0002_settings` | Supabase | Regras de acesso das fatias 1 e 2 (cada empresa só vê o que é dela; dinheiro só para quem pode) | segundos |
 | `conta` | navegador + Supabase | O caminho real: entrar, criar empresa, perfis, Meu perfil, cadastros, convite, permissões, auditoria | ~2 min |
+| `sql 0003_daily` | Supabase | Regras do Daily: quem preenche, envia e aprova; lacre; fotos; link do cliente; sem internet | segundos |
+| `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
+
+O teste `daily` cria os usuários `kb-e2e-daily-…@example.com`, duas empresas, obras, diários e fotos, e apaga tudo
+no fim (inclusive as fotos do Storage).
 
 O teste `conta` cria os usuários `kb-e2e-ana@example.com` e `kb-e2e-beto@example.com` (já confirmados, nenhum
 e-mail sai) e a empresa "Construtora E2E", e apaga tudo no fim. Se a limpeza falhar, **não apague nada à mão**:
@@ -73,6 +78,13 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Trocar PT|EN: a tela muda; o próximo e-mail sai no idioma escolhido.
 - [ ] Trocar o e-mail para outro `+`: chega "Confirme o seu novo e-mail"; até abrir o link, a tela mostra "Aguardando a confirmação".
 - [ ] Trocar a senha e entrar com a nova.
+
+### Daily (fatia 3)
+- [ ] Início → "Abrir o Daily": entra no Daily com as obras da empresa (sem o selo "Protótipo").
+- [ ] No celular: novo RDO, clima, equipe, atividade e uma foto; enviar. No computador, o RDO aparece para aprovar.
+- [ ] Modo avião no celular: preencher e enviar outro RDO (fica "para enviar"); tirar do modo avião: sobe sozinho.
+- [ ] Aprovar: aparece o código; "Copiar o link" e abrir numa janela anônima: "Documento autêntico" e a foto.
+- [ ] Pedir ajustes: o celular mostra o pedido e "Reenviar".
 
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).

@@ -12,7 +12,7 @@ if ! psql -h $P -p $PORTA -U postgres -Atc 'select 1' >/dev/null 2>&1; then
   su pgl -c "mkdir -p $P && ([ -d $P/data ] || $B/initdb -D $P/data -U postgres --auth=trust >/dev/null) && $B/pg_ctl -D $P/data -o '-p $PORTA -k $P' -l $P/log start >/dev/null"
   sleep 2
 fi
-psql -h $P -p $PORTA -U postgres -q -c "drop database if exists kb" -c "create database kb" >/dev/null 2>&1
+psql -h $P -p $PORTA -U postgres -q -c "drop database if exists kb with (force)" -c "create database kb" >/dev/null 2>&1
 TMP=$(mktemp -d)
 sed -e 's/^create role \(\w*\) \(.*\);/do $$ begin create role \1 \2; exception when duplicate_object then null; end $$;/' \
     -e 's/alter database postgres/alter database kb/' "$R/supabase/local/supabase-simulado.sql" > "$TMP/simulado.sql"

@@ -3,9 +3,19 @@
  * No protótipo não há servidor: "enviado ao escritório" é o campo rdo.sync === 'enviado',
  * e o painel do escritório só enxerga RDOs nesse estado. */
 
-const CHAVE = 'kbt.rdo.v1';
-const BANCO = 'kbt-rdo-fotos';
-const CHAVE_SESSAO = 'kbt.sessao';
+let CHAVE = 'kbt.rdo.v1';
+let BANCO = 'kbt-rdo-fotos';
+let CHAVE_SESSAO = 'kbt.sessao';
+
+/* A página oficial (sem "?demo") guarda o espelho do Supabase em outras chaves: nunca mistura com a demonstração.
+ * Chamar antes de qualquer leitura (js/espelho.js). */
+export function usarArmazem(o) {
+  if (o.chave) CHAVE = o.chave;
+  if (o.fotos) BANCO = o.fotos;
+  if (o.sessao) CHAVE_SESSAO = o.sessao;
+  banco = null;
+}
+export const chaveDaSessao = () => CHAVE_SESSAO;
 
 /* Várias empresas (tenants) no mesmo aparelho, cada uma com os seus dados, isoladas:
  * { versao, padrao, empresas: { [id]: dados da empresa } }. A empresa aberta é a do usuário da sessão. */
@@ -61,6 +71,9 @@ export function definirEstado(novo) {
   banco = novo;
   salvar();
 }
+
+/* Só para desenhar (o link do cliente): troca o banco em memória sem gravar no aparelho. */
+export function mostrarSemGuardar(novo) { banco = novo; }
 
 export function salvar() {
   try {
@@ -177,11 +190,16 @@ export function apagarFoto(id) {
 export function lerFoto(id) { return operacao('readonly', (s) => s.get(id)); }
 
 const urls = new Map();
+/* Foto que não está no aparelho (tirada em outro celular, ou de um diário recebido): a página oficial busca no
+ * Storage por um link temporário (js/espelho.js). */
+let buscaRemota = null;
+export function definirBuscaRemota(fn) { buscaRemota = fn; }
 export async function urlDaFoto(id) {
   if (!urls.has(id)) {
-    const blob = await lerFoto(id);
-    if (!blob) return '';
-    urls.set(id, URL.createObjectURL(blob));
+    const blob = await lerFoto(id).catch(() => null);
+    const url = blob ? URL.createObjectURL(blob) : buscaRemota ? await buscaRemota(id).catch(() => '') : '';
+    if (!url) return '';
+    urls.set(id, url);
   }
   return urls.get(id);
 }

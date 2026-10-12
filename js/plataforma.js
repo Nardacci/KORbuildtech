@@ -6,12 +6,11 @@
 
 import { DOMINIOS_EN } from './exemplo.js';
 import { esc, dataCurta, diasEntre, hoje, dataHora, isoDoDia, horaCurta } from './util.js';
-import { estado, todasAsEmpresas, salvar } from './armazem.js';
+import { estado, todasAsEmpresas, salvar, chaveDaSessao } from './armazem.js';
 import { pode, perfilDe, modulosDe } from './settings.js';
 import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
 import { tr, tn, htmlSeletorIdioma } from './i18n.js';
 
-const CHAVE_SESSAO = 'kbt.sessao';
 
 /* O que cada pessoa pode fazer vem do perfil de acesso (Settings › Perfis de acesso). */
 export { pode, perfilDe, modulosDe } from './settings.js';
@@ -55,13 +54,13 @@ export function modulo(id) { return MODULOS.find((m) => m.id === id); }
 
 export function usuarioAtual() {
   let id;
-  try { id = localStorage.getItem(CHAVE_SESSAO); } catch (e) { id = null; }
+  try { id = localStorage.getItem(chaveDaSessao()); } catch (e) { id = null; }
   const d = estado();
   return (id && d && d.usuarios.find((u) => u.id === id && u.ativo)) || null;
 }
 
-export function entrar(usuario) { localStorage.setItem(CHAVE_SESSAO, usuario.id); }
-export function sair() { localStorage.removeItem(CHAVE_SESSAO); }
+export function entrar(usuario) { localStorage.setItem(chaveDaSessao(), usuario.id); }
+export function sair() { localStorage.removeItem(chaveDaSessao()); }
 
 /* Na entrada, o e-mail diz a empresa: procura em todas e a sessão abre a empresa do usuário. */
 export function usuarioPorEmail(email) {
@@ -177,7 +176,7 @@ export function casca(o) {
   return '<header class="topo"><div class="topo-dentro">' +
       ('<a class="topo-marca" href="#/inicio" aria-label="' + tr('KORbuild: módulos') + '">') + marca(26) + logotipo({ classe: 'topo-nome' }) + '</a>' +
       (m ? '<span class="topo-sep" aria-hidden="true"></span><a class="topo-modulo modulo-' + m.id + '" href="#/' + m.id + '">' + icone(m.id, 18) + '<span>' + m.nome + '</span></a>' : '') +
-      ('<span class="selo-prototipo" title="' + tr('Protótipo com dados fictícios') + '">' + tr('Protótipo') + '</span>') +
+      (estado().oficial ? '' : '<span class="selo-prototipo" title="' + tr('Protótipo com dados fictícios') + '">' + tr('Protótipo') + '</span>') +
       '<span class="topo-espaco"></span>' +
       (o.topoExtra || '') +
       sino(u) +
@@ -201,11 +200,13 @@ function menuUsuario(u) {
     '<div class="menu">' +
       '<div class="menu-quem"><span class="avatar grande">' + esc(iniciais(u.nome)) + '</span><div><b>' + esc(u.nome) + '</b><span>' + esc(u.email) + '</span>' +
         '<span class="menu-papel">' + esc(estado().empresa.nome) + ' · ' + esc((perfilDe(u) || {}).nome || tr('sem perfil')) + '</span></div></div>' +
-      (pode(u, 'settings.conta') ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Conta da empresa') + '</a>') : '') +
+      // na página oficial, "Minha conta" leva à área da conta (cadastros, usuários, meu perfil); não há demonstração para recomeçar
+      (estado().oficial ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Minha conta') + '</a>')
+        : pode(u, 'settings.conta') ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Conta da empresa') + '</a>') : '') +
       (podeInstalar ? '<button type="button" class="menu-item" data-acao="instalar">' + icone('instalar', 18) + (tr('Instalar no celular') + '</button>') : '') +
       '<div class="menu-item menu-idioma">' + icone('idioma', 18) + '<span>' + tr('Idioma') + '</span>' + htmlSeletorIdioma() + '</div>' +
-      '<button type="button" class="menu-item" data-acao="recomecar">' + icone('recomecar', 18) + (tr('Recomeçar demonstração') + '</button>') +
-      '<button type="button" class="menu-item" data-acao="sair">' + icone('sair', 18) + (tr('Sair') + '</button>') +
+      (estado().oficial ? '' : '<button type="button" class="menu-item" data-acao="recomecar">' + icone('recomecar', 18) + (tr('Recomeçar demonstração') + '</button>')) +
+      '<button type="button" class="menu-item" data-acao="' + (estado().oficial ? 'of-sair' : 'sair') + '">' + icone('sair', 18) + (tr('Sair') + '</button>') +
     '</div></details>';
 }
 

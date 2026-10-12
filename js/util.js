@@ -7,7 +7,11 @@ export function esc(valor) {
   return String(valor ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+/* Na página oficial, os ids viram UUID: o diário, as fotos e o histórico nascem no aparelho e vão assim para o banco. */
+let idsUuid = false;
+export function usarIdsUuid() { idsUuid = true; }
 export function novoId(prefixo) {
+  if (idsUuid && typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
   return prefixo + '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 

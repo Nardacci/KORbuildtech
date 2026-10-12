@@ -66,18 +66,32 @@ function lembrarIdioma() {
  * Lê tudo antes e troca o estado de uma vez só. Se alguma leitura falhar (rede, troca de token no meio), mantém o que
  * já havia: senão, por um instante, a pessoa "perderia" as permissões e a tela voltaria para o Início sem motivo. */
 const SEM_EMPRESA = { membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] };
+/* A última leitura fica no aparelho: sem internet, o app abre com ela (o Daily funciona sem sinal). */
+const chaveDaConta = (uid) => 'kbt.oficial.conta.' + uid;
+function lembrarConta(uid) {
+  try { localStorage.setItem(chaveDaConta(uid), JSON.stringify({ membro: conta.membro, empresa: conta.empresa, perfil: conta.perfil, perfis: conta.perfis })); } catch { /* sem espaço */ }
+}
+function contaGuardada(uid) {
+  try { return JSON.parse(localStorage.getItem(chaveDaConta(uid))); } catch { return null; }
+}
 export async function carregarMinhaConta() {
   if (!sb || !conta.sessao) { Object.assign(conta, SEM_EMPRESA); return; }
   const uid = conta.sessao.user.id;
   const m = await sb.from('membros').select('*').eq('user_id', uid).maybeSingle();
-  if (m.error) return;
+  const semConexao = () => {
+    conta.semConexao = true;
+    const g = !conta.membro && contaGuardada(uid);
+    if (g && g.membro) Object.assign(conta, g, { membros: [g.membro], convites: [] });
+  };
+  if (m.error) { semConexao(); return; }
+  conta.semConexao = false;
   const membro = m.data;
   if (!membro) { Object.assign(conta, SEM_EMPRESA); return; }
   const [e, p] = await Promise.all([
     sb.from('empresas').select('*').eq('id', membro.empresa_id).maybeSingle(),
     sb.from('perfis_acesso').select('*').order('criado_em'),
   ]);
-  if (e.error || p.error) return;
+  if (e.error || p.error) { semConexao(); return; }
   const perfis = p.data || [];
   const perfil = perfis.find((x) => x.id === membro.perfil_id) || null;
   const novo = { membro, empresa: e.data || null, perfis, perfil, membros: [membro], convites: [] };
@@ -86,11 +100,12 @@ export async function carregarMinhaConta() {
       sb.from('membros').select('*').order('criado_em'),
       sb.from('convites_usuario').select('id, email, nome, perfil_id, criado_em, expira_em, aceito_em, cancelado_em').order('criado_em', { ascending: false }),
     ]);
-    if (ms.error || cs.error) return;
+    if (ms.error || cs.error) { semConexao(); return; }
     novo.membros = ms.data || [];
     novo.convites = cs.data || [];
   }
   Object.assign(conta, novo);
+  lembrarConta(uid);
 }
 
 /* O cliente do Supabase, para os cadastros (js/cadastros.js). */

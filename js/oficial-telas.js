@@ -14,6 +14,7 @@ import {
 } from './conta.js';
 import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
 import { esquecer as esquecerCadastros } from './cadastros.js';
+import { espelho } from './espelho.js';
 export { acoesCadastros };
 
 let redesenhar = () => {};
@@ -168,8 +169,12 @@ function htmlInicio() {
       '<dl class="lista-dados"><dt>' + tr('Empresa') + '</dt><dd>' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + '</dd>' +
       '<dt>' + tr('Seu acesso') + '</dt><dd>' + esc(nomeDoPerfil(conta.perfil)) + ' · ' + esc(emailAtual()) + '</dd>' +
       '<dt>' + tr('Plano') + '</dt><dd>' + esc((conta.empresa.plano || {}).nome || '') + '</dd></dl></section>' +
+    (pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar')
+      ? '<section class="cartao"><h2 class="cartao-titulo">Daily</h2><p>' + tr('O diário de obra já funciona com o banco de dados, com e sem internet: preencha no canteiro, envie, aprove e mande o link para o cliente.') + '</p>' +
+        '<div class="btn-linha"><a class="btn btn-primario" href="#/daily">' + icone('daily', 18) + tr('Abrir o Daily') + '</a></div></section>'
+      : '') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Os módulos chegam em etapas') + '</h2>' +
-      '<p>' + tr('A sua conta, a empresa, os usuários e os perfis de acesso já estão no banco de dados. O Daily, o Crew, o Measure, o cronograma e as concorrências chegam nas próximas etapas.') + '</p>' +
+      '<p>' + tr('A conta, os cadastros e o Daily já estão no banco de dados. O Crew, o Measure, o cronograma e as concorrências chegam nas próximas etapas.') + '</p>' +
       '<p>' + tr('Enquanto isso, conheça cada módulo no protótipo, com dados de exemplo.') + '</p>' +
       '<div class="btn-linha"><a class="btn btn-primario" href="' + URL_PROTOTIPO + '">' + icone('play', 18) + tr('Abrir o protótipo') + '</a><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>';
 }
@@ -312,7 +317,7 @@ export const FORMS_OFICIAIS = ['form-login-oficial', 'form-criar-conta', 'form-e
 const comResultado = (r, ok) => { if (r.erro) { toast(r.erro); return; } if (ok) toast(ok); redesenhar(); };
 
 export const acoesOficiais = {
-  async 'of-sair'() { await sair(); esquecerConvite(); esquecerCadastros(); ir('#/entrar'); },
+  async 'of-sair'() { await sair(); esquecerConvite(); esquecerCadastros(); espelho.pronto = false; ir('#/entrar'); },
   async 'of-aceitar'() {
     const r = await aceitarConvite(conviteGuardado());
     if (r.erro) return mostrarErro(r.erro);
