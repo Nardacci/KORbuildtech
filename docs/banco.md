@@ -23,7 +23,7 @@
 | Tabela | Colunas principais | Observações |
 | --- | --- | --- |
 | `empresas` | `id`, `nome`, `razao_social`, `sigla`, `ein`, `atuacao` (prestadora · construtora · ambas), `especialidades`, endereço, `telefone`, `email`, `site`, `licencas`, `seguros`, `termos_proposta`, `logo_path`, `plano` (`jsonb`: nome, status, teste_ate, limite_obras), `modulos text[]`, `configuracao jsonb` (BD-07), `criada_em` | Uma linha por cliente. `atuacao` decide o que aparece (HS-09). |
-| `membros` | `empresa_id`, `user_id` (→ `auth.users`), `perfil_id`, `funcionario_id`, `cargo`, `telefone`, `ativo`, `ultimo_acesso` | O "usuário" do protótipo. Uma pessoa pode ser membro de mais de uma empresa (ver §8); na entrada, escolhe a empresa. |
+| `membros` | `empresa_id`, `user_id` (→ `auth.users`, **único**), `perfil_id`, `funcionario_id`, `nome`, `cargo`, `telefone`, `ativo`, `ultimo_acesso` | O "usuário" do protótipo. **Uma pessoa pertence a uma empresa** (decisão de outubro de 2026) e pode estar em várias obras dela (`alocacoes`, §4). |
 | `perfis_acesso` | `empresa_id`, `id`, `nome`, `descricao`, `sistema`, `permissoes text[]` | Os perfis da empresa (Administrador travado, Gestor, Encarregado, Trabalhador + os criados). O **catálogo** de permissões fica no código, como hoje. |
 | `convites_usuario` | `empresa_id`, `email`, `perfil_id`, `funcionario_id`, `token_hash`, `expira_em`, `aceito_em` | O convite por e-mail para entrar na empresa (hoje: "Novo usuário" sem e-mail). |
 | `admins_plataforma` | `user_id` | Quem administra o KORbuild (planos, empresas, valores padrão). É a área de administração que fica num endereço à parte, **por último** (decisão de outubro de 2026). |
@@ -47,6 +47,7 @@
 
 | Tabela | Colunas principais | Regras |
 | --- | --- | --- |
+| `alocacoes` | `empresa_id`, `obra_id`, `membro_id` ou `funcionario_id`, `papel`, `desde`, `ate` | Quem trabalha em quais obras: uma pessoa em N obras. Base para as permissões por obra (o encarregado vê só as dele). |
 | `obras` | `empresa_id`, `nome`, `contratante_id`, `dono_id` (→ `contatos`), endereço, `municipio`, `estado`, `zip`, `cerca` (lat, lon, raio), `inicio`, `prazo`, `responsavel_id` (membro), `dias_trabalho int[]`, `situacao`, `projeto_id`, **`vinculo_empresa_id`, `vinculo_obra_id`**, `concorrencia_id` | O `vinculo` liga a obra da contratada à obra de quem contratou (HS-05, CO-14). |
 | `rdos` | `empresa_id`, `obra_id`, `data`, `numero`, `status` (rascunho · enviado · ajuste · aprovado), `autor`, `conteudo jsonb` (clima, equipe, equipamentos, atividades, ocorrências, observações), `enviado_em`, `aprovado_em`, `aprovado_por`, `aprovado_por_empresa`, `hash_documento`, `codigo` | Aprovado = lacrado: o gatilho recusa `update` depois da aprovação. Quem aprova pode ser de outra empresa (HS-11): só pela função `aprovar_rdo(id)`. |
 | `rdo_fotos` | `rdo_id`, `path` (Storage), `legenda`, `tirada_em`, `lat`, `lon`, `fonte_gps`, `precisao`, `largura`, `altura`, `tamanho`, `hash_original` | |
@@ -99,18 +100,19 @@ Enviar, responder, mandar proposta, fechar, aprovar quarteirização e escrever 
 | --- | --- |
 | `perfis` (id, tipo empresa/profissional, nome) | **Sai.** O KORbuild usa `membros` + `perfis_acesso`; o nome da pessoa fica em `auth.users` (metadados) e em `membros`. |
 | `contatos` (canal, telefone, e-mail do usuário) | **Sai.** O nome colide com os contatos da empresa (§3), que são outra coisa. O telefone do usuário vai para `membros`. |
-| `criar_conta()` + gatilho `ao_criar_usuario` | **Fica, reescrita:** não cria mais perfil; no máximo registra o nome nos metadados. A empresa nasce em `criar_empresa()` (§2). |
-| `notificacoes`, `notificacao_prefs`, `notificar()`, `avisos_pendentes_email()`, `marcar_avisos_enviados()`, a função de borda `enviar-avisos` e o job `kor-enviar-avisos` | **Ficam e ganham `empresa_id`.** No protótipo, o sininho é calculado; no produto, os avisos que viram e-mail (convite, aprovação pedida, prazo vencido) são gravados aqui. O e-mail troca o nome "KORbuild Match" pelo do KORbuild. |
+| `criar_conta()` + gatilho `ao_criar_usuario` | **Sai** junto com `perfis` e `contatos`: a empresa e o membro nascem em `criar_empresa()` ou em `aceitar_convite()` (§2). |
+| `notificacoes`, `notificacao_prefs`, `notificar()`, `avisos_pendentes_email()` (já lê o nome em `membros` desde a fatia 1), `marcar_avisos_enviados()`, a função de borda `enviar-avisos` e o job `kor-enviar-avisos` | **Ficam e ganham `empresa_id`.** No protótipo, o sininho é calculado; no produto, os avisos que viram e-mail (convite, aprovação pedida, prazo vencido) são gravados aqui. O e-mail troca o nome "KORbuild Match" pelo do KORbuild. |
 | `auditoria`, `auditar()` | **Ficam**, com `empresa_id` (§3). |
 | `tocar_atualizado_em()`, `eh_sistema()`, `ligar_sistema()`, `guarda_notificacao()` | Ficam enquanto servirem; revisadas na fatia em que forem usadas. |
 | A sua conta (`nardaccicoach@gmail.com`) | Fica. Vira o primeiro membro da primeira empresa e o primeiro `admins_plataforma`. |
 
-## 8. Pontos a confirmar
+## 8. Decisões (outubro de 2026)
 
-- **Uma pessoa em mais de uma empresa** (ex.: o dono de uma prestadora que também é sócio de outra). O desenho já permite (`membros`); falta decidir se a tela de entrada pergunta a empresa ou se cada login é de uma empresa só.
-- **Região do projeto Supabase.** Para clientes nos EUA, o ideal é um projeto numa região dos EUA (latência e residência dos dados). Se o projeto atual estiver em outra região, vale criar um novo agora, enquanto está vazio.
-- **Conflito no offline:** dois aparelhos alterando o mesmo diário sem sinal. Proposta: o diário é de quem o abriu; o segundo recebe "este diário foi alterado em outro aparelho" e escolhe a versão.
-- **Pagamento dos planos** (Stripe, por ser EUA) e o que acontece com a conta quando o teste acaba.
+- **Uma pessoa, uma empresa.** Cada login pertence a uma empresa só (`membros.user_id` único); dentro dela, a pessoa pode estar em N obras (`alocacoes`).
+- **Uma empresa, uma conta, com 1 ou N funcionários.** O preço por número de funcionários é discutido no fim do projeto.
+- **Região do projeto Supabase:** conferir na fatia 1; o ideal para clientes nos EUA é uma região dos EUA (se não for, criar outro projeto agora, ainda vazio).
+- **Conflito no offline:** o diário é de quem o abriu; se outro aparelho alterou sem sinal, o segundo recebe o aviso e escolhe a versão.
+- **Pagamento dos planos** (Stripe) e o fim do teste: **a última coisa do projeto**, junto com o preço.
 
 ## 9. Migrações, em fatias
 
@@ -118,7 +120,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 
 | Fatia | O que entra | O app passa a |
 | --- | --- | --- |
-| 1 | `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `criar_conta()` reescrita, `auditoria` com `empresa_id`; remoção de `perfis` e `contatos` antigos | Criar a conta, entrar (tela oficial), escolher a empresa, convidar usuários e editar perfis |
+| 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, **com o ok do usuário**, a saída de `perfis`, `contatos` e `criar_conta()` | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
 | 2 | Settings: funcionários com valores e certificações, encargos, regras de jornada, listas, contatos; obras e modelos de cronograma | Cadastrar tudo no banco |
 | 3 | Daily: diários, fotos (Storage), histórico, aprovação entre empresas, link do cliente; sincronização offline | Usar o diário de verdade |
 | 4 | Crew: equipes, batidas, localizações, aprovações, orçamentos; presença na obra para a contratante | Bater o ponto de verdade |
