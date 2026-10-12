@@ -34,20 +34,20 @@
 
 | Tabela | Colunas principais | Regras |
 | --- | --- | --- |
-| `funcionarios` | `empresa_id`, `nome`, `codigo`, `funcao`, `equipe_id`, `admissao`, `classificacao` (w2 · 1099), `flsa`, `situacao`, `desligamento`, `telefone`, `emergencia`, `aviso_gps_em` | SET-010 a SET-016. SSN e documentos não entram (SET-012). |
-| `funcionario_valores` | `funcionario_id`, `desde`, `valor`, `motivo`, `por`, `em` | Só `insert` (SET-013); não começa dentro de semana aprovada (SET-014), checado por função. |
-| `certificacoes` | `funcionario_id`, `nome`, `validade` | |
-| `encargos_versoes` | `empresa_id`, `desde`, `itens jsonb`, `motivo`, `por`, `em` | Só `insert`, nunca no passado (SET-021). |
+| `funcionarios` | `empresa_id`, `nome`, `codigo`, `funcao`, `admissao`, `classificacao` (w2 · 1099), `flsa`, `situacao`, `desligamento`, `telefone`, `emergencia`, `aviso_gps_em`, `certificacoes jsonb` ([{nome, validade}]); `equipe_id` entra com as equipes (fatia 4) | SET-010 a SET-016. SSN e documentos não entram (SET-012). 1099 é sempre isento. Cadastro com o valor da admissão por `criar_funcionario(dados, valor)`. |
+| `funcionario_valores` | `empresa_id`, `funcionario_id`, `desde`, `valor`, `motivo`, `por`, `em` | Só `insert` (SET-013); lido só por quem tem `settings.funcionarios` ou `crew.custos`. Não começar dentro de semana aprovada (SET-014) entra na fatia 4, com `aprovacoes_semana`. |
+| `encargos_versoes` | `empresa_id`, `desde`, `itens jsonb`, `motivo`, `por`, `em` | Só `insert`, da semana atual em diante, no fuso da empresa (`configuracao.fuso`, padrão Nova York) (SET-021). Lido só com `settings.regras` ou `crew.custos`. |
 | `regras_jornada_versoes` | `empresa_id`, `desde` (segunda-feira), `semanal`, `diaria`, `intervalo` (`jsonb`), `nome`, `nota`, `motivo`, `por`, `em` | SET-022, SET-023. |
-| `listas` | `empresa_id`, `tipo` (funcoes · equipamentos · ocorrencias…), `valores text[]` | As listas que hoje estão fixas (BD-07). |
-| `contatos` | `empresa_id`, `nome`, `pessoa`, `papeis text[]`, endereço, `email`, `telefone`, `etapas text[]`, `notas`, `conta_empresa_id` | `conta_empresa_id` = a empresa do contato que tem conta no KORbuild (o `contaId` do protótipo). |
+| `contatos` | `empresa_id`, `nome`, `pessoa`, `papeis text[]`, endereço, `email`, `telefone`, `etapas text[]`, `notas`, `conta_empresa_id` | `conta_empresa_id` = a empresa do contato que tem conta no KORbuild (o `contaId` do protótipo). Nome único na empresa; `etapas` só no fornecedor. |
+
+As listas configuráveis (funções, equipamentos, ocorrências) entram quando o módulo que as usa for para o banco. **Referências entre cadastros ficam na mesma empresa** por chaves estrangeiras compostas (`empresa_id`, `id`). **Meu perfil:** cada um muda o próprio nome e telefone por `atualizar_meu_perfil(nome, telefone)`; idioma, e-mail e senha ficam no Auth.
 | `auditoria` | `empresa_id`, `em`, `por` (user_id e nome), `area`, `descricao`, `antes`, `depois`, `motivo` | Reaproveita a tabela que ficou, com `empresa_id` a mais (§7). |
 
 ## 4. Obras, Daily e cronograma
 
 | Tabela | Colunas principais | Regras |
 | --- | --- | --- |
-| `alocacoes` | `empresa_id`, `obra_id`, `membro_id` ou `funcionario_id`, `papel`, `desde`, `ate` | Quem trabalha em quais obras: uma pessoa em N obras. Base para as permissões por obra (o encarregado vê só as dele). |
+| `alocacoes` | `empresa_id`, `obra_id`, `membro_id` ou `funcionario_id`, `papel`, `desde`, `ate` | Quem trabalha em quais obras: uma pessoa em N obras. Base para as permissões por obra (o encarregado vê só as dele). Fatia 2. |
 | `obras` | `empresa_id`, `nome`, `contratante_id`, `dono_id` (→ `contatos`), endereço, `municipio`, `estado`, `zip`, `cerca` (lat, lon, raio), `inicio`, `prazo`, `responsavel_id` (membro), `dias_trabalho int[]`, `situacao`, `projeto_id`, **`vinculo_empresa_id`, `vinculo_obra_id`**, `concorrencia_id` | O `vinculo` liga a obra da contratada à obra de quem contratou (HS-05, CO-14). |
 | `rdos` | `empresa_id`, `obra_id`, `data`, `numero`, `status` (rascunho · enviado · ajuste · aprovado), `autor`, `conteudo jsonb` (clima, equipe, equipamentos, atividades, ocorrências, observações), `enviado_em`, `aprovado_em`, `aprovado_por`, `aprovado_por_empresa`, `hash_documento`, `codigo` | Aprovado = lacrado: o gatilho recusa `update` depois da aprovação. Quem aprova pode ser de outra empresa (HS-11): só pela função `aprovar_rdo(id)`. |
 | `rdo_fotos` | `rdo_id`, `path` (Storage), `legenda`, `tirada_em`, `lat`, `lon`, `fonte_gps`, `precisao`, `largura`, `altura`, `tamanho`, `hash_original` | |
@@ -56,7 +56,7 @@
 | `etapa_avancos` | `etapa_id`, `em`, `pct`, `fonte` (manual · rdo), `rdo_id`, `por` | Só `insert` (SET-052). |
 | `linhas_base` | `empresa_id`, `obra_id`, `em`, `por`, `motivo`, `etapas jsonb` | Só `insert` (SET-051). |
 | `publicacoes_cronograma` | `de_empresa_id`, `para_empresa_id`, `para_obra_id`, `versao`, `em`, `por`, `retrato jsonb` | Só `insert`; a contratante lê pela função `cronogramas_recebidos(obra_id)` (SET-057). |
-| `modelos_cronograma` | `empresa_id`, `nome`, `etapas jsonb` | |
+| `modelos_cronograma` | `empresa_id`, `nome`, `etapas jsonb` | Fatia 2. Etapas `[{nome, pct}]` somando 100%. |
 
 **Link do cliente:** o código do diário aprovado abre o PDF sem login pela função `diario_por_codigo(codigo)`, que devolve só aquele diário lacrado.
 
@@ -119,10 +119,12 @@ Enviar, responder, mandar proposta, fechar, aprovar quarteirização e escrever 
 
 Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de acesso (um usuário de cada empresa tentando ler o que não pode), e o app passa a usar o banco naquela parte. O protótipo (`?demo`) continua como está.
 
+**Antes de ir para o Supabase**, `tools/banco-local.sh` roda a estrutura, todas as migrações e todos os testes num Postgres local que imita o Supabase (`supabase/local/supabase-simulado.sql`: papéis, `auth.uid()` e as permissões padrão do `public`, que liberam toda tabela nova para o app e deixam a proteção com o RLS).
+
 | Fatia | O que entra | O app passa a |
 | --- | --- | --- |
 | 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada); `0002` (quem foi desativado lê o próprio cadastro) e `0003` (excluir a empresa em cascata, sem esbarrar nas travas nem na auditoria). Teste do app contra o banco: `tests/conta.test.mjs` (23/23) ✓ | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
-| 2 | Settings: funcionários com valores e certificações, encargos, regras de jornada, listas, contatos; obras e modelos de cronograma | Cadastrar tudo no banco |
+| 2 | `supabase/migrations/20261013_0004_settings.sql` (só cria): `funcionarios` (com certificações), `funcionario_valores`, `encargos_versoes`, `regras_jornada_versoes`, `contatos`, `obras` (sem apagar; a ligação entre obras só pelas funções do banco), `alocacoes`, `modelos_cronograma`, `criar_funcionario()`, `atualizar_meu_perfil()`. Teste: `supabase/testes/0002_settings.sql` | Cadastrar tudo no banco; meu perfil (nome, idioma, e-mail, senha) |
 | 3 | Daily: diários, fotos (Storage), histórico, aprovação entre empresas, link do cliente; sincronização offline | Usar o diário de verdade |
 | 4 | Crew: equipes, batidas, localizações, aprovações, orçamentos; presença na obra para a contratante | Bater o ponto de verdade |
 | 5 | Cronograma: etapas, avanços, linhas de base, publicações | |
