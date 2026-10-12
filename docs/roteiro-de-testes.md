@@ -1,0 +1,98 @@
+# KORbuild — roteiro de testes
+
+> Para rodar no seu computador (Windows, PowerShell), sozinho ou pela sessão local do Claude Code.
+> Duas partes: **automática** (um comando, gera um resumo) e **manual** (no navegador, no endereço de homologação).
+> Nada aqui muda a estrutura do banco: os testes SQL terminam em ROLLBACK e o teste da conta apaga o que cria.
+> Migrações **não** fazem parte do roteiro: são executadas à parte, depois de revisadas (CLAUDE.md).
+
+## 1. Preparar (uma vez)
+
+Na pasta do projeto, no PowerShell:
+
+```powershell
+git pull origin main
+npm install --no-save playwright@1.56.1
+npx playwright install chromium
+```
+
+Para os testes do banco, o token pessoal do Supabase fica **só** na variável de ambiente da sessão (nunca no chat nem em arquivo):
+
+```powershell
+$env:SUPABASE_ACCESS_TOKEN = "<cole aqui só no PowerShell>"
+```
+
+## 2. Parte automática
+
+```powershell
+.\tools\testar.ps1                    # tudo (protótipo, telas oficiais e banco)
+.\tools\testar.ps1 -Parte prototipo   # só no navegador, sem banco (sem token)
+.\tools\testar.ps1 -Parte banco       # só o que fala com o Supabase
+.\tools\testar.ps1 -Somente crew,obras
+```
+
+O script sobe o servidor local na porta 8123 (se ainda não estiver no ar), roda os testes, encerra o servidor e grava
+`.testes\<data-hora>\resumo.md` (a tabela e as falhas) e a saída completa de cada teste. Termina com código 0 se tudo
+passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
+
+| Teste | Onde | O que confere | Tempo |
+|---|---|---|---|
+| `imperial`, `formulas` | Node | Pés-polegadas, frações, escalas e o motor de fórmulas do Measure | segundos |
+| `entrada` | navegador | Tela de entrada: login oficial, portal e protótipo (`?demo`) | ~5 s |
+| `demo` | navegador | O protótipo inteiro com os dados de demonstração | ~1 min |
+| `saas`, `obras`, `cronograma` | navegador | Empresas, obras e prestadoras; cadastro de obras; cronograma | ~1 min cada |
+| `crew` | navegador | Ponto, timesheets, custos | ~10 s |
+| `measure` | navegador | Plantas, escala, medições, assemblies, proposta | ~2 min |
+| `concorrencias` | navegador | Concorrências, convites, propostas, quarteirização | ~2 min |
+| `portal` | navegador | Portal de especificações e manual (PT e EN) | ~1 min |
+| `ingles` | navegador | Nenhuma tela em inglês com palavra em português | ~1,5 min |
+| `oficial-simulado` | navegador | As telas oficiais (conta e cadastros) com um Supabase **falso** em memória | ~5 s |
+| `sql 0001_acesso`, `sql 0002_settings` | Supabase | Regras de acesso das fatias 1 e 2 (cada empresa só vê o que é dela; dinheiro só para quem pode) | segundos |
+| `conta` | navegador + Supabase | O caminho real: entrar, criar empresa, perfis, Meu perfil, cadastros, convite, permissões, auditoria | ~2 min |
+
+O teste `conta` cria os usuários `kb-e2e-ana@example.com` e `kb-e2e-beto@example.com` (já confirmados, nenhum
+e-mail sai) e a empresa "Construtora E2E", e apaga tudo no fim. Se a limpeza falhar, **não apague nada à mão**:
+mande o erro.
+
+## 3. Parte manual (homologação)
+
+Endereço: **https://nardacci.github.io/KORbuildtech/** — use Ctrl+Shift+R para pegar a versão nova.
+Use e-mails seus com `+` (ex.: `seunome+t1@gmail.com`): chegam na sua caixa e contam como contas diferentes.
+Marque cada item; se algo estranhar, tire um print.
+
+### Conta (fatia 1)
+- [ ] Criar conta com a tela em **PT**: chega "Confirme sua conta no KORbuild", em português, com o visual do KORbuild.
+- [ ] Criar outra com a tela em **EN**: chega "Confirm your KORbuild account", em inglês.
+- [ ] O link do e-mail volta para o site já logado, na tela "Sua empresa", com o nome preenchido.
+- [ ] Criar a empresa: entra na área da conta como Administrador.
+- [ ] Usuários → convidar o outro e-mail; abrir o link numa janela anônima; entrar; aceitar o convite.
+- [ ] Trocar o perfil do convidado; desativar; ele vê "Seu acesso foi desativado".
+- [ ] Esqueci a senha: chega "Crie uma nova senha no KORbuild" no idioma da conta; a senha nova funciona.
+
+### Meu perfil (fatia 2)
+- [ ] Mudar nome e telefone: o nome aparece no topo.
+- [ ] Trocar PT|EN: a tela muda; o próximo e-mail sai no idioma escolhido.
+- [ ] Trocar o e-mail para outro `+`: chega "Confirme o seu novo e-mail"; até abrir o link, a tela mostra "Aguardando a confirmação".
+- [ ] Trocar a senha e entrar com a nova.
+
+### Cadastros (fatia 2)
+- [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).
+- [ ] Obras: criar uma obra marcando o local no **mapa** (o círculo é a cerca); salvar; incluir pessoas em "Quem trabalha nesta obra".
+- [ ] Obras → Modelos de etapas: criar um modelo que some 100% (com 90% o botão recusa).
+- [ ] Funcionários: cadastrar com valor hora e uma certificação; depois "Alterar valor hora" com data e motivo: o histórico mostra os dois.
+- [ ] Regras: salvar a primeira versão dos encargos e da jornada; tentar uma data no passado (recusa).
+- [ ] Entrar como o convidado (Gestor de obras): vê Obras, não vê Funcionários nem Usuários.
+- [ ] No celular: as abas rolam de lado, nada passa da largura da tela.
+
+## 4. Mandar o resultado
+
+Cole no chat o conteúdo de `.testes\<data-hora>\resumo.md` e a lista da parte manual com o que falhou (e os prints).
+
+### Texto para a sessão local do Claude Code
+
+```
+git pull origin main
+Leia docs/roteiro-de-testes.md e rode .\tools\testar.ps1 (com $env:SUPABASE_ACCESS_TOKEN já definido nesta sessão).
+Mostre o resumo.md inteiro. Para cada falha, mostre as linhas "FALHA" e "encontrado:" e o fim da saída do teste.
+Não execute migrações, não apague nada à mão e não use session_replication_role. Se a limpeza do teste da conta falhar, pare e mostre o erro.
+No fim, confirme com select count(*) que não sobrou usuário kb-e2e-% nem a empresa "Construtora E2E".
+```

@@ -62,28 +62,35 @@ function lembrarIdioma() {
   sb.auth.updateUser({ data: { idioma: idioma() } }).catch(() => { /* fica para a próxima vez */ });
 }
 
-/* O membro (uma pessoa, uma empresa), a empresa, os perfis e — para quem cuida dos acessos — os usuários e convites. */
+/* O membro (uma pessoa, uma empresa), a empresa, os perfis e — para quem cuida dos acessos — os usuários e convites.
+ * Lê tudo antes e troca o estado de uma vez só. Se alguma leitura falhar (rede, troca de token no meio), mantém o que
+ * já havia: senão, por um instante, a pessoa "perderia" as permissões e a tela voltaria para o Início sem motivo. */
+const SEM_EMPRESA = { membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] };
 export async function carregarMinhaConta() {
-  if (!sb || !conta.sessao) { Object.assign(conta, { membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] }); return; }
+  if (!sb || !conta.sessao) { Object.assign(conta, SEM_EMPRESA); return; }
   const uid = conta.sessao.user.id;
-  const { data: membro } = await sb.from('membros').select('*').eq('user_id', uid).maybeSingle();
-  conta.membro = membro || null;
-  if (!membro) { Object.assign(conta, { empresa: null, perfil: null, perfis: [], membros: [], convites: [] }); return; }
-  const [{ data: empresa }, { data: perfis }] = await Promise.all([
+  const m = await sb.from('membros').select('*').eq('user_id', uid).maybeSingle();
+  if (m.error) return;
+  const membro = m.data;
+  if (!membro) { Object.assign(conta, SEM_EMPRESA); return; }
+  const [e, p] = await Promise.all([
     sb.from('empresas').select('*').eq('id', membro.empresa_id).maybeSingle(),
     sb.from('perfis_acesso').select('*').order('criado_em'),
   ]);
-  conta.empresa = empresa || null;
-  conta.perfis = perfis || [];
-  conta.perfil = conta.perfis.find((p) => p.id === membro.perfil_id) || null;
-  if (pode('settings.acesso')) {
-    const [{ data: membros }, { data: convites }] = await Promise.all([
+  if (e.error || p.error) return;
+  const perfis = p.data || [];
+  const perfil = perfis.find((x) => x.id === membro.perfil_id) || null;
+  const novo = { membro, empresa: e.data || null, perfis, perfil, membros: [membro], convites: [] };
+  if (perfil && perfil.permissoes.includes('settings.acesso')) {
+    const [ms, cs] = await Promise.all([
       sb.from('membros').select('*').order('criado_em'),
       sb.from('convites_usuario').select('id, email, nome, perfil_id, criado_em, expira_em, aceito_em, cancelado_em').order('criado_em', { ascending: false }),
     ]);
-    conta.membros = membros || [];
-    conta.convites = convites || [];
-  } else { conta.membros = [membro]; conta.convites = []; }
+    if (ms.error || cs.error) return;
+    novo.membros = ms.data || [];
+    novo.convites = cs.data || [];
+  }
+  Object.assign(conta, novo);
 }
 
 /* O cliente do Supabase, para os cadastros (js/cadastros.js). */

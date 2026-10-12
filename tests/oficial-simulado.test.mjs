@@ -47,7 +47,11 @@ const FALSO = `
     function exec() {
       const lista = db[t] = db[t] || [];
       const casa = (r) => !filtro || r[filtro[0]] === filtro[1];
-      if (op === 'select') { const r = lista.filter(casa); return { data: umSo ? r[0] || null : r, error: null }; }
+      if (op === 'select') {
+        // simula uma leitura que falha no meio (rede, troca de token): a tela não pode "perder" as permissões
+        if (window.__falharUmaVez === t) { window.__falharUmaVez = null; return { data: null, error: { message: 'Failed to fetch' } }; }
+        const r = lista.filter(casa); return { data: umSo ? r[0] || null : r, error: null };
+      }
       gravacoes.push({ t, op, dados, filtro });
       if (op === 'insert') {
         const linhas = (Array.isArray(dados) ? dados : [dados]).map((d) => ({ id: id(), empresa_id: 'e1', criado_em: agora(), em: agora(), por: 'u-ana', ...d }));
@@ -95,6 +99,14 @@ try {
   await ir(a, '#/conta', '.abas-segmento');
   const abas = await a.locator('.oficial-pagina > .abas-segmento a').allInnerTexts();
   verificar(['Obras', 'Funcionários', 'Contatos', 'Regras', 'Usuários'].every((x) => abas.includes(x)), 'o Administrador vê as abas dos cadastros', abas);
+
+  console.log('Leitura que falha no meio');
+  await ir(a, '#/conta/perfis', '.perfil-cartao');
+  await a.evaluate(() => { window.__falharUmaVez = 'perfis_acesso'; });
+  await a.fill('#np-nome', 'Perfil X'); await a.selectOption('#np-base', { label: 'Encarregado' });
+  await a.click('[data-acao="of-novo-perfil"]'); await a.waitForTimeout(800);
+  verificar(a.url().endsWith('#/conta/perfis') && await a.locator('.perfil-cartao').count() >= 2, 'uma leitura que falha não tira o Administrador da aba Perfis', a.url());
+  verificar((await a.locator('.oficial-pagina > .abas-segmento a').allInnerTexts()).includes('Usuários'), 'nem esconde as abas de quem cuida dos acessos');
 
   console.log('Contatos');
   await ir(a, '#/conta/contatos/novo', '#form-contato');

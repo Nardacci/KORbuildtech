@@ -98,7 +98,7 @@ try {
   await a.fill('#np-nome', 'Encarregado com diário'); await a.selectOption('#np-base', { label: 'Encarregado' });
   await a.click('[data-acao="of-novo-perfil"]');
   await a.waitForFunction(() => document.querySelectorAll('.perfil-cartao').length === 5, null, { timeout: ESPERA }).catch(() => null);
-  verificar(await a.locator('.perfil-cartao').count() === 5, 'perfil novo a partir do Encarregado', await a.locator('.perfil-cartao').count());
+  verificar(await a.locator('.perfil-cartao').count() === 5, 'perfil novo a partir do Encarregado', await a.locator('.perfil-cartao').count() + ' cartões · ' + await tela(a));
   await irPara(a, '#/conta/empresa', '#em-telefone');
   await a.fill('#em-telefone', '(603) 555-0199'); await a.click('[data-acao="of-salvar-empresa"]'); await esperar(a, 3000);
   verificar((await sql(`select telefone from public.empresas where nome = 'Construtora E2E'`))[0].telefone === '(603) 555-0199', 'dados da empresa salvos no banco');
