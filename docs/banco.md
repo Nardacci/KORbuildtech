@@ -126,7 +126,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada); `0002` (quem foi desativado lê o próprio cadastro) e `0003` (excluir a empresa em cascata, sem esbarrar nas travas nem na auditoria). Teste do app contra o banco: `tests/conta.test.mjs` (23/23) ✓ | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
 | 2 | `supabase/migrations/20261013_0004_settings.sql` (só cria): `funcionarios` (com certificações), `funcionario_valores`, `encargos_versoes`, `regras_jornada_versoes`, `contatos`, `obras` (sem apagar; a ligação entre obras só pelas funções do banco), `alocacoes`, `modelos_cronograma`, `criar_funcionario()`, `atualizar_meu_perfil()`. Teste: `supabase/testes/0002_settings.sql` | Cadastrar tudo no banco; meu perfil (nome, idioma, e-mail, senha) |
 | 3 | `supabase/migrations/20261014_0005_daily.sql` (só cria): `rdos`, `rdo_fotos`, `rdo_historico`, bucket `diarios` com as políticas das fotos, `salvar_rdo()`, `enviar_rdo()`, `dia_sem_atividade()`, `aprovar_rdo()` (lacre no banco), `pedir_ajustes()`, `diarios_recebidos()`, `diario_por_codigo()`; função de borda `supabase/functions/diario-publico` (link do cliente, fotos por links temporários). Teste: `supabase/testes/0003_daily.sql` (desenho no §10) | Usar o diário de verdade, com e sem internet |
-| 4 | Crew: equipes, batidas, localizações, aprovações, orçamentos; presença na obra para a contratante | Bater o ponto de verdade |
+| 4 | Crew: equipes, batidas (só `insert`), conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
 | 5 | Cronograma: etapas, avanços, linhas de base, publicações | |
 | 6 | Measure: projetos, folhas (Storage), condições, medições, typicals, catálogo, preços, margens, propostas | |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
@@ -187,3 +187,73 @@ em vez de reescrever as telas. As obras e os usuários vêm dos cadastros da fat
 - A **equipe vinda do ponto** (Crew) entra na fatia 4; até lá, a equipe do diário é lançada à mão.
 - O **andamento no cronograma** ao aprovar entra na fatia 5 (o cronograma ainda está só no protótipo).
 - Os **lembretes por e-mail** (16h, 18h, manhã seguinte) entram na fatia 8; o sininho continua no app.
+
+## 11. Fatia 4 — o Crew no banco (desenho para aprovação)
+
+Mesmo caminho da fatia 3: as telas do Crew do protótipo (Meu ponto, Ponto da equipe, Horas, Agora, Timesheets,
+Semana e Dia do funcionário, Custos) passam a funcionar sobre o espelho do banco no aparelho, com e sem internet.
+O cálculo das horas (jornada, hora extra, deslocamento, alertas, custo e projeção) **continua no app**, em
+`js/crew.js`, que já está testado; o banco guarda os fatos (batidas, decisões, orçamentos) e garante as regras que
+não podem depender do aparelho.
+
+### 11.1 Tabelas
+
+| Tabela | Colunas | Regras |
+| --- | --- | --- |
+| `equipes` | `id`, `empresa_id`, `nome`, `encarregado_id` (membro), `obra_base_id`, `ativa` | Nome único na empresa. Cadastro no Settings, com `settings.funcionarios`. `funcionarios.equipe_id` passa a apontar para cá (a coluna prometida no §3). |
+| `batidas` | `id` (gerado **no aparelho**), `empresa_id`, `funcionario_id`, `tipo` (entrada · intervalo-inicio · intervalo-fim · troca · chegada · etapa · saida), `obra_id`, `etapa`, `em`, `lat`, `lon`, `precisao`, `dentro_cerca`, `fonte_gps`, `modo` (proprio · equipe · ajuste), `registrado_por` (membro), `foto_path`, `nota` (até 280), `ajuste_motivo`, `criado_no_aparelho_em`, `recebida_em` | **Só `insert`** (RN-01, BD-04): o gatilho recusa `update` e `delete`. Correção = batida nova com `modo = ajuste` e motivo. Subir de novo o mesmo `id` não duplica. Fora da cerca é aceita e marcada (RN-09). |
+| `batidas_conferidas` | `batida_id`, `empresa_id`, `por`, `em` | "Conferido" do painel Agora: fica numa tabela à parte para a batida continuar intocada. Só `insert`. |
+| `aprovacoes_semana` | `id`, `empresa_id`, `funcionario_id`, `semana` (segunda-feira), `status` (aprovado · devolvido), `motivo`, `por`, `em` | Só `insert`; vale a última decisão (como no protótipo). |
+| `orcamentos_obra` | `id`, `empresa_id`, `obra_id`, `valor`, `avanco`, `por_etapa jsonb`, `por`, `em` | Só `insert` (versões); vale a última. Lido só com `crew.custos`. |
+
+**Storage:** bucket privado `ponto`, caminho `{empresa_id}/{funcionario_id}/{batida_id}.jpg`, com as mesmas
+políticas do bucket `diarios` (só a própria empresa, só quem pode ver o ponto).
+
+### 11.2 Quem faz o quê
+
+| Ação | Como | Quem pode |
+| --- | --- | --- |
+| Bater o próprio ponto | `registrar_batidas(lista)` | `crew.ponto.proprio`, só para o funcionário ligado ao próprio usuário (`membros.funcionario_id`) |
+| Bater o ponto da equipe (RN-10) | `registrar_batidas(lista)` | `crew.ponto.equipe`, para **qualquer funcionário ativo da empresa** (a equipe é só a lista que aparece primeiro; mesma decisão do Daily) |
+| Ajustar um dia (CREW-04) | `ajustar_batida(dados, motivo)` | `crew.aprovar`; recusa em semana aprovada |
+| Conferir batida fora da cerca | `conferir_batida(id)` | `crew.acompanhar` |
+| Aprovar / devolver a semana (RN-11) | `decidir_semana(funcionarios, semana, status, motivo)` | `crew.aprovar`. O banco recusa aprovar dia passado **sem saída** (RN-08) e devolver sem motivo |
+| Ler batidas, equipes, aprovações | RLS | Quem tem `crew.acompanhar` lê a empresa toda; o encarregado (`crew.ponto.equipe`) lê as de toda a empresa sem dinheiro; o trabalhador lê só as próprias |
+| Orçamento da obra | `insert` direto | `crew.custos` |
+| Presença para a contratante (HS-10) | `presenca_na_obra(obra_id, de, ate)` | A contratante, nas obras ligadas à dela (e na cadeia, até 3 níveis, CO-21), com `crew.acompanhar` ou `daily.acompanhar` |
+
+**Valor hora × semana aprovada (RN-13 / SET-014):** um gatilho em `funcionario_valores` recusa um `desde` que caia
+numa semana já aprovada daquele funcionário. É a regra que ficou pendente da fatia 2.
+
+**Presença para a contratante:** a função devolve, de cada prestadora ligada, nome, função e as batidas daquelas
+pessoas **naquela obra** (tipo, hora, dentro/fora da cerca); a batida em outra obra da prestadora vem só como
+"outra obra", sem o nome. Nada de valor hora, encargos, custo nem orçamento. As horas são somadas no app pela mesma
+`jornada()`, como no protótipo. Nada de política RLS abrindo `batidas` para outra empresa (BD-03).
+
+### 11.3 Sem internet (BD-08)
+
+- A batida nasce no aparelho com o **id e a hora da batida** (`em`) gravados ali; o banco grava também quando
+  recebeu (`recebida_em`). Assim, o ponto batido sem sinal às 7h continua às 7h quando sobe às 10h.
+- A fila do aparelho guarda as batidas e as fotos; quando o sinal volta, sobem **primeiro as fotos**, depois as
+  batidas, na ordem. Como a batida nunca é editada, **não há conflito** entre aparelhos: dois encarregados que
+  baterem a mesma pessoa geram duas batidas, e o escritório vê e ajusta (como hoje).
+- Aprovar, devolver, ajustar e conferir são do escritório e pedem internet (a tela avisa).
+- A sincronização reaproveita `js/sincronizacao.js` e o espelho (`js/espelho.js`), que passa a montar também o
+  `crew` do protótipo a partir do banco (funcionários, valores, encargos e regras já vêm da fatia 2).
+
+### 11.4 Ligações
+
+- **Equipe do diário vinda do ponto (CREW-12):** com o `crew` no espelho, o Daily volta a preencher a equipe do dia
+  com a presença do ponto, como no protótipo. É o item que ficou da fatia 3 (§10.5).
+- **Custos:** o app calcula com o valor hora vigente em cada dia, os encargos e a regra de jornada da semana
+  (fatia 2). Quem não tem `crew.custos` não recebe `funcionario_valores` nem `encargos_versoes` (já é assim no RLS).
+
+### 11.5 Fica para depois
+
+- **Registros de localização durante a jornada (PONTO-GPS-01):** precisam de app nativo (o PWA não grava em segundo
+  plano) e o requisito ainda está em estudo. Nesta fatia fica só a posição de cada batida; a tabela `localizacoes`
+  entra junto com o app nativo. O mapa do dia mostra as batidas.
+- **Avisos do sininho** (sem saída, timesheets pendentes, batida fora da cerca) continuam calculados no app; o
+  e-mail fica para a fatia 8.
+- **CSV para a folha:** continua gerado no app, só com semanas aprovadas. Integrações (QuickBooks, Gusto, ADP) ficam
+  para depois do lançamento.
