@@ -128,11 +128,14 @@ try {
   verificar(await b.locator('#em-nome[readonly]').count() === 1, 'a empresa é só para consulta para o Gestor');
 
   console.log('Regras de acesso');
-  // o Beto entrou depois que a Ana abriu Usuários: a aba relê do banco ao abrir
+  // o Beto entrou depois que a Ana abriu Usuários (ela ficou nessa aba depois de convidar): como quem clica nas abas,
+  // passa pelo Início e volta para Usuários, que relê do banco ao abrir
+  await irPara(a, '#/conta', '.oficial-topo');
   await irPara(a, '#/conta/usuarios', '.tabela-membros');
   await a.waitForFunction(() => document.querySelectorAll('.tabela-membros tbody tr').length === 2, null, { timeout: ESPERA }).catch(() => null);
   const listas = await a.locator('select[data-acao-mudar="of-perfil-membro"]').count();
   verificar(listas === 1, 'o Administrador não tem a lista para mudar o próprio perfil (só a do Beto)', listas + ' lista(s) · ' + await a.locator('.tabela-membros tbody tr').count() + ' usuário(s) na tabela');
+  if (!listas) throw new Error('sem a lista de perfil do Beto: as verificações seguintes dependem dela');
   await a.selectOption('select[data-acao-mudar="of-perfil-membro"]', { label: 'Trabalhador' }); await esperar(a, 3000);
   verificar((await sql(`select pa.chave from public.membros m join public.perfis_acesso pa on pa.id = m.perfil_id join auth.users u on u.id = m.user_id where u.email = '${BETO}'`))[0].chave === 'trabalhador', 'perfil do Beto trocado para Trabalhador');
   a.on('dialog', (d) => d.accept());

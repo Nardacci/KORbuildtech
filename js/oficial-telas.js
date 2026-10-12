@@ -25,6 +25,10 @@ function relerAoAbrir() {
   ultimaReleitura = Date.now();
   carregarMinhaConta().then(() => redesenhar()).catch(() => { /* fica o que já estava na tela */ });
 }
+// quem deixou Usuários aberto e volta para a janela (o convidado aceitou nesse meio-tempo) vê a lista atualizada
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && location.hash.startsWith('#/conta/usuarios') && conta.sessao) relerAoAbrir();
+});
 const guardarConvite = (t) => { try { sessionStorage.setItem(CONVITE, t); } catch (e) { /* sem armazenamento */ } };
 const conviteGuardado = () => { try { return sessionStorage.getItem(CONVITE); } catch (e) { return null; } };
 const esquecerConvite = () => { try { sessionStorage.removeItem(CONVITE); } catch (e) { /* */ } };
