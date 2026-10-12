@@ -3,10 +3,10 @@
  *   node tests/cronograma.test.mjs [http://localhost:8123/] */
 
 import { chromium } from 'playwright';
-import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { inflateRawSync } from 'node:zlib';
 
 const BASE = (process.argv[2] || 'http://localhost:8123/') + '?demo'; // o protótipo (a página oficial é sem ?demo)
 let falhas = 0, passos = 0;
@@ -36,12 +36,30 @@ const noDialogo = async (texto) => { await page.click('dialog button:has-text("'
 const banco = () => page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
 const crono = async () => (await banco()).empresas['prestadora-exemplo'].cronogramas['nf-jardim'];
 
+/* Os arquivos de dentro de um .zip (o .xlsx é um zip), pelo diretório central, sem programa externo (roda no Windows). */
+function lerZip(caminho) {
+  const b = readFileSync(caminho);
+  let fim = b.length - 22;
+  while (fim >= 0 && b.readUInt32LE(fim) !== 0x06054b50) fim--;
+  const total = b.readUInt16LE(fim + 10);
+  let p = b.readUInt32LE(fim + 16);
+  const arquivos = {};
+  for (let i = 0; i < total; i++) {
+    const metodo = b.readUInt16LE(p + 10), tamanho = b.readUInt32LE(p + 20);
+    const nLen = b.readUInt16LE(p + 28), eLen = b.readUInt16LE(p + 30), cLen = b.readUInt16LE(p + 32), local = b.readUInt32LE(p + 42);
+    const nome = b.toString('utf8', p + 46, p + 46 + nLen);
+    const ini = local + 30 + b.readUInt16LE(local + 26) + b.readUInt16LE(local + 28);
+    const dados = b.subarray(ini, ini + tamanho);
+    arquivos[nome] = metodo === 8 ? inflateRawSync(dados) : dados;
+    p += 46 + nLen + eLen + cLen;
+  }
+  return arquivos;
+}
 /* Lê uma planilha .xlsx baixada: os textos (sharedStrings) e a planilha. */
 function lerXlsx(caminho) {
-  const pasta = mkdtempSync(join(tmpdir(), 'xlsx-'));
-  execFileSync('unzip', ['-q', '-o', caminho, '-d', pasta]);
-  const ler = (f) => { try { return readFileSync(join(pasta, f), 'utf8'); } catch { return ''; } };
-  return { textos: ler('xl/sharedStrings.xml'), planilha: ler('xl/worksheets/sheet1.xml'), estilos: ler('xl/styles.xml'), arquivos: execFileSync('unzip', ['-Z1', caminho]).toString() };
+  const zip = lerZip(caminho);
+  const ler = (f) => (zip[f] ? zip[f].toString('utf8') : '');
+  return { textos: ler('xl/sharedStrings.xml'), planilha: ler('xl/worksheets/sheet1.xml'), estilos: ler('xl/styles.xml'), arquivos: Object.keys(zip).join('\n') };
 }
 
 await page.goto(BASE);
