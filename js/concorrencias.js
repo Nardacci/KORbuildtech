@@ -70,9 +70,11 @@ function visaoDoConvidado(c, v) {
   const orcamento = c.orcamento && c.orcamento.mostrar === 'total' ? { mostrar: 'total', valor: c.orcamento.valor }
     : c.orcamento && c.orcamento.mostrar === 'etapa' ? { mostrar: 'etapa', valor: c.orcamento.valor, porEtapa: { ...c.orcamento.porEtapa } }
       : { mostrar: 'nao' };
+  const dados = empresaPorId(c.contratanteId) || {};
+  const o = (dados.obras || []).find((x) => x.id === c.obraId);
   return {
-    id: c.id, contratanteId: c.contratanteId, contratante: (empresaPorId(c.contratanteId) || {}).empresa || null,
-    obraId: c.obraId, servico: c.servico, etapas: c.etapas.slice(), incluso: c.incluso.slice(), excluso: c.excluso.slice(),
+    id: c.id, contratanteId: c.contratanteId, contratante: dados.empresa || null,
+    obraId: c.obraId, obra: o ? { nome: o.nome, endereco: o.endereco || '', cidade: o.municipio || o.cidade || '', estado: o.estado || '', zip: o.zip || '' } : null, servico: c.servico, etapas: c.etapas.slice(), incluso: c.incluso.slice(), excluso: c.excluso.slice(),
     observacoes: c.observacoes, desenhos: c.desenhos.slice(), prazo: c.prazo, inicio: c.inicio, termino: c.termino,
     exigencias: JSON.parse(JSON.stringify(c.exigencias || {})), quarteirizacao: c.quarteirizacao, orcamento,
     situacao: c.situacao === 'fechada' ? 'fechada' : c.situacao === 'cancelada' ? 'cancelada' : situacaoDe(c),
@@ -221,7 +223,7 @@ export function comparar(c) {
     const p = ultimaProposta(v);
     const naoCotadas = c.etapas.filter((e) => p.porEtapa[e] == null);
     const exclusoesNoEscopo = p.exclusoes.filter((x) => c.incluso.some((i) => contem(i, x) || contem(x, i)));
-    return { conviteId: v.id, nome: v.nome, comConta: !!v.empresaId, rev: p.rev, numero: p.numero, enviadaEm: p.enviadaEm, total: p.total, prazoExecucaoDias: p.prazoExecucaoDias, exclusoes: p.exclusoes.slice(), naoCotadas, exclusoesNoEscopo };
+    return { conviteId: v.id, nome: v.nome, comConta: !!v.empresaId, rev: p.rev, numero: p.numero, enviadaEm: p.enviadaEm, total: p.total, outros: p.outros || 0, prazoExecucaoDias: p.prazoExecucaoDias, exclusoes: p.exclusoes.slice(), naoCotadas, exclusoesNoEscopo };
   });
   const linhas = c.etapas.map((e) => {
     const valores = {};
@@ -251,6 +253,22 @@ export function fechar(id, conviteId, observacao, por, agora = Date.now()) {
     else if (ultimaProposta(x)) x.situacao = 'nao-escolhida';
   }
   registrar(c, por, tr('Concorrência fechada'), v.nome + ' · rev. ' + p.rev, agora);
+  // CO-14: na vencedora com conta, o projeto do Measure vira Ganha e guarda a ligação para a obra que ela criar
+  const dadosDela = v.empresaId && empresaPorId(v.empresaId);
+  const pj = dadosDela && v.projetoId && ((dadosDela.measure || {}).projetos || []).find((x) => x.id === v.projetoId);
+  if (pj) {
+    pj.situacao = 'ganha';
+    pj.concorrencia = { ...(pj.concorrencia || {}), id: c.id, conviteId: v.id, contratanteId: c.contratanteId, vinculo: { empresaId: c.contratanteId, obraId: c.obraId } };
+  }
+  salvar();
+  return { ok: true };
+}
+
+/* A convidada liga o convite ao projeto que criou no Measure para cotar ("Vou cotar"). */
+export function vincularProjeto(id, projetoId, quem) {
+  const { v } = alvo(id, quem);
+  if (!v) return { erro: tr('Convite não encontrado.') };
+  v.projetoId = projetoId;
   salvar();
   return { ok: true };
 }
@@ -332,7 +350,10 @@ export function enviarProposta(id, dados, por, quem, agora = Date.now()) {
     if (!(n > 0)) return { erro: tr('Valor inválido na etapa {e}.', { e }) };
     porEtapa[e] = n;
   }
-  const soma = Math.round(Object.values(porEtapa).reduce((s, x) => s + x, 0) * 100) / 100;
+  // outros: o que a proposta tem fora das etapas da concorrência (mobilização, caçamba…)
+  const outros = dados.outros === '' || dados.outros == null ? 0 : valor(dados.outros);
+  if (!(outros >= 0)) return { erro: tr('Valor inválido em outros itens.') };
+  const soma = Math.round((Object.values(porEtapa).reduce((s, x) => s + x, 0) + outros) * 100) / 100;
   const total = dados.total === '' || dados.total == null ? soma : valor(dados.total);
   if (!(total > 0)) return { erro: tr('Informe o total da proposta.') };
   if (Object.keys(porEtapa).length && Math.abs(total - soma) > 0.01) return { erro: tr('O total precisa ser a soma dos valores por etapa.') };
@@ -340,7 +361,7 @@ export function enviarProposta(id, dados, por, quem, agora = Date.now()) {
   if (prazoExecucaoDias != null && !(prazoExecucaoDias > 0)) return { erro: tr('Prazo de execução inválido.') };
   const rev = v.propostas.length + 1;
   v.propostas.push({
-    rev, numero: dados.numero || null, enviadaEm: agora, por: por || '—', total, porEtapa, prazoExecucaoDias,
+    rev, numero: dados.numero || null, enviadaEm: agora, por: por || '—', total, porEtapa, outros, prazoExecucaoDias,
     exclusoes: textoItens(dados.exclusoes), pdf: dados.pdf || null,
   });
   v.situacao = 'proposta';

@@ -312,6 +312,98 @@ verificar(page.url().endsWith('#/daily/concorrencias') && await page.locator('.t
 await ir('u-carlos', '#/daily/concorrencias');
 verificar(!page.url().includes('concorrencias') && await page.locator('nav a[href="#/daily/concorrencias"]').count() === 0, 'o encarregado não vê nem abre as concorrências');
 
+console.log('A convidada (fatia 3)');
+// a construtora convida a Northfield para um serviço novo
+const mezId = await rodar((m, a, h) => h.como(h.GC, () => {
+  const c = m.salvarRascunho(null, { obraId: 'galpao', servico: 'Drywall do mezanino', etapas: ['09 29 00 · Gypsum board', '09 91 00 · Painting'], incluso: 'Drywall do mezanino\nPintura das paredes novas', excluso: 'Forro', prazo: '2026-10-20T17:00', convidados: ['ct-northfield', 'ct-bayside'], orcamento: { valor: 50000, mostrar: 'total' } }, 'Ana Ribeiro');
+  m.enviar(c.id, 'Ana Ribeiro');
+  return c.id;
+}));
+await ir('u-tom', '#/measure/convites');
+verificar(await page.locator('nav a[href="#/measure/convites"]').count() > 0, 'Convites no menu do Measure da prestadora');
+txt = await page.locator('.tabela-convites').innerText();
+verificar(txt.includes('Drywall do mezanino') && txt.includes('Framing e drywall') && txt.includes('Construtora Exemplo'), 'a lista mostra os convites, com a contratante');
+await page.locator('.tabela-convites a', { hasText: 'Drywall do mezanino' }).click();
+await page.waitForTimeout(500);
+txt = await page.locator('main').innerText();
+verificar(txt.includes('Vai cotar?') && txt.includes('Galpão Logístico Rodovia') && txt.includes('50.000,00') && !txt.includes('Bayside'), 'o convite mostra o pacote, o orçamento que a construtora quis mostrar, e nada das outras convidadas');
+verificar(await rodar((m, a, h, x) => !!m.concorrenciaEnviada(x, h.GC).convites.find((v) => v.nome.includes('Northfield')).vistoEm, mezId), 'abrir o convite avisa a construtora que foi visto');
+await page.locator('[data-acao="cv-vou"]').click();
+await page.waitForTimeout(600);
+txt = await page.locator('main').innerText();
+verificar(page.url().includes('#/measure/projeto/') && txt.includes('Concorrência de Construtora Exemplo') && txt.includes('Drywall do mezanino · Galpão Logístico Rodovia'), '"Vou cotar" cria o projeto no Measure, com a faixa da concorrência');
+const pjId = page.url().split('/projeto/')[1];
+r = await rodar((m, a, h, x) => {
+  const v = m.concorrenciaEnviada(x.mez, h.GC).convites.find((y) => y.nome.includes('Northfield'));
+  const pj = h.como(h.NF, () => a.estado().measure.projetos.find((p) => p.id === x.pj));
+  return { sit: v.situacao, pj: v.projetoId === x.pj, ct: pj.contratanteId, prazo: pj.prazoProposta, cid: pj.concorrencia.id === x.mez };
+}, { mez: mezId, pj: pjId });
+verificar(r.sit === 'vai-cotar' && r.pj && r.cid, 'o convite fica "vai cotar", ligado ao projeto');
+verificar(r.ct === 'ct-construtora' && r.prazo === '2026-10-20', 'o projeto já vem com a contratante (dos Contatos) e o prazo da proposta');
+// a proposta emitida no Measure (as linhas viriam da medição; aqui, uma emissão pronta)
+await rodar((m, a, h, x) => h.como(h.NF, () => {
+  const p = a.estado().measure.projetos.find((y) => y.id === x);
+  p.propostas = [{ numero: 'P-2026-090', emitidaEm: new Date().toISOString(), por: 'Tom Reilly', total: 31500, dados: { linhas: [{ titulo: 'Gypsum board', codigo: '09 29 00', valor: 30000, materiais: [] }], extras: [{ descricao: 'Mobilização', valor: 1500 }] } }];
+  a.salvar();
+}), pjId);
+await ir('u-tom', '#/measure/projeto/' + pjId + '/proposta');
+await page.locator('[data-acao="cv-plataforma"]').click();
+txt = await page.locator('dialog').innerText();
+verificar(txt.includes('30.000,00') && txt.includes('1.500,00') && txt.includes('não cotada'), 'Enviar pela plataforma: drywall por etapa, mobilização em outros itens, pintura não cotada');
+await page.fill('dialog #cv-prazo', '20');
+await page.locator('dialog button', { hasText: 'Enviar' }).click();
+await page.waitForTimeout(500);
+verificar(await page.locator('.prop-versoes .etiqueta', { hasText: 'Enviada pela plataforma' }).count() === 1, 'a proposta emitida fica marcada como enviada');
+r = await rodar((m, a, h, x) => {
+  const c = m.concorrenciaEnviada(x, h.GC);
+  const col = m.comparar(c).colunas.find((k) => k.nome.includes('Northfield'));
+  return { total: col.total, outros: col.outros, nao: col.naoCotadas.length, numero: col.numero, prazo: col.prazoExecucaoDias, excl: col.exclusoes };
+}, mezId);
+verificar(r.total === 31500 && r.outros === 1500 && r.nao === 1 && r.numero === 'P-2026-090' && r.prazo === 20 && r.excl.includes('Forro'), 'a construtora recebe a rev. 1: total, outros itens, etapa não cotada, número e prazo');
+
+await ir('u-ana', '#/daily/concorrencias/' + mezId + '/comparar');
+verificar((await page.locator('.tabela-comparar').innerText()).includes('Outros itens (fora das etapas)'), 'Comparar mostra a linha de outros itens');
+await page.locator('[data-acao="co-fechar"]').first().click();
+await page.locator('dialog button', { hasText: 'Fechar negócio' }).click();
+await page.waitForTimeout(400);
+r = await rodar((m, a, h, x) => h.como(h.NF, () => { const p = a.estado().measure.projetos.find((y) => y.id === x); return { sit: p.situacao, vinc: p.concorrencia.vinculo }; }), pjId);
+verificar(r.sit === 'ganha' && r.vinc.empresaId === 'construtora-exemplo' && r.vinc.obraId === 'galpao', 'fechada: o projeto da Northfield vira Ganha, com a ligação à obra da construtora');
+
+await ir('u-tom', '#/measure/convite/' + mezId);
+txt = await page.locator('main').innerText();
+verificar(txt.includes('Você venceu esta concorrência.') && await page.locator('a[href="#/settings/obra/nova/' + pjId + '"]').count() === 1, 'a Northfield vê que venceu, com "Criar obra a partir deste projeto"');
+await page.locator('a[href="#/settings/obra/nova/' + pjId + '"]').click();
+await page.waitForTimeout(800);
+await page.fill('#ob-lat', '43.0016');
+await page.fill('#ob-lon', '-71.4521');
+await page.fill('#ob-inicio', '2026-11-02');
+await page.fill('#ob-prazo', '2026-12-18');
+await page.selectOption('#ob-responsavelId', { index: 1 });
+for (const d of ['1', '2', '3', '4', '5']) await page.locator('[name="diasTrabalho"][value="' + d + '"]').check();
+await page.locator('[data-acao="obra-salvar"]').click();
+await page.waitForTimeout(600);
+r = await rodar((m, a, h, x) => h.como(h.NF, () => { const o = a.estado().obras.find((y) => y.projetoId === x); return o && { vinc: o.vinculo, cid: o.concorrenciaId }; }), pjId);
+verificar(r && r.vinc && r.vinc.empresaId === 'construtora-exemplo' && r.vinc.obraId === 'galpao' && r.cid === mezId, 'a obra da Northfield nasce ligada ao Galpão da construtora (CO-14)');
+await ir('u-ana', '#/daily/obras/galpao');
+verificar((await page.locator('main').innerText()).includes('Northfield Framing & Siding'), 'e a Northfield passa a aparecer na obra da construtora');
+
+// recusar outro convite, com motivo
+const outroId = await rodar((m, a, h) => h.como(h.GC, () => {
+  const c = m.salvarRascunho(null, { obraId: 'atlantico', servico: 'Siding da fachada', etapas: ['07 46 33 · Plastic siding'], incluso: 'Siding', prazo: '2026-10-22T17:00', convidados: ['ct-northfield'] }, 'Ana Ribeiro');
+  m.enviar(c.id, 'Ana Ribeiro');
+  return c.id;
+}));
+await ir('u-tom', '#/measure/convite/' + outroId);
+await page.locator('[data-acao="cv-nao"]').click();
+await page.fill('dialog #cv-motivo', 'equipe toda no Jardim');
+await page.locator('dialog button', { hasText: 'Não vou participar' }).click();
+await page.waitForTimeout(400);
+verificar((await page.locator('main').innerText()).includes('equipe toda no Jardim'), '"Não vou participar" com motivo');
+await ir('u-ana', '#/daily/concorrencias/' + outroId);
+verificar((await page.locator('.tabela-convidados').innerText()).includes('equipe toda no Jardim'), 'a construtora vê a recusa e o motivo');
+await ir('u-rita', '#/measure/convites');
+verificar(page.url().endsWith('#/measure/convites'), 'a estimadora (gestora de obras) também vê os convites');
+
 verificar(erros.length === 0, 'sem erros na página' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
 await browser.close();
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');

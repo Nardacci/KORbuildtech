@@ -2,7 +2,9 @@
 
 > Especificação de outubro de 2026. Versão 2: desenho das telas, estrutura e regras **para o protótipo**. A versão 1 dizia que precisava de servidor; no protótipo, as duas empresas já se encontram no aparelho (como o cronograma publicado em `compartilhados()` e os diários em `diariosDeFora()`), então a concorrência pode ser simulada do mesmo jeito. No produto, esse lugar comum é o servidor.
 >
-> **Situação:** fatias 1 e 2 prontas: o motor (`js/concorrencias.js`) e as telas da contratante (`js/concorrencias-telas.js`: Daily › Concorrências, a seção na página da obra, nova concorrência, Convidados, Comparar, Detalhes, prorrogar, convidar mais, fechar e cancelar). `tests/concorrencias.test.mjs`, 68 verificações. O lado da convidada, o canal, a quarteirização pelas telas e o link vêm nas próximas fatias (§10).
+> **Situação:** fatias 1 a 3 prontas: o motor (`js/concorrencias.js`), as telas da contratante (Daily › Concorrências) e as da convidada (Measure › Convites: o convite, Vou cotar → projeto no Measure, Enviar pela plataforma a partir da proposta emitida, Não vou participar, e a vitória que vira obra já ligada). `tests/concorrencias.test.mjs`, 86 verificações. O canal, a quarteirização pelas telas e o link vêm nas próximas fatias (§10).
+>
+> **Simplificações:** a proposta enviada pela plataforma usa as linhas da proposta emitida no Measure: as que têm o código de uma etapa da concorrência vão por etapa, as outras (e os outros itens) vão em **outros itens**, que aparecem numa linha própria na comparação. "Vou cotar" cria o projeto sem as folhas (o protótipo não guarda os PDFs da contratante; a prestadora envia as plantas no projeto, como hoje). A convidada que não tem o Measure no plano responde pelo link (fatia 6).
 >
 > **Simplificações da fatia 2:** dos desenhos, o protótipo guarda só o nome do PDF; o orçamento aparece no formulário como total (o *por etapa* já existe no motor, sem campo ainda); a aba **Perguntas** entra com o canal (fatia 4).
 
@@ -253,7 +255,7 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 | --- | --- | --- |
 | 1 ✓ | `js/concorrencias.js` (modelo, situações, regras CO-04/05/08/09/10/12/13/15/16/18/19, visão por empresa e pelo link), dados de exemplo, permissões | `tests/concorrencias.test.mjs` (50): criar, enviar, responder, revisões, prazo e prorrogação, comparar, fechar, cancelar, isolamento entre empresas, prestadora contratante |
 | 2 ✓ | Telas da contratante: lista com abas, nova concorrência (rascunho e envio), página com Convidados, Comparar e Detalhes, prorrogar, convidar mais, fechar, cancelar; seção na página da obra | Navegador (Ana; Laura entra, Carlos não) |
-| 3 | Lado da prestadora: Convites, Vou cotar → projeto no Measure, Enviar pela plataforma, *Ganha* → obra ligada | Navegador (Tom), ponta a ponta com a 2 |
+| 3 ✓ | Lado da convidada: Measure › Convites, o convite (visto), Vou cotar → projeto no Measure com a faixa da concorrência, Não vou participar com motivo, Enviar pela plataforma (etapas, outros itens, não cotadas), fechada → projeto *Ganha* → obra ligada à da contratante | Navegador (Tom e Ana), ponta a ponta |
 | 4 | Canal (antes e depois do fechamento) e sininho | Navegador, as duas empresas |
 | 5 | Quarteirização: concorrência a partir do projeto ou da obra, **Usar no meu orçamento**, CO-23/24/25, presença da cadeia na construtora (CO-21) | Unidade + navegador, três empresas |
 | 6 | Link sem conta (página única), inglês, portal (EN e PT) e guia do apresentador | Navegador + teste EN |

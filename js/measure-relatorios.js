@@ -15,6 +15,7 @@ import { dinheiro } from './crew.js';
 import { projeto, quantidadesDoProjeto, enderecoDoProjeto } from './measure.js';
 import { custoDe, margensEm, textoMargens } from './precos.js';
 import { empresa, enderecoDaEmpresa, contato, contatosCom, contratanteDe, donoDe } from './contatos.js';
+import { botaoEnviarPelaPlataforma } from './concorrencias-telas.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarRelatorios(funcoes) { app = { ...app, ...funcoes }; }
@@ -228,7 +229,7 @@ export function telaProposta(id, moldura) {
       (versoes.length ? ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Propostas emitidas') + '</h2><ul class="prop-versoes">') + versoes.slice().reverse().map((v) =>
         '<li><span><b>' + esc(v.numero) + '</b> · ' + dataCurta(v.emitidaEm.slice(0, 10)) + ' · ' + esc(v.por) + ' · <b>' + dinheiro(v.total) + '</b></span>' +
         '<span class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/proposta/imprimir/' + encodeURIComponent(v.numero) + '">PDF</a>' +
-        '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-email" data-projeto="' + id + '" data-numero="' + esc(v.numero) + '"' + (ct && ct.email ? '' : ' disabled') + ('>' + tr('Enviar por e-mail') + '</button></span></li>')).join('') + '</ul></section>' : '') +
+        '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-email" data-projeto="' + id + '" data-numero="' + esc(v.numero) + '"' + (ct && ct.email ? '' : ' disabled') + ('>' + tr('Enviar por e-mail') + '</button>') + botaoEnviarPelaPlataforma(p, v.numero) + '</span></li>').join('') + '</ul></section>' : '') +
     '</form>',
   });
 }

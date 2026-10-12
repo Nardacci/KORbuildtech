@@ -4,14 +4,16 @@
 
 import { esc, toast, abrirDialogo, confirmar, dataCurta, dataHora, isoDoDia, diasEntre, hoje } from './util.js';
 import { tr, tn } from './i18n.js';
-import { estado, obra as acharObra } from './armazem.js';
+import { estado, salvar, obra as acharObra } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
-import { contatosCom } from './contatos.js';
+import { contatosCom, contatos, salvarContato } from './contatos.js';
+import { salvarProjeto, projeto as acharProjeto } from './measure.js';
 import { dinheiro } from './crew.js';
 import {
   SITUACOES, SITUACOES_CONVITE, MOSTRAR_ORCAMENTO, QUARTEIRIZACAO, enviadas, concorrenciaEnviada, situacaoDe, ultimaProposta,
   comparar, salvarRascunho, enviar, pendenciasDeEnvio, prorrogar, convidarMais, fechar, cancelar, contaDoContato,
+  recebidas, recebida, marcarVisto, responder, enviarProposta, vincularProjeto,
 } from './concorrencias.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
@@ -19,6 +21,7 @@ export function ligarConcorrencias(funcoes) { app = { ...app, ...funcoes }; }
 
 const quem = () => (usuarioAtual() || {}).nome || '';
 export const podeGerir = () => pode(usuarioAtual(), 'concorrencias.gerir');
+export const podeResponder = () => pode(usuarioAtual(), 'concorrencias.responder') && (estado().empresa.modulos || []).includes('measure');
 const campo = (id, rotulo, html, classe) => '<div class="campo' + (classe ? ' ' + classe : '') + '"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
 const nomeObra = (id) => (acharObra(id) || {}).nome || '—';
 const etiqueta = (s) => '<span class="etiqueta ' + SITUACOES[s].classe + '">' + SITUACOES[s].nome + '</span>';
@@ -49,7 +52,8 @@ export function telaConcorrencias(moldura, filtro) {
   const abas = ABAS.filter((x) => x[0] !== 'rascunhos' || todas.some((c) => c.situacao === 'rascunho'));
   return moldura({
     ativo: 'concorrencias', largo: true, titulo: tr('Concorrências'), subtitulo: tr('Convide prestadoras, compare as propostas e feche com a melhor'),
-    acoes: '<a class="btn btn-primario" href="#/daily/concorrencias/nova">' + icone('mais', 18) + tr('Nova concorrência') + '</a>',
+    acoes: '<div class="acoes-cabeca">' + (podeResponder() ? '<a class="btn btn-contorno" href="#/measure/convites">' + tr('Convites recebidos') + (convitesPendentes() ? ' <span class="mz-contagem">' + convitesPendentes() + '</span>' : '') + '</a>' : '') +
+      '<a class="btn btn-primario" href="#/daily/concorrencias/nova">' + icone('mais', 18) + tr('Nova concorrência') + '</a></div>',
     conteudo: '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r, f]) => '<a href="#/daily/concorrencias' + (id ? '/' + id : '') + '"' + (aba[0] === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + ' <span class="mz-contagem">' + todas.filter((c) => f(situacaoDe(c))).length + '</span></a>').join('') + '</nav>' +
       (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-concorrencias"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Convidados') + '</th><th>' + tr('Propostas') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
         lista.map((c) => {
@@ -235,6 +239,7 @@ function htmlComparar(c, ativa) {
       cmp.colunas.map((k) => '<th class="num' + (k.conviteId === venc ? ' co-vencedora' : '') + '">' + esc(k.nome) + '<span class="mudo pequeno bloco">' + tr('rev. {rev}', { rev: k.rev }) + (k.comConta ? '' : ' · ' + tr('link')) + '</span></th>').join('') + '</tr></thead><tbody>' +
       cmp.linhas.map((l) => '<tr><td>' + esc(l.etapa) + '</td>' + (orc ? '<td class="num mudo">' + (orc.porEtapa && orc.porEtapa[l.etapa] != null ? dinheiro(orc.porEtapa[l.etapa]) : '—') + '</td>' : '') + cmp.colunas.map((k) => cel(l.valores[k.conviteId], l.menor)).join('') + '</tr>').join('') +
       '<tr class="co-total"><td><b>' + tr('Total') + '</b></td>' + (orc ? '<td class="num mudo">' + dinheiro(orc.valor) + '</td>' : '') + cmp.colunas.map((k) => '<td class="num"><b>' + dinheiro(k.total) + '</b>' + (k.naoCotadas.length ? '<span class="texto-alerta pequeno bloco">' + tn(k.naoCotadas.length, '{n} etapa não cotada', '{n} etapas não cotadas') + '</span>' : '') + '</td>').join('') + '</tr>' +
+      (cmp.colunas.some((k) => k.outros) ? '<tr><td>' + tr('Outros itens (fora das etapas)') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num">' + (k.outros ? dinheiro(k.outros) : '—') + '</td>').join('') + '</tr>' : '') +
       '<tr><td>' + tr('Prazo de execução') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num">' + (k.prazoExecucaoDias ? tn(k.prazoExecucaoDias, '{n} dia', '{n} dias') : '—') + '</td>').join('') + '</tr>' +
       '<tr><td>' + tr('Exclusões') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="co-exclusoes">' + (k.exclusoes.length ? k.exclusoes.map((x) => k.exclusoesNoEscopo.includes(x) ? '<span class="texto-alerta bloco" title="' + esc(tr('Está no escopo incluso: pergunte antes de fechar')) + '">⚠ ' + esc(x) + '</span>' : '<span class="bloco">' + esc(x) + '</span>').join('') : '<span class="mudo">—</span>') + '</td>').join('') + '</tr>' +
       '<tr><td>' + tr('Enviada em') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num pequeno">' + dataHora(k.enviadaEm) + (k.numero ? '<span class="mudo bloco">' + esc(k.numero) + '</span>' : '') + '</td>').join('') + '</tr>' +
@@ -264,9 +269,182 @@ function htmlDetalhes(c) {
     '</section>';
 }
 
+/* ---------- Convidada (docs/concorrencias.md §3.2) ---------- */
+
+const PENDENTES = ['enviado', 'visto'];
+export function convitesPendentes() { return recebidas().filter((x) => x.situacao === 'aberta' && PENDENTES.includes(x.convite.situacao)).length; }
+const nomeContratante = (x) => (x.contratante || {}).nome || '—';
+const textoLocal = (o) => (o ? [o.cidade, o.estado].filter(Boolean).join(', ') : '');
+
+export function telaConvites(moldura) {
+  const lista = recebidas().sort((a, b) => (a.situacao === 'aberta' ? 0 : 1) - (b.situacao === 'aberta' ? 0 : 1) || String(a.prazo).localeCompare(String(b.prazo)));
+  return moldura({
+    ativo: 'convites', largura: 'larga', titulo: tr('Convites para cotar'), subtitulo: tr('Concorrências em que a sua empresa foi convidada'),
+    conteudo: lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-convites"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
+      lista.map((x) => '<tr><td><a href="#/measure/convite/' + x.id + '"><b>' + esc(x.servico) + '</b></a></td><td>' + esc(nomeContratante(x)) + '</td><td>' + esc(x.obra ? x.obra.nome : '—') + '<span class="mudo pequeno bloco">' + esc(textoLocal(x.obra)) + '</span></td>' +
+        '<td>' + (x.situacao === 'aberta' ? textoPrazo(x) : x.prazo ? dataCurta(x.prazo.slice(0, 10)) : '—') + '</td>' +
+        '<td>' + (x.situacao === 'cancelada' ? etiqueta('cancelada') : etiquetaConvite(x.convite)) + '</td></tr>').join('') + '</tbody></table></div></section>'
+      : '<section class="cartao vazio-grande"><h2>' + tr('Nenhum convite ainda') + '</h2><p class="mudo">' + tr('Quando uma construtora (ou outra prestadora) convidar a sua empresa para cotar pelo KORbuild, o convite aparece aqui e no sininho.') + '</p></section>',
+  });
+}
+
+export function telaConvite(moldura, id) {
+  let x = recebida(id);
+  if (!x) return null;
+  if (!x.convite.vistoEm) { marcarVisto(id); x = recebida(id); }
+  const v = x.convite;
+  const aberta = x.situacao === 'aberta';
+  const pj = v.projetoId ? acharProjeto(v.projetoId) : null;
+  const obraLigada = estado().obras.find((o) => o.concorrenciaId === x.id);
+  const ex = x.exigencias || {};
+  const lista = (itens) => (itens.length ? '<ul>' + itens.map((i) => '<li>' + esc(i) + '</li>').join('') + '</ul>' : '<p class="mudo">—</p>');
+  const exig = [ex.glMinimo ? tr('GL mínimo de {valor}', { valor: dinheiro(ex.glMinimo) }) : '', ex.wcObrigatorio ? tr("Workers' comp obrigatório") : '', ex.licenca ? tr('Licença: {l}', { l: ex.licenca }) : '', ex.visita && ex.visita.obrigatoria ? tr('Visita à obra obrigatória') : ''].filter(Boolean);
+  let situacao;
+  if (x.situacao === 'cancelada') situacao = '<div class="aviso"><b>' + tr('Concorrência cancelada pela contratante.') + '</b></div>';
+  else if (v.situacao === 'vencedora') situacao = '<div class="aviso aviso-verde"><b>' + tr('Você venceu esta concorrência.') + '</b><span>' + tr('Rev. {rev} aceita.', { rev: (v.propostas[v.propostas.length - 1] || {}).rev }) + ' ' +
+    (obraLigada ? tr('A obra já está criada e ligada à da contratante.') : pj ? tr('Crie a obra a partir do projeto: ela já nasce ligada à obra da contratante.') : '') + '</span>' +
+    (obraLigada ? '<a class="btn btn-primario btn-pequeno" href="#/daily/obras/' + obraLigada.id + '">' + tr('Abrir a obra') + '</a>' : pj ? '<a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova/' + pj.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a>' : '') + '</div>';
+  else if (v.situacao === 'nao-escolhida') situacao = '<div class="aviso"><b>' + tr('A contratante fechou com outra empresa.') + '</b><span>' + tr('Obrigado por cotar. O valor da vencedora não é informado.') + '</span></div>';
+  else if (x.situacao === 'fechada') situacao = '<div class="aviso"><b>' + tr('Esta concorrência já foi fechada.') + '</b></div>';
+  else if (!aberta) situacao = '<div class="aviso aviso-ambar"><b>' + tr('O prazo da proposta venceu.') + '</b><span>' + tr('Só dá para mandar proposta se a contratante prorrogar.') + '</span></div>';
+  else if (v.situacao === 'nao-vai') situacao = '<div class="aviso"><b>' + tr('Você respondeu que não vai participar.') + '</b>' + (v.motivo ? '<span>“' + esc(v.motivo) + '”</span>' : '') + '</div>';
+  else if (PENDENTES.includes(v.situacao)) situacao = '<div class="aviso aviso-ambar"><b>' + tr('Vai cotar?') + '</b><span>' + tr('Responda para a contratante saber com quem contar.') + '</span>' +
+    '<span class="btn-linha"><button type="button" class="btn btn-primario btn-pequeno" data-acao="cv-vou" data-id="' + x.id + '">' + tr('Vou cotar') + '</button><button type="button" class="btn btn-contorno btn-pequeno" data-acao="cv-nao" data-id="' + x.id + '">' + tr('Não vou participar') + '</button></span></div>';
+  else situacao = '<div class="aviso aviso-verde"><b>' + (v.propostas.length ? tr('Proposta enviada (rev. {rev}).', { rev: v.propostas.length }) : tr('Você vai cotar.')) + '</b><span>' +
+    tr('Meça e monte a proposta no projeto. Emita a proposta e use "Enviar pela plataforma"; dá para mandar revisões até o prazo.') + '</span>' +
+    (pj ? '<a class="btn btn-primario btn-pequeno" href="#/measure/projeto/' + pj.id + '">' + tr('Abrir o projeto') + '</a>' : '<button type="button" class="btn btn-primario btn-pequeno" data-acao="cv-projeto" data-id="' + x.id + '">' + tr('Criar o projeto no Measure') + '</button>') + '</div>';
+  return moldura({
+    ativo: 'convites', largura: 'larga', titulo: x.servico, subtitulo: tr('Convite de {nome}', { nome: nomeContratante(x) }) + (x.obra ? ' · ' + x.obra.nome : ''),
+    voltar: { href: '#/measure/convites', rotulo: tr('Convites') },
+    conteudo: situacao +
+      '<div class="grade-2">' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(x.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(x.excluso) +
+        (x.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(x.observacoes) + '</p>' : '') + '</section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
+        '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
+        '<dt>' + tr('Obra') + '</dt><dd>' + (x.obra ? esc(x.obra.nome) + '<span class="mudo bloco">' + esc([x.obra.endereco, textoLocal(x.obra)].filter(Boolean).join(' · ')) + '</span>' : '—') + '</dd>' +
+        '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
+        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => esc(d.nome)).join(' · ') : '—') + '</dd>' +
+        '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
+        '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
+        '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
+        '<dt>' + tr('Quarteirização') + '</dt><dd>' + QUARTEIRIZACAO[x.quarteirizacao || 'permitida'] + '</dd>' +
+      '</dl></section></div>' +
+      (v.propostas.length ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Suas propostas') + '</h2><ul class="lista-simples">' + v.propostas.slice().reverse().map((p) => '<li><b>' + tr('rev. {rev}', { rev: p.rev }) + ' · ' + dinheiro(p.total) + '</b> · ' + dataHora(p.enviadaEm) + (p.numero ? ' · ' + esc(p.numero) : '') + ' · ' + esc(p.por) + '</li>').join('') + '</ul>' +
+        '<p class="mudo pequeno">' + tr('A contratante compara a revisão mais recente. Você nunca vê quem mais foi convidado nem os valores dos outros.') + '</p></section>' : ''),
+  });
+}
+
+/* Faixa na página do projeto que veio de um convite. */
+export function htmlFaixaConcorrencia(p) {
+  if (!p.concorrencia) return '';
+  const x = recebida(p.concorrencia.id);
+  if (!x) return '';
+  return '<div class="aviso aviso-azul"><b>' + tr('Concorrência de {nome}', { nome: esc(nomeContratante(x)) }) + '</b><span>' +
+    (x.situacao === 'aberta' ? tr('Prazo da proposta: {quando}', { quando: textoPrazo(x) }) : SITUACOES[x.situacao].nome) + ' · ' + SITUACOES_CONVITE[x.convite.situacao] + '</span>' +
+    '<a class="btn btn-contorno btn-pequeno" href="#/measure/convite/' + x.id + '">' + tr('Ver o convite') + '</a></div>';
+}
+
+/* Botão "Enviar pela plataforma" de uma proposta emitida (só para projeto de concorrência aberta). */
+export function botaoEnviarPelaPlataforma(p, numeroDoc) {
+  if (!p.concorrencia || !podeResponder()) return '';
+  const x = recebida(p.concorrencia.id);
+  if (!x || x.situacao !== 'aberta' || x.convite.situacao === 'nao-vai') return '';
+  const ja = x.convite.propostas.some((q) => q.numero === numeroDoc);
+  return ja ? '<span class="etiqueta etiqueta-verde">' + tr('Enviada pela plataforma') + '</span>'
+    : '<button type="button" class="btn btn-primario btn-pequeno" data-acao="cv-plataforma" data-projeto="' + p.id + '" data-numero="' + esc(numeroDoc) + '">' + tr('Enviar pela plataforma') + '</button>';
+}
+
+/* O contato da contratante nos Contatos da convidada: o que tem a mesma conta; se não houver, é criado. */
+function contatoDaContratante(x) {
+  const achado = contatos().find((c) => c.contaId === x.contratanteId);
+  if (achado) return achado.id;
+  const e = x.contratante || {};
+  const r = salvarContato(null, { nome: e.nome, email: e.email || '', telefone: e.telefone || '', papeis: ['construtora'] }, quem());
+  if (r.erro) return null;
+  const novo = contatos().find((c) => c.nome === e.nome);
+  if (novo) { novo.contaId = x.contratanteId; salvar(); }
+  return novo ? novo.id : null;
+}
+
+function criarProjetoDoConvite(x) {
+  const ct = contatoDaContratante(x);
+  if (!ct) return { erro: tr('Não foi possível cadastrar a contratante nos seus Contatos.') };
+  const o = x.obra || {};
+  const r = salvarProjeto(null, {
+    nome: x.servico + (o.nome ? ' · ' + o.nome : ''), contratanteId: ct, endereco: o.endereco, cidade: o.cidade, estado: o.estado, zip: o.zip,
+    tipo: 'outro', situacao: 'orcamento', descricao: x.incluso.join('; '), estimadorId: (usuarioAtual() || {}).id, prazoProposta: x.prazo ? x.prazo.slice(0, 10) : '',
+  });
+  if (r.erro) return r;
+  acharProjeto(r.id).concorrencia = { id: x.id, conviteId: x.convite.id, contratanteId: x.contratanteId };
+  vincularProjeto(x.id, r.id);
+  return r;
+}
+
+/* De uma proposta emitida no Measure para a proposta da concorrência: as linhas cujo código bate com uma etapa
+ * da concorrência vão por etapa; as outras linhas e os outros itens vão em "outros". */
+export function propostaParaConcorrencia(x, emitida) {
+  const porEtapa = {};
+  let outros = 0;
+  const codigo = (e) => (e.includes(' · ') ? e.split(' · ')[0] : e);
+  for (const l of emitida.dados.linhas) {
+    const e = x.etapas.find((et) => (l.codigo && codigo(et) === l.codigo) || et === l.titulo);
+    if (e) porEtapa[e] = Math.round(((porEtapa[e] || 0) + l.valor) * 100) / 100;
+    else outros += l.valor;
+  }
+  for (const ex of emitida.dados.extras) outros += ex.valor;
+  return { porEtapa, outros: Math.round(outros * 100) / 100, total: emitida.total };
+}
+
 /* ---------- Ações ---------- */
 
 export const acoesConcorrencias = {
+  'cv-vou'(el) {
+    const r = responder(el.dataset.id, true, '', quem());
+    if (r.erro) { toast(r.erro); return; }
+    const pj = criarProjetoDoConvite(recebida(el.dataset.id));
+    if (pj.erro) { toast(pj.erro); app.desenhar(); return; }
+    toast(tr('Projeto criado no Measure. Meça, monte a proposta e envie pela plataforma.'));
+    app.ir('#/measure/projeto/' + pj.id);
+  },
+  'cv-projeto'(el) {
+    const pj = criarProjetoDoConvite(recebida(el.dataset.id));
+    if (pj.erro) { toast(pj.erro); return; }
+    toast(tr('Projeto criado no Measure.'));
+    app.ir('#/measure/projeto/' + pj.id);
+  },
+  async 'cv-nao'(el) {
+    const res = await abrirDialogo({
+      titulo: tr('Não vai participar?'),
+      corpo: campo('cv-motivo', tr('Motivo (opcional, a contratante vê)'), '<input type="text" id="cv-motivo" name="motivo" placeholder="' + esc(tr('Ex.: agenda cheia')) + '">'),
+      acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: tr('Não vou participar'), valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = responder(el.dataset.id, false, res.campos.motivo, quem());
+    toast(r.erro || tr('Resposta enviada à contratante.'));
+    app.desenhar();
+  },
+  async 'cv-plataforma'(el) {
+    const p = acharProjeto(el.dataset.projeto);
+    const x = recebida(p.concorrencia.id);
+    const emitida = (p.propostas || []).find((q) => q.numero === el.dataset.numero);
+    const m = propostaParaConcorrencia(x, emitida);
+    const naoCotadas = x.etapas.filter((e) => m.porEtapa[e] == null);
+    const res = await abrirDialogo({
+      titulo: tr('Enviar a proposta {numero} para {nome}?', { numero: emitida.numero, nome: nomeContratante(x) }),
+      corpo: '<table class="tabela"><tbody>' + x.etapas.map((e) => '<tr><td>' + esc(e) + '</td><td class="num">' + (m.porEtapa[e] != null ? dinheiro(m.porEtapa[e]) : '<span class="mudo">' + tr('não cotada') + '</span>') + '</td></tr>').join('') +
+          (m.outros ? '<tr><td>' + tr('Outros itens (fora das etapas)') + '</td><td class="num">' + dinheiro(m.outros) + '</td></tr>' : '') + '<tr><td><b>' + tr('Total') + '</b></td><td class="num"><b>' + dinheiro(m.total) + '</b></td></tr></tbody></table>' +
+        (naoCotadas.length ? '<p class="texto-alerta pequeno">' + tn(naoCotadas.length, '{n} etapa da concorrência fica sem preço (não cotada).', '{n} etapas da concorrência ficam sem preço (não cotadas).') + '</p>' : '') +
+        '<div class="grade-campos">' + campo('cv-prazo', tr('Prazo de execução (dias)'), '<input type="number" id="cv-prazo" name="prazo" min="1" step="1">') + '</div>' +
+        campo('cv-exclusoes', tr('Exclusões (uma por linha)'), '<textarea id="cv-exclusoes" name="exclusoes" rows="3">' + esc(x.excluso.join('\n')) + '</textarea>') +
+        '<p class="mudo pequeno">' + tr('O PDF da proposta vai junto. Depois de enviada, não se edita: uma nova emissão vira a revisão seguinte.') + '</p>',
+      acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Enviar'), valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = enviarProposta(x.id, { ...m, numero: emitida.numero, prazoExecucaoDias: res.campos.prazo, exclusoes: res.campos.exclusoes, pdf: { numero: emitida.numero } }, quem());
+    toast(r.erro || tr('Proposta enviada para {nome} (rev. {rev}).', { nome: nomeContratante(x), rev: r.rev }));
+    if (r.ok) app.desenhar();
+  },
   'co-salvar'(el) {
     const { id, dados } = dadosDoForm();
     const r = salvarRascunho(id, dados, quem());

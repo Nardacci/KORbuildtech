@@ -84,7 +84,11 @@ export function salvarObra(id, dados, por) {
   obras().push(nova);
   // projeto do Measure que virou obra: ficam ligados (OB-07)
   const pj = d.projetoId && ((estado().measure || {}).projetos || []).find((p) => p.id === d.projetoId);
-  if (pj) pj.obraId = nova.id;
+  if (pj) {
+    pj.obraId = nova.id;
+    // ganho numa concorrência (docs/concorrencias.md CO-14): a obra já nasce ligada à obra de quem contratou
+    if (pj.concorrencia && pj.concorrencia.vinculo) { nova.vinculo = { ...pj.concorrencia.vinculo }; nova.concorrenciaId = pj.concorrencia.id; }
+  }
   auditar(tr('Obras'), tr('Obra criada: {nome}', { nome: d.nome }), '', nova.cidade + ' · ' + d.inicio + ' → ' + d.prazo, '', por);
   if (dados.modeloId) aplicarModelo(nova.id, dados.modeloId, por);
   salvar();
