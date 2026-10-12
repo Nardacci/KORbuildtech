@@ -48,9 +48,18 @@ export function iniciar() {
     // tira o "?code=" do endereço depois que o Supabase o trocou pela sessão
     if (new URLSearchParams(location.search).has('code')) history.replaceState(null, '', location.pathname + location.hash);
     await carregarMinhaConta();
+    lembrarIdioma();
     conta.pronto = true;
   })();
   return carregando;
+}
+
+/* Os e-mails do Auth (nova senha, troca de e-mail) saem no idioma gravado na conta: acompanha o PT|EN da tela.
+ * Trocar o idioma recarrega a página, e iniciar() passa por aqui. Sem esperar: o e-mail é o único que usa. */
+function lembrarIdioma() {
+  const u = conta.sessao && conta.sessao.user;
+  if (!u || (u.user_metadata || {}).idioma === idioma()) return;
+  sb.auth.updateUser({ data: { idioma: idioma() } }).catch(() => { /* fica para a próxima vez */ });
 }
 
 /* O membro (uma pessoa, uma empresa), a empresa, os perfis e — para quem cuida dos acessos — os usuários e convites. */
@@ -100,10 +109,10 @@ const resultado = ({ error, data }) => (error ? { erro: traduzir(error) } : { ok
 export async function entrar(email, senha) {
   await iniciar();
   const r = resultado(await sb.auth.signInWithPassword({ email: String(email).trim(), password: senha }));
-  if (r.ok) { conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); }
+  if (r.ok) { conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); lembrarIdioma(); }
   return r;
 }
-/* O idioma da tela vai junto: o e-mail de confirmação sai em português ou em inglês (supabase/email/confirmacao.html). */
+/* O idioma da tela vai junto: os e-mails do Auth saem em português ou em inglês (supabase/email/). */
 export async function cadastrar(nome, email, senha) {
   await iniciar();
   if (String(nome).trim().length < 2) return { erro: tr('Diga o seu nome.') };

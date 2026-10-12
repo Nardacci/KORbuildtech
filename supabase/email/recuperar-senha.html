@@ -1,8 +1,121 @@
-<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#101828">
-  <p style="font-size:20px;margin:0 0 16px"><b>KOR</b>build</p>
-  <h2 style="font-size:18px;margin:0 0 12px">Reset your password</h2>
-  <p style="margin:0 0 20px;line-height:1.5">We received a request to reset the password for your KORbuild account ({{ .Email }}).</p>
-  <p style="margin:0 0 24px"><a href="{{ .ConfirmationURL }}" style="background:#C2410C;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Choose a new password</a></p>
-  <p style="margin:0 0 8px;font-size:13px;color:#5D6B82;line-height:1.5">If you didn't ask for this, ignore this email: your password stays the same. The link expires in 1 hour.</p>
-  <p style="margin:0;font-size:12px;color:#98A2B3">KORbuild · Daily reports, crew time and takeoff for construction</p>
+{{/*
+  KORbuild — e-mail de nova senha (Supabase Auth → Reset password).
+  Gerado por tools/gerar-emails.py: edite lá, não aqui. Um modelo só, nos dois idiomas (user_metadata.idioma).
+*/}}{{ $pt := false }}{{ with .Data.idioma }}{{ if eq . "pt" }}{{ $pt = true }}{{ end }}{{ end }}<!DOCTYPE html>
+<html lang="{{ if $pt }}pt-BR{{ else }}en{{ end }}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ if $pt }}Crie uma nova senha no KORbuild{{ else }}Reset your KORbuild password{{ end }}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F5F6F8; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<div style="display:none; max-height:0; overflow:hidden; mso-hide:all;">
+  {{ if $pt }}Recebemos um pedido para trocar a senha da sua conta.{{ else }}We received a request to reset your password.{{ end }}
 </div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F6F8; padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#FFFFFF; border-radius:12px; overflow:hidden; border:1px solid #E4E7EC;">
+
+        <!-- Cabeçalho: a marca do app (símbolo K laranja + KORbuild) no grafite -->
+        <tr>
+          <td style="padding:26px 40px; text-align:center; background-color:#141B26;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="width:34px; height:34px; background-color:#F26A1B; border-radius:4px 10px 4px 4px; text-align:center; vertical-align:middle; font-size:20px; font-weight:800; color:#FFFFFF; line-height:34px;">K</td>
+                <td style="padding-left:10px; vertical-align:middle; font-size:22px; line-height:1; color:#FFFFFF; letter-spacing:-0.01em;">
+                  <strong style="font-weight:800;">KOR</strong><span style="font-weight:400;">build</span>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:10px 0 0 0; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:#98A2B3;">
+              {{ if $pt }}Plataforma de operação das equipes{{ else }}Team operations platform{{ end }}
+            </p>
+          </td>
+        </tr>
+
+        <!-- Corpo -->
+        <tr>
+          <td style="padding:36px 40px 8px 40px;">
+            <h1 style="margin:0 0 16px 0; font-size:22px; line-height:30px; color:#101828; font-weight:700;">
+              {{ if $pt }}Crie uma nova senha{{ else }}Reset your password{{ end }}
+            </h1>
+            <p style="margin:0 0 16px 0; font-size:15px; line-height:24px; color:#344054;">
+              {{ if $pt }}Recebemos um pedido para trocar a senha da sua conta no KORbuild (<strong>{{ .Email }}</strong>).{{ else }}We received a request to reset the password for your KORbuild account (<strong>{{ .Email }}</strong>).{{ end }}
+            </p>
+            <p style="margin:0 0 28px 0; font-size:15px; line-height:24px; color:#344054;">
+              {{ if $pt }}Clique no botão para escolher uma senha nova, com pelo menos 8 caracteres. Depois, você já entra com ela.{{ else }}Click the button to choose a new password with at least 8 characters. You'll be signed in right after.{{ end }}
+            </p>
+
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 32px 0;">
+              <tr>
+                <td style="border-radius:8px; background-color:#C2410C;">
+                  <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 32px; font-size:15px; font-weight:600; color:#FFFFFF; text-decoration:none; border-radius:8px;">
+                    {{ if $pt }}Criar nova senha →{{ else }}Choose a new password →{{ end }}
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F9FAFB; border:1px solid #E4E7EC; border-radius:10px; margin-bottom:8px;">
+              <tr>
+                <td style="padding:22px 24px;">
+                  <p style="margin:0 0 14px 0; font-size:13px; font-weight:700; color:#9A3412; text-transform:uppercase; letter-spacing:0.04em;">
+                    {{ if $pt }}Para manter a conta segura{{ else }}Keep your account safe{{ end }}
+                  </p>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td style="padding-bottom:12px; vertical-align:top; width:24px; font-size:14px; color:#C2410C; font-weight:700;">1.</td>
+                      <td style="padding-bottom:12px; font-size:14px; line-height:21px; color:#344054;">
+                        {{ if $pt }}Use uma senha que você não usa em outros sites.{{ else }}Use a password you don't use on other sites.{{ end }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding-bottom:12px; vertical-align:top; width:24px; font-size:14px; color:#C2410C; font-weight:700;">2.</td>
+                      <td style="padding-bottom:12px; font-size:14px; line-height:21px; color:#344054;">
+                        {{ if $pt }}Não compartilhe a sua senha: cada pessoa da equipe tem o próprio acesso.{{ else }}Don't share your password. Everyone on your team gets their own access.{{ end }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="vertical-align:top; width:24px; font-size:14px; color:#C2410C; font-weight:700;">3.</td>
+                      <td style="font-size:14px; line-height:21px; color:#344054;">
+                        {{ if $pt }}Precisa dar acesso a alguém? O Administrador da empresa envia um convite.{{ else }}Need to give someone access? Your company Administrator can send an invite.{{ end }}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Aviso de segurança -->
+        <tr>
+          <td style="padding:8px 40px 32px 40px;">
+            <p style="margin:0; font-size:13px; line-height:20px; color:#5D6B82;">
+              {{ if $pt }}O link vale por 1 hora. Se você não pediu a troca, ignore este e-mail: a sua senha continua a mesma.{{ else }}The link is valid for 1 hour. If you didn't ask for this, ignore this email. Your password stays the same.{{ end }}
+            </p>
+          </td>
+        </tr>
+
+        <!-- Rodapé -->
+        <tr>
+          <td style="padding:24px 40px; background-color:#F9FAFB; border-top:1px solid #E4E7EC; text-align:center;">
+            <p style="margin:0 0 4px 0; font-size:12px; color:#98A2B3;">
+              {{ if $pt }}Você recebeu este e-mail porque foi pedida uma nova senha para a sua conta no <strong>KORbuild</strong>.{{ else }}You received this email because a new password was requested for your <strong>KORbuild</strong> account.{{ end }}
+            </p>
+            <p style="margin:0; font-size:12px; color:#98A2B3;">
+              KORbuild · Build better teams. Run better operations.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
