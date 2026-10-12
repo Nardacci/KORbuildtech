@@ -125,14 +125,14 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | --- | --- | --- |
 | 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada); `0002` (quem foi desativado lê o próprio cadastro) e `0003` (excluir a empresa em cascata, sem esbarrar nas travas nem na auditoria). Teste do app contra o banco: `tests/conta.test.mjs` (23/23) ✓ | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
 | 2 | `supabase/migrations/20261013_0004_settings.sql` (só cria): `funcionarios` (com certificações), `funcionario_valores`, `encargos_versoes`, `regras_jornada_versoes`, `contatos`, `obras` (sem apagar; a ligação entre obras só pelas funções do banco), `alocacoes`, `modelos_cronograma`, `criar_funcionario()`, `atualizar_meu_perfil()`. Teste: `supabase/testes/0002_settings.sql` | Cadastrar tudo no banco; meu perfil (nome, idioma, e-mail, senha) |
-| 3 | Daily: diários, fotos (Storage), histórico, aprovação entre empresas, link do cliente; sincronização offline | Usar o diário de verdade |
+| 3 | `supabase/migrations/20261014_0005_daily.sql` (só cria): `rdos`, `rdo_fotos`, `rdo_historico`, bucket `diarios` com as políticas das fotos, `salvar_rdo()`, `enviar_rdo()`, `dia_sem_atividade()`, `aprovar_rdo()` (lacre no banco), `pedir_ajustes()`, `diarios_recebidos()`, `diario_por_codigo()`; função de borda `supabase/functions/diario-publico` (link do cliente, fotos por links temporários). Teste: `supabase/testes/0003_daily.sql` (desenho no §10) | Usar o diário de verdade, com e sem internet |
 | 4 | Crew: equipes, batidas, localizações, aprovações, orçamentos; presença na obra para a contratante | Bater o ponto de verdade |
 | 5 | Cronograma: etapas, avanços, linhas de base, publicações | |
 | 6 | Measure: projetos, folhas (Storage), condições, medições, typicals, catálogo, preços, margens, propostas | |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
 | 8 | Notificações por e-mail e a área de administração da plataforma | |
 
-## 10. Fatia 3 — o Daily no banco (desenho, para aprovação)
+## 10. Fatia 3 — o Daily no banco (desenho aprovado em outubro de 2026)
 
 O protótipo já funciona sem internet: o diário é gravado no aparelho e sobe quando há sinal. A fatia 3 mantém esse
 jeito de usar e troca o "escritório simulado" pelo Supabase.
@@ -152,7 +152,7 @@ já sai do aparelho reduzida e carimbada, como hoje.
 
 | Ação | Função | Quem pode |
 | --- | --- | --- |
-| Criar e editar o rascunho | `insert`/`update` em `rdos` (RLS) | Quem tem `daily.preencher` **e** é o responsável pela obra **ou** está alocado nela (`alocacoes`, fatia 2) |
+| Criar e editar o rascunho | `salvar_rdo(dados)` (grava o diário, as fotos e o histórico; repetir não duplica) | Quem tem `daily.preencher`, em **qualquer obra da empresa** (decisão de outubro de 2026) |
 | Enviar / reenviar com ajustes | `enviar_rdo(id, versao)` | Os mesmos; confere as pendências (equipe, atividade…) e o prazo |
 | Dia sem atividade | `dia_sem_atividade(obra, data, motivo, obs)` | Os mesmos |
 | Aprovar e lacrar | `aprovar_rdo(id)` | Obra **sem** vínculo: a própria empresa, com `daily.aprovar` (HS-13). Obra **com** vínculo: só a contratante, com `daily.aprovar` (HS-11) |
