@@ -9,7 +9,7 @@ import { icone, marca, logotipo } from './icones.js';
 import { PERMISSOES, permissao } from './settings.js';
 import { ATUACOES } from './contatos.js';
 import {
-  conta, iniciar, aoMudar, pode, emailAtual, entrar, cadastrar, pedirNovaSenha, definirNovaSenha, sair, criarEmpresa,
+  conta, iniciar, aoMudar, carregarMinhaConta, pode, emailAtual, entrar, cadastrar, pedirNovaSenha, definirNovaSenha, sair, criarEmpresa,
   aceitarConvite, convidar, salvarEmpresa, salvarPermissoes, mudarPerfilDoMembro, ativarMembro, cancelarConvite, criarPerfil, excluirPerfil,
 } from './conta.js';
 
@@ -17,6 +17,14 @@ let redesenhar = () => {};
 export function ligarOficial(fn) { redesenhar = fn; aoMudar(() => redesenhar()); }
 
 const CONVITE = 'kbt.convite';
+
+/* Usuários e convites mudam por fora (alguém aceitou um convite): ao abrir a aba, relê do banco e redesenha. */
+let ultimaReleitura = 0;
+function relerAoAbrir() {
+  if (Date.now() - ultimaReleitura < 3000) return;
+  ultimaReleitura = Date.now();
+  carregarMinhaConta().then(() => redesenhar()).catch(() => { /* fica o que já estava na tela */ });
+}
 const guardarConvite = (t) => { try { sessionStorage.setItem(CONVITE, t); } catch (e) { /* sem armazenamento */ } };
 const conviteGuardado = () => { try { return sessionStorage.getItem(CONVITE); } catch (e) { return null; } };
 const esquecerConvite = () => { try { sessionStorage.removeItem(CONVITE); } catch (e) { /* */ } };
@@ -53,7 +61,7 @@ export function telaOficial(p) {
   }
   if (p[0] !== 'conta') return { trocar: '#/conta' };
   const aba = p[1] || 'inicio';
-  if (aba === 'usuarios' && pode('settings.acesso')) return { html: moldura('usuarios', htmlUsuarios()) };
+  if (aba === 'usuarios' && pode('settings.acesso')) { relerAoAbrir(); return { html: moldura('usuarios', htmlUsuarios()) }; }
   if (aba === 'perfis' && pode('settings.acesso')) return { html: moldura('perfis', htmlPerfis()) };
   if (aba === 'empresa') return { html: moldura('empresa', htmlEmpresa()) };
   if (aba !== 'inicio') return { trocar: '#/conta' };
