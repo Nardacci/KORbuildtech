@@ -77,6 +77,7 @@ const CONTATOS_PRESTADORA = [
   ['ct-construtora', tr('Construtora Exemplo'), tr('Ana Ribeiro'), 'construtora', 'Manchester'],
   ['ct-merrimack', tr('Merrimack Valley Builders'), tr('Paul Bennett'), 'construtora', 'Manchester'],
   ['ct-granite', tr('Granite Industrial Construction'), tr('Mark Sullivan'), 'construtora', 'Nashua'],
+  ['ct-baystate', tr('Bay State Drywall'), tr('Mike Doyle'), 'prestadora', 'Manchester'],
 ];
 function criarContatos(proprios) {
   return proprios.concat(CONTATOS_COMUNS).map(([id, nome, pessoa, papel, cidade, etapas], i) => ({
@@ -335,7 +336,7 @@ async function criarRdos(obras, autor, aprovador, semente) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 29;
+export const VERSAO_DADOS = 30;
 
 const plano = (dia0, nome, limite) => ({ nome: tr(nome), status: 'teste', testeAte: somarDias(dia0, limite), limiteObras: 5 });
 
@@ -387,14 +388,14 @@ export async function criarDemonstracao() {
   prestadora.obras.find((o) => o.id === 'nf-jardim').concorrenciaId = 'co-jardim-siding';
   return {
     versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [ESTRUTURA.id]: estrutura, [PRESTADORA.id]: prestadora },
-    compartilhados: [pub], concorrencias: criarConcorrencias(dia0, construtora.contatos),
+    compartilhados: [pub], concorrencias: criarConcorrencias(dia0, construtora.contatos, prestadora.contatos),
   };
 }
 
 /* Concorrências da construtora (docs/concorrencias.md §9): uma aberta no Edifício Atlântico, com três convidadas
  * (Northfield com conta, Bayside e Pine Ridge pelo link), e a do siding do Jardim, já fechada com a Northfield
  * (é a ligação que a obra nf-jardim já tem). */
-function criarConcorrencias(dia0, contatos) {
+function criarConcorrencias(dia0, contatos, contatosNf) {
   const ct = (id) => contatos.find((c) => c.id === id);
   const ano = dia0.slice(0, 4);
   const convite = (id, contatoId, extra) => {
@@ -473,7 +474,19 @@ function criarConcorrencias(dia0, contatos) {
       }),
     ],
   };
-  return [atlantico, jardim];
+  // quarteirização (CO-19): a Northfield passa o drywall das casas do Jardim para a Bay State, que recebe pelo link
+  const nf = (id) => contatosNf.find((c) => c.id === id);
+  const quarteirizada = {
+    id: 'co-jardim-drywall', contratanteId: PRESTADORA.id, origem: { tipo: 'obra', id: 'nf-jardim' }, obraId: 'nf-jardim', paiId: 'co-jardim-siding',
+    servico: tr('Drywall das casas'), etapas: [DRYWALL], incluso: [tr('Drywall das casas 5 a 12, com acabamento nível 4')], excluso: [tr('Pintura')], observacoes: '',
+    desenhos: [{ nome: 'A-101', arquivoId: null }], prazo: somarDias(dia0, 7) + 'T17:00', inicio: somarDias(dia0, 20), termino: somarDias(dia0, 50),
+    orcamento: { valor: null, porEtapa: {}, mostrar: 'nao' }, exigencias: { glMinimo: 1000000, wcObrigatorio: true, licenca: '', visita: { obrigatoria: false } },
+    quarteirizacao: 'nao-permitida', situacao: 'aberta', criadaPor: tr('Tom Reilly'), criadaEm: momento(somarDias(dia0, -1), 9, 0), enviadaEm: momento(somarDias(dia0, -1), 9, 20),
+    historico: [{ em: momento(somarDias(dia0, -1), 9, 20), por: tr('Tom Reilly'), acao: tr('Convites enviados'), detalhe: nf('ct-baystate').nome }],
+    fechamento: null, mensagens: [],
+    convites: [{ id: 'cv-jd-baystate', contatoId: 'ct-baystate', nome: nf('ct-baystate').nome, email: nf('ct-baystate').email, empresaId: null, token: 'lk-cv-jd-baystate', situacao: 'visto', motivo: '', vistoEm: momento(somarDias(dia0, -1), 13, 0), respondidoEm: null, projetoId: null, propostas: [] }],
+  };
+  return [atlantico, jardim, quarteirizada];
 }
 
 /* ---------- A prestadora de serviço (subcontractor) ---------- */

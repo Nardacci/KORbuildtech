@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Versão 2: desenho das telas, estrutura e regras **para o protótipo**. A versão 1 dizia que precisava de servidor; no protótipo, as duas empresas já se encontram no aparelho (como o cronograma publicado em `compartilhados()` e os diários em `diariosDeFora()`), então a concorrência pode ser simulada do mesmo jeito. No produto, esse lugar comum é o servidor.
 >
-> **Situação:** fatias 1 a 4 prontas: o motor (`js/concorrencias.js`), as telas da contratante (Daily › Concorrências) e as da convidada (Measure › Convites: o convite, Vou cotar → projeto no Measure, Enviar pela plataforma a partir da proposta emitida, Não vou participar, e a vitória que vira obra já ligada), o canal (aba Perguntas, conversa no convite, aviso a todos, canal da obra depois do fechamento) e os avisos no sininho. `tests/concorrencias.test.mjs`, 103 verificações. A quarteirização pelas telas e o link vêm nas próximas fatias (§10).
+> **Situação:** fatias 1 a 5 prontas: o motor (`js/concorrencias.js`), as telas da contratante (Daily › Concorrências) e as da convidada (Measure › Convites: o convite, Vou cotar → projeto no Measure, Enviar pela plataforma a partir da proposta emitida, Não vou participar, e a vitória que vira obra já ligada), o canal (aba Perguntas, conversa no convite, aviso a todos, canal da obra depois do fechamento) e os avisos no sininho, e a quarteirização (concorrência a partir do projeto ou da obra, Usar no meu orçamento, aprovação da contratante de cima, presença da cadeia na obra). `tests/concorrencias.test.mjs`, 120 verificações. O link para quem não tem conta vem na fatia 6 (§10).
 >
 > **Simplificações:** a proposta enviada pela plataforma usa as linhas da proposta emitida no Measure: as que têm o código de uma etapa da concorrência vão por etapa, as outras (e os outros itens) vão em **outros itens**, que aparecem numa linha própria na comparação. "Vou cotar" cria o projeto sem as folhas (o protótipo não guarda os PDFs da contratante; a prestadora envia as plantas no projeto, como hoje). A convidada que não tem o Measure no plano responde pelo link (fatia 6).
 >
@@ -181,7 +181,7 @@ Um canal de conversa entre as duas empresas de cada elo (construtora e prestador
 | CO-21 | **Presença na obra sobe a cadeia inteira:** a construtora vê, sem valores, quem está no canteiro de todas as empresas abaixo dela (nome, empresa, entrada, horas), agrupado pela contratada direta (*Northfield › Bay State Drywall*). Diários e cronogramas, só da contratada direta. |
 | CO-22 | **Valores não atravessam elos:** cada empresa vê só os preços das propostas que recebeu e das que mandou. |
 | CO-23 | **Quarteirização na concorrência:** a contratante diz, em cada concorrência, se a contratada pode quarteirizar: *permitida* (padrão), *com a minha aprovação* (a contratante aprova cada empresa quarteirizada antes do fechamento dela) ou *não permitida*. |
-| CO-24 | Uma concorrência aberta a partir de um **projeto em orçamento** pode receber propostas e ter os preços usados no orçamento, mas só pode **fechar** depois que o projeto vira *Ganha* (antes disso, a prestadora não tem o serviço). Se o projeto vira *Perdida*, a concorrência é cancelada e os convidados são avisados. |
+| CO-24 | Uma concorrência aberta a partir de um **projeto em orçamento** pode receber propostas e ter os preços usados no orçamento, mas só pode **fechar** depois que o projeto vira *Ganha* e a obra é criada a partir dele (a contratada fica ligada a essa obra). Se o projeto vira *Perdida*, a concorrência é cancelada e os convidados são avisados. |
 | CO-25 | O prazo de uma concorrência aberta a partir de um projeto precisa vencer **antes** do prazo da proposta desse projeto. |
 
 ## 7. Estrutura de dados no protótipo
@@ -244,7 +244,7 @@ Na **Construtora Exemplo**, uma concorrência **aberta**: *Framing e drywall* no
 
 E duas perguntas no canal: uma respondida para todos, uma só para a Northfield.
 
-**Quarteirização:** a **Northfield**, enquanto cota o Atlântico, abre a concorrência *Drywall* a partir do projeto dela no Measure e convida a **Bay State Drywall** (link), que manda a proposta. A Northfield usa o preço no orçamento (linha de subempreiteiro em 09 21 16) e manda a rev. 2 para a construtora. A construtora não vê nada disso, só a proposta da Northfield. A concorrência do **siding do Residencial Jardim** aparece como **fechada** com a Northfield (é a ligação que já existe nos dados de exemplo).
+**Quarteirização:** a **Northfield** abriu, a partir da obra dela no Jardim, a concorrência *Drywall das casas* e convidou a **Bay State Drywall** (link), que já viu o convite. A construtora não vê nada disso. (No protótipo, o "Usar no meu orçamento" leva o preço como **outros itens** da proposta, não como linha de subempreiteiro do catálogo.) A concorrência do **siding do Residencial Jardim** aparece como **fechada** com a Northfield (é a ligação que já existe nos dados de exemplo).
 
 Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrência e compara → Tom vê o convite, cota o drywall com a Bay State e manda a rev. 2 → Ana fecha → Tom cria a obra ligada, fecha com a Bay State e o canal continua nos dois elos.
 
@@ -256,7 +256,7 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 | 2 ✓ | Telas da contratante: lista com abas, nova concorrência (rascunho e envio), página com Convidados, Comparar e Detalhes, prorrogar, convidar mais, fechar, cancelar; seção na página da obra | Navegador (Ana; Laura entra, Carlos não) |
 | 3 ✓ | Lado da convidada: Measure › Convites, o convite (visto), Vou cotar → projeto no Measure com a faixa da concorrência, Não vou participar com motivo, Enviar pela plataforma (etapas, outros itens, não cotadas), fechada → projeto *Ganha* → obra ligada à da contratante | Navegador (Tom e Ana), ponta a ponta |
 | 4 ✓ | Canal: aba Perguntas (uma conversa por convidada, responder para todas ou só para quem perguntou, aviso a todos), conversa no convite, canal da obra depois do fechamento; sininho das duas empresas | Unidade + navegador, as duas empresas |
-| 5 | Quarteirização: concorrência a partir do projeto ou da obra, **Usar no meu orçamento**, CO-23/24/25, presença da cadeia na construtora (CO-21) | Unidade + navegador, três empresas |
+| 5 ✓ | Quarteirização: concorrência a partir do projeto (Measure › projeto › Cotar com prestadoras) ou da obra, **Usar no meu orçamento** (o preço entra na proposta do projeto como outros itens, com as margens da prestadora), CO-23 (não permitida bloqueia o envio; com aprovação, o fechamento vira um pedido que a contratante de cima aprova ou recusa, vendo só o nome), CO-24, CO-25, presença da cadeia na obra da construtora (CO-21) | Unidade + navegador, três empresas |
 | 6 | Link sem conta (página única), inglês, portal (EN e PT) e guia do apresentador | Navegador + teste EN |
 
 A fatia 1 já nasce genérica (contratante é qualquer empresa), para a quarteirização não exigir refazer o modelo.

@@ -29,7 +29,7 @@ import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartao
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
-import { presencaNaObra, prestadorasNaObra, horas } from './crew.js';
+import { presencaNaObra, prestadorasNaObra, presencaDaCadeia, horas } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
   PRAZO_HORA, LEMBRETE_HORA, ESCALADA_HORA, prazoDe, situacaoDeHoje, diasAtrasados, pendenciasDoCampo, semRdoOntem, enviadoComAtraso, descreverDias,
@@ -219,6 +219,7 @@ function desenhar() {
     else if (q[0] === 'obras' && q[1] === 'encerradas') html = telaObrasAdmin('encerradas');
     else if (q[0] === 'obras' && q[1]) html = telaObraAdmin(q[1]);
     else if (q[0] === 'obras') html = telaObrasAdmin();
+    else if (q[0] === 'concorrencias' && q[1] === 'nova' && q[2] === 'projeto') html = telaFormConcorrencia(moldura, null, null, q[3]) || naoEncontrado('#/daily/concorrencias');
     else if (q[0] === 'concorrencias' && q[1] === 'nova') html = telaFormConcorrencia(moldura, null, q[2]);
     else if (q[0] === 'concorrencias' && q[1] && q[2] === 'editar') html = telaFormConcorrencia(moldura, q[1]) || naoEncontrado('#/daily/concorrencias');
     else if (q[0] === 'concorrencias' && q[1] && q[1].startsWith('co-')) html = telaConcorrencia(moldura, q[1], q[2]) || naoEncontrado('#/daily/concorrencias');
@@ -967,11 +968,11 @@ function telaObrasAdmin(filtro) {
  * nível gerencial, menos valores: salário, encargos e custo ficam com a prestadora (docs/saas.md HS-10). */
 const SITUACAO_PESSOA = { trabalho: tr('na obra'), intervalo: tr('no intervalo'), deslocamento: tr('em deslocamento'), saiu: tr('saiu') };
 function htmlPrestadorasNaObra(o) {
-  const lista = prestadorasNaObra(o.id, hoje());
+  const lista = presencaDaCadeia(o.id, hoje());
   if (!lista.length) return '';
   return '<section class="cartao prestadoras-obra"><h2 class="cartao-titulo">' + tr('Prestadoras nesta obra') + '</h2>' +
     '<p class="mudo pequeno">' + tr('Cada prestadora registra o ponto dos próprios funcionários no KORbuild. Aqui você acompanha quem está na obra e as horas; salários, encargos e custos ficam só com ela.') + '</p>' +
-    lista.map((p) => '<div class="prestadora-obra"><div class="prestadora-cab"><b>' + esc(p.empresa) + '</b><span class="mudo pequeno">' + esc(p.servico) + '</span></div>' +
+    lista.map((p) => '<div class="prestadora-obra' + (p.via ? ' prestadora-via' : '') + '"><div class="prestadora-cab"><b>' + esc(p.empresa) + '</b><span class="mudo pequeno">' + esc(p.servico) + (p.via ? ' · ' + tr('quarteirizada, contratada por {nome}', { nome: esc(p.via) }) : '') + '</span></div>' +
       '<div class="prestadora-numeros">' +
         '<div><span>' + tr('Na obra agora') + '</span><b>' + p.naObraAgora + '</b></div>' +
         '<div><span>' + tr('Vieram hoje') + '</span><b>' + p.presentes + '</b></div>' +

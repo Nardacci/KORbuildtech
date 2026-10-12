@@ -46,6 +46,11 @@ function conviteDe(c, conviteId) { return (c.convites || []).find((v) => v.id ==
 /* A conta KORbuild de um contato (prestadora com conta), ou null quando ela responde pelo link (CO-07). */
 export function contaDoContato(ct) { return ct && ct.contaId && empresaPorId(ct.contaId) ? ct.contaId : null; }
 
+/* Projeto do Measure da empresa aberta (ou de outra, pelos dados dela). */
+function projetoDe(dados, id) { return (((dados || {}).measure || {}).projetos || []).find((p) => p.id === id) || null; }
+/* A concorrência "de cima": a que a empresa ganhou (ou está cotando) e da qual esta é uma quarteirização. */
+export function concorrenciaPai(c) { return c && c.paiId ? achar(c.paiId) : null; }
+
 export function ultimaProposta(v) { return v && v.propostas && v.propostas.length ? v.propostas[v.propostas.length - 1] : null; }
 
 /* Situação de fato: uma concorrência aberta passa a "para fechar" quando o prazo vence. Antes disso as convidadas
@@ -71,7 +76,7 @@ function visaoDoConvidado(c, v) {
     : c.orcamento && c.orcamento.mostrar === 'etapa' ? { mostrar: 'etapa', valor: c.orcamento.valor, porEtapa: { ...c.orcamento.porEtapa } }
       : { mostrar: 'nao' };
   const dados = empresaPorId(c.contratanteId) || {};
-  const o = (dados.obras || []).find((x) => x.id === c.obraId);
+  const o = (dados.obras || []).find((x) => x.id === c.obraId) || (c.origem && c.origem.tipo === 'projeto' ? (({ nome, endereco, cidade, estado: uf, zip }) => ({ nome, endereco, municipio: cidade, estado: uf, zip }))(projetoDe(dados, c.origem.id) || {}) : null);
   return {
     id: c.id, contratanteId: c.contratanteId, contratante: dados.empresa || null,
     obraId: c.obraId, obra: o ? { nome: o.nome, endereco: o.endereco || '', cidade: o.municipio || o.cidade || '', estado: o.estado || '', zip: o.zip || '' } : null, servico: c.servico, etapas: c.etapas.slice(), incluso: c.incluso.slice(), excluso: c.excluso.slice(),
@@ -128,6 +133,14 @@ export function salvarRascunho(id, dados, por) {
   if (d.prazo && !DATA_HORA.test(d.prazo)) return { erro: tr('Prazo da proposta inválido.') };
   if (d.orcamento.valor != null && !(d.orcamento.valor > 0)) return { erro: tr('O orçamento precisa ser um valor maior que zero.') };
   if (d.obraId && !estado().obras.some((o) => o.id === d.obraId)) return { erro: tr('Escolha uma obra da sua empresa.') };
+  if (d.origem && d.origem.tipo === 'projeto') {
+    if (!projetoDe(estado(), d.origem.id)) return { erro: tr('Projeto não encontrado.') };
+    d.obraId = null;
+  } else if (d.obraId) d.origem = { tipo: 'obra', id: d.obraId };
+  // quarteirização: a concorrência de cima é a do projeto (cotando) ou a da obra (ganha)
+  const pj = d.origem && d.origem.tipo === 'projeto' ? projetoDe(estado(), d.origem.id) : null;
+  const ob = d.obraId ? estado().obras.find((o) => o.id === d.obraId) : null;
+  d.paiId = (pj && pj.concorrencia && pj.concorrencia.id) || (ob && ob.concorrenciaId) || null;
   // convidados: contatos (marcador prestadora) desta empresa, sem repetir (CO-16)
   const ids = [...new Set(dados.convidados || (atual ? atual.convites.map((v) => v.contatoId) : []))];
   for (const cid of ids) if (!contato(cid)) return { erro: tr('Convidado não encontrado nos Contatos.') };
@@ -165,6 +178,12 @@ export function pendenciasDeEnvio(c, agora = Date.now()) {
   if (!c.prazo) p.push(tr('Informe o prazo da proposta.'));
   else if (instante(c.prazo) <= agora) p.push(tr('O prazo da proposta precisa ser no futuro.'));
   if (!c.convites.length) p.push(tr('Convide pelo menos uma prestadora.'));
+  // CO-25: cotando antes da própria proposta, o prazo vence antes do prazo do projeto
+  const pj = c.origem && c.origem.tipo === 'projeto' ? projetoDe(empresaPorId(c.contratanteId), c.origem.id) : null;
+  if (pj && pj.prazoProposta && c.prazo && c.prazo.slice(0, 10) >= pj.prazoProposta) p.push(tr('O prazo precisa vencer antes do prazo da sua proposta ({data}).', { data: pj.prazoProposta }));
+  // CO-23: a contratante de cima pode não permitir quarteirizar
+  const pai = concorrenciaPai(c);
+  if (pai && pai.quarteirizacao === 'nao-permitida') p.push(tr('A contratante desta obra não permite quarteirizar.'));
   return p;
 }
 
@@ -245,7 +264,24 @@ export function fechar(id, conviteId, observacao, por, agora = Date.now()) {
   const v = conviteDe(c, conviteId);
   const p = ultimaProposta(v);
   if (!v || !p) return { erro: tr('Escolha uma prestadora que mandou proposta.') };
-  if (c.origem && c.origem.tipo === 'projeto' && !c.origem.ganho) return { erro: tr('Esta concorrência saiu de um projeto em orçamento: só fecha depois que o projeto for ganho.') };
+  if (c.origem && c.origem.tipo === 'projeto') {
+    const pj = projetoDe(estado(), c.origem.id);
+    if (!pj || pj.situacao !== 'ganha') return { erro: tr('Esta concorrência saiu de um projeto em orçamento: só fecha depois que o projeto for ganho.') };
+    if (!pj.obraId) return { erro: tr('Crie a obra a partir do projeto antes de fechar: a contratada fica ligada a ela.') };
+    c.obraId = pj.obraId;
+  }
+  // CO-23: com a aprovação da contratante de cima, o fechamento espera a decisão dela
+  const pai = concorrenciaPai(c);
+  if (pai && pai.quarteirizacao === 'com-aprovacao' && !(c.aprovacao && c.aprovacao.situacao === 'aprovada' && c.aprovacao.conviteId === v.id)) {
+    c.aprovacao = { conviteId: v.id, nome: v.nome, situacao: 'pendente', pedidaEm: agora, observacao: String(observacao || '').trim() };
+    registrar(c, por, tr('Aprovação da quarteirização pedida'), v.nome, agora);
+    salvar();
+    return { ok: true, pendente: true };
+  }
+  return concluirFechamento(c, v, p, observacao, por, agora);
+}
+
+function concluirFechamento(c, v, p, observacao, por, agora) {
   c.situacao = 'fechada';
   c.fechamento = { conviteId: v.id, rev: p.rev, valor: p.total, por: por || '—', em: agora, observacao: String(observacao || '').trim() };
   for (const x of c.convites) {
@@ -262,6 +298,36 @@ export function fechar(id, conviteId, observacao, por, agora = Date.now()) {
   }
   salvar();
   return { ok: true };
+}
+
+/* Pedidos de aprovação de quarteirização que chegam à contratante de cima (CO-23). Ela vê só o nome da
+ * empresa escolhida, nunca o valor entre as duas (CO-22). */
+export function pedidosDeQuarteirizacao(empresaId = empresaAtualId()) {
+  return lista().filter((c) => c.aprovacao && c.aprovacao.situacao === 'pendente' && (concorrenciaPai(c) || {}).contratanteId === empresaId)
+    .map((c) => ({ id: c.id, paiId: c.paiId, servico: c.servico, contratante: ((empresaPorId(c.contratanteId) || {}).empresa || {}).nome || '', escolhida: c.aprovacao.nome, pedidaEm: c.aprovacao.pedidaEm }));
+}
+export function decidirQuarteirizacao(id, aprovar, motivo, por, agora = Date.now()) {
+  const c = achar(id);
+  const pai = concorrenciaPai(c);
+  if (!c || !pai || pai.contratanteId !== empresaAtualId() || !c.aprovacao || c.aprovacao.situacao !== 'pendente') return { erro: tr('Pedido não encontrado.') };
+  c.aprovacao.situacao = aprovar ? 'aprovada' : 'recusada';
+  c.aprovacao.decididaEm = agora;
+  c.aprovacao.por = por || '—';
+  c.aprovacao.motivo = String(motivo || '').trim();
+  auditar(tr('Concorrências'), (aprovar ? tr('Quarteirização aprovada') : tr('Quarteirização recusada')) + ': ' + c.servico, '', c.aprovacao.nome, c.aprovacao.motivo, por);
+  if (aprovar) {
+    const v = c.convites.find((x) => x.id === c.aprovacao.conviteId);
+    // a decisão é da contratante de cima; o fechamento fica registrado em nome de quem pediu
+    concluirFechamento(c, v, ultimaProposta(v), c.aprovacao.observacao, c.historico[c.historico.length - 1].por, agora);
+  } else salvar();
+  return { ok: true };
+}
+
+/* CO-24: projeto perdido cancela as concorrências que saíram dele. */
+export function cancelarDoProjeto(projetoId, por, agora = Date.now()) {
+  for (const c of enviadas().filter((x) => x.origem && x.origem.tipo === 'projeto' && x.origem.id === projetoId && ['aberta', 'rascunho'].includes(x.situacao))) {
+    cancelar(c.id, tr('O projeto foi perdido.'), por, agora);
+  }
 }
 
 /* A convidada liga o convite ao projeto que criou no Measure para cotar ("Vou cotar"). */
@@ -462,8 +528,10 @@ export function avisosDaContratante(empresaId = empresaAtualId()) {
       if (v.situacao === 'nao-vai' && v.respondidoEm) lista.push({ id: 'co-recusa-' + v.id, em: v.respondidoEm, titulo: tr('{nome} não vai participar · {servico}', { nome: v.nome, servico: c.servico }), href });
     }
     for (const m of msgs(c).filter((x) => x.de === 'convidada')) lista.push({ id: 'co-msg-' + m.id, em: m.em, titulo: tr('Mensagem de {nome} · {servico}', { nome: m.autor, servico: c.servico }), href: href + '/perguntas' });
+    if (c.aprovacao && c.aprovacao.decididaEm) lista.push({ id: 'co-aprov-' + c.id + '-' + c.aprovacao.decididaEm, em: c.aprovacao.decididaEm, titulo: (c.aprovacao.situacao === 'aprovada' ? tr('Quarteirização aprovada') : tr('Quarteirização recusada')) + ': ' + c.aprovacao.nome + ' · ' + c.servico, href });
     if (c.situacao === 'aberta' && instante(c.prazo) <= Date.now()) lista.push({ id: 'co-prazo-' + c.id + '-' + c.prazo, em: instante(c.prazo), titulo: tr('Prazo vencido: compare e feche · {servico}', { servico: c.servico }), href: href + '/comparar' });
   }
+  for (const pd of pedidosDeQuarteirizacao(empresaId)) lista.push({ id: 'co-pedido-' + pd.id + '-' + pd.pedidaEm, em: pd.pedidaEm, titulo: tr('{contratante} quer quarteirizar para {escolhida}: aprove ou recuse', { contratante: pd.contratante, escolhida: pd.escolhida }), href: '#/daily/concorrencias/' + pd.paiId });
   return lista;
 }
 

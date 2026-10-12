@@ -15,7 +15,9 @@ import {
   comparar, salvarRascunho, enviar, pendenciasDeEnvio, prorrogar, convidarMais, fechar, cancelar, contaDoContato,
   recebidas, recebida, marcarVisto, responder, enviarProposta, vincularProjeto,
   canalDaContratante, canalRecebido, escreverComoConvidada, escreverComoContratante, perguntasSemResposta,
+  concorrenciaPai, pedidosDeQuarteirizacao, decidirQuarteirizacao,
 } from './concorrencias.js';
+import { margensEm, precoDeVenda } from './precos.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarConcorrencias(funcoes) { app = { ...app, ...funcoes }; }
@@ -25,6 +27,9 @@ export const podeGerir = () => pode(usuarioAtual(), 'concorrencias.gerir');
 export const podeResponder = () => pode(usuarioAtual(), 'concorrencias.responder') && (estado().empresa.modulos || []).includes('measure');
 const campo = (id, rotulo, html, classe) => '<div class="campo' + (classe ? ' ' + classe : '') + '"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
 const nomeObra = (id) => (acharObra(id) || {}).nome || '—';
+/* De onde saiu: a obra, ou o projeto do Measure (cotando antes da própria proposta). */
+const doProjeto = (c) => c.origem && c.origem.tipo === 'projeto';
+const nomeOrigem = (c) => (doProjeto(c) && !c.obraId ? tr('Projeto {nome}', { nome: (acharProjeto(c.origem.id) || {}).nome || '—' }) : nomeObra(c.obraId));
 const etiqueta = (s) => '<span class="etiqueta ' + SITUACOES[s].classe + '">' + SITUACOES[s].nome + '</span>';
 const instante = (dh) => new Date(dh).getTime();
 
@@ -92,10 +97,12 @@ function etapasConhecidas() {
   return [...s].sort();
 }
 
-export function telaFormConcorrencia(moldura, id, obraId) {
+export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   const c = id ? concorrenciaEnviada(id) : null;
   if (id && (!c || c.situacao !== 'rascunho')) return null;
-  const d = c || { obraId: obraId || '', servico: '', etapas: [], incluso: [], excluso: [], observacoes: '', desenhos: [], prazo: '', inicio: '', termino: '', orcamento: { valor: null, mostrar: 'nao' }, exigencias: {}, quarteirizacao: 'permitida', convites: [] };
+  const pj = acharProjeto(projetoId || (c && doProjeto(c) ? c.origem.id : null));
+  if (projetoId && !pj) return null;
+  const d = c || { origem: pj ? { tipo: 'projeto', id: pj.id } : null, obraId: obraId || '', servico: '', etapas: [], incluso: [], excluso: [], observacoes: '', desenhos: [], prazo: '', inicio: '', termino: '', orcamento: { valor: null, mostrar: 'nao' }, exigencias: {}, quarteirizacao: 'permitida', convites: [] };
   const obras = estado().obras.filter((o) => o.situacao !== 'concluida' || o.id === d.obraId);
   const conhecidas = etapasConhecidas();
   const outras = d.etapas.filter((e) => !conhecidas.includes(e));
@@ -103,18 +110,26 @@ export function telaFormConcorrencia(moldura, id, obraId) {
   const convidados = d.convites.map((v) => v.contatoId);
   const ex = d.exigencias || {};
   const [prazoData, prazoHora] = d.prazo ? d.prazo.split('T') : ['', '17:00'];
-  const voltar = c ? { href: '#/daily/concorrencias/' + c.id, rotulo: c.servico || tr('Concorrência') } : { href: obraId ? '#/daily/obras/' + obraId : '#/daily/concorrencias', rotulo: obraId ? nomeObra(obraId) : tr('Concorrências') };
+  const voltar = c ? { href: '#/daily/concorrencias/' + c.id, rotulo: c.servico || tr('Concorrência') } : pj ? { href: '#/measure/projeto/' + pj.id, rotulo: pj.nome } : { href: obraId ? '#/daily/obras/' + obraId : '#/daily/concorrencias', rotulo: obraId ? nomeObra(obraId) : tr('Concorrências') };
+  // a concorrência de cima (quarteirização): a do projeto, ou a da obra ganha
+  const obraEsc = !pj && d.obraId ? acharObra(d.obraId) : null;
+  const paiId = (pj && pj.concorrencia && pj.concorrencia.id) || (obraEsc && obraEsc.concorrenciaId) || null;
+  const politica = paiId ? (recebida(paiId) || {}).quarteirizacao : null;
+  const avisoPolitica = politica === 'nao-permitida' ? '<div class="aviso aviso-vermelho"><b>' + tr('A contratante desta obra não permite quarteirizar.') + '</b></div>'
+    : politica === 'com-aprovacao' ? '<div class="aviso aviso-ambar"><b>' + tr('Quarteirização com aprovação') + '</b><span>' + tr('Quem contratou a sua empresa aprova a prestadora que você escolher, antes do fechamento. Ela vê só o nome, nunca o valor.') + '</span></div>' : '';
   return moldura({
     ativo: 'concorrencias', largo: true, titulo: c ? tr('Rascunho: {nome}', { nome: c.servico || tr('(sem nome)') }) : tr('Nova concorrência'),
     subtitulo: tr('O pacote que as prestadoras recebem para cotar'), voltar,
-    conteudo: '<form id="form-concorrencia" class="form-settings" data-id="' + (c ? c.id : '') + '" onsubmit="return false">' +
+    conteudo: avisoPolitica + '<form id="form-concorrencia" class="form-settings" data-id="' + (c ? c.id : '') + '" onsubmit="return false">' +
+      '<input type="hidden" name="origemProjeto" value="' + (pj ? pj.id : '') + '">' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Serviço') + '</h2><div class="grade-campos">' +
-        campo('co-obraId', tr('Obra *'), '<select id="co-obraId" name="obraId"><option value="">' + tr('Escolha…') + '</option>' + obras.map((o) => '<option value="' + o.id + '"' + (o.id === d.obraId ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') + '</select>') +
+        (pj ? campo('co-projeto', tr('Projeto'), '<input type="text" id="co-projeto" value="' + esc(pj.nome) + '" readonly>') : campo('co-obraId', tr('Obra *'), '<select id="co-obraId" name="obraId"><option value="">' + tr('Escolha…') + '</option>' + obras.map((o) => '<option value="' + o.id + '"' + (o.id === d.obraId ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') + '</select>')) +
         campo('co-servico', tr('Serviço *'), '<input type="text" id="co-servico" name="servico" value="' + esc(d.servico) + '" placeholder="' + esc(tr('Ex.: Framing e drywall')) + '">') + '</div>' +
         '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Etapas a cotar * (cost codes)') + '</legend>' +
           conhecidas.map((e) => '<label class="check pequeno"><input type="checkbox" name="etapas" value="' + esc(e) + '"' + (d.etapas.includes(e) ? ' checked' : '') + '> ' + esc(e) + '</label>').join('') + '</fieldset>' +
         campo('co-outrasEtapas', tr('Outras etapas (uma por linha)'), '<textarea id="co-outrasEtapas" name="outrasEtapas" rows="2" placeholder="' + esc(tr('Ex.: 09 91 00 · Painting')) + '">' + esc(outras.join('\n')) + '</textarea>') +
         '<p class="mudo pequeno">' + tr('Cada etapa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas.') + '</p>' +
+        (pj ? '<p class="pequeno">' + tr('Cotando antes da sua proposta: o prazo precisa vencer antes do seu ({data}). Você usa os preços no orçamento e só fecha depois de ganhar o projeto.', { data: pj.prazoProposta ? dataCurta(pj.prazoProposta) : '—' }) + '</p>' : '') +
       '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><div class="grade-campos">' +
         campo('co-incluso', tr('Incluso * (um item por linha)'), '<textarea id="co-incluso" name="incluso" rows="4">' + esc(d.incluso.join('\n')) + '</textarea>') +
@@ -167,7 +182,7 @@ function dadosDoForm() {
   return {
     id: form.dataset.id || null,
     dados: {
-      obraId: fd.get('obraId'), servico: fd.get('servico'),
+      obraId: fd.get('obraId'), origem: fd.get('origemProjeto') ? { tipo: 'projeto', id: fd.get('origemProjeto') } : null, servico: fd.get('servico'),
       etapas: fd.getAll('etapas').concat(String(fd.get('outrasEtapas') || '').split('\n')),
       incluso: fd.get('incluso'), excluso: fd.get('excluso'), observacoes: fd.get('observacoes'),
       desenhos: atuais.concat(anexos),
@@ -206,10 +221,18 @@ export function telaConcorrencia(moldura, id, abaPedida) {
     const v = c.convites.find((x) => x.id === c.fechamento.conviteId);
     aviso = '<div class="aviso aviso-verde"><b>' + tr('Fechada com {nome}', { nome: esc(v.nome) }) + '</b><span>' + tr('Rev. {rev} · {valor} · {quando} por {quem}', { rev: c.fechamento.rev, valor: dinheiro(c.fechamento.valor), quando: dataHora(c.fechamento.em), quem: esc(c.fechamento.por) }) + (c.fechamento.observacao ? ' · ' + esc(c.fechamento.observacao) : '') + '</span></div>';
   } else if (c.situacao === 'cancelada') aviso = '<div class="aviso"><b>' + tr('Cancelada') + '</b><span>' + esc(c.cancelamento.motivo) + ' · ' + dataHora(c.cancelamento.em) + '</span></div>';
+  const pai = concorrenciaPai(c);
+  const contratanteDeCima = pai ? ((recebida(pai.id) || {}).contratante || {}).nome || '' : '';
+  if (c.aprovacao && c.situacao !== 'fechada') aviso += c.aprovacao.situacao === 'pendente'
+    ? '<div class="aviso aviso-ambar"><b>' + tr('Aguardando a aprovação de {nome}', { nome: esc(contratanteDeCima) }) + '</b><span>' + tr('Você escolheu {empresa}. O fechamento acontece quando a contratante de cima aprovar.', { empresa: esc(c.aprovacao.nome) }) + '</span></div>'
+    : c.aprovacao.situacao === 'recusada' ? '<div class="aviso aviso-vermelho"><b>' + tr('{nome} não aprovou {empresa}', { nome: esc(contratanteDeCima), empresa: esc(c.aprovacao.nome) }) + '</b><span>' + esc(c.aprovacao.motivo || '') + ' ' + tr('Escolha outra prestadora.') + '</span></div>' : '';
+  if (pai) aviso += '<p class="mudo pequeno">' + tr('Quarteirização de "{servico}" para {nome}.', { servico: esc(pai.servico), nome: esc(contratanteDeCima) }) + '</p>';
+  for (const pd of pedidosDeQuarteirizacao().filter((x) => x.paiId === c.id)) aviso += '<div class="aviso aviso-ambar"><b>' + tr('{contratante} quer quarteirizar "{servico}" para {escolhida}', { contratante: esc(pd.contratante), servico: esc(pd.servico), escolhida: esc(pd.escolhida) }) + '</b>' +
+    '<span>' + tr('Você aprova a empresa; o valor entre elas não é informado.') + '</span><span class="btn-linha"><button type="button" class="btn btn-primario btn-pequeno" data-acao="co-aprovar-q" data-id="' + pd.id + '">' + tr('Aprovar') + '</button><button type="button" class="btn btn-contorno btn-pequeno" data-acao="co-recusar-q" data-id="' + pd.id + '">' + tr('Recusar') + '</button></span></div>';
   const conteudo = aba === 'comparar' ? htmlComparar(c, ativa) : aba === 'detalhes' ? htmlDetalhes(c) : aba === 'perguntas' ? htmlPerguntas(c) : htmlConvidados(c);
   return moldura({
     ativo: 'concorrencias', largo: true, titulo: c.servico || tr('(sem nome)'),
-    subtitulo: nomeObra(c.obraId) + ' · ' + SITUACOES[s].nome + (ativa ? ' · ' + tr('prazo {quando}', { quando: textoPrazo(c) }) : ''),
+    subtitulo: nomeOrigem(c) + ' · ' + SITUACOES[s].nome + (ativa ? ' · ' + tr('prazo {quando}', { quando: textoPrazo(c) }) : ''),
     voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') }, acoes,
     conteudo: aviso + '<div id="concorrencia" data-id="' + c.id + '"></div>' +
       (c.situacao === 'rascunho' ? '' : '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + ABAS_PAGINA.map(([k, r]) => '<a href="#/daily/concorrencias/' + c.id + (k === 'convidados' ? '' : '/' + k) + '"' + (k === aba ? ' class="ativa" aria-current="page"' : '') + '>' + r + (k === 'comparar' ? ' <span class="mz-contagem">' + c.convites.filter((v) => v.propostas.length).length + '</span>' : '') + (k === 'perguntas' && perguntasSemResposta(c).length ? ' <span class="mz-contagem co-pendente">' + perguntasSemResposta(c).length + '</span>' : '') + '</a>').join('') + '</nav>') +
@@ -296,7 +319,9 @@ function htmlComparar(c, ativa) {
       '<tr><td>' + tr('Prazo de execução') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num">' + (k.prazoExecucaoDias ? tn(k.prazoExecucaoDias, '{n} dia', '{n} dias') : '—') + '</td>').join('') + '</tr>' +
       '<tr><td>' + tr('Exclusões') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="co-exclusoes">' + (k.exclusoes.length ? k.exclusoes.map((x) => k.exclusoesNoEscopo.includes(x) ? '<span class="texto-alerta bloco" title="' + esc(tr('Está no escopo incluso: pergunte antes de fechar')) + '">⚠ ' + esc(x) + '</span>' : '<span class="bloco">' + esc(x) + '</span>').join('') : '<span class="mudo">—</span>') + '</td>').join('') + '</tr>' +
       '<tr><td>' + tr('Enviada em') + '</td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num pequeno">' + dataHora(k.enviadaEm) + (k.numero ? '<span class="mudo bloco">' + esc(k.numero) + '</span>' : '') + '</td>').join('') + '</tr>' +
-      (ativa ? '<tr><td></td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num"><button type="button" class="btn btn-primario btn-pequeno" data-acao="co-fechar" data-id="' + c.id + '" data-convite="' + k.conviteId + '">' + tr('Fechar com esta') + '</button></td>').join('') + '</tr>' : '') +
+      (ativa ? '<tr><td></td>' + (orc ? '<td></td>' : '') + cmp.colunas.map((k) => '<td class="num"><span class="btn-linha co-botoes">' +
+        (doProjeto(c) && acharProjeto(c.origem.id) ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="co-usar" data-id="' + c.id + '" data-convite="' + k.conviteId + '">' + tr('Usar no meu orçamento') + '</button>' : '') +
+        '<button type="button" class="btn btn-primario btn-pequeno" data-acao="co-fechar" data-id="' + c.id + '" data-convite="' + k.conviteId + '">' + tr('Fechar com esta') + '</button></span></td>').join('') + '</tr>' : '') +
     '</tbody></table></div>' +
     '<p class="mudo pequeno">' + tr('Em verde, o menor valor de cada etapa. Etapa não cotada nunca conta como zero: compare o total só entre propostas completas. ⚠ marca uma exclusão que está no seu escopo incluso.') + '</p></section>';
 }
@@ -390,6 +415,36 @@ export function telaConvite(moldura, id) {
   });
 }
 
+/* Na página do projeto do Measure: as concorrências que saíram dele (cotar com as suas prestadoras). */
+export function htmlConcorrenciasDoProjeto(p) {
+  if (!podeGerir()) return '';
+  const lista = enviadas().filter((c) => doProjeto(c) && c.origem.id === p.id);
+  return '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Cotar com prestadoras') + '</h2>' +
+    '<a class="btn btn-contorno btn-pequeno" href="#/daily/concorrencias/nova/projeto/' + p.id + '">' + icone('mais', 16) + tr('Nova concorrência') + '</a></div>' +
+    (lista.length ? '<ul class="lista-simples">' + lista.map((c) => '<li><a href="#/daily/concorrencias/' + c.id + '"><b>' + esc(c.servico) + '</b></a> ' + etiqueta(situacaoDe(c)) +
+      '<span class="mudo pequeno bloco">' + tn(c.convites.filter((v) => v.propostas.length).length, '{n} proposta', '{n} propostas') + '</span></li>').join('') + '</ul>'
+      : '<p class="mudo">' + tr('Parte do serviço vai para outra prestadora? Convide as suas prestadoras para cotar e use o preço delas neste orçamento.') + '</p>') + '</section>';
+}
+
+/* "Usar no meu orçamento": o preço da prestadora entra na proposta do projeto como outros itens, um por etapa,
+ * com as suas margens por cima. Usar de novo (outra prestadora ou revisão) troca as linhas dessa concorrência. */
+export function usarNoOrcamento(c, conviteId) {
+  const pj = acharProjeto(c.origem.id);
+  const v = c.convites.find((x) => x.id === conviteId);
+  const p = ultimaProposta(v);
+  if (!pj || !p) return { erro: tr('Proposta não encontrada.') };
+  const m = margensEm();
+  pj.proposta = pj.proposta || {};
+  pj.proposta.extras = (pj.proposta.extras || []).filter((x) => !(x.origem && x.origem.concorrenciaId === c.id));
+  const partes = Object.entries(p.porEtapa).concat(p.outros ? [[tr('Outros itens'), p.outros]] : []);
+  if (!partes.length) partes.push([c.servico, p.total]);
+  for (const [etapa, custo] of partes) {
+    pj.proposta.extras.push({ descricao: tr('{etapa} (subempreiteiro: {nome}, rev. {rev})', { etapa, nome: v.nome, rev: p.rev }), valor: precoDeVenda(custo, m).venda, origem: { concorrenciaId: c.id, conviteId: v.id, rev: p.rev, etapa, custo } });
+  }
+  salvar();
+  return { ok: true, linhas: partes.length };
+}
+
 /* Faixa na página do projeto que veio de um convite. */
 export function htmlFaixaConcorrencia(p) {
   if (!p.concorrencia) return '';
@@ -456,6 +511,27 @@ export function propostaParaConcorrencia(x, emitida) {
 const textoDe = (el) => { const t = el.closest('.co-escrever').querySelector('textarea'); return t ? t.value : ''; };
 
 export const acoesConcorrencias = {
+  'co-usar'(el) {
+    const c = concorrenciaEnviada(el.dataset.id);
+    const r = usarNoOrcamento(c, el.dataset.convite);
+    toast(r.erro || tn(r.linhas, 'Preço levado à proposta do projeto (1 linha, com as suas margens).', 'Preço levado à proposta do projeto ({n} linhas, com as suas margens).'));
+  },
+  async 'co-aprovar-q'(el) {
+    const r = decidirQuarteirizacao(el.dataset.id, true, '', quem());
+    toast(r.erro || tr('Quarteirização aprovada.'));
+    if (r.ok) app.desenhar();
+  },
+  async 'co-recusar-q'(el) {
+    const res = await abrirDialogo({
+      titulo: tr('Recusar a quarteirização?'),
+      corpo: campo('rq-motivo', tr('Motivo (a contratada vê)'), '<input type="text" id="rq-motivo" name="motivo">'),
+      acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: tr('Recusar'), valor: true, classe: 'btn-perigo' }],
+    });
+    if (!res || !res.valor) return;
+    const r = decidirQuarteirizacao(el.dataset.id, false, res.campos.motivo, quem());
+    toast(r.erro || tr('Quarteirização recusada.'));
+    if (r.ok) app.desenhar();
+  },
   'co-escrever'(el) {
     const r = escreverComoContratante(el.dataset.id, { conviteId: el.dataset.convite, texto: textoDe(el) }, quem());
     toast(r.erro || tr('Mensagem enviada.'));
@@ -602,7 +678,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = fechar(c.id, v.id, res.campos.observacao, quem());
-    toast(r.erro || tr('Fechada com {nome}.', { nome: v.nome }));
+    toast(r.erro || (r.pendente ? tr('Pedido de aprovação enviado a quem contratou a sua empresa.') : tr('Fechada com {nome}.', { nome: v.nome })));
     if (r.ok) app.ir('#/daily/concorrencias/' + c.id);
   },
   async 'co-cancelar'(el) {

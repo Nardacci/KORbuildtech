@@ -11,6 +11,7 @@ import { estado, salvar } from './armazem.js';
 import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2_POR_PE2 } from './imperial.js';
 import { calcularLinha, validar } from './formulas.js';
 import { contato } from './contatos.js';
+import { cancelarDoProjeto } from './concorrencias.js';
 
 function mz() { return estado().measure; }
 export function projetos() { return mz().projetos; }
@@ -86,7 +87,13 @@ export function salvarProjeto(id, dados) {
   if (!TIPOS_PROJETO[d.tipo]) return { erro: tr('Escolha o tipo de obra.') };
   if (!SITUACOES[d.situacao]) return { erro: tr('Escolha a situação.') };
   if (d.prazoProposta && !/^\d{4}-\d{2}-\d{2}$/.test(d.prazoProposta)) return { erro: tr('Prazo da proposta inválido.') };
-  if (id) { Object.assign(projeto(id), d, { alteradoEm: Date.now() }); salvar(); return { ok: true, id }; }
+  if (id) {
+    const perdeu = projeto(id).situacao !== 'perdida' && d.situacao === 'perdida';
+    Object.assign(projeto(id), d, { alteradoEm: Date.now() });
+    if (perdeu) cancelarDoProjeto(id); // docs/concorrencias.md CO-24
+    salvar();
+    return { ok: true, id };
+  }
   const novo = { id: novoId('pj'), ...d, criadoEm: Date.now() };
   mz().projetos.push(novo);
   salvar();

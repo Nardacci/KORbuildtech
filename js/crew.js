@@ -356,6 +356,19 @@ export function prestadorasNaObra(obraId, iso, agora) {
   return lista;
 }
 
+/* A cadeia inteira na obra (docs/concorrencias.md CO-21): as prestadoras ligadas a esta obra e, abaixo delas, quem
+ * cada uma quarteirizou, com "via" a contratada direta. Só presença e horas, sem valores. */
+export function presencaDaCadeia(obraId, iso, agora, via = null, nivel = 0) {
+  const lista = [];
+  for (const p of prestadorasNaObra(obraId, iso, agora)) {
+    lista.push(via ? { ...p, via } : p);
+    if (nivel >= 3) continue;
+    const o = obrasLigadas(obraId).find((x) => x.empresaId === p.empresaId);
+    if (o) lista.push(...emNomeDaEmpresa(p.empresaId, () => presencaDaCadeia(o.obra.id, iso, agora, via || p.empresa, nivel + 1)));
+  }
+  return lista;
+}
+
 /* ---------- Registrar ---------- */
 
 export function registrarBatidas(funcIds, dados) {

@@ -48,7 +48,7 @@ let r = await rodar((m, a, h) => {
   const atl = env.find((c) => c.id === 'co-atlantico-framing');
   return { n: env.length, situacoes: env.map((c) => m.situacaoDe(c)), convites: atl.convites.map((v) => [v.nome, v.situacao, !!v.empresaId]) };
 });
-verificar(r.n === 2 && r.situacoes.join() === 'aberta,fechada', 'a construtora tem 2 concorrências: Atlântico aberta e Jardim fechada');
+verificar(r.n === 2 && r.situacoes.join() === 'aberta,fechada', 'a construtora tem 2 concorrências: Atlântico aberta e Jardim fechada (a terceira é da Northfield)');
 verificar(r.convites.length === 3 && r.convites[0][2] === true && r.convites[1][2] === false, 'Atlântico: Northfield com conta, Bayside e Pine Ridge pelo link');
 
 console.log('O que cada convidada vê (CO-04)');
@@ -203,21 +203,21 @@ r = await rodar((m, a, h, x) => {
 verificar(r.alheia === null && r.fechar, 'uma convidada não abre nem fecha a concorrência de outra empresa');
 r = await rodar(async (m, a, h) => {
   const { salvarContato } = await import('./js/contatos.js');
-  const ct = h.como(h.NF, () => salvarContato(null, { nome: 'Bay State Drywall', email: 'ops@baystate.exemplo.com', papeis: ['prestadora'] }, 'Tom Reilly'));
+  const ct = h.como(h.NF, () => salvarContato(null, { nome: 'Granite State Drywall', email: 'ops@granitestate.exemplo.com', papeis: ['prestadora'] }, 'Tom Reilly'));
   return { ct: ct.ok };
 });
-verificar(r.ct, 'a Northfield cadastra a Bay State Drywall como prestadora nos Contatos');
+verificar(r.ct, 'a Northfield cadastra a Granite State Drywall como prestadora nos Contatos');
 r = await rodar(async (m, a, h, x) => {
   const { contatos } = await import('./js/contatos.js');
   return h.como(h.NF, () => {
-    const bay = contatos().find((c) => c.nome === 'Bay State Drywall');
+    const bay = contatos().find((c) => c.nome === 'Granite State Drywall');
     const c = m.salvarRascunho(null, { obraId: 'nf-jardim', servico: 'Drywall das casas', etapas: [x.DRYWALL], incluso: 'Drywall nível 4', prazo: '2026-10-16T12:00', convidados: [bay.id], quarteirizacao: 'nao-permitida' }, 'Tom Reilly');
     const env = m.enviar(c.id, 'Tom Reilly', x.AGORA);
     const s = m.concorrenciaEnviada(c.id);
     return { env: env.ok, contratante: s.contratanteId, link: s.convites[0].empresaId === null, minhas: m.enviadas().length, daGc: m.enviadas(h.GC).some((y) => y.id === c.id), obraAlheia: m.salvarRascunho(null, { obraId: 'atlantico', servico: 'x' }, 'Tom Reilly').erro };
   });
 }, { DRYWALL, AGORA });
-verificar(r.env && r.contratante === 'prestadora-exemplo' && r.minhas === 1, 'a prestadora também abre concorrência (contratante = Northfield)');
+verificar(r.env && r.contratante === 'prestadora-exemplo' && r.minhas === 2, 'a prestadora também abre concorrência (contratante = Northfield; a outra é a do exemplo)');
 verificar(r.link, 'a quarteirizada sem conta recebe pelo link');
 verificar(!r.daGc, 'a construtora não vê a concorrência da Northfield');
 verificar(r.obraAlheia, 'só dá para abrir concorrência de uma obra da própria empresa');
@@ -478,6 +478,102 @@ await ir('u-tom', '#/measure/convites');
 await page.locator('details.sino summary').click();
 await page.waitForTimeout(300);
 verificar((await page.locator('.painel-notificacoes').innerText()).includes('Convite para cotar'), 'e aparece no sininho da tela');
+
+console.log('Quarteirização (fatia 5)');
+r = await rodar((m, a, h) => {
+  const nf = h.como(h.NF, () => m.enviadas().map((c) => [c.id, c.paiId]));
+  const gc = m.enviadas(h.GC).some((c) => c.id === 'co-jardim-drywall');
+  const link = m.porToken('lk-cv-jd-baystate');
+  return { nf, gc, obra: link && link.obra && link.obra.nome };
+});
+verificar(r.nf.some(([id, pai]) => id === 'co-jardim-drywall' && pai === 'co-jardim-siding') && !r.gc, 'exemplo: a Northfield quarteiriza o drywall do Jardim (ligada à concorrência de cima); a construtora não vê');
+verificar(r.obra && r.obra.includes('Jardim'), 'a Bay State, pelo link, vê a obra da Northfield');
+// a construtora abre uma concorrência que pede aprovação para quarteirizar; a Northfield cota e quarteiriza pelo projeto
+const cadeia = await rodar(async (m, a, h) => {
+  const ms = await import('./js/measure.js');
+  const ct = await import('./js/contatos.js');
+  const pai = h.como(h.GC, () => { const c = m.salvarRascunho(null, { obraId: 'galpao', servico: 'Forro do galpão', etapas: ['09 51 00 · Acoustical ceilings'], incluso: 'Forro acústico do escritório', prazo: '2026-10-25T17:00', convidados: ['ct-northfield'], quarteirizacao: 'com-aprovacao' }, 'Ana Ribeiro'); m.enviar(c.id, 'Ana Ribeiro'); return c.id; });
+  return h.como(h.NF, () => {
+    m.responder(pai, true, '', 'Tom Reilly');
+    const pj = ms.salvarProjeto(null, { nome: 'Forro do galpão', contratanteId: 'ct-construtora', cidade: 'Manchester', estado: 'NH', tipo: 'outro', situacao: 'orcamento', prazoProposta: '2026-10-25' });
+    ms.projeto(pj.id).concorrencia = { id: pai, contratanteId: 'construtora-exemplo' };
+    m.vincularProjeto(pai, pj.id);
+    ct.salvarContato(null, { nome: 'Ridgeline Concrete & Masonry', email: 'sandra@estruturaexemplo.com', papeis: ['prestadora'] }, 'Tom Reilly');
+    const rid = ct.contatos().find((c) => c.nome === 'Ridgeline Concrete & Masonry');
+    rid.contaId = 'prestadora-estrutura';
+    const tarde = m.salvarRascunho(null, { origem: { tipo: 'projeto', id: pj.id }, servico: 'Forro: instalação', etapas: ['09 51 00 · Acoustical ceilings'], incluso: 'Instalação do forro', prazo: '2026-10-26T12:00', convidados: [rid.id] }, 'Tom Reilly');
+    const pend = m.pendenciasDeEnvio(m.concorrenciaEnviada(tarde.id));
+    m.salvarRascunho(tarde.id, { origem: { tipo: 'projeto', id: pj.id }, servico: 'Forro: instalação', etapas: ['09 51 00 · Acoustical ceilings'], incluso: 'Instalação do forro', prazo: '2026-10-22T12:00', convidados: [rid.id] }, 'Tom Reilly');
+    const env = m.enviar(tarde.id, 'Tom Reilly');
+    a.salvar();
+    return { pai, pj: pj.id, sub: tarde.id, pend: pend.join(' '), env: env.ok, paiId: m.concorrenciaEnviada(tarde.id).paiId };
+  });
+});
+verificar(cadeia.pend.includes('antes do prazo da sua proposta') && cadeia.env, 'cotando pelo projeto: o prazo precisa vencer antes do prazo da própria proposta (CO-25)');
+verificar(cadeia.paiId === cadeia.pai, 'a concorrência da Northfield fica ligada à da construtora');
+r = await rodar((m, a, h, x) => h.como(h.RD, () => m.enviarProposta(x.sub, { porEtapa: { '09 51 00 · Acoustical ceilings': 20000 }, prazoExecucaoDias: 15 }, 'Sandra Lopes')), cadeia);
+verificar(r.ok, 'a Ridgeline (com conta) recebe o convite da Northfield e manda proposta');
+await ir('u-tom', '#/measure/projeto/' + cadeia.pj);
+verificar((await page.locator('main').innerText()).includes('Forro: instalação') && await page.locator('a[href="#/daily/concorrencias/nova/projeto/' + cadeia.pj + '"]').count() === 1, 'o projeto mostra as concorrências que saíram dele e "Nova concorrência"');
+await ir('u-tom', '#/daily/concorrencias/' + cadeia.sub + '/comparar');
+await page.locator('[data-acao="co-usar"]').first().click();
+await page.waitForTimeout(300);
+r = await rodar((m, a, h, x) => h.como(h.NF, () => a.estado().measure.projetos.find((p) => p.id === x.pj).proposta.extras), cadeia);
+verificar(r.length === 1 && r[0].valor > 20000 && r[0].origem.custo === 20000 && r[0].descricao.includes('Ridgeline'), '"Usar no meu orçamento": o preço da Ridgeline entra na proposta do projeto, com as margens da Northfield');
+await page.locator('[data-acao="co-usar"]').first().click();
+await page.waitForTimeout(300);
+r = await rodar((m, a, h, x) => h.como(h.NF, () => a.estado().measure.projetos.find((p) => p.id === x.pj).proposta.extras.length), cadeia);
+verificar(r === 1, 'usar de novo troca a linha, não duplica');
+r = await rodar((m, a, h, x) => h.como(h.NF, () => m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, '', 'Tom Reilly')), cadeia);
+verificar(r.erro && r.erro.includes('ganho'), 'sem ganhar o projeto, a Northfield não fecha com a Ridgeline (CO-24)');
+// a Northfield ganha e cria a obra; ao fechar com a Ridgeline, a construtora precisa aprovar
+r = await rodar(async (m, a, h, x) => {
+  const ob = await import('./js/obras.js');
+  h.como(h.NF, () => m.enviarProposta(x.pai, { porEtapa: { '09 51 00 · Acoustical ceilings': 27500 } }, 'Tom Reilly'));
+  h.como(h.GC, () => m.fechar(x.pai, m.concorrenciaEnviada(x.pai).convites[0].id, '', 'Ana Ribeiro'));
+  return h.como(h.NF, () => {
+    const semObra = m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, '', 'Tom Reilly');
+    const o = ob.salvarObra(null, { nome: 'Forro do galpão', contratanteId: 'ct-construtora', municipio: 'Manchester', estado: 'NH', lat: '43.0', lon: '-71.45', raio: '150', inicio: '2026-11-02', prazo: '2026-11-30', responsavelId: 'u-jose', diasTrabalho: ['1', '2', '3', '4', '5'], situacao: 'andamento', projetoId: x.pj }, 'Tom Reilly');
+    const pedido = m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, 'equipe de forro', 'Tom Reilly');
+    const c = m.concorrenciaEnviada(x.sub);
+    return { semObra: semObra.erro, obra: o.id, vinc: a.estado().obras.find((y) => y.id === o.id).vinculo, pedido: pedido.pendente, sit: c.situacao };
+  });
+}, cadeia);
+verificar(r.semObra && r.semObra.includes('Crie a obra'), 'projeto ganho, mas sem obra: pede para criar a obra antes de fechar');
+verificar(r.vinc && r.vinc.obraId === 'galpao' && r.pedido && r.sit === 'aberta', 'com a obra (ligada ao galpão), o fechamento vira um pedido de aprovação à construtora (CO-23)');
+const obraNf = r.obra;
+await ir('u-ana', '#/daily/concorrencias/' + cadeia.pai);
+txt = await page.locator('main').innerText();
+verificar(txt.includes('quer quarteirizar') && txt.includes('Ridgeline') && !txt.includes('20.000'), 'a construtora vê o pedido na concorrência dela: o nome da empresa, nunca o valor');
+await page.locator('[data-acao="co-aprovar-q"]').click();
+await page.waitForTimeout(400);
+r = await rodar((m, a, h, x) => { const c = h.como(h.NF, () => m.concorrenciaEnviada(x.sub)); return { sit: c.situacao, obra: c.obraId, por: c.fechamento && c.fechamento.por, aviso: h.como(h.NF, () => m.avisosDaContratante()).some((n) => n.titulo.startsWith('Quarteirização aprovada')) }; }, cadeia);
+verificar(r.sit === 'fechada' && r.obra === obraNf && r.por === 'Tom Reilly' && r.aviso, 'aprovada: a concorrência da Northfield fecha (em nome dela), na obra dela, e o sininho avisa');
+// a Ridgeline monta a obra dela ligada à da Northfield: a construtora vê a presença da cadeia
+await rodar((m, a, h, x) => { h.como(h.RD, () => { a.estado().obras.push({ ...a.estado().obras[0], id: 'rd-forro', nome: 'Forro do galpão · instalação', vinculo: { empresaId: h.NF, obraId: x } }); }); a.salvar(); }, obraNf);
+r = await rodar(async (m, a, h) => { const cr = await import('./js/crew.js'); return h.como(h.GC, () => cr.presencaDaCadeia('galpao', new Date().toISOString().slice(0, 10)).map((p) => [p.empresa, p.via || ''])); });
+verificar(r.some(([e, via]) => e.includes('Ridgeline') && via.includes('Northfield')), 'a construtora vê a Ridgeline no galpão, "via Northfield" (CO-21)');
+await ir('u-ana', '#/daily/obras/galpao');
+verificar((await page.locator('.prestadoras-obra').innerText()).includes('quarteirizada, contratada por Northfield'), 'e na página da obra');
+r = await rodar((m, a, h) => h.como(h.GC, () => m.salvarRascunho(null, { obraId: 'galpao', servico: 'x', quarteirizacao: 'nao-permitida' }, 'Ana Ribeiro').id));
+r = await rodar(async (m, a, h, x) => {
+  const ms = await import('./js/measure.js');
+  h.como(h.GC, () => { const c = m.concorrenciaEnviada(x); m.salvarRascunho(x, { obraId: 'galpao', servico: 'Pintura do galpão', etapas: ['09 91 00 · Painting'], incluso: 'Pintura', prazo: '2026-10-25T17:00', convidados: ['ct-northfield'], quarteirizacao: 'nao-permitida' }, 'Ana Ribeiro'); m.enviar(x, 'Ana Ribeiro'); });
+  return h.como(h.NF, () => {
+    const pj = ms.salvarProjeto(null, { nome: 'Pintura do galpão', contratanteId: 'ct-construtora', cidade: 'Manchester', estado: 'NH', tipo: 'outro', situacao: 'orcamento', prazoProposta: '2026-10-25' });
+    ms.projeto(pj.id).concorrencia = { id: x, contratanteId: 'construtora-exemplo' };
+    const sub = m.salvarRascunho(null, { origem: { tipo: 'projeto', id: pj.id }, servico: 'Pintura: mão de obra', etapas: ['09 91 00 · Painting'], incluso: 'Pintura', prazo: '2026-10-20T12:00', convidados: ['ct-baystate'] }, 'Tom Reilly');
+    const env = m.enviar(sub.id, 'Tom Reilly');
+    // e um projeto perdido cancela as concorrências que saíram dele (CO-24)
+    const pj2 = ms.salvarProjeto(null, { nome: 'Outro projeto', contratanteId: 'ct-construtora', cidade: 'Manchester', estado: 'NH', tipo: 'outro', situacao: 'orcamento', prazoProposta: '2026-10-30' });
+    const sub2 = m.salvarRascunho(null, { origem: { tipo: 'projeto', id: pj2.id }, servico: 'Calhas', etapas: ['07 71 00 · Gutters'], incluso: 'Calhas', prazo: '2026-10-20T12:00', convidados: ['ct-baystate'] }, 'Tom Reilly');
+    m.enviar(sub2.id, 'Tom Reilly');
+    ms.salvarProjeto(pj2.id, { ...ms.projeto(pj2.id), situacao: 'perdida' });
+    return { env: env.erro, sub2: m.concorrenciaEnviada(sub2.id).situacao };
+  });
+}, r);
+verificar(r.env && r.env.includes('não permite quarteirizar'), 'quando a contratante de cima não permite, a quarteirização não é enviada (CO-23)');
+verificar(r.sub2 === 'cancelada', 'projeto perdido cancela as concorrências que saíram dele (CO-24)');
 
 verificar(erros.length === 0, 'sem erros na página' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
 await browser.close();

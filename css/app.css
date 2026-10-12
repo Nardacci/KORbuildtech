@@ -1398,3 +1398,6 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .co-para { border: 0; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
 .mz-contagem.co-pendente { background: var(--primario); color: #fff; }
 @media (max-width: 560px) { .co-msg { max-width: 100%; } .co-escrever { flex-direction: column; align-items: stretch; } }
+.prestadora-via { border-left: 3px solid var(--borda-forte); margin-left: 16px; padding-left: 12px; }
+.aviso-vermelho { background: var(--vermelho-claro); border-color: var(--vermelho-borda); }
+.co-botoes { justify-content: flex-end; flex-wrap: wrap; }
