@@ -15,9 +15,10 @@ import {
   comparar, salvarRascunho, enviar, pendenciasDeEnvio, prorrogar, convidarMais, fechar, cancelar, contaDoContato,
   recebidas, recebida, marcarVisto, responder, enviarProposta, vincularProjeto,
   canalDaContratante, canalRecebido, escreverComoConvidada, escreverComoContratante, perguntasSemResposta,
-  concorrenciaPai, pedidosDeQuarteirizacao, decidirQuarteirizacao,
+  concorrenciaPai, pedidosDeQuarteirizacao, decidirQuarteirizacao, porToken, canalPorToken,
 } from './concorrencias.js';
 import { margensEm, precoDeVenda } from './precos.js';
+import { lerValor } from './measure-relatorios.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarConcorrencias(funcoes) { app = { ...app, ...funcoes }; }
@@ -244,7 +245,8 @@ function htmlConvidados(c) {
   return '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-convidados"><thead><tr><th>' + tr('Prestadora') + '</th><th>' + tr('Recebe') + '</th><th>' + tr('Situação') + '</th><th>' + tr('Última proposta') + '</th><th>' + tr('Visto') + '</th></tr></thead><tbody>' +
     c.convites.map((v) => {
       const p = ultimaProposta(v);
-      return '<tr><td><b>' + esc(v.nome) + '</b>' + (v.email ? '<span class="mudo pequeno bloco">' + esc(v.email) + '</span>' : '') + '</td><td>' + comoRecebe(v) + '</td>' +
+      return '<tr><td><b>' + esc(v.nome) + '</b>' + (v.email ? '<span class="mudo pequeno bloco">' + esc(v.email) + '</span>' : '') + '</td><td>' + comoRecebe(v) +
+          (!v.empresaId && c.situacao !== 'rascunho' ? '<button type="button" class="link-botao pequeno bloco" data-acao="co-link" data-token="' + esc(v.token) + '">' + tr('Copiar o link') + '</button>' : '') + '</td>' +
         '<td>' + etiquetaConvite(v) + (v.motivo ? '<span class="mudo pequeno bloco">“' + esc(v.motivo) + '”</span>' : '') + '</td>' +
         '<td>' + (p ? '<b>' + dinheiro(p.total) + '</b><span class="mudo pequeno bloco">' + tr('rev. {rev} · {quando}', { rev: p.rev, quando: dataHora(p.enviadaEm) }) + '</span>' : '<span class="mudo">—</span>') + '</td>' +
         '<td>' + (v.vistoEm ? dataHora(v.vistoEm) : '<span class="mudo">' + (c.situacao === 'rascunho' ? '—' : tr('ainda não')) + '</span>') + '</td></tr>';
@@ -506,11 +508,111 @@ export function propostaParaConcorrencia(x, emitida) {
   return { porEtapa, outros: Math.round(outros * 100) / 100, total: emitida.total };
 }
 
+/* ---------- Pelo link, sem conta (CO-07, §3.3) ---------- */
+
+export const linkDoConvite = (token) => location.origin + location.pathname + '?demo#/convite/' + token;
+
+export function telaConvitePublico(token, marca) {
+  let x = porToken(token);
+  if (!x) return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>' + tr('Convite não encontrado') + '</b><span>' + tr('Confira o link. No protótipo não há servidor, então o link só abre no mesmo navegador em que a concorrência foi enviada.') + '</span></div></main>';
+  if (!x.convite.vistoEm) { marcarVisto(x.id, { token }); x = porToken(token); }
+  const v = x.convite;
+  const aberta = x.situacao === 'aberta';
+  const ex = x.exigencias || {};
+  const lista = (itens) => (itens.length ? '<ul>' + itens.map((i) => '<li>' + esc(i) + '</li>').join('') + '</ul>' : '<p class="mudo">—</p>');
+  const exig = [ex.glMinimo ? tr('GL mínimo de {valor}', { valor: dinheiro(ex.glMinimo) }) : '', ex.wcObrigatorio ? tr("Workers' comp obrigatório") : '', ex.licenca ? tr('Licença: {l}', { l: ex.licenca }) : '', ex.visita && ex.visita.obrigatoria ? tr('Visita à obra obrigatória') : ''].filter(Boolean);
+  let situacao;
+  if (x.situacao === 'cancelada') situacao = '<div class="aviso"><b>' + tr('Concorrência cancelada pela contratante.') + '</b></div>';
+  else if (v.situacao === 'vencedora') situacao = '<div class="aviso aviso-verde"><b>' + tr('Você venceu esta concorrência.') + '</b><span>' + tr('A contratante vai entrar em contato. Crie a sua conta no KORbuild com este e-mail para receber a obra, o diário e o cronograma.') + '</span></div>';
+  else if (v.situacao === 'nao-escolhida') situacao = '<div class="aviso"><b>' + tr('A contratante fechou com outra empresa.') + '</b><span>' + tr('Obrigado por cotar. O valor da vencedora não é informado.') + '</span></div>';
+  else if (x.situacao === 'fechada') situacao = '<div class="aviso"><b>' + tr('Esta concorrência já foi fechada.') + '</b></div>';
+  else if (!aberta) situacao = '<div class="aviso aviso-ambar"><b>' + tr('O prazo da proposta venceu.') + '</b><span>' + tr('Só dá para mandar proposta se a contratante prorrogar.') + '</span></div>';
+  else if (v.situacao === 'nao-vai') situacao = '<div class="aviso"><b>' + tr('Você respondeu que não vai participar.') + '</b>' + (v.motivo ? '<span>“' + esc(v.motivo) + '”</span>' : '') + '</div>';
+  else if (PENDENTES.includes(v.situacao)) situacao = '<div class="aviso aviso-ambar"><b>' + tr('Vai cotar?') + '</b><span>' + tr('Responda para a contratante saber com quem contar.') + '</span>' +
+    '<span class="btn-linha"><button type="button" class="btn btn-primario btn-pequeno" data-acao="lk-vou" data-token="' + esc(token) + '">' + tr('Vou cotar') + '</button><button type="button" class="btn btn-contorno btn-pequeno" data-acao="lk-nao" data-token="' + esc(token) + '">' + tr('Não vou participar') + '</button></span></div>';
+  else situacao = '<div class="aviso aviso-verde"><b>' + (v.propostas.length ? tr('Proposta enviada (rev. {rev}).', { rev: v.propostas.length }) : tr('Você vai cotar.')) + '</b><span>' + tr('Mande a proposta abaixo, com o PDF. Dá para mandar revisões até o prazo.') + '</span></div>';
+  const podeMandar = aberta && v.situacao !== 'nao-vai';
+  const formProposta = podeMandar && !PENDENTES.includes(v.situacao) ? '<section class="cartao"><h2 class="cartao-titulo">' + (v.propostas.length ? tr('Mandar uma revisão') : tr('Mandar a proposta')) + '</h2>' +
+    '<form id="form-link" onsubmit="return false"><div class="grade-campos">' +
+      campo('lk-pdf', tr('Proposta em PDF'), '<input type="file" id="lk-pdf" name="pdf" accept="application/pdf">') +
+      campo('lk-total', tr('Total (US$) *'), '<input type="text" inputmode="decimal" id="lk-total" name="total">') +
+      campo('lk-prazo', tr('Prazo de execução (dias)'), '<input type="number" id="lk-prazo" name="prazo" min="1">') + '</div>' +
+      '<details class="co-por-etapa"><summary class="pequeno">' + tr('Valor por etapa (opcional)') + '</summary><div class="grade-campos">' +
+        x.etapas.map((e, i) => campo('lk-et-' + i, esc(e), '<input type="text" inputmode="decimal" id="lk-et-' + i + '" name="etapa" data-etapa="' + esc(e) + '">')).join('') + '</div>' +
+        '<p class="mudo pequeno">' + tr('Se informar, o total precisa ser a soma das etapas. Etapa em branco fica "não cotada".') + '</p></details>' +
+      campo('lk-exclusoes', tr('Exclusões (uma por linha)'), '<textarea id="lk-exclusoes" name="exclusoes" rows="3"></textarea>') +
+      '<div class="rodape-form"><button type="button" class="btn btn-primario" data-acao="lk-enviar" data-token="' + esc(token) + '">' + tr('Enviar a proposta') + '</button></div>' +
+    '</form></section>' : '';
+  return '<header class="cliente-topo"><div class="cliente-empresa"><div><span class="mudo">' + tr('Convite para cotar de') + '</span><b>' + esc(nomeContratante(x)) + '</b></div></div>' +
+      '<span class="cliente-via">' + marca(18) + 'KORbuild</span></header>' +
+    '<main class="pagina pagina-larga convite-publico">' +
+      '<h1>' + esc(x.servico) + '</h1><p class="mudo">' + esc(x.obra ? x.obra.nome + ' · ' + textoLocal(x.obra) : '') + ' · ' + tr('para {nome}', { nome: esc(v.nome) }) + '</p>' +
+      situacao +
+      '<div class="grade-2">' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(x.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(x.excluso) +
+        (x.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(x.observacoes) + '</p>' : '') + '</section>' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
+        '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
+        '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
+        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => esc(d.nome)).join(' · ') : '—') + '</dd>' +
+        '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
+        '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
+        '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
+      '</dl></section></div>' +
+      formProposta +
+      (v.propostas.length ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Suas propostas') + '</h2><ul class="lista-simples">' + v.propostas.slice().reverse().map((q) => '<li><b>' + tr('rev. {rev}', { rev: q.rev }) + ' · ' + dinheiro(q.total) + '</b> · ' + dataHora(q.enviadaEm) + (q.pdf && q.pdf.nome ? ' · ' + esc(q.pdf.nome) : '') + '</li>').join('') + '</ul></section>' : '') +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Perguntas e mensagens') + '</h2>' + htmlMensagens(canalPorToken(token)) +
+        (podeMandar ? formMensagem('lk-perguntar', { token }, tr('Perguntar'), tr('A contratante pode responder só para você ou para todas as convidadas (sem dizer quem perguntou).')) : '') + '</section>' +
+      '<p class="mudo pequeno convite-rodape">' + tr('Este link é só seu e só abre este convite. Para medir as plantas e orçar no KORbuild, crie a sua conta com o mesmo e-mail: o convite, as mensagens e as propostas vêm junto.') + '</p>' +
+    '</main>';
+}
+
 /* ---------- Ações ---------- */
 
 const textoDe = (el) => { const t = el.closest('.co-escrever').querySelector('textarea'); return t ? t.value : ''; };
 
 export const acoesConcorrencias = {
+  async 'co-link'(el) {
+    const link = linkDoConvite(el.dataset.token);
+    try { await navigator.clipboard.writeText(link); toast(tr('Link copiado. No produto, ele vai por e-mail para a prestadora.')); }
+    catch (e) { await abrirDialogo({ titulo: tr('Link do convite'), corpo: '<input type="text" readonly value="' + esc(link) + '">', acoes: [{ rotulo: tr('Fechar'), valor: true }] }); }
+  },
+  'lk-vou'(el) {
+    const r = responder(porToken(el.dataset.token).id, true, '', '', { token: el.dataset.token });
+    toast(r.erro || tr('Resposta enviada à contratante.'));
+    app.desenhar();
+  },
+  async 'lk-nao'(el) {
+    const res = await abrirDialogo({
+      titulo: tr('Não vai participar?'),
+      corpo: campo('lk-motivo', tr('Motivo (opcional, a contratante vê)'), '<input type="text" id="lk-motivo" name="motivo" placeholder="' + esc(tr('Ex.: agenda cheia')) + '">'),
+      acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: tr('Não vou participar'), valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = responder(porToken(el.dataset.token).id, false, res.campos.motivo, '', { token: el.dataset.token });
+    toast(r.erro || tr('Resposta enviada à contratante.'));
+    app.desenhar();
+  },
+  'lk-enviar'(el) {
+    const token = el.dataset.token;
+    const x = porToken(token);
+    const form = document.getElementById('form-link');
+    const fd = new FormData(form);
+    const num = (t) => { const n = lerValor(t); return n == null || Number.isNaN(n) ? '' : n; };
+    const porEtapa = {};
+    form.querySelectorAll('[name="etapa"]').forEach((i) => { if (i.value.trim()) porEtapa[i.dataset.etapa] = num(i.value); });
+    const arquivo = (document.getElementById('lk-pdf').files || [])[0];
+    if (!arquivo) { toast(tr('Anexe a proposta em PDF.')); return; }
+    const r = enviarProposta(x.id, { total: num(fd.get('total')), porEtapa, prazoExecucaoDias: fd.get('prazo'), exclusoes: fd.get('exclusoes'), pdf: { nome: arquivo.name } }, x.convite.nome, { token });
+    toast(r.erro || tr('Proposta enviada (rev. {rev}).', { rev: r.rev }));
+    if (r.ok) app.desenhar();
+  },
+  'lk-perguntar'(el) {
+    const x = porToken(el.dataset.token);
+    const r = escreverComoConvidada(x.id, textoDe(el), '', { token: el.dataset.token });
+    toast(r.erro || tr('Mensagem enviada.'));
+    if (r.ok) app.desenhar();
+  },
   'co-usar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
     const r = usarNoOrcamento(c, el.dataset.convite);

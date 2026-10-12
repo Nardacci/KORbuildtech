@@ -457,6 +457,14 @@ export function canalDaConvidada(c, conviteId) {
 export function canalDaContratante(c, conviteId) {
   return msgs(c).filter((m) => !conviteId || m.conviteId === conviteId || m.conviteId === null);
 }
+/* Pelo link (CO-07): a conversa do convite desse token. */
+export function canalPorToken(token) {
+  for (const c of lista()) {
+    const v = c.situacao !== 'rascunho' && c.convites.find((x) => x.token === token);
+    if (v) return canalDaConvidada(c, v.id);
+  }
+  return [];
+}
 export function canalRecebido(id, empresaId = empresaAtualId()) {
   const c = achar(id);
   const v = c && c.convites.find((x) => x.empresaId === empresaId);

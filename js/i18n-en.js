@@ -2767,4 +2767,23 @@ export const EN = {
   'Mike Doyle': 'Mike Doyle',
   'Drywall das casas': 'House drywall',
   'Drywall das casas 5 a 12, com acabamento nível 4': 'Drywall for houses 5 to 12, level 4 finish',
+
+  // ---------- Concorrências: o link sem conta ----------
+  'Copiar o link': 'Copy the link',
+  'Convite não encontrado': 'Invitation not found',
+  'Confira o link. No protótipo não há servidor, então o link só abre no mesmo navegador em que a concorrência foi enviada.': 'Check the link. The prototype has no server, so the link only opens in the same browser where the bid was sent.',
+  'A contratante vai entrar em contato. Crie a sua conta no KORbuild com este e-mail para receber a obra, o diário e o cronograma.': 'The contracting company will reach out. Create your KORbuild account with this email to receive the job, the daily report and the schedule.',
+  'Mande a proposta abaixo, com o PDF. Dá para mandar revisões até o prazo.': 'Submit your bid below, with the PDF. You can send revisions until the due date.',
+  'Mandar uma revisão': 'Submit a revision',
+  'Mandar a proposta': 'Submit your bid',
+  'Proposta em PDF': 'Bid PDF',
+  'Total (US$) *': 'Total ($) *',
+  'Valor por etapa (opcional)': 'Amount by cost code (optional)',
+  'Se informar, o total precisa ser a soma das etapas. Etapa em branco fica "não cotada".': 'If you fill these in, the total must equal their sum. A blank cost code is "not bid".',
+  'Enviar a proposta': 'Submit bid',
+  'Convite para cotar de': 'Invitation to bid from',
+  'Este link é só seu e só abre este convite. Para medir as plantas e orçar no KORbuild, crie a sua conta com o mesmo e-mail: o convite, as mensagens e as propostas vêm junto.': 'This link is yours alone and only opens this invitation. To measure plans and estimate in KORbuild, create your account with the same email: the invitation, messages and bids come with it.',
+  'Link copiado. No produto, ele vai por e-mail para a prestadora.': 'Link copied. In the product, it goes to the subcontractor by email.',
+  'Link do convite': 'Invitation link',
+  'Anexe a proposta em PDF.': 'Attach the bid PDF.',
 };

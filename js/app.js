@@ -23,7 +23,7 @@ import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
-import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder } from './concorrencias-telas.js';
+import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder, telaConvitePublico } from './concorrencias-telas.js';
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
@@ -190,7 +190,7 @@ function desenhar() {
   const p = rota();
   const u = usuarioAtual();
   // O link do cliente é público; todo o resto pede login.
-  if (p[0] !== 'cliente') {
+  if (p[0] !== 'cliente' && p[0] !== 'convite') {
     if (!u && p[0] !== 'entrar') return trocarRota('#/entrar');
     if (u && (p[0] === '' || p[0] === 'entrar')) return trocarRota('#/inicio');
   }
@@ -227,6 +227,7 @@ function desenhar() {
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
     else return trocarRota(inicioDoPapel);
   } else if (p[0] === 'cliente') html = telaCliente(p[1]);
+  else if (p[0] === 'convite') { html = telaConvitePublico(p[1], marca); modo = 'cliente'; }
   else if (p[0] === 'entrar') html = telaLogin(gruposDeEntrada());
   else if (p[0] === 'conta') {
     if (!pode(u, 'settings.conta')) return trocarRota(inicioDoUsuario(u));

@@ -1401,3 +1401,4 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .prestadora-via { border-left: 3px solid var(--borda-forte); margin-left: 16px; padding-left: 12px; }
 .aviso-vermelho { background: var(--vermelho-claro); border-color: var(--vermelho-borda); }
 .co-botoes { justify-content: flex-end; flex-wrap: wrap; }
+.convite-publico h1 { margin: 8px 0 4px; } .convite-rodape { margin-top: 16px; } .co-por-etapa { margin: 8px 0; }
