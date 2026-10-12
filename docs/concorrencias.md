@@ -82,7 +82,7 @@ Framing e drywall · Edifício Atlântico               Aberta · prazo 24/10 18
 [Convidados] [Perguntas 2] [Comparar] [Detalhes]           [ Prorrogar ] [ Cancelar ]
 
 Northfield Framing & Siding   KORbuild   Proposta rev. 1 · US$ 186.400 · 20/10
-Bayside Drywall       link       Proposta rev. 1 · US$ 179.900 · 21/10
+Bayside Drywall       link       Proposta rev. 1 · US$ 61.500 (só drywall) · 21/10
 Pine Ridge Builders           link       Não vai participar · "agenda cheia"
                                                             [ Convidar mais ]
 ```
