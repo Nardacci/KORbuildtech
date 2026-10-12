@@ -131,3 +131,59 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 6 | Measure: projetos, folhas (Storage), condições, medições, typicals, catálogo, preços, margens, propostas | |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
 | 8 | Notificações por e-mail e a área de administração da plataforma | |
+
+## 10. Fatia 3 — o Daily no banco (desenho, para aprovação)
+
+O protótipo já funciona sem internet: o diário é gravado no aparelho e sobe quando há sinal. A fatia 3 mantém esse
+jeito de usar e troca o "escritório simulado" pelo Supabase.
+
+### 10.1 Tabelas
+
+| Tabela | Colunas | Regras |
+| --- | --- | --- |
+| `rdos` | `id` (gerado **no aparelho**), `empresa_id`, `obra_id`, `data`, `numero` (sequência por obra, dada pelo banco), `status` (rascunho · enviado · ajustes · aprovado), `autor_id` (membro), `conteudo jsonb` (clima, equipe, equipamentos, atividades, ocorrências, observações), `sem_atividade jsonb`, `motivo_ajuste`, `versao`, `criado_no_aparelho_em`, `enviado_em`, `primeiro_envio_em`, `aprovado_em`, `aprovado_por` (nome), `aprovado_por_empresa` (nome), `hash_documento`, `codigo` | **Um diário por obra por dia** (único `obra_id + data`). O app **não** muda `status` direto: só pelas funções do §10.2. Aprovado = lacrado: o gatilho recusa qualquer `update`/`delete` depois. |
+| `rdo_fotos` | `id` (do aparelho), `empresa_id`, `rdo_id`, `path` e `path_mini` (Storage), `legenda`, `tirada_em`, `lat`, `lon`, `fonte_gps`, `precisao`, `largura`, `altura`, `tamanho`, `hash_original`, `ordem` | Só entra e sai enquanto o diário está em rascunho ou ajustes. |
+| `rdo_historico` | `id` (do aparelho), `empresa_id`, `rdo_id`, `em`, `quem`, `acao` | Só `insert` (BD-04). |
+
+**Storage:** bucket privado `diarios`, caminho `{empresa_id}/{obra_id}/{rdo_id}/{foto_id}.jpg` (e `-mini.jpg`). A foto
+já sai do aparelho reduzida e carimbada, como hoje.
+
+### 10.2 Quem faz o quê (funções do banco)
+
+| Ação | Função | Quem pode |
+| --- | --- | --- |
+| Criar e editar o rascunho | `insert`/`update` em `rdos` (RLS) | Quem tem `daily.preencher` **e** é o responsável pela obra **ou** está alocado nela (`alocacoes`, fatia 2) |
+| Enviar / reenviar com ajustes | `enviar_rdo(id, versao)` | Os mesmos; confere as pendências (equipe, atividade…) e o prazo |
+| Dia sem atividade | `dia_sem_atividade(obra, data, motivo, obs)` | Os mesmos |
+| Aprovar e lacrar | `aprovar_rdo(id)` | Obra **sem** vínculo: a própria empresa, com `daily.aprovar` (HS-13). Obra **com** vínculo: só a contratante, com `daily.aprovar` (HS-11) |
+| Pedir ajustes | `pedir_ajustes(id, motivo)` | Os mesmos de aprovar |
+| Diários recebidos | `diarios_recebidos(obra_id)` | A contratante lê os diários **enviados** das prestadoras nas obras ligadas à dela (BD-03: nada de abrir a tabela de uma empresa para a outra) |
+| Link do cliente | `diario_por_codigo(codigo)` | Qualquer um com o código (sem login): devolve só aquele diário aprovado, e as fotos por links temporários |
+
+**O lacre passa para o banco.** Na aprovação, o próprio banco monta o texto canônico (o mesmo conteúdo de
+`js/lacre.js`), calcula o SHA-256 e grava `hash_documento` e `codigo`. Assim ninguém consegue lacrar um conteúdo
+diferente do que está gravado, e o link do cliente confere o lacre no servidor.
+
+### 10.3 Sem internet (BD-08)
+
+- Cada diário, foto e linha do histórico nasce com um **id gerado no aparelho**. Subir de novo o mesmo id **não
+  duplica** (o envio repetido por sinal ruim fica sem efeito).
+- A fila do aparelho guarda: o diário (o rascunho inteiro), as fotos ainda não enviadas e as ações (enviar, sem
+  atividade). Quando o sinal volta, sobem **primeiro as fotos**, depois o diário, depois a ação.
+- **Conflito** (decisão de outubro de 2026): o diário é de quem o abriu. Cada gravação leva a `versao` que o
+  aparelho conhecia; se o banco já tiver outra (outro aparelho mexeu sem sinal), o banco recusa e o app mostra as
+  duas versões para a pessoa escolher.
+- Depois de aprovado, o diário volta para o aparelho só para leitura.
+
+### 10.4 No app
+
+O caminho recomendado é **reaproveitar as telas do Daily do protótipo** (campo, escritório, relatório, PDF, fila de
+aprovação, link do cliente): o armazenamento do aparelho passa a ser um espelho do Supabase, preenchido ao entrar
+e atualizado pela sincronização. Isso preserva o modo sem internet que já funciona e o visual que já foi aprovado,
+em vez de reescrever as telas. As obras e os usuários vêm dos cadastros da fatia 2.
+
+### 10.5 Fica para depois
+
+- A **equipe vinda do ponto** (Crew) entra na fatia 4; até lá, a equipe do diário é lançada à mão.
+- O **andamento no cronograma** ao aprovar entra na fatia 5 (o cronograma ainda está só no protótipo).
+- Os **lembretes por e-mail** (16h, 18h, manhã seguinte) entram na fatia 8; o sininho continua no app.
