@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatia 1 no banco (migrações `0001`, `0001b`, `0002`) e no app: a página oficial (sem `?demo`) cria a conta, a empresa no primeiro acesso, entra, troca a senha, convida e aceita convite, e o Administrador cuida de usuários, perfis e dados da empresa (`js/conta.js`, `js/oficial-telas.js`; teste contra o banco: `tests/conta.test.mjs`). As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatia 1 **concluída** no banco (migrações `0001`, `0001b`, `0002`, `0003`) e no app: a página oficial (sem `?demo`) cria a conta, a empresa no primeiro acesso, entra, troca a senha, convida e aceita convite, e o Administrador cuida de usuários, perfis e dados da empresa (`js/conta.js`, `js/oficial-telas.js`; teste contra o banco: `tests/conta.test.mjs`). As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -110,7 +110,7 @@ Enviar, responder, mandar proposta, fechar, aprovar quarteirização e escrever 
 
 - **Uma pessoa, uma empresa.** Cada login pertence a uma empresa só (`membros.user_id` único); dentro dela, a pessoa pode estar em N obras (`alocacoes`).
 - **Uma empresa, uma conta, com 1 ou N funcionários.** O preço por número de funcionários é discutido no fim do projeto.
-- **Região do projeto Supabase:** conferir na fatia 1; o ideal para clientes nos EUA é uma região dos EUA (se não for, criar outro projeto agora, ainda vazio).
+- **Região do projeto Supabase:** us-west-2 (EUA), conferida na fatia 1.
 - **Conflito no offline:** o diário é de quem o abriu; se outro aparelho alterou sem sinal, o segundo recebe o aviso e escolhe a versão.
 - **Pagamento dos planos** (Stripe) e o fim do teste: **a última coisa do projeto**, junto com o preço.
 - **Endereço oficial: https://korbuildtech.com/**, mas só **no fim da primeira versão**, testada e homologada com o banco. Até lá, a **homologação** é no GitHub Pages, `https://nardacci.github.io/KORbuildtech/` (Site URL do Auth), com `http://localhost:8123` também liberado para desenvolvimento; o korbuildtech.com vira a Site URL no lançamento. O app navega por `#/…`, então o login usa o fluxo **PKCE** do Supabase (volta com `?code=`, sem mexer no `#`).
@@ -121,7 +121,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 
 | Fatia | O que entra | O app passa a |
 | --- | --- | --- |
-| 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada) | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
+| 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada); `0002` (quem foi desativado lê o próprio cadastro) e `0003` (excluir a empresa em cascata, sem esbarrar nas travas nem na auditoria). Teste do app contra o banco: `tests/conta.test.mjs` (23/23) ✓ | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
 | 2 | Settings: funcionários com valores e certificações, encargos, regras de jornada, listas, contatos; obras e modelos de cronograma | Cadastrar tudo no banco |
 | 3 | Daily: diários, fotos (Storage), histórico, aprovação entre empresas, link do cliente; sincronização offline | Usar o diário de verdade |
 | 4 | Crew: equipes, batidas, localizações, aprovações, orçamentos; presença na obra para a contratante | Bater o ponto de verdade |
