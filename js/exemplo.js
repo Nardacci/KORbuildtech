@@ -68,7 +68,10 @@ const CONTATOS_CONSTRUTORA = [
   ['ct-ridgeline', tr('Ridgeline Concrete & Masonry'), tr('Sandra Lopes'), 'prestadora', 'Manchester'],
   ['ct-northfield', tr('Northfield Framing & Siding'), tr('Tom Reilly'), 'prestadora', 'Manchester'],
   ['ct-bayside', tr('Bayside Drywall'), tr('Ellen Price'), 'prestadora', 'Manchester'],
+  ['ct-pineridge', tr('Pine Ridge Builders'), tr('Dan Foster'), 'prestadora', 'Concord'],
 ];
+// contatos que também são contas no KORbuild (a convidada com conta recebe o convite na plataforma)
+const CONTAS_DOS_CONTATOS = { 'ct-ridgeline': 'prestadora-estrutura', 'ct-northfield': 'prestadora-exemplo', 'ct-construtora': 'construtora-exemplo' };
 // só da prestadora: as construtoras que a contratam
 const CONTATOS_PRESTADORA = [
   ['ct-construtora', tr('Construtora Exemplo'), tr('Ana Ribeiro'), 'construtora', 'Manchester'],
@@ -80,6 +83,7 @@ function criarContatos(proprios) {
     id, nome, pessoa, papeis: [papel], cidade, estado: 'NH', endereco: '', zip: '',
     email: em(id === 'ct-construtora' ? 'ana@construtoraexemplo.com' : id.slice(3) + '@' + papel + '.exemplo.com'),
     telefone: '(603) 555-0' + String(200 + i), etapas: etapas || [], notas: '', criadoEm: Date.now(),
+    ...(CONTAS_DOS_CONTATOS[id] ? { contaId: CONTAS_DOS_CONTATOS[id] } : {}),
   }));
 }
 export const PESSOAS = {
@@ -331,7 +335,7 @@ async function criarRdos(obras, autor, aprovador, semente) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 27;
+export const VERSAO_DADOS = 28;
 
 const plano = (dia0, nome, limite) => ({ nome: tr(nome), status: 'teste', testeAte: somarDias(dia0, limite), limiteObras: 5 });
 
@@ -380,7 +384,84 @@ export async function criarDemonstracao() {
   // a prestadora já publicou uma versão do cronograma para a construtora (há 2 dias)
   const pub = retrato(prestadora, prestadora.obras[0], tr('Tom Reilly'), new Date(somarDias(dia0, -2) + 'T16:00:00').getTime(), 1);
   prestadora.cronogramas['nf-jardim'].publicacoes.push({ id: pub.id, versao: 1, em: pub.em, por: pub.por });
-  return { versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [ESTRUTURA.id]: estrutura, [PRESTADORA.id]: prestadora }, compartilhados: [pub] };
+  prestadora.obras.find((o) => o.id === 'nf-jardim').concorrenciaId = 'co-jardim-siding';
+  return {
+    versao: VERSAO_DADOS, padrao: CONSTRUTORA.id, empresas: { [CONSTRUTORA.id]: construtora, [ESTRUTURA.id]: estrutura, [PRESTADORA.id]: prestadora },
+    compartilhados: [pub], concorrencias: criarConcorrencias(dia0, construtora.contatos),
+  };
+}
+
+/* Concorrências da construtora (docs/concorrencias.md §9): uma aberta no Edifício Atlântico, com três convidadas
+ * (Northfield com conta, Bayside e Pine Ridge pelo link), e a do siding do Jardim, já fechada com a Northfield
+ * (é a ligação que a obra nf-jardim já tem). */
+function criarConcorrencias(dia0, contatos) {
+  const ct = (id) => contatos.find((c) => c.id === id);
+  const ano = dia0.slice(0, 4);
+  const convite = (id, contatoId, extra) => {
+    const c = ct(contatoId);
+    return {
+      id, contatoId, nome: c.nome, email: c.email, empresaId: c.contaId || null, token: 'lk-' + id,
+      situacao: 'enviado', motivo: '', vistoEm: null, respondidoEm: null, projetoId: null, propostas: [], ...extra,
+    };
+  };
+  const proposta = (rev, numero, em, por, porEtapa, prazoExecucaoDias, exclusoes) => ({
+    rev, numero, enviadaEm: em, por, porEtapa, total: Object.values(porEtapa).reduce((s, x) => s + x, 0), prazoExecucaoDias, exclusoes, pdf: null,
+  });
+  const FRAMING = '06 11 00 · Wood framing', DRYWALL = '09 29 00 · Gypsum board', SIDING = '07 46 33 · Plastic siding';
+  const enviada = momento(somarDias(dia0, -6), 10, 30);
+  const atlantico = {
+    id: 'co-atlantico-framing', contratanteId: CONSTRUTORA.id, origem: { tipo: 'obra', id: 'atlantico' }, obraId: 'atlantico',
+    servico: tr('Framing e drywall'), etapas: [FRAMING, DRYWALL],
+    incluso: [tr('Estrutura de madeira das paredes internas e externas, 2º ao 6º pavimento'), tr('Drywall com acabamento nível 4 nas áreas comuns e nível 3 nas unidades'), tr('Andaimes e equipamentos de acesso')],
+    excluso: [tr('Isolamento térmico e acústico'), tr('Pintura')], observacoes: tr('Visita à obra na terça às 9h. Trabalho de segunda a sexta, das 7h às 15h30.'),
+    desenhos: [{ nome: 'A-101', arquivoId: null }, { nome: 'A-201', arquivoId: null }, { nome: 'A-301', arquivoId: null }],
+    prazo: somarDias(dia0, 5) + 'T18:00', inicio: somarDias(dia0, 30), termino: somarDias(dia0, 120),
+    orcamento: { valor: 195000, porEtapa: { [FRAMING]: 125000, [DRYWALL]: 70000 }, mostrar: 'nao' },
+    exigencias: { glMinimo: 1000000, wcObrigatorio: true, licenca: '', visita: { obrigatoria: false, data: somarDias(dia0, -2) } },
+    quarteirizacao: 'permitida', situacao: 'aberta', criadaPor: tr('Ana Ribeiro'), criadaEm: enviada - 3600000, enviadaEm: enviada,
+    historico: [{ em: enviada, por: tr('Ana Ribeiro'), acao: tr('Convites enviados'), detalhe: [ct('ct-northfield'), ct('ct-bayside'), ct('ct-pineridge')].map((c) => c.nome).join(', ') }],
+    fechamento: null,
+    convites: [
+      convite('cv-atl-northfield', 'ct-northfield', {
+        situacao: 'proposta', vistoEm: enviada + 7200000, respondidoEm: momento(somarDias(dia0, -5), 8, 40),
+        propostas: [proposta(1, 'P-' + ano + '-021', momento(somarDias(dia0, -1), 15, 20), tr('Tom Reilly'), { [FRAMING]: 121900, [DRYWALL]: 64500 }, 75, [tr('Isolamento térmico')])],
+      }),
+      convite('cv-atl-bayside', 'ct-bayside', {
+        situacao: 'proposta', vistoEm: momento(somarDias(dia0, -5), 11, 0), respondidoEm: momento(somarDias(dia0, -5), 11, 5),
+        propostas: [proposta(1, null, momento(somarDias(dia0, -2), 17, 45), tr('Ellen Price'), { [DRYWALL]: 61500 }, 50, [tr('Andaimes')])],
+      }),
+      convite('cv-atl-pineridge', 'ct-pineridge', { situacao: 'nao-vai', motivo: tr('Agenda cheia até dezembro'), vistoEm: momento(somarDias(dia0, -4), 9, 10), respondidoEm: momento(somarDias(dia0, -4), 9, 12) }),
+    ],
+  };
+  const fechada = momento(somarDias(dia0, -45), 14, 0);
+  const jardim = {
+    id: 'co-jardim-siding', contratanteId: CONSTRUTORA.id, origem: { tipo: 'obra', id: 'jardim' }, obraId: 'jardim',
+    servico: tr('Framing e siding'), etapas: [FRAMING, SIDING],
+    incluso: [tr('Estrutura de madeira das casas'), tr('Siding vinílico com acabamentos')], excluso: [tr('Janelas e portas')], observacoes: '',
+    desenhos: [{ nome: 'A-101', arquivoId: null }, { nome: 'A-201', arquivoId: null }],
+    prazo: somarDias(dia0, -50) + 'T18:00', inicio: somarDias(dia0, -40), termino: somarDias(dia0, 60),
+    orcamento: { valor: null, porEtapa: {}, mostrar: 'nao' }, exigencias: { glMinimo: 1000000, wcObrigatorio: true, licenca: '', visita: { obrigatoria: false } },
+    quarteirizacao: 'permitida', situacao: 'fechada', criadaPor: tr('Ana Ribeiro'), criadaEm: momento(somarDias(dia0, -60), 9, 0), enviadaEm: momento(somarDias(dia0, -60), 9, 30),
+    historico: [
+      { em: momento(somarDias(dia0, -60), 9, 30), por: tr('Ana Ribeiro'), acao: tr('Convites enviados'), detalhe: [ct('ct-northfield'), ct('ct-pineridge')].map((c) => c.nome).join(', ') },
+      { em: fechada, por: tr('Ana Ribeiro'), acao: tr('Concorrência fechada'), detalhe: ct('ct-northfield').nome + ' · rev. 2' },
+    ],
+    fechamento: { conviteId: 'cv-jar-northfield', rev: 2, valor: 238600, por: tr('Ana Ribeiro'), em: fechada, observacao: '' },
+    convites: [
+      convite('cv-jar-northfield', 'ct-northfield', {
+        situacao: 'vencedora', vistoEm: momento(somarDias(dia0, -60), 11, 0), respondidoEm: momento(somarDias(dia0, -59), 8, 0),
+        propostas: [
+          proposta(1, 'P-' + ano + '-008', momento(somarDias(dia0, -53), 16, 0), tr('Tom Reilly'), { [FRAMING]: 152000, [SIDING]: 94500 }, 90, []),
+          proposta(2, 'P-' + ano + '-009', momento(somarDias(dia0, -51), 10, 0), tr('Tom Reilly'), { [FRAMING]: 147600, [SIDING]: 91000 }, 90, []),
+        ],
+      }),
+      convite('cv-jar-pineridge', 'ct-pineridge', {
+        situacao: 'nao-escolhida', vistoEm: momento(somarDias(dia0, -59), 9, 0), respondidoEm: momento(somarDias(dia0, -59), 9, 30),
+        propostas: [proposta(1, null, momento(somarDias(dia0, -52), 12, 0), tr('Dan Foster'), { [FRAMING]: 158000, [SIDING]: 99000 }, 100, [])],
+      }),
+    ],
+  };
+  return [atlantico, jardim];
 }
 
 /* ---------- A prestadora de serviço (subcontractor) ---------- */

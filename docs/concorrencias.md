@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Versão 2: desenho das telas, estrutura e regras **para o protótipo**. A versão 1 dizia que precisava de servidor; no protótipo, as duas empresas já se encontram no aparelho (como o cronograma publicado em `compartilhados()` e os diários em `diariosDeFora()`), então a concorrência pode ser simulada do mesmo jeito. No produto, esse lugar comum é o servidor.
 >
-> **Situação:** especificação. Nada disto está no protótipo ainda (ver §10, fatias).
+> **Situação:** fatia 1 pronta (o motor, em `js/concorrencias.js`, com os dados de exemplo e as permissões; `tests/concorrencias.test.mjs`, 50 verificações). Ainda sem telas: as próximas fatias estão no §10.
 
 ## 1. A ideia
 
@@ -82,7 +82,7 @@ Framing e drywall · Edifício Atlântico               Aberta · prazo 24/10 18
 [Convidados] [Perguntas 2] [Comparar] [Detalhes]           [ Prorrogar ] [ Cancelar ]
 
 Northfield Framing & Siding   KORbuild   Proposta rev. 1 · US$ 186.400 · 20/10
-Granite State Interiors       link       Proposta rev. 1 · US$ 179.900 · 21/10
+Bayside Drywall       link       Proposta rev. 1 · US$ 179.900 · 21/10
 Pine Ridge Builders           link       Não vai participar · "agenda cheia"
                                                             [ Convidar mais ]
 ```
@@ -136,7 +136,7 @@ Na tela da concorrência da prestadora aparece de onde veio: *Edifício Atlânti
 
 ## 4. Situações
 
-**Concorrência:** `rascunho` → `aberta` (convites enviados) → `para fechar` (prazo vencido, ou todos responderam) → `fechada` (com a vencedora) ou `cancelada`. **Prorrogar** volta de *para fechar* para *aberta* com o novo prazo.
+**Concorrência:** `rascunho` → `aberta` (convites enviados) → `para fechar` (prazo vencido; até lá, as convidadas ainda mandam revisões, e a contratante pode fechar antes se quiser) → `fechada` (com a vencedora) ou `cancelada`. **Prorrogar** volta de *para fechar* para *aberta* com o novo prazo.
 
 **Convite:** `enviado` → `visto` → `vai cotar` ou `não vai participar` → `proposta enviada` (rev. 1, 2…) → `vencedora` ou `não escolhida`. Se a concorrência é cancelada: `cancelada`.
 
@@ -216,7 +216,8 @@ banco.canais: [{
 - No projeto do Measure: `concorrencia: { id, conviteId, contratanteId }`. Na obra criada: `vinculo` (já existe) + `concorrenciaId`.
 - Na quarteirização, o `vinculo` da obra da Bay State aponta para a obra da **Northfield**. A cadeia se descobre seguindo os vínculos; para a presença na obra (CO-21), a construtora sobe a cadeia até a própria obra.
 - Linha do Measure vinda de uma proposta recebida: `{ categoria: 'subempreiteiro', costCode, valor, origem: { concorrenciaId, conviteId, rev } }`.
-- `VERSAO_DADOS` sobe; os dados de exemplo ganham o cenário do §9.
+- **Contato com conta:** um contato que também é uma empresa no KORbuild tem `contaId` (no protótipo, Northfield, Ridgeline e a Construtora Exemplo). Convite para contato com conta chega na plataforma; sem conta, vai pelo link (CO-07). No produto, a ligação nasce quando a prestadora aceita o convite ou cria a conta com o mesmo e-mail.
+- `VERSAO_DADOS` 28; os dados de exemplo têm o cenário do §9.
 
 ## 8. Permissões
 
@@ -235,7 +236,7 @@ Na **Construtora Exemplo**, uma concorrência **aberta**: *Framing e drywall* no
 | Convidado | Como | Situação no exemplo |
 | --- | --- | --- |
 | **Northfield Framing & Siding** | KORbuild | Vai cotar; projeto no Measure com as folhas; proposta rev. 1 enviada |
-| **Granite State Interiors** | Link | Vai cotar; proposta pelo link (PDF e total) |
+| **Bayside Drywall** | Link | Vai cotar; proposta pelo link (PDF e total) |
 | **Pine Ridge Builders** | Link | Não vai participar ("agenda cheia") |
 
 E duas perguntas no canal: uma respondida para todos, uma só para a Northfield.
@@ -248,7 +249,7 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 
 | Fatia | O que entra | Testes |
 | --- | --- | --- |
-| 1 | `js/concorrencias.js` (modelo, situações, regras CO-04/05/08/10/12/13/16, visão por empresa), dados de exemplo, permissões | Unidade: criar, enviar, responder, revisão, prazo, comparar, fechar, isolamento entre prestadoras |
+| 1 ✓ | `js/concorrencias.js` (modelo, situações, regras CO-04/05/08/09/10/12/13/15/16/18/19, visão por empresa e pelo link), dados de exemplo, permissões | `tests/concorrencias.test.mjs` (50): criar, enviar, responder, revisões, prazo e prorrogação, comparar, fechar, cancelar, isolamento entre empresas, prestadora contratante |
 | 2 | Telas da construtora: lista, nova concorrência, página com Convidados e Comparar, fechar | Navegador (Ana) |
 | 3 | Lado da prestadora: Convites, Vou cotar → projeto no Measure, Enviar pela plataforma, *Ganha* → obra ligada | Navegador (Tom), ponta a ponta com a 2 |
 | 4 | Canal (antes e depois do fechamento) e sininho | Navegador, as duas empresas |

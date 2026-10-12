@@ -221,10 +221,12 @@ export const PERMISSOES = [
     { id: 'daily.acompanhar', nome: tr('Acompanhar todas as obras'), descricao: tr('Painel, obras e relatórios enviados') },
     { id: 'daily.aprovar', nome: tr('Aprovar RDO e enviar ao contratante'), descricao: tr('Aprovar, pedir ajuste, PDF e link do contratante'), requer: ['daily.acompanhar'] },
     { id: 'daily.cronograma', nome: tr('Montar o cronograma da obra'), descricao: tr('Etapas, linha de base, publicar para o contratante e exportar Excel'), requer: ['daily.acompanhar'] },
+    { id: 'concorrencias.gerir', nome: tr('Fazer concorrências e fechar'), descricao: tr('Convidar prestadoras, comparar propostas e fechar; vê os valores das propostas') },
   ] },
   { grupo: 'Measure', modulo: 'measure', itens: [
     { id: 'measure.medir', nome: tr('Medir plantas (takeoff)'), descricao: tr('Abrir plantas, definir a escala, medir e aplicar assemblies') },
     { id: 'measure.catalogo', nome: tr('Itens e assemblies'), descricao: tr('Cadastrar itens e montar assemblies com fórmulas'), requer: ['measure.medir'] },
+    { id: 'concorrencias.responder', nome: tr('Responder convites e enviar propostas'), descricao: tr('Convites para cotar: vou cotar ou não, e enviar a proposta pela plataforma'), requer: ['measure.medir'] },
   ] },
   { grupo: 'Settings', modulo: 'settings', itens: [
     { id: 'settings.funcionarios', nome: tr('Cadastro de funcionários'), descricao: tr('Dados, certificações e valor hora') },
@@ -240,7 +242,7 @@ export function permissao(id) { return PERMISSOES.flatMap((g) => g.itens).find((
 
 export const PERFIS_INICIAIS = [
   { id: 'administrador', nome: tr('Administrador'), descricao: tr('Escritório: tudo, inclusive o Settings'), sistema: true, permissoes: TODAS_PERMISSOES.filter((p) => p !== 'crew.ponto.proprio' && p !== 'crew.ponto.equipe' && p !== 'daily.preencher') },
-  { id: 'gestor', nome: tr('Gestor de obras'), descricao: tr('Vê tudo dos módulos e aprova, sem mexer nas configurações'), permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'daily.cronograma', 'measure.medir', 'settings.obras'] },
+  { id: 'gestor', nome: tr('Gestor de obras'), descricao: tr('Vê tudo dos módulos e aprova, sem mexer nas configurações'), permissoes: ['crew.acompanhar', 'crew.aprovar', 'crew.custos', 'daily.acompanhar', 'daily.aprovar', 'daily.cronograma', 'concorrencias.gerir', 'measure.medir', 'concorrencias.responder', 'settings.obras'] },
   { id: 'encarregado', nome: tr('Encarregado'), descricao: tr('Campo: ponto da equipe e diário de obra'), permissoes: ['crew.ponto.proprio', 'crew.ponto.equipe', 'daily.preencher'] },
   { id: 'trabalhador', nome: tr('Trabalhador'), descricao: tr('Só bate o próprio ponto: entra direto no ponto, sem a tela de módulos'), permissoes: ['crew.ponto.proprio'] },
 ];

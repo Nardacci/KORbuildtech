@@ -1,0 +1,239 @@
+/* KORbuild — teste do motor das concorrências (docs/concorrencias.md, fatia 1), em português.
+ * Contratante e convidadas, o que cada uma vê (CO-04), revisões e prazo (CO-05, CO-10), comparar (CO-12),
+ * fechar (CO-06, CO-13), cancelar (CO-15), convidar mais (CO-16) e a prestadora como contratante (CO-19).
+ * Uso: suba um servidor na pasta do projeto (python3 -m http.server 8123) e rode
+ *   node tests/concorrencias.test.mjs [http://localhost:8123/] */
+
+import { chromium } from 'playwright';
+
+const BASE = (process.argv[2] || 'http://localhost:8123/') + '?demo';
+let falhas = 0, passos = 0;
+function verificar(cond, texto) {
+  passos++;
+  if (cond) console.log('  ok  ' + texto);
+  else { falhas++; console.log('FALHA ' + texto); }
+}
+
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
+const context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
+await context.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); } catch { /* sem armazenamento */ } });
+await context.route('https://api.open-meteo.com/**', (r) => r.fulfill({ json: { hourly: { time: [], weather_code: [], precipitation: [], temperature_2m: [] } } }));
+await context.route(/fonts\.|tile\.openstreetmap/, (r) => r.abort());
+const page = await context.newPage();
+await page.clock.setFixedTime(new Date('2026-10-07T10:00:00')); // quarta-feira
+const erros = [];
+page.on('pageerror', (e) => erros.push(e.message));
+
+await page.goto(BASE);
+await page.waitForSelector('#form-login', { timeout: 30000 });
+await page.evaluate(() => localStorage.setItem('kbt.sessao', 'u-ana'));
+await page.goto('about:blank');
+await page.goto(BASE + '#/inicio');
+await page.waitForTimeout(400);
+
+/* Roda uma função no navegador com o motor carregado: (m, a, ajuda) => ... ; ajuda.como(empresa, fn). */
+const rodar = (fn, arg) => page.evaluate(async ([codigo, x]) => {
+  const m = await import('./js/concorrencias.js');
+  const a = await import('./js/armazem.js');
+  const ajuda = { como: (id, f) => a.emNomeDaEmpresa(id, f), GC: 'construtora-exemplo', NF: 'prestadora-exemplo', RD: 'prestadora-estrutura' };
+  return (0, eval)('(' + codigo + ')')(m, a, ajuda, x);
+}, [fn.toString(), arg]);
+
+const AGORA = new Date('2026-10-07T10:00:00').getTime();
+const FRAMING = '06 11 00 · Wood framing', DRYWALL = '09 29 00 · Gypsum board';
+
+console.log('Dados de exemplo');
+let r = await rodar((m, a, h) => {
+  const env = m.enviadas(h.GC);
+  const atl = env.find((c) => c.id === 'co-atlantico-framing');
+  return { n: env.length, situacoes: env.map((c) => m.situacaoDe(c)), convites: atl.convites.map((v) => [v.nome, v.situacao, !!v.empresaId]) };
+});
+verificar(r.n === 2 && r.situacoes.join() === 'aberta,fechada', 'a construtora tem 2 concorrências: Atlântico aberta e Jardim fechada');
+verificar(r.convites.length === 3 && r.convites[0][2] === true && r.convites[1][2] === false, 'Atlântico: Northfield com conta, Bayside e Pine Ridge pelo link');
+
+console.log('O que cada convidada vê (CO-04)');
+r = await rodar((m, a, h) => {
+  const nf = h.como(h.NF, () => m.recebidas());
+  const rd = h.como(h.RD, () => m.recebidas());
+  const atl = nf.find((x) => x.id === 'co-atlantico-framing');
+  return { n: nf.length, rd: rd.length, json: JSON.stringify(nf), orc: atl.orcamento, temConvites: 'convites' in atl, fech: 'fechamento' in atl, proprio: atl.convite.nome };
+});
+verificar(r.n === 2 && r.rd === 0, 'a Northfield recebe os 2 convites; a Ridgeline, nenhum');
+verificar(!r.json.includes('Bayside') && !r.json.includes('Pine Ridge') && !r.temConvites, 'a Northfield não vê quem mais foi convidado');
+verificar(r.orc.mostrar === 'nao' && !('valor' in r.orc), 'o orçamento da construtora não aparece (não mostrar é o padrão, CO-03)');
+verificar(!r.fech && !r.json.includes('fechamento'), 'nem o registro do fechamento (valores) vai para a convidada');
+r = await rodar((m) => { const v = m.porToken('lk-cv-atl-bayside'); return v && { nome: v.convite.nome, json: JSON.stringify(v) }; });
+verificar(r && r.nome.includes('Bayside') && !r.json.includes('Northfield') && !r.json.includes('121900'), 'pelo link, a Bayside vê só o próprio convite (CO-07)');
+verificar(await rodar((m) => m.porToken('lk-inexistente')) === null, 'link desconhecido não abre nada');
+
+console.log('Comparar (CO-12)');
+r = await rodar((m, a, h, x) => {
+  const c = m.concorrenciaEnviada('co-atlantico-framing', h.GC);
+  const cmp = m.comparar(c);
+  const col = (n) => cmp.colunas.find((k) => k.nome.includes(n));
+  return { cols: cmp.colunas.length, bay: col('Bayside'), nf: col('Northfield'), framing: cmp.linhas.find((l) => l.etapa === x.FRAMING), drywall: cmp.linhas.find((l) => l.etapa === x.DRYWALL) };
+}, { FRAMING, DRYWALL });
+verificar(r.cols === 2, 'duas propostas na comparação (Pine Ridge não vai participar)');
+verificar(r.framing.valores['cv-atl-bayside'] === null && r.bay.naoCotadas.includes(FRAMING), 'etapa sem preço é "não cotada", nunca zero');
+verificar(r.drywall.menor === 61500, 'menor valor da linha do drywall: US$ 61.500');
+verificar(r.bay.exclusoesNoEscopo.length === 1 && r.nf.exclusoesNoEscopo.length === 0, 'exclusão que está no escopo incluso (andaimes) fica marcada; a que já era excluso, não');
+
+console.log('Rascunho e envio (CO-08)');
+r = await rodar((m, a, h, x) => h.como(h.GC, () => {
+  const c = m.salvarRascunho(null, { servico: 'Drywall do galpão' }, 'Ana Ribeiro');
+  const rasc = m.concorrenciaEnviada(c.id);
+  const pend = m.pendenciasDeEnvio(rasc, x.AGORA);
+  const antes = m.enviar(c.id, 'Ana Ribeiro', x.AGORA);
+  const nf = m.recebidas(h.NF).some((y) => y.id === c.id);
+  const ok = m.salvarRascunho(c.id, {
+    obraId: 'galpao', servico: 'Drywall do galpão', etapas: [x.DRYWALL], incluso: 'Drywall do escritório\nForro', prazo: '2026-10-20T17:00',
+    convidados: ['ct-northfield', 'ct-bayside', 'ct-northfield'], orcamento: { valor: 40000, mostrar: 'total' },
+  }, 'Ana Ribeiro');
+  const env = m.enviar(c.id, 'Ana Ribeiro', x.AGORA);
+  const depois = m.salvarRascunho(c.id, { servico: 'outro' }, 'Ana Ribeiro');
+  const s = m.concorrenciaEnviada(c.id);
+  return { id: c.id, pend: pend.length, antes: antes.erro, nfAntes: nf, ok: ok.ok, env: env.ok, depois: depois.erro, n: s.convites.length, situacao: s.situacao, tokens: s.convites.every((v) => v.token), aud: a.estado().settings.auditoria[0].descricao };
+}), { DRYWALL, AGORA });
+const novaId = r.id;
+verificar(r.pend >= 4 && r.antes, 'rascunho incompleto não é enviado e diz o que falta');
+verificar(!r.nfAntes, 'rascunho não aparece para ninguém');
+verificar(r.ok && r.env && r.situacao === 'aberta', 'completo, é enviado e fica aberto');
+verificar(r.n === 2, 'a mesma prestadora não entra duas vezes (CO-16)');
+verificar(r.depois, 'depois de enviada, não se reescreve (CO-09)');
+verificar(r.tokens, 'cada convite tem o seu link pessoal');
+verificar(r.aud.includes('Convites enviados'), 'o envio vai para a auditoria da construtora (CO-18)');
+
+console.log('A convidada responde e manda proposta (CO-05, CO-10)');
+r = await rodar((m, a, h, x) => h.como(h.NF, () => {
+  const v1 = m.marcarVisto(x.id, null, x.AGORA);
+  const vi = m.recebida(x.id).convite.situacao;
+  const vai = m.responder(x.id, true, '', 'Tom Reilly', null, x.AGORA);
+  const fora = m.enviarProposta(x.id, { porEtapa: { [x.FRAMING]: 1000 } }, 'Tom Reilly', null, x.AGORA);
+  const soma = m.enviarProposta(x.id, { total: 50000, porEtapa: { [x.DRYWALL]: 38000 } }, 'Tom Reilly', null, x.AGORA);
+  const p1 = m.enviarProposta(x.id, { porEtapa: { [x.DRYWALL]: 38000 }, prazoExecucaoDias: 20, exclusoes: 'Forro' }, 'Tom Reilly', null, x.AGORA);
+  const p2 = m.enviarProposta(x.id, { total: 36500, porEtapa: { [x.DRYWALL]: 36500 }, prazoExecucaoDias: 20 }, 'Tom Reilly', null, x.AGORA + 3600000);
+  const voltar = m.responder(x.id, false, 'mudei de ideia', 'Tom Reilly', null, x.AGORA);
+  const vista = m.recebida(x.id);
+  return { v1: v1.ok, vi, vai: vai.ok, fora: fora.erro, soma: soma.erro, p1: p1.rev, p2: p2.rev, voltar: voltar.erro, revs: vista.convite.propostas.map((p) => p.total), orc: vista.orcamento };
+}), { id: novaId, FRAMING, DRYWALL, AGORA });
+verificar(r.v1 && r.vi === 'visto', 'abrir o convite marca como visto');
+verificar(r.vai, 'Vou cotar');
+verificar(r.fora && r.soma, 'recusa etapa fora da concorrência e total que não bate com a soma');
+verificar(r.p1 === 1 && r.p2 === 2 && r.revs.join() === '38000,36500', 'cada envio é uma nova revisão, e a anterior fica (rev. 1 e rev. 2)');
+verificar(r.voltar, 'quem já mandou proposta não volta para "não vou participar"');
+verificar(r.orc.mostrar === 'total' && r.orc.valor === 40000 && !r.orc.porEtapa, 'orçamento mostrado só como total, como a construtora escolheu (CO-03)');
+
+r = await rodar((m, a, h, x) => {
+  const tok = m.concorrenciaEnviada(x.id, h.GC).convites.find((v) => v.nome.includes('Bayside')).token;
+  const quem = { token: tok };
+  const resp = m.responder(x.id, true, '', 'Ellen Price', quem, x.AGORA);
+  const p = m.enviarProposta(x.id, { total: 35900, prazoExecucaoDias: 25, pdf: { nome: 'bayside.pdf' } }, 'Ellen Price', quem, x.AGORA);
+  const outro = m.enviarProposta(x.id, { total: 1 }, 'x', { token: 'lk-errado' }, x.AGORA);
+  return { resp: resp.ok, p: p.rev, outro: outro.erro };
+}, { id: novaId, AGORA });
+verificar(r.resp && r.p === 1, 'pelo link, a Bayside responde e manda a proposta (PDF e total)');
+verificar(r.outro, 'um link errado não envia nada');
+
+console.log('Prazo e prorrogação (CO-09, CO-10)');
+const DEPOIS = new Date('2026-10-21T09:00:00').getTime();
+r = await rodar((m, a, h, x) => {
+  const c = m.concorrenciaEnviada(x.id, h.GC);
+  const s1 = m.situacaoDe(c, x.DEPOIS);
+  const tarde = h.como(h.NF, () => m.enviarProposta(x.id, { total: 30000 }, 'Tom Reilly', null, x.DEPOIS));
+  const cedo = h.como(h.GC, () => m.prorrogar(x.id, '2026-10-15T17:00', '', 'Ana Ribeiro', x.DEPOIS));
+  const ok = h.como(h.GC, () => m.prorrogar(x.id, '2026-10-24T17:00', 'pedido das prestadoras', 'Ana Ribeiro', x.DEPOIS));
+  const s2 = m.situacaoDe(c, x.DEPOIS);
+  const p3 = h.como(h.NF, () => m.enviarProposta(x.id, { total: 34000 }, 'Tom Reilly', null, x.DEPOIS));
+  return { s1, tarde: tarde.erro, cedo: cedo.erro, ok: ok.ok, s2, p3: p3.rev, hist: c.historico.map((y) => y.acao) };
+}, { id: novaId, DEPOIS });
+verificar(r.s1 === 'para-fechar' && r.tarde, 'com o prazo vencido, fica "para fechar" e não aceita proposta');
+verificar(r.cedo && r.ok && r.s2 === 'aberta', 'prorrogar exige um prazo depois do atual; prorrogada, volta a ficar aberta');
+verificar(r.p3 === 3, 'com o prazo novo, a Northfield manda a rev. 3');
+verificar(r.hist.includes('Prazo prorrogado'), 'a prorrogação fica no histórico');
+
+console.log('Fechar (CO-06, CO-13)');
+r = await rodar((m, a, h, x) => h.como(h.GC, () => {
+  const c = m.concorrenciaEnviada(x.id);
+  const mais = m.convidarMais(x.id, ['ct-northfield'], 'Ana Ribeiro', x.DEPOIS);
+  const pine = m.convidarMais(x.id, ['ct-pineridge'], 'Ana Ribeiro', x.DEPOIS);
+  const pineId = c.convites.find((v) => v.nome.includes('Pine')).id;
+  const semProposta = m.fechar(x.id, pineId, '', 'Ana Ribeiro', x.DEPOIS);
+  const nfId = c.convites.find((v) => v.nome.includes('Northfield')).id;
+  const ok = m.fechar(x.id, nfId, 'melhor prazo', 'Ana Ribeiro', x.DEPOIS);
+  const denovo = m.fechar(x.id, nfId, '', 'Ana Ribeiro', x.DEPOIS);
+  const cancelar = m.cancelar(x.id, 'teste', 'Ana Ribeiro', x.DEPOIS);
+  const nf = m.recebida(x.id, h.NF);
+  const bay = m.porToken(c.convites.find((v) => v.nome.includes('Bayside')).token);
+  return {
+    mais: mais.erro, pine: pine.ok, semProposta: semProposta.erro, ok: ok.ok, denovo: denovo.erro, cancelar: cancelar.erro,
+    fech: c.fechamento, sit: c.convites.map((v) => [v.nome.split(' ')[0], v.situacao]), nf: [nf.situacao, nf.convite.situacao], bay: [bay.situacao, bay.convite.situacao, JSON.stringify(bay).includes('34000')],
+  };
+}), { id: novaId, DEPOIS });
+verificar(r.mais && r.pine, 'convidar de novo quem já está é recusado; convidar mais uma é aceito');
+verificar(r.semProposta, 'não fecha com quem não mandou proposta');
+verificar(r.ok && r.fech.rev === 3 && r.fech.valor === 34000 && r.fech.por === 'Ana Ribeiro', 'fecha com a Northfield: registra revisão, valor e quem fechou');
+verificar(r.sit.find((s) => s[0] === 'Bayside')[1] === 'nao-escolhida' && r.sit.find((s) => s[0] === 'Pine')[1] === 'enviado', 'a Bayside fica "não escolhida"; quem não mandou proposta fica como estava');
+verificar(r.denovo && r.cancelar, 'fechada, não fecha de novo nem cancela');
+verificar(r.nf.join() === 'fechada,vencedora', 'a Northfield vê que venceu');
+verificar(r.bay[0] === 'fechada' && r.bay[1] === 'nao-escolhida' && !r.bay[2], 'a Bayside vê que não foi escolhida, sem o valor da vencedora');
+
+console.log('Cancelar (CO-15)');
+r = await rodar((m, a, h, x) => h.como(h.GC, () => {
+  const c = m.salvarRascunho(null, { obraId: 'galpao', servico: 'Pintura', etapas: ['09 91 00 · Painting'], incluso: 'Pintura interna', prazo: '2026-10-20T17:00', convidados: ['ct-northfield'] }, 'Ana Ribeiro');
+  m.enviar(c.id, 'Ana Ribeiro', x.AGORA);
+  const sem = m.cancelar(c.id, '', 'Ana Ribeiro', x.AGORA);
+  const ok = m.cancelar(c.id, 'a construtora vai pintar com outra obra', 'Ana Ribeiro', x.AGORA);
+  const nf = m.recebida(c.id, h.NF);
+  const resp = h.como(h.NF, () => m.responder(c.id, true, '', 'Tom Reilly', null, x.AGORA));
+  const r2 = m.salvarRascunho(null, { servico: 'Rascunho para apagar' }, 'Ana Ribeiro');
+  const apagado = m.cancelar(r2.id, 'desisti', 'Ana Ribeiro', x.AGORA);
+  return { sem: sem.erro, ok: ok.ok, nf: [nf.situacao, nf.convite.situacao], resp: resp.erro, apagado: apagado.excluida && !m.concorrenciaEnviada(r2.id) };
+}), { AGORA });
+verificar(r.sem && r.ok, 'cancelar exige motivo');
+verificar(r.nf.join() === 'cancelada,cancelado' && r.resp, 'a convidada vê o cancelamento e não responde mais');
+verificar(r.apagado, 'um rascunho cancelado é só apagado');
+
+console.log('Isolamento e quarteirização (CO-19)');
+r = await rodar((m, a, h, x) => {
+  const alheia = h.como(h.NF, () => m.concorrenciaEnviada('co-atlantico-framing'));
+  const fechar = h.como(h.NF, () => m.fechar('co-atlantico-framing', 'cv-atl-northfield', '', 'Tom Reilly', x.AGORA));
+  // a Northfield contrata uma prestadora para parte do serviço dela no Jardim
+  return { alheia, fechar: fechar.erro };
+}, { AGORA });
+verificar(r.alheia === null && r.fechar, 'uma convidada não abre nem fecha a concorrência de outra empresa');
+r = await rodar(async (m, a, h) => {
+  const { salvarContato } = await import('./js/contatos.js');
+  const ct = h.como(h.NF, () => salvarContato(null, { nome: 'Bay State Drywall', email: 'ops@baystate.exemplo.com', papeis: ['prestadora'] }, 'Tom Reilly'));
+  return { ct: ct.ok };
+});
+verificar(r.ct, 'a Northfield cadastra a Bay State Drywall como prestadora nos Contatos');
+r = await rodar(async (m, a, h, x) => {
+  const { contatos } = await import('./js/contatos.js');
+  return h.como(h.NF, () => {
+    const bay = contatos().find((c) => c.nome === 'Bay State Drywall');
+    const c = m.salvarRascunho(null, { obraId: 'nf-jardim', servico: 'Drywall das casas', etapas: [x.DRYWALL], incluso: 'Drywall nível 4', prazo: '2026-10-16T12:00', convidados: [bay.id], quarteirizacao: 'nao-permitida' }, 'Tom Reilly');
+    const env = m.enviar(c.id, 'Tom Reilly', x.AGORA);
+    const s = m.concorrenciaEnviada(c.id);
+    return { env: env.ok, contratante: s.contratanteId, link: s.convites[0].empresaId === null, minhas: m.enviadas().length, daGc: m.enviadas(h.GC).some((y) => y.id === c.id), obraAlheia: m.salvarRascunho(null, { obraId: 'atlantico', servico: 'x' }, 'Tom Reilly').erro };
+  });
+}, { DRYWALL, AGORA });
+verificar(r.env && r.contratante === 'prestadora-exemplo' && r.minhas === 1, 'a prestadora também abre concorrência (contratante = Northfield)');
+verificar(r.link, 'a quarteirizada sem conta recebe pelo link');
+verificar(!r.daGc, 'a construtora não vê a concorrência da Northfield');
+verificar(r.obraAlheia, 'só dá para abrir concorrência de uma obra da própria empresa');
+
+console.log('Permissões');
+r = await rodar(async () => {
+  const s = await import('./js/settings.js');
+  const ger = s.permissao('concorrencias.gerir'), resp = s.permissao('concorrencias.responder');
+  const gestor = s.PERFIS_INICIAIS.find((p) => p.id === 'gestor').permissoes, adm = s.PERFIS_INICIAIS.find((p) => p.id === 'administrador').permissoes;
+  const enc = s.PERFIS_INICIAIS.find((p) => p.id === 'encarregado').permissoes;
+  return { ok: !!ger && !!resp, requer: resp.requer, gestor: gestor.includes('concorrencias.gerir') && gestor.includes('concorrencias.responder'), adm: adm.includes('concorrencias.gerir') && adm.includes('concorrencias.responder'), enc: enc.some((p) => p.startsWith('concorrencias')) };
+});
+verificar(r.ok && r.requer.includes('measure.medir'), 'as duas permissões existem; responder inclui medir plantas');
+verificar(r.adm && r.gestor && !r.enc, 'administrador e gestor de obras têm as duas; o encarregado, nenhuma');
+
+verificar(erros.length === 0, 'sem erros na página' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
+await browser.close();
+console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');
+process.exit(falhas ? 1 : 0);
