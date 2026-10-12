@@ -14,6 +14,7 @@ KORbuild is **one platform, one set of jobs and people**, with modules the compa
 | **Crew** | The crew time clock with GPS and geofence, timesheets and labor cost by job. | Foreman (phone), office |
 | **Measure** | Plan takeoff in feet and inches, assemblies, quantities, quote lists and proposals. | Estimators (computer) |
 | **Settings** | Company setup: employees, labor burden, work rules, jobs, contacts, users and roles. | Office administrator |
+| **Bids** | Invitations to bid between companies: package, leveling, award, a channel that becomes the job conversation, subcontracting. | The contracting company's office; subcontractors (Measure or a link) |
 
 !!! say "What to say"
     "KORbuild replaces the paper daily report, the paper time card and the spreadsheet takeoff with one system. Everything the field does on the phone reaches the office the same day — and works even without signal on the job site."
@@ -188,7 +189,29 @@ Full details: [Measure user manual](@/measure/user-manual.html).
 
 Full details: [Settings user manual](@/settings/user-manual.html).
 
-### Act 9 — More to show (optional)
+### Act 9 — Bids: from the invitation to the job link (6 min)
+
+1. Sign in as **Ana Ribeiro** and open **Daily › Bids**: *Framing and drywall* on the **Atlantic Tower**, open, due in 5 days.
+2. Open it. **Invitees**: Northfield (on KORbuild) and Bayside (by link) bid; Pine Ridge declined, with the reason.
+3. **Questions**: Bayside asked about scaffolding and Ana answered **to all** — Northfield sees the question without knowing who asked. Northfield's own question was answered only to Northfield.
+4. **Level bids**: one row per cost code next to the budget, the lowest in green, Bayside's framing *not bid* (never zero), and the ⚠ on scaffolding: Bayside excluded something that is in the scope. Click **Award** on Northfield to show the warnings, then cancel.
+
+    ![Leveling the bids](img/bids-leveling.png)
+
+5. Sign in as **Tom Reilly** and open **Measure › Invitations** › *Framing and drywall*: the same package, nothing about the other invitees. **Create the project in Measure**: the project comes with the client, the address and the due date.
+6. Open **Daily › Bids** › *House drywall*: Northfield **subcontracts** part of its Maple Gardens work to Bay State, which has no account.
+7. Copy the link from **Invitees** and open it in a private window: Bay State sees the invitation without signing in and submits its bid with the PDF.
+
+    ![The link page](img/bids-link.png)
+
+8. Back as **Ana**, open the **Maple Gardens** bid (awarded to Northfield) and the job page: the **channel** with Northfield is the job conversation now.
+
+!!! say "What to say"
+    "The bid is where the relationship starts. Each sub sees only its own invitation and its own numbers; you level by cost code and see what each one left out. When you award, the sub's job is created already linked to yours — daily reports, crew and schedule start flowing on day one. And a sub that isn't on KORbuild bids by a link, no account needed."
+
+Full details: [Bids user manual](@/bids/user-manual.html).
+
+### Act 10 — More to show (optional)
 
 - **Measure, more** — as **Tom**: the elevations (siding with the gable, windows and doors deducted, the **Opening** tool) and the **Elm Row Townhouses** project, where one unit plan is measured once and counts × 6.
 - **A sub on its own** — as **Tom**, Daily › Jobs › **Thompson residence**: a homeowner job with no general contractor. Here Northfield approves its own reports.
@@ -207,6 +230,8 @@ Full details: [Settings user manual](@/settings/user-manual.html).
 | Who approves the sub's daily report? | The general contractor of the job. On a job straight with the owner, the sub approves its own. |
 | Can someone fake a photo or a date? | Each photo carries a stamp with date, time and GPS inside the image, plus a digital fingerprint of the original file. The approved report is sealed; any change shows up on the client's link. |
 | Does it send SMS or email reminders? | Not yet: reminders go to the in-app notifications (bell) and to the phone's notifications. SMS and email are being evaluated. |
+| Can a sub see the other bids? | No. Each invited company sees only its own invitation and bids — never who else was invited or the amounts. Losing bidders are told they weren't selected, without the winning amount. |
+| Can a subcontractor hire another one? | Yes. It runs a bid the same way (while estimating or after winning). Whoever hired it can require approval; the general contractor sees the whole chain on site, without amounts. |
 | Where is my data stored? | In the prototype, only in the browser. In the product, on a secure cloud database, separated by company. |
 | What does it cost? | Pricing is not part of the prototype. |
 

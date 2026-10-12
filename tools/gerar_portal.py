@@ -56,6 +56,13 @@ PT = {
         'Medição de plantas em pés e polegadas: escala, medição, assemblies, quantidades, lista para cotação e proposta.',
     'Company setup: employees, labor burden, work rules, jobs and their schedules, contacts, users and access roles, audit log.':
         'Configuração da empresa: funcionários, encargos, regras de jornada, obras e cronogramas, contatos, usuários e perfis de acesso, auditoria.',
+    'Bids': 'Concorrências',
+    'Invitations to bid between companies: the contracting company sends the bid package, levels the bids and awards; the subcontractor bids from Measure or by a link; a channel for questions that becomes the job conversation; subcontracting down the chain.':
+        'Concorrências entre empresas: a contratante manda o pacote, compara as propostas e fecha; a prestadora cota pelo Measure ou por um link; um canal de perguntas que vira a conversa da obra; e a quarteirização.',
+    'How a bid works, who takes part and how it links the companies on the job.': 'Como funciona uma concorrência, quem participa e como ela liga as empresas na obra.',
+    'Send a bid, level and award; bid as a subcontractor; the channel; subcontracting — step by step.': 'Mandar a concorrência, comparar e fechar; cotar como prestadora; o canal; a quarteirização — passo a passo.',
+    'Who sees what, revisions, due dates, leveling, award and subcontracting rules, with IDs.': 'Quem vê o quê, revisões, prazos, comparação, fechamento e quarteirização, com código.',
+    'Who runs bids and who answers invitations.': 'Quem faz concorrências e quem responde convites.',
     'Overview': 'Visão geral', 'User manual': 'Manual do usuário', 'Business rules': 'Regras de negócio',
     'Roles and permissions': 'Perfis e permissões', 'Prototype status': 'Situação do protótipo',
     'Start here': 'Comece aqui', 'Using it': 'No dia a dia', 'Rules and access': 'Regras e acesso',
@@ -158,6 +165,16 @@ MODULOS = [
          {'slug': 'business-rules', 'titulo': 'Business rules', 'grupo': 'Rules and access', 'desc': 'Effective dates, employees, jobs, schedule and access rules, with IDs.'},
          {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'The full permission catalog and the default roles.'},
          {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated, what is still fixed and what comes next.'},
+     ]},
+    {'id': 'bids', 'nome': 'Bids', 'cor': 'var(--cor-bids)', 'ico': 'B',
+     'resumo': 'Invitations to bid between companies: the contracting company sends the bid package, levels the bids and awards; '
+               'the subcontractor bids from Measure or by a link; a channel for questions that becomes the job conversation; subcontracting down the chain.',
+     'paginas': [
+         {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'How a bid works, who takes part and how it links the companies on the job.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'Send a bid, level and award; bid as a subcontractor; the channel; subcontracting — step by step.'},
+         {'slug': 'business-rules', 'titulo': 'Business rules', 'grupo': 'Rules and access', 'desc': 'Who sees what, revisions, due dates, leveling, award and subcontracting rules, with IDs.'},
+         {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'Who runs bids and who answers invitations.'},
+         {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated today and what comes next.'},
      ]},
 ]
 GERAIS = [
@@ -268,14 +285,14 @@ def pagina_documento(mod, p, corpo, toc, palavra_word):
         if itens:
             lat.append(f'<div class="lat-titulo">{L(g)}</div><ul>' + ''.join(
                 f'<li><a href="{x["slug"]}.html"{" aria-current=page" if x is p else ""}>{E(x["titulo"])}</a></li>' for x in itens) + '</ul>')
-    return cabecalho(f"{p['titulo']} · {mod['nome']} · {L('KORbuild guide')}", raiz, 'modulos', f"{mod['id']}/{p['slug']}.html") + f"""
+    return cabecalho(f"{p['titulo']} · {L(mod['nome'])} · {L('KORbuild guide')}", raiz, 'modulos', f"{mod['id']}/{p['slug']}.html") + f"""
 <div class="doc-layout" style="--cor:{mod['cor']}">
-  <aside class="lateral" aria-label="{mod['nome']} {L('documents')}">
-    <a class="lat-modulo" href="index.html"><span class="ico">{mod['ico']}</span>{mod['nome']}</a>
+  <aside class="lateral" aria-label="{L(mod['nome'])} {L('documents')}">
+    <a class="lat-modulo" href="index.html"><span class="ico">{mod['ico']}</span>{L(mod['nome'])}</a>
     {''.join(lat)}
   </aside>
   <main class="doc" id="conteudo">
-    <nav class="trilha" aria-label="{L('You are here')}"><a href="{raiz}index.html">{L('Home')}</a> › <a href="index.html">{mod['nome']}</a> › {E(L(p['grupo']))}</nav>
+    <nav class="trilha" aria-label="{L('You are here')}"><a href="{raiz}index.html">{L('Home')}</a> › <a href="index.html">{L(mod['nome'])}</a> › {E(L(p['grupo']))}</nav>
     <header class="doc-cabecalho">
       <h1>{E(p['titulo'])}</h1>
       <div class="doc-acoes"><a class="botao" href="{raiz}files/{palavra_word}" download>⤓ {L('Download Word')}</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ {L('Print')}</button></div>
@@ -296,7 +313,7 @@ def pagina_geral(g, corpo, toc, palavra_word):
   <aside class="lateral" aria-label="{L('Modules')}">
     <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
     <div class="lat-titulo">{L('Guide')}</div><ul>{''.join(f'<li><a href="{x["slug"]}.html"{" aria-current=page" if x is g else ""}>{E(x["titulo"])}</a></li>' for x in GERAIS)}</ul>
-    <div class="lat-titulo">{L('Modules')}</div><ul>{''.join(f'<li><a href="{m["id"]}/index.html">{m["nome"]}</a></li>' for m in MODULOS)}</ul>
+    <div class="lat-titulo">{L('Modules')}</div><ul>{''.join(f'<li><a href="{m["id"]}/index.html">{L(m["nome"])}</a></li>' for m in MODULOS)}</ul>
   </aside>
   <main class="doc" id="conteudo">
     <nav class="trilha" aria-label="{L('You are here')}"><a href="index.html">{L('Home')}</a> › {L('Guide')}</nav>
@@ -324,10 +341,10 @@ def pagina_modulo(mod):
     if not grupos:
         grupos.append(f'<h2>{L("Coming soon")}</h2><p>{L("The documentation of this module is being written. Meanwhile, see it working in the")} '
                       f'<a href="{raiz}{TOPO}../?demo#/entrar">{L("prototype")}</a>.</p>')
-    return cabecalho(f"{mod['nome']} · {L('KORbuild guide')}", raiz, 'modulos', f"{mod['id']}/index.html") + f"""
+    return cabecalho(f"{L(mod['nome'])} · {L('KORbuild guide')}", raiz, 'modulos', f"{mod['id']}/index.html") + f"""
 <div class="mod-cabeca" style="--cor:{mod['cor']}">
-  <nav class="trilha" aria-label="{L('You are here')}"><a href="{raiz}index.html">{L('Home')}</a> › {mod['nome']}</nav>
-  <div class="mod-caixa"><span class="ico">{mod['ico']}</span><div><h1>{mod['nome']}</h1><p>{E(L(mod['resumo']))}</p></div></div>
+  <nav class="trilha" aria-label="{L('You are here')}"><a href="{raiz}index.html">{L('Home')}</a> › {L(mod['nome'])}</nav>
+  <div class="mod-caixa"><span class="ico">{mod['ico']}</span><div><h1>{L(mod['nome'])}</h1><p>{E(L(mod['resumo']))}</p></div></div>
 </div>
 <div class="mod-grupos" style="--cor:{mod['cor']}">{''.join(grupos)}</div>
 """ + rodape(raiz)
@@ -335,12 +352,12 @@ def pagina_modulo(mod):
 
 def pagina_inicial():
     cartoes = ''.join(
-        f'<a class="cartao-mod" href="{m["id"]}/index.html" style="--cor:{m["cor"]}"><span class="ico">{m["ico"]}</span><b>{m["nome"]}</b>'
+        f'<a class="cartao-mod" href="{m["id"]}/index.html" style="--cor:{m["cor"]}"><span class="ico">{m["ico"]}</span><b>{L(m["nome"])}</b>'
         f'<span>{E(L(m["resumo"]))}</span>' + ('' if m['paginas'] else f'<span class="em-breve">{L("Documentation coming soon")}</span>') + '</a>'
         for m in MODULOS)
     prot = TOPO + '../?demo#/entrar'
     lista = lambda pares: '<ul>' + ''.join(f'<li><a href="{h}">{t}</a></li>' for h, t in pares) + '</ul>'
-    mods = [m['nome'] for m in MODULOS]
+    mods = [L(m['nome']) for m in MODULOS]
     return cabecalho(L('KORbuild product guide'), '', 'inicio', 'index.html') + f"""
 <section class="heroi"><div class="heroi-dentro">
   <p class="sobrescrito">{L('KORbuild product guide')}</p>
@@ -365,9 +382,9 @@ def pagina_inicial():
     <div class="publico"><h3>{L('I will present KORbuild to a customer')}</h3><p>{L("Read the presenter's guide: the story, the order of the screens and what to say.")}</p>
       {lista([('organization.html', L('How KORbuild is organized')), ('presenting.html', L("Presenter's guide")), (prot, L('Open the prototype'))])}</div>
     <div class="publico"><h3>{L('I will use KORbuild every day')}</h3><p>{L('Go to your module and open the user manual: one task at a time, with screenshots.')}</p>
-      {lista([(f"{m['id']}/user-manual.html", f"{m['nome']} — {L('user manual')}") for m in MODULOS])}</div>
+      {lista([(f"{m['id']}/user-manual.html", f"{L(m['nome'])} — {L('user manual')}") for m in MODULOS])}</div>
     <div class="publico"><h3>{L('I need the rules and permissions')}</h3><p>{L('Each module lists its business rules with IDs and who can do what.')}</p>
-      {lista([(f"{m['id']}/{pg}.html", f"{m['nome']} — {L(rot)}") for m in MODULOS for pg, rot in (('business-rules', 'business rules'), ('roles-and-permissions', 'roles and permissions'))])}</div>
+      {lista([(f"{m['id']}/{pg}.html", f"{L(m['nome'])} — {L(rot)}") for m in MODULOS for pg, rot in (('business-rules', 'business rules'), ('roles-and-permissions', 'roles and permissions'))])}</div>
   </div>
 </section>
 <div style="height:40px"></div>
@@ -622,10 +639,10 @@ def gerar_idioma(idioma):
                 faltando.append(str(arq)); continue
             titulo, md = titulo_e_corpo(arq)
             corpo, toc = converter(md, '../')
-            word = f'KORbuild {mod["nome"]} - {titulo}.docx'
+            word = f'KORbuild {L(mod["nome"])} - {titulo}.docx'
             (pasta / f'{p["slug"]}.html').write_text(pagina_documento(mod, p, corpo, toc, word), encoding='utf-8')
-            gerar_word(f'{mod["nome"]} — {titulo}', sub, corpo, SAIDA / 'files' / word, SAIDA / 'img')
-            busca += entradas_de_busca(f'{mod["id"]}/{p["slug"]}.html', f'{mod["nome"]} · {titulo}', corpo)
+            gerar_word(f'{L(mod["nome"])} — {titulo}', sub, corpo, SAIDA / 'files' / word, SAIDA / 'img')
+            busca += entradas_de_busca(f'{mod["id"]}/{p["slug"]}.html', f'{L(mod["nome"])} · {titulo}', corpo)
         (pasta / 'index.html').write_text(pagina_modulo(mod), encoding='utf-8')
     (SAIDA / 'index.html').write_text(pagina_inicial(), encoding='utf-8')
     (SAIDA / 'search.json').write_text(json.dumps(busca, ensure_ascii=False), encoding='utf-8')

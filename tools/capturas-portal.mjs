@@ -440,5 +440,50 @@ if (parte('settings')) {
   await ctx.close();
 }
 
+/* ---------- Bids (concorrências) ---------- */
+if (parte('bids')) {
+  const { ctx, page } = await contexto(1440, '2026-10-07T16:30:00', 900);
+  const dialogo = async (seletor, nome) => {
+    await page.locator(seletor).first().click();
+    await page.waitForSelector('dialog[open]');
+    await page.waitForTimeout(250);
+    await foto(page, nome, 'dialog[open]');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(200);
+  };
+  // a construtora (Ana): lista, nova, a concorrência com as abas, fechar e a fechada
+  await como(page, 'u-ana', '#/daily/concorrencias');
+  await foto(page, 'bids-list');
+  await como(page, 'u-ana', '#/daily/concorrencias/nova/atlantico');
+  await page.screenshot({ path: PASTA + 'bids-new.png', fullPage: true }); feitas++; console.log('  bids-new');
+  await como(page, 'u-ana', '#/daily/concorrencias/co-atlantico-framing');
+  await foto(page, 'bids-invitees');
+  await como(page, 'u-ana', '#/daily/concorrencias/co-atlantico-framing/perguntas');
+  await page.screenshot({ path: PASTA + 'bids-questions.png', fullPage: true }); feitas++; console.log('  bids-questions');
+  await dialogo('[data-acao="co-responder"]', 'bids-answer-dialog').catch(() => {});
+  await como(page, 'u-ana', '#/daily/concorrencias/co-atlantico-framing/comparar');
+  await foto(page, 'bids-leveling');
+  await dialogo('[data-acao="co-fechar"]', 'bids-award-dialog');
+  await como(page, 'u-ana', '#/daily/concorrencias/co-jardim-siding/comparar');
+  await foto(page, 'bids-awarded');
+  await como(page, 'u-ana', '#/daily/obras/jardim');
+  await foto(page, 'bids-job-channel', '.cartao:has(.co-mensagens)');
+  // a prestadora (Tom): convites, o convite, "Vou cotar" → projeto, a quarteirização
+  await como(page, 'u-tom', '#/measure/convites');
+  await foto(page, 'bids-invitations');
+  await como(page, 'u-tom', '#/measure/convite/co-atlantico-framing');
+  await page.screenshot({ path: PASTA + 'bids-invitation.png', fullPage: true }); feitas++; console.log('  bids-invitation');
+  await page.locator('[data-acao="cv-projeto"]').click();
+  await page.waitForTimeout(700);
+  await foto(page, 'bids-project');
+  await como(page, 'u-tom', '#/daily/concorrencias/co-jardim-drywall');
+  await foto(page, 'bids-sub-tier');
+  // pelo link, sem conta (Bay State)
+  await page.evaluate(() => localStorage.removeItem('kbt.sessao'));
+  await page.goto('about:blank'); await page.goto(DEMO + '#/convite/lk-cv-jd-baystate'); await page.waitForTimeout(700);
+  await page.screenshot({ path: PASTA + 'bids-link.png', fullPage: true }); feitas++; console.log('  bids-link');
+  await ctx.close();
+}
+
 await browser.close();
 console.log(feitas + ' capturas em ' + PASTA);

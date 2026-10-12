@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototype status · Bids · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/bids/prototype-status.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-bids)">
+  <aside class="lateral" aria-label="Bids documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">B</span>Bids</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html" aria-current=page>Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Bids</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Prototype status</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Bids - Prototype status.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>What is simulated in the prototype today, and what comes next.</p>
+<h2 id="simulated-today">Simulated today</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>In the prototype</th>
+<th>In the product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Where bids live</td>
+<td>In the browser, in a place shared by the demo companies.</td>
+<td>The server, with each company reading only what it may see.</td>
+</tr>
+<tr>
+<td>Invitations by email</td>
+<td>Not sent. The contracting company uses <strong>Copy the link</strong> for invitees without an account.</td>
+<td>Sent by email, with the private link.</td>
+</tr>
+<tr>
+<td>Drawings</td>
+<td>Only the PDF file names are kept; the invited project starts without sheets.</td>
+<td>The PDFs go with the invitation and become the sheets of the invited company's project.</td>
+</tr>
+<tr>
+<td>Bid PDF</td>
+<td>Only the file name is kept.</td>
+<td>Stored with the bid, downloadable by the contracting company.</td>
+</tr>
+<tr>
+<td>Budget by cost code</td>
+<td>Exists in the engine; the form takes only the total.</td>
+<td>A budget field per cost code.</td>
+</tr>
+<tr>
+<td><em>Use in my estimate</em></td>
+<td>The sub's price goes into the proposal as <strong>other items</strong>, with your markups.</td>
+<td>A subcontractor line in the catalog, by cost code.</td>
+</tr>
+<tr>
+<td>Attachments in the channel</td>
+<td>Text only.</td>
+<td>Photos and PDFs.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="coming-next">Coming next</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sealed bids</td>
+<td>The contracting company sees the amounts only after the due date (common in public work).</td>
+</tr>
+<tr>
+<td>Change orders from the channel</td>
+<td>A message becomes a formal change order.</td>
+</tr>
+<tr>
+<td>Splitting the award</td>
+<td>Award different cost codes to different subcontractors.</td>
+</tr>
+<tr>
+<td>Inviting by email only</td>
+<td>Invite someone who is not in Contacts yet.</td>
+</tr>
+<tr>
+<td>Account from the link</td>
+<td>When the subcontractor creates its account with the invitation email, the invitation, messages and bids move to it.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#simulated-today">Simulated today</a></li><li><a href="#coming-next">Coming next</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 12, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

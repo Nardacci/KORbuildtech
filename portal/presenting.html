@@ -30,7 +30,7 @@
   <aside class="lateral" aria-label="Modules">
     <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
     <div class="lat-titulo">Guide</div><ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="presenting.html" aria-current=page>Presenter&#x27;s guide</a></li></ul>
-    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li></ul>
+    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li><li><a href="bids/index.html">Bids</a></li></ul>
   </aside>
   <main class="doc" id="conteudo">
     <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
@@ -71,6 +71,11 @@
 <td><strong>Settings</strong></td>
 <td>Company setup: employees, labor burden, work rules, jobs, contacts, users and roles.</td>
 <td>Office administrator</td>
+</tr>
+<tr>
+<td><strong>Bids</strong></td>
+<td>Invitations to bid between companies: package, leveling, award, a channel that becomes the job conversation, subcontracting.</td>
+<td>The contracting company's office; subcontractors (Measure or a link)</td>
 </tr>
 </tbody>
 </table>
@@ -301,7 +306,33 @@
 <p>"Everything the company may want to change lives here — rates, burden, overtime rules, who can do what — and nothing rewrites the past: a raise applies from a date, and last week's payroll stays as it was. The schedule belongs to the job: the progress comes from the approved daily reports, and the sub decides when the general contractor sees a new version."</p>
 </div>
 <p>Full details: <a href="settings/user-manual.html">Settings user manual</a>.</p>
-<h3 id="act-9-more-to-show-optional">Act 9 — More to show (optional)</h3>
+<h3 id="act-9-bids-from-the-invitation-to-the-job-link-6-min">Act 9 — Bids: from the invitation to the job link (6 min)</h3>
+<ol>
+<li>Sign in as <strong>Ana Ribeiro</strong> and open <strong>Daily › Bids</strong>: <em>Framing and drywall</em> on the <strong>Atlantic Tower</strong>, open, due in 5 days.</li>
+<li>Open it. <strong>Invitees</strong>: Northfield (on KORbuild) and Bayside (by link) bid; Pine Ridge declined, with the reason.</li>
+<li><strong>Questions</strong>: Bayside asked about scaffolding and Ana answered <strong>to all</strong> — Northfield sees the question without knowing who asked. Northfield's own question was answered only to Northfield.</li>
+<li>
+<p><strong>Level bids</strong>: one row per cost code next to the budget, the lowest in green, Bayside's framing <em>not bid</em> (never zero), and the ⚠ on scaffolding: Bayside excluded something that is in the scope. Click <strong>Award</strong> on Northfield to show the warnings, then cancel.</p>
+<figure><img src="img/bids-leveling.png" alt="Leveling the bids" loading="lazy"><figcaption>Leveling the bids</figcaption></figure>
+</li>
+<li>
+<p>Sign in as <strong>Tom Reilly</strong> and open <strong>Measure › Invitations</strong> › <em>Framing and drywall</em>: the same package, nothing about the other invitees. <strong>Create the project in Measure</strong>: the project comes with the client, the address and the due date.</p>
+</li>
+<li>Open <strong>Daily › Bids</strong> › <em>House drywall</em>: Northfield <strong>subcontracts</strong> part of its Maple Gardens work to Bay State, which has no account.</li>
+<li>
+<p>Copy the link from <strong>Invitees</strong> and open it in a private window: Bay State sees the invitation without signing in and submits its bid with the PDF.</p>
+<figure><img src="img/bids-link.png" alt="The link page" loading="lazy"><figcaption>The link page</figcaption></figure>
+</li>
+<li>
+<p>Back as <strong>Ana</strong>, open the <strong>Maple Gardens</strong> bid (awarded to Northfield) and the job page: the <strong>channel</strong> with Northfield is the job conversation now.</p>
+</li>
+</ol>
+<div class="admonition say">
+<p class="admonition-title">What to say</p>
+<p>"The bid is where the relationship starts. Each sub sees only its own invitation and its own numbers; you level by cost code and see what each one left out. When you award, the sub's job is created already linked to yours — daily reports, crew and schedule start flowing on day one. And a sub that isn't on KORbuild bids by a link, no account needed."</p>
+</div>
+<p>Full details: <a href="bids/user-manual.html">Bids user manual</a>.</p>
+<h3 id="act-10-more-to-show-optional">Act 10 — More to show (optional)</h3>
 <ul>
 <li><strong>Measure, more</strong> — as <strong>Tom</strong>: the elevations (siding with the gable, windows and doors deducted, the <strong>Opening</strong> tool) and the <strong>Elm Row Townhouses</strong> project, where one unit plan is measured once and counts × 6.</li>
 <li><strong>A sub on its own</strong> — as <strong>Tom</strong>, Daily › Jobs › <strong>Thompson residence</strong>: a homeowner job with no general contractor. Here Northfield approves its own reports.</li>
@@ -353,6 +384,14 @@
 <td>Not yet: reminders go to the in-app notifications (bell) and to the phone's notifications. SMS and email are being evaluated.</td>
 </tr>
 <tr>
+<td>Can a sub see the other bids?</td>
+<td>No. Each invited company sees only its own invitation and bids — never who else was invited or the amounts. Losing bidders are told they weren't selected, without the winning amount.</td>
+</tr>
+<tr>
+<td>Can a subcontractor hire another one?</td>
+<td>Yes. It runs a bid the same way (while estimating or after winning). Whoever hired it can require approval; the general contractor sees the whole chain on site, without amounts.</td>
+</tr>
+<tr>
 <td>Where is my data stored?</td>
 <td>In the prototype, only in the browser. In the product, on a secure cloud database, separated by company.</td>
 </tr>
@@ -368,10 +407,10 @@
 </div>
     </article>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-general-contractor-review-approve-and-seal-5-min">Act 4 — The general contractor: review, approve and seal (5 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</a></li><li class="sub"><a href="#act-7-measure-from-the-plan-to-the-proposal-7-min">Act 7 — Measure: from the plan to the proposal (7 min)</a></li><li class="sub"><a href="#act-8-settings-and-the-job-schedule-5-min">Act 8 — Settings and the job schedule (5 min)</a></li><li class="sub"><a href="#act-9-more-to-show-optional">Act 9 — More to show (optional)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-story-in-one-minute">The story in one minute</a></li><li><a href="#before-you-start">Before you start</a></li><li><a href="#demo-users">Demo users</a></li><li><a href="#the-presentation-act-by-act">The presentation, act by act</a></li><li class="sub"><a href="#act-1-one-platform-many-modules-2-min">Act 1 — One platform, many modules (2 min)</a></li><li class="sub"><a href="#act-2-the-field-a-daily-report-in-minutes-5-min">Act 2 — The field: a daily report in minutes (5 min)</a></li><li class="sub"><a href="#act-3-no-signal-on-the-job-site-1-min">Act 3 — No signal on the job site (1 min)</a></li><li class="sub"><a href="#act-4-the-general-contractor-review-approve-and-seal-5-min">Act 4 — The general contractor: review, approve and seal (5 min)</a></li><li class="sub"><a href="#act-5-the-client-receives-the-report-2-min">Act 5 — The client receives the report (2 min)</a></li><li class="sub"><a href="#act-6-crew-the-time-clock-and-labor-cost-6-min">Act 6 — Crew: the time clock and labor cost (6 min)</a></li><li class="sub"><a href="#act-7-measure-from-the-plan-to-the-proposal-7-min">Act 7 — Measure: from the plan to the proposal (7 min)</a></li><li class="sub"><a href="#act-8-settings-and-the-job-schedule-5-min">Act 8 — Settings and the job schedule (5 min)</a></li><li class="sub"><a href="#act-9-bids-from-the-invitation-to-the-job-link-6-min">Act 9 — Bids: from the invitation to the job link (6 min)</a></li><li class="sub"><a href="#act-10-more-to-show-optional">Act 10 — More to show (optional)</a></li><li><a href="#questions-customers-ask">Questions customers ask</a></li></ul></nav>
 </div>
 <footer class="rodape">
-  <div><b>KORbuild</b> · KORbuild product guide · updated October 11, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 12, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
   <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
 </footer>
 <button class="voltar-topo" type="button" aria-label="Back to top">↑</button>

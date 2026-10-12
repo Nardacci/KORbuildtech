@@ -14,6 +14,7 @@ O KORbuild é **uma plataforma, um cadastro de obras e de pessoas**, com módulo
 | **Crew** | O ponto da equipe com GPS e cerca, timesheets e custo de mão de obra por obra. | Encarregado (celular), escritório |
 | **Measure** | Medição de plantas em pés e polegadas, assemblies, quantidades, lista para cotação e proposta. | Orçamentistas (computador) |
 | **Settings** | A configuração da empresa: funcionários, encargos, regras de jornada, obras, contatos, usuários e perfis. | Administrador do escritório |
+| **Concorrências** | Convites para cotar entre empresas: pacote, comparação, fechamento, um canal que vira a conversa da obra, quarteirização. | O escritório da contratante; as prestadoras (Measure ou link) |
 
 !!! say "O que dizer"
     "O KORbuild substitui o diário de papel, o cartão de ponto de papel e a medição em planilha por um sistema só. Tudo o que o campo faz no celular chega ao escritório no mesmo dia — e funciona até sem sinal no canteiro."
@@ -188,7 +189,29 @@ Detalhes: [Manual do Measure](@/measure/user-manual.html).
 
 Detalhes: [Manual do Settings](@/settings/user-manual.html).
 
-### Ato 9 — Mais para mostrar (opcional)
+### Ato 9 — Concorrências: do convite à obra ligada (6 min)
+
+1. Entre como **Ana Ribeiro** e abra **Daily › Concorrências**: *Framing e drywall* no **Edifício Atlântico**, aberta, com prazo em 5 dias.
+2. Abra a concorrência. **Convidados**: a Northfield (com KORbuild) e a Bayside (pelo link) mandaram proposta; a Pine Ridge não vai participar, com o motivo.
+3. **Perguntas**: a Bayside perguntou sobre os andaimes e a Ana respondeu **para todas** — a Northfield vê a pergunta sem saber quem perguntou. A pergunta da própria Northfield foi respondida só para ela.
+4. **Comparar**: uma linha por etapa ao lado do orçamento, o menor valor em verde, o framing da Bayside *não cotada* (nunca zero) e o ⚠ nos andaimes: a Bayside excluiu algo que está no escopo. Clique em **Fechar com esta** na Northfield para mostrar os avisos e cancele.
+
+    ![Comparando as propostas](img/bids-leveling.png)
+
+5. Entre como **Tom Reilly** e abra **Measure › Convites** › *Framing e drywall*: o mesmo pacote, nada das outras convidadas. **Criar o projeto no Measure**: o projeto já vem com o cliente, o endereço e o prazo.
+6. Abra **Daily › Concorrências** › *Drywall das casas*: a Northfield **quarteiriza** parte do serviço no Jardim para a Bay State, que não tem conta.
+7. Copie o link em **Convidados** e abra numa janela anônima: a Bay State vê o convite sem login e manda a proposta com o PDF.
+
+    ![A página do link](img/bids-link.png)
+
+8. De volta como **Ana**, abra a concorrência do **Jardim** (fechada com a Northfield) e a página da obra: o **canal** com a Northfield agora é a conversa da obra.
+
+!!! say "O que dizer"
+    "A concorrência é onde a relação começa. Cada prestadora só vê o próprio convite e os próprios números; você compara por etapa e vê o que cada uma deixou de fora. Ao fechar, a obra da prestadora nasce ligada à sua — diário, equipe e cronograma passam a correr no primeiro dia. E a prestadora que não está no KORbuild cota por um link, sem conta."
+
+Detalhes: [manual das Concorrências](@/bids/user-manual.html).
+
+### Ato 10 — Mais para mostrar (opcional)
 
 - **Mais do Measure** — como **Tom**: as fachadas (siding com a empena, janelas e portas descontadas, a ferramenta **Vão**) e o projeto **Townhouses Elm Row**, em que a planta de uma unidade é medida uma vez e vale × 6.
 - **Uma prestadora sozinha** — como **Tom**, Daily › Obras › **Residência Thompson**: uma obra direto com o dono, sem construtora. Aqui a própria Northfield aprova os diários.
@@ -198,6 +221,8 @@ Detalhes: [Manual do Settings](@/settings/user-manual.html).
 
 | Pergunta | Resposta |
 |---|---|
+| A prestadora vê as outras propostas? | Não. Cada convidada vê só o próprio convite e as próprias propostas — nunca quem mais foi convidado nem os valores. Quem perde é avisado de que não foi escolhido, sem o valor da vencedora. |
+| Uma prestadora pode contratar outra? | Pode. Ela faz a concorrência do mesmo jeito (enquanto orça ou depois de ganhar). Quem a contratou pode exigir aprovação; a construtora vê a cadeia inteira na obra, sem valores. |
 | Funciona sem internet? | Sim. Depois da primeira visita o app fica guardado no celular; diários e batidas ficam no aparelho e sobem quando houver sinal. |
 | Preciso instalar um aplicativo? | No protótipo, não: ele roda no navegador e pode ser colocado na tela inicial. As versões na App Store e no Google Play estão previstas. |
 | O encarregado consegue mudar o diário depois de aprovado? | Não. A aprovação lacra. Ajustes são pedidos **antes** da aprovação ("Pedir ajustes ao canteiro"). |

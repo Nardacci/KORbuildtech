@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visão geral · Concorrências · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../bids/overview.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-bids)">
+  <aside class="lateral" aria-label="Concorrências documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">B</span>Concorrências</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html" aria-current=page>Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Concorrências</a> › Comece aqui</nav>
+    <header class="doc-cabecalho">
+      <h1>Visão geral</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Concorrências - Visão geral.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>As <strong>Concorrências</strong> são como uma empresa convida outras para cotar um serviço, compara as propostas e fecha com uma, tudo dentro do KORbuild. Quem contrata é a <strong>contratante</strong>: uma construtora contratando prestadoras, ou uma prestadora passando parte do serviço dela para outra (<strong>quarteirização</strong>). As convidadas são <strong>prestadoras</strong>: com conta no KORbuild, cotam pelo Measure; sem conta, por um link pessoal.</p>
+<p>O fechamento é o que <strong>liga as duas empresas na obra</strong>. Daí em diante, tudo o que já funciona entre empresas passa a valer sozinho: a construtora aprova os diários da prestadora, acompanha a equipe dela na obra (sem valores) e recebe o cronograma publicado (veja <a href="../organization.html">Como o KORbuild se organiza</a>).</p>
+<p>As concorrências vêm com o plano, como o Settings. Não são um módulo à parte.</p>
+<h2 id="por-que-importa">Por que importa</h2>
+<ul>
+<li><strong>A concorrência inteira num lugar só.</strong> Pacote, convites, respostas, perguntas, propostas, comparação e fechamento, sem planilha e troca de e-mails para conciliar.</li>
+<li><strong>Cada empresa só vê o que é dela.</strong> A prestadora convidada nunca vê quem mais foi convidado, os valores dos outros nem o valor da vencedora.</li>
+<li><strong>Comparação honesta.</strong> Etapa sem preço aparece como <em>não cotada</em>, nunca como zero; exclusão que está no seu escopo incluso é marcada antes de fechar.</li>
+<li><strong>O fechamento cria a ligação da obra.</strong> A vencedora cria a obra a partir do projeto ganho, e ela já nasce ligada à sua.</li>
+<li><strong>Um canal que fica.</strong> As perguntas da concorrência viram a conversa da obra depois do fechamento. Nada se edita nem se apaga.</li>
+</ul>
+<h2 id="quem-participa">Quem participa</h2>
+<table>
+<thead>
+<tr>
+<th>Quem</th>
+<th>Onde</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contratante</strong> (administrador, gestor de obras)</td>
+<td>Daily › Concorrências</td>
+<td>Monta o pacote, convida, responde perguntas, compara as propostas e fecha.</td>
+</tr>
+<tr>
+<td><strong>Prestadora com KORbuild</strong> (administrador, orçamentista)</td>
+<td>Measure › Convites</td>
+<td>Abre o convite, vai cotar ou não, mede num projeto criado a partir dele e envia pela plataforma.</td>
+</tr>
+<tr>
+<td><strong>Prestadora sem KORbuild</strong></td>
+<td>Um link pessoal</td>
+<td>Vê o convite, responde, pergunta e manda a proposta em PDF com o total. Não precisa de conta.</td>
+</tr>
+<tr>
+<td><strong>Contratante de cima</strong></td>
+<td>Na concorrência dela</td>
+<td>Quando pediu, aprova a empresa que a prestadora dela quer contratar.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="as-telas-principais">As telas principais</h2>
+<table>
+<thead>
+<tr>
+<th>Tela</th>
+<th>O que mostra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Concorrências</strong> (Daily)</td>
+<td>Toda concorrência que a empresa mandou: abertas, para fechar, rascunhos, fechadas, com o prazo e quantas propostas chegaram.</td>
+</tr>
+<tr>
+<td><strong>Nova concorrência</strong></td>
+<td>O pacote: obra, serviço, etapas, escopo incluso e excluso, desenhos, prazo, orçamento, exigências e convidados.</td>
+</tr>
+<tr>
+<td><strong>A concorrência</strong></td>
+<td>Abas <strong>Convidados</strong>, <strong>Perguntas</strong>, <strong>Comparar</strong> e <strong>Detalhes</strong>; ações <strong>Prorrogar</strong>, <strong>Convidar mais</strong>, <strong>Cancelar</strong>.</td>
+</tr>
+<tr>
+<td><strong>Convites</strong> (Measure)</td>
+<td>Os convites que a empresa recebeu, com a contratante e o prazo.</td>
+</tr>
+<tr>
+<td><strong>O convite</strong></td>
+<td>O pacote, <strong>Vou cotar</strong> / <strong>Não vou participar</strong>, as perguntas e as suas propostas.</td>
+</tr>
+<tr>
+<td><strong>A página do link</strong></td>
+<td>O mesmo convite, sem login, com o formulário da proposta.</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="../img/bids-list.png" alt="A lista de concorrências" loading="lazy"><figcaption>A lista de concorrências</figcaption></figure>
+<figure><img src="../img/bids-leveling.png" alt="Comparando as propostas" loading="lazy"><figcaption>Comparando as propostas</figcaption></figure>
+<h2 id="o-caminho-de-uma-concorrencia">O caminho de uma concorrência</h2>
+<table>
+<thead>
+<tr>
+<th>Passo</th>
+<th>O que acontece</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. <strong>Pacote</strong></td>
+<td>A contratante descreve o escopo, escolhe as etapas e o prazo, e os convidados nos Contatos.</td>
+</tr>
+<tr>
+<td>2. <strong>Convites</strong></td>
+<td>Cada convidada recebe no KORbuild (com conta) ou por um link pessoal (sem conta).</td>
+</tr>
+<tr>
+<td>3. <strong>Resposta</strong></td>
+<td><em>Vou cotar</em> cria um projeto no Measure; <em>Não vou participar</em> pode levar um motivo.</td>
+</tr>
+<tr>
+<td>4. <strong>Perguntas</strong></td>
+<td>Pelo canal; cada resposta vai para todas as convidadas (sem dizer quem perguntou) ou só para quem perguntou.</td>
+</tr>
+<tr>
+<td>5. <strong>Propostas</strong></td>
+<td>Enviadas pela plataforma, por etapa. Cada nova é uma revisão; nada se edita.</td>
+</tr>
+<tr>
+<td>6. <strong>Comparação</strong></td>
+<td>Lado a lado, por etapa, com prazo de execução, exclusões e exigências.</td>
+</tr>
+<tr>
+<td>7. <strong>Fechamento</strong></td>
+<td>A concorrência fecha; as outras são avisadas de que não foram escolhidas, sem o valor.</td>
+</tr>
+<tr>
+<td>8. <strong>Ligação da obra</strong></td>
+<td>O projeto da vencedora vira <em>Ganha</em>, a obra dela nasce ligada à sua, e o canal continua.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quarteirizacao">Quarteirização</h2>
+<p>Uma prestadora também pode ser a contratante. Ela cota com as suas prestadoras <strong>enquanto orça</strong> (a partir do projeto do Measure, usando os preços delas no próprio orçamento) ou <strong>depois de ganhar</strong> (a partir da obra). Cada elo da cadeia só vê os vizinhos; os valores nunca atravessam um elo. A construtora vê quem está na obra de toda a cadeia, sem valores. Veja o <a href="../bids/user-manual.html#quarteirizacao">manual do usuário</a>.</p>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#por-que-importa">Por que importa</a></li><li><a href="#quem-participa">Quem participa</a></li><li><a href="#as-telas-principais">As telas principais</a></li><li><a href="#o-caminho-de-uma-concorrencia">O caminho de uma concorrência</a></li><li><a href="#quarteirizacao">Quarteirização</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 12 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

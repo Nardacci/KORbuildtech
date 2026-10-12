@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regras de negócio · Concorrências · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    <a href="../organization.html">Como se organiza</a>
+    <a href="../presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../bids/business-rules.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-bids)">
+  <aside class="lateral" aria-label="Concorrências documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">B</span>Concorrências</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html" aria-current=page>Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="prototype-status.html">Situação do protótipo</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Concorrências</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Regras de negócio</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Concorrências - Regras de negócio.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Cada regra tem um código (<code>CO-nnn</code>) para ser citada em reuniões, testes e pedidos de mudança. A coluna <strong>Situação</strong> diz se a regra já funciona no protótipo.</p>
+<div class="admonition note">
+<p class="admonition-title">Origem</p>
+<p>Estas regras vêm do código do protótipo e da especificação das concorrências na documentação do projeto. Os pontos em aberto estão marcados como <strong>A confirmar</strong> no fim.</p>
+</div>
+<h2 id="quem-contrata-quem">Quem contrata quem</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-01</td>
+<td><strong>Os dois caminhos convivem.</strong> A prestadora cujo cliente não está no KORbuild continua mandando a proposta por e-mail (PDF); com o cliente no KORbuild, tudo vai pela plataforma.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-02</td>
+<td>As concorrências vêm <strong>com o plano</strong>, não são um módulo à parte.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-19</td>
+<td><strong>Qualquer empresa pode ser contratante</strong>: construtora ou prestadora. Telas, situações e regras são as mesmas.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-20</td>
+<td><strong>Quem contrata aprova.</strong> O diário e o cronograma de uma empresa quarteirizada vão para quem a contratou, não para a construtora.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-22</td>
+<td><strong>Os valores não atravessam elos.</strong> Cada empresa vê só as propostas que recebeu e as que mandou.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="o-pacote-e-os-convites">O pacote e os convites</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-03</td>
+<td><strong>Mostrar o orçamento é escolha</strong> de cada concorrência: não mostrar (padrão) ou mostrar o total.</td>
+<td>Funcionando (por etapa: só no motor)</td>
+</tr>
+<tr>
+<td>CO-08</td>
+<td>Enviar exige a obra (ou o projeto, quando é cotação para o próprio orçamento), o serviço, pelo menos uma etapa, o escopo incluso, um prazo no futuro e pelo menos um convidado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-09</td>
+<td>Depois de enviada, a concorrência só muda por <strong>prorrogação do prazo</strong>, <strong>convidados a mais</strong> ou <strong>aviso a todos</strong> (adendo). Tudo vai para o histórico.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-16</td>
+<td>Uma empresa é convidada só uma vez por concorrência. Uma obra pode ter várias concorrências (uma por serviço).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-07</td>
+<td>A prestadora <strong>sem conta</strong> cota por um <strong>link pessoal</strong>: vê o convite, responde, pergunta e manda o PDF com o total. O link abre só aquele convite.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quem-ve-o-que">Quem vê o quê</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-04</td>
+<td>Cada convidada vê <strong>só o próprio convite, as próprias propostas</strong> e as mensagens mandadas para ela ou para todas. Nunca quem mais foi convidado nem os valores dos outros.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-11</td>
+<td>A contratante vê os valores <strong>assim que chegam</strong> (comum em obra privada).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-17</td>
+<td>Os valores das propostas são vistos por quem tem <em>Fazer concorrências e fechar</em>. A visão gerencial da obra (equipe no canteiro) não mostra valores.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="propostas-prazo-e-comparacao">Propostas, prazo e comparação</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-05</td>
+<td>Proposta enviada não se edita: uma nova é uma <strong>revisão</strong> (rev. 1, rev. 2…). A comparação usa a revisão mais recente de cada empresa.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-10</td>
+<td>As propostas são aceitas <strong>até o prazo</strong>. Depois dele, a concorrência fica <em>Para fechar</em> e só uma prorrogação reabre.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>—</td>
+<td>A proposta vinda do Measure vai <strong>por etapa</strong>: as linhas com o código de uma etapa da concorrência vão para essa etapa; as outras linhas e os outros itens vão como <strong>outros itens</strong>. O total precisa ser a soma.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-12</td>
+<td><strong>Comparar</strong>: uma linha por etapa, uma coluna por proposta. Etapa sem preço é <strong>não cotada</strong>, nunca zero. O menor valor de cada linha fica destacado; exclusão que bate com o escopo incluso fica marcada.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fechamento-e-cancelamento">Fechamento e cancelamento</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-06</td>
+<td>O fechamento fica registrado (quem, quando, valor, revisão aceita) e a concorrência não muda mais.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-13</td>
+<td>Fechar exige uma proposta enviada. A vencedora fica <em>Vencedora</em>; as outras com proposta ficam <em>Não escolhida</em> e são avisadas, sem o valor da vencedora.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-14</td>
+<td><strong>Ligação da obra:</strong> o projeto da vencedora no Measure vira <em>Ganha</em>; a obra criada a partir dele <strong>já nasce ligada</strong> à obra da contratante.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-15</td>
+<td>Cancelar exige um motivo e avisa as convidadas. Um rascunho é só apagado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-18</td>
+<td>Toda ação vai para a <strong>auditoria</strong> da empresa que fez.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="o-canal">O canal</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>—</td>
+<td>Uma conversa por convidada. A resposta vai <strong>para todas as convidadas</strong> (a pergunta vai junto, sem dizer quem perguntou) ou <strong>só para quem perguntou</strong>. O <strong>aviso a todos</strong> chega a todas.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Depois do fechamento, a conversa da vencedora é o <strong>canal da obra</strong>, na página da obra das duas empresas. Com as outras, a conversa para. Nada se edita nem se apaga.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>—</td>
+<td>O sininho mostra: propostas recebidas, recusas, mensagens e prazos (contratante); convites, prorrogações, respostas e o resultado (convidada).</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="quarteirizacao">Quarteirização</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-21</td>
+<td><strong>A presença sobe a cadeia inteira</strong>: a construtora vê quem está na obra de todas as empresas abaixo dela, marcadas com quem as contratou, sem valores. Diários e cronogramas, só da contratada direta.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-23</td>
+<td>Cada concorrência diz se a contratada pode quarteirizar: <strong>permitida</strong> (padrão), <strong>com a minha aprovação</strong> (a contratante de cima aprova a empresa escolhida, vendo só o nome) ou <strong>não permitida</strong> (a quarteirização não é enviada).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-24</td>
+<td>A concorrência aberta a partir de um <strong>projeto em orçamento</strong> recebe propostas e tem os preços usados no orçamento, mas só fecha depois que o projeto é <strong>ganho</strong> e a obra é criada. Projeto <strong>perdido</strong> cancela as concorrências dele.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>CO-25</td>
+<td>Cotando a partir do projeto, o prazo precisa vencer <strong>antes</strong> do prazo da proposta do próprio projeto.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">A confirmar</p>
+<ul>
+<li><strong>Envelope fechado</strong>: valores visíveis só depois do prazo.</li>
+<li>Se o <strong>encarregado</strong> vê o canal da obra.</li>
+<li>Se a visita à obra é só informativa ou se a contratante marca quem foi.</li>
+<li>Convidar uma empresa que <strong>não está nos Contatos</strong>, só pelo e-mail.</li>
+<li><strong>Dividir o fechamento</strong> entre duas prestadoras, por etapa.</li>
+<li>O padrão da quarteirização: <em>permitida</em> ou <em>com a minha aprovação</em>.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#quem-contrata-quem">Quem contrata quem</a></li><li><a href="#o-pacote-e-os-convites">O pacote e os convites</a></li><li><a href="#quem-ve-o-que">Quem vê o quê</a></li><li><a href="#propostas-prazo-e-comparacao">Propostas, prazo e comparação</a></li><li><a href="#fechamento-e-cancelamento">Fechamento e cancelamento</a></li><li><a href="#o-canal">O canal</a></li><li><a href="#quarteirizacao">Quarteirização</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 12 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

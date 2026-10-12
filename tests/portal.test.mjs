@@ -22,10 +22,10 @@ page.on('response', (r) => { if (r.status() >= 400 && r.url().includes('/portal/
 
 await page.goto(BASE);
 verificar((await page.textContent('h1')).includes('Everything KORbuild does'), 'início do portal');
-verificar(await page.locator('.cartao-mod').count() === 4, 'os quatro módulos');
+verificar(await page.locator('.cartao-mod').count() === 5, 'os cinco módulos (com Bids)');
 verificar(await page.locator('a[href="../?demo#/entrar"]').count() >= 1, 'caminho para o protótipo');
 
-const PAGINAS = ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html', 'measure/index.html', 'measure/overview.html', 'measure/user-manual.html', 'measure/business-rules.html', 'measure/roles-and-permissions.html', 'measure/prototype-status.html', 'settings/index.html', 'settings/overview.html', 'settings/user-manual.html', 'settings/business-rules.html', 'settings/roles-and-permissions.html', 'settings/prototype-status.html'];
+const PAGINAS = ['organization.html', 'presenting.html', 'daily/index.html', 'daily/overview.html', 'daily/user-manual.html', 'daily/business-rules.html', 'daily/roles-and-permissions.html', 'daily/prototype-status.html', 'crew/index.html', 'crew/overview.html', 'crew/user-manual.html', 'crew/business-rules.html', 'crew/roles-and-permissions.html', 'crew/prototype-status.html', 'measure/index.html', 'measure/overview.html', 'measure/user-manual.html', 'measure/business-rules.html', 'measure/roles-and-permissions.html', 'measure/prototype-status.html', 'settings/index.html', 'settings/overview.html', 'settings/user-manual.html', 'settings/business-rules.html', 'settings/roles-and-permissions.html', 'settings/prototype-status.html', 'bids/index.html', 'bids/overview.html', 'bids/user-manual.html', 'bids/business-rules.html', 'bids/roles-and-permissions.html', 'bids/prototype-status.html'];
 for (const p of [...PAGINAS, ...PAGINAS.map((x) => 'pt/' + x)]) {
   await page.goto(BASE + p);
   await page.waitForLoadState('networkidle');

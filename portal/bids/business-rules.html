@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business rules · Bids · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    <a href="../organization.html">How it is organized</a>
+    <a href="../presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/bids/business-rules.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-bids)">
+  <aside class="lateral" aria-label="Bids documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">B</span>Bids</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html" aria-current=page>Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="prototype-status.html">Prototype status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Bids</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Business rules</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Bids - Business rules.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Each rule has an ID (<code>CO-nnn</code>) so it can be quoted in meetings, tests and change requests. The <strong>Status</strong> column says whether the rule works in the prototype today.</p>
+<div class="admonition note">
+<p class="admonition-title">Source</p>
+<p>These rules come from the prototype's code and the bids specification in the project documentation. Open points are marked <strong>To be confirmed</strong> at the end.</p>
+</div>
+<h2 id="who-contracts-whom">Who contracts whom</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-01</td>
+<td><strong>Both paths live together.</strong> A subcontractor whose client is not on KORbuild keeps sending its proposal by email (PDF); with a client on KORbuild, everything goes through the platform.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-02</td>
+<td>Bids come <strong>with the plan</strong>, not as a separate module.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-19</td>
+<td><strong>Any company can be the contracting company</strong>: a general contractor or a subcontractor. Screens, statuses and rules are the same.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-20</td>
+<td><strong>Who hires approves.</strong> The daily report and the schedule of a subcontracted company go to the company that hired it, not to the general contractor.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-22</td>
+<td><strong>Amounts never cross a link.</strong> Each company sees only the bids it received and the ones it sent.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-package-and-the-invitations">The package and the invitations</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-03</td>
+<td><strong>Showing the budget is a choice</strong> for each bid: don't show (default) or show the total.</td>
+<td>Working (by cost code: engine only)</td>
+</tr>
+<tr>
+<td>CO-08</td>
+<td>Sending requires a job (or the project, when getting sub bids), a scope of work, at least one cost code, the included scope, a due date in the future and at least one invitee.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-09</td>
+<td>Once sent, a bid changes only by <strong>extending the due date</strong>, <strong>inviting more</strong> or a <strong>notice to all</strong> (addendum). Everything goes to the history.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-16</td>
+<td>A company is invited only once per bid. A job can have several bids (one per scope).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-07</td>
+<td>A subcontractor <strong>without an account</strong> bids through a <strong>private link</strong>: it sees the invitation, answers, asks and submits the PDF with the total. The link opens only that invitation.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="who-sees-what">Who sees what</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-04</td>
+<td>Each invitee sees <strong>only its own invitation, its own bids</strong> and the messages sent to it or to all. Never who else was invited or their amounts.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-11</td>
+<td>The contracting company sees the amounts <strong>as soon as they arrive</strong> (common in private work).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-17</td>
+<td>Bid amounts are seen by whoever has <em>Run bids and award</em>. The management view of the job (crew on site) shows no amounts.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bids-due-date-and-leveling">Bids, due date and leveling</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-05</td>
+<td>A submitted bid is never edited: a new one is a <strong>revision</strong> (rev. 1, rev. 2…). The leveling uses the latest revision of each company.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-10</td>
+<td>Bids are accepted <strong>until the due date</strong>. After it, the bid is <em>Ready to award</em> and only an extension reopens it.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>—</td>
+<td>A bid from Measure goes <strong>by cost code</strong>: lines whose code matches a cost code of the bid go to that cost code; the other lines and the other items go as <strong>other items</strong>. The total must equal the sum.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-12</td>
+<td><strong>Leveling</strong>: one row per cost code, one column per bid. A cost code without a price is <strong>not bid</strong>, never zero. The lowest amount of each row is highlighted; an exclusion that matches the included scope is flagged.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="award-and-cancel">Award and cancel</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-06</td>
+<td>The award is recorded (who, when, amount, accepted revision) and the bid never changes again.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-13</td>
+<td>Awarding requires a submitted bid. The winner is <em>Awarded</em>; the others with bids are <em>Not selected</em> and are told, without the winning amount.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-14</td>
+<td><strong>Job link:</strong> the winner's Measure project becomes <em>Won</em>; the job created from it is <strong>already linked</strong> to the contracting company's job.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-15</td>
+<td>Canceling requires a reason and notifies the invitees. A draft is simply deleted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-18</td>
+<td>Every action goes to the <strong>audit log</strong> of the company that did it.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-channel">The channel</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>—</td>
+<td>One conversation per invitee. An answer goes <strong>to all invitees</strong> (the question goes along, without who asked) or <strong>only to who asked</strong>. A <strong>notice to all</strong> reaches every invitee.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>—</td>
+<td>After the award, the winner's conversation is the <strong>job channel</strong>, on both companies' job pages. With the others, the conversation stops. Nothing is edited or deleted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>—</td>
+<td>The bell shows: bids received, declines, messages and due dates (contracting company); invitations, extensions, answers and the result (invitee).</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<h2 id="subcontracting">Subcontracting</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO-21</td>
+<td><strong>Presence goes up the whole chain</strong>: the general contractor sees who is on site from every company below it, marked with who hired them, without amounts. Daily reports and schedules come only from its direct subcontractor.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-23</td>
+<td>Each bid says whether the awarded company may subcontract: <strong>allowed</strong> (default), <strong>with my approval</strong> (the upstream company approves the chosen company — it sees only the name) or <strong>not allowed</strong> (the sub bid is not sent).</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-24</td>
+<td>A bid started from a <strong>project being estimated</strong> can receive bids and have its prices used in the estimate, but is awarded only after the project is <strong>won</strong> and its job created. A <strong>lost</strong> project cancels its bids.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>CO-25</td>
+<td>When getting sub bids from a project, the due date must be <strong>before</strong> the project's own bid due date.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">To be confirmed</p>
+<ul>
+<li><strong>Sealed bids</strong>: amounts visible only after the due date.</li>
+<li>Whether the <strong>foreman</strong> sees the job channel.</li>
+<li>Whether the site walk is just information or the contracting company records who attended.</li>
+<li>Inviting a company that is <strong>not in Contacts</strong>, by email only.</li>
+<li><strong>Splitting the award</strong> between two subcontractors, by cost code.</li>
+<li>The default for subcontracting: <em>allowed</em> or <em>with my approval</em>.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#who-contracts-whom">Who contracts whom</a></li><li><a href="#the-package-and-the-invitations">The package and the invitations</a></li><li><a href="#who-sees-what">Who sees what</a></li><li><a href="#bids-due-date-and-leveling">Bids, due date and leveling</a></li><li><a href="#award-and-cancel">Award and cancel</a></li><li><a href="#the-channel">The channel</a></li><li><a href="#subcontracting">Subcontracting</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 12, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>
