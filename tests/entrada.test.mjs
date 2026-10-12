@@ -29,7 +29,9 @@ verificar(await page.locator('a[href="?demo#/entrar"]').count() === 1, 'link par
 await page.fill('#oficial-email', 'someone@company.com');
 await page.fill('#oficial-senha', 'x');
 await page.click('#form-login-oficial button[type="submit"]');
-verificar(await page.isVisible('#login-erro') && await page.locator('#login-erro a[href="?demo#/entrar"]').count() === 1, 'contas reais ainda não entram: avisa e aponta o protótipo');
+await page.waitForSelector('#login-erro:not([hidden])', { timeout: 20000 }).catch(() => {});
+verificar(await page.isVisible('#login-erro') && (await page.textContent('#login-erro')).trim().length > 0, 'contas reais: o login vai ao servidor e mostra o erro (senha errada ou sem conexão)');
+verificar(await page.locator('a[href="#/criar-conta"]').count() === 1, 'link para criar a conta da empresa');
 await page.goto(BASE + '#/daily/painel');
 await page.waitForTimeout(300);
 verificar(page.url().endsWith('#/entrar') && await page.locator('#form-login-oficial').count() === 1, 'sem "?demo", nenhuma tela do protótipo abre');

@@ -1402,3 +1402,15 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .aviso-vermelho { background: var(--vermelho-claro); border-color: var(--vermelho-borda); }
 .co-botoes { justify-content: flex-end; flex-wrap: wrap; }
 .convite-publico h1 { margin: 8px 0 4px; } .convite-rodape { margin-top: 16px; } .co-por-etapa { margin: 8px 0; }
+
+/* ---------- Página oficial: a conta de verdade (js/oficial-telas.js) ---------- */
+.login-alternativa { margin: 14px 0 0; text-align: center; font-size: 14px; }
+.oficial-topo { display: flex; align-items: center; gap: 16px; padding: 10px 20px; background: var(--superficie); border-bottom: 1px solid var(--borda); flex-wrap: wrap; }
+.oficial-marca { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--texto); font-size: 20px; }
+.oficial-empresa { display: flex; flex-direction: column; margin-right: auto; line-height: 1.25; }
+.oficial-pagina { display: flex; flex-direction: column; gap: 16px; padding-top: 20px; }
+.oficial-titulo { font-size: 24px; margin: 0 0 12px; }
+.oficial-link { width: 100%; font-family: monospace; font-size: 13px; margin: 6px 0; }
+.perfil-grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 20px; margin: 8px 0 12px; }
+.perfil-grupos fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 560px) { .oficial-topo { padding: 10px 16px; } .oficial-empresa { order: 3; width: 100%; } }

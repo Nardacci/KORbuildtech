@@ -14,7 +14,7 @@ import { tr, tn, idioma, definirIdioma } from './i18n.js';
 import {
   usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, registrarInteresse, modulo, definirPodeInstalar,
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
-  MODO_DEMO, telaLoginOficial, URL_PROTOTIPO,
+  MODO_DEMO,
 } from './plataforma.js';
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
@@ -23,6 +23,7 @@ import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
+import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, mudarOficial } from './oficial-telas.js';
 import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder, telaConvitePublico } from './concorrencias-telas.js';
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
@@ -179,12 +180,13 @@ function trocarRota(hash) {
 }
 
 function desenhar() {
-  // Página oficial: só a entrada das contas reais (o banco de dados vem depois). O protótipo é "?demo".
+  // Página oficial: as contas reais, no Supabase (docs/banco.md, fatia 1). O protótipo é "?demo".
   if (!MODO_DEMO) {
-    if (location.hash !== '#/entrar') return trocarRota('#/entrar');
-    app.innerHTML = telaLoginOficial();
+    const r = telaOficial(rota());
+    if (r.trocar) return trocarRota(r.trocar);
+    app.innerHTML = r.html;
     document.documentElement.lang = idioma() === 'en' ? 'en' : 'pt-BR';
-    document.body.dataset.modo = 'entrar';
+    document.body.dataset.modo = location.hash.startsWith('#/conta') ? 'oficial' : 'entrar';
     return;
   }
   const p = rota();
@@ -1571,12 +1573,9 @@ function fazerLogin(u) {
 }
 
 app.addEventListener('submit', (ev) => {
-  if (ev.target.id === 'form-login-oficial') {
-    // contas reais: chegam com o banco de dados (docs/concorrencias.md, plano do banco)
+  if (FORMS_OFICIAIS.includes(ev.target.id)) {
     ev.preventDefault();
-    const erro = document.getElementById('login-erro');
-    erro.innerHTML = tr('O acesso das contas de clientes está chegando. Enquanto isso, conheça o KORbuild pelo <a href="{url}">protótipo</a>.', { url: URL_PROTOTIPO });
-    erro.hidden = false;
+    enviarFormOficial(ev.target);
     return;
   }
   if (ev.target.id !== 'form-login') return;
@@ -1605,6 +1604,7 @@ app.addEventListener('input', (ev) => {
 });
 
 app.addEventListener('change', async (ev) => {
+  if (ev.target.dataset && ev.target.dataset.acaoMudar && await mudarOficial(ev.target)) return;
   const el = ev.target;
   if (el.dataset.bind && el.tagName === 'SELECT') {
     mudar((r) => gravar(r, el.dataset.bind, el.value));
@@ -1685,7 +1685,7 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias, acoesOficiais);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
@@ -1710,7 +1710,7 @@ async function iniciar() {
     pedidoInstalar = ev;
     definirPodeInstalar(true);
   });
-  if (!MODO_DEMO) { window.addEventListener('hashchange', desenhar); desenhar(); return; }
+  if (!MODO_DEMO) { ligarOficial(desenhar); window.addEventListener('hashchange', desenhar); desenhar(); return; }
   // Dados de uma versão antiga do protótipo são recriados no formato novo. Na tela de entrada (ninguém
   // logado), a demonstração também é recriada quando foi gerada em outro idioma (botão PT/EN).
   const ninguemLogado = (() => { try { return !localStorage.getItem('kbt.sessao'); } catch { return true; } })();

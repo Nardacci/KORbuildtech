@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** especificação. Nenhuma tabela do KORbuild existe ainda; as migrações vão em fatias (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatia 1 no banco (migrações `0001`, `0001b`, `0002`) e no app: a página oficial (sem `?demo`) cria a conta, a empresa no primeiro acesso, entra, troca a senha, convida e aceita convite, e o Administrador cuida de usuários, perfis e dados da empresa (`js/conta.js`, `js/oficial-telas.js`; teste contra o banco: `tests/conta.test.mjs`). As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 

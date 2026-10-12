@@ -221,7 +221,8 @@ export const URL_PROTOTIPO = '?demo#/entrar';
 export const URL_OFICIAL = './';
 export const URL_PORTAL = 'portal/';
 
-export function telaLoginOficial() {
+/* A página de entrada oficial: a marca à esquerda e, à direita, o formulário da vez (entrar, criar conta, senha…). */
+export function paginaEntrada(conteudo) {
   return '<div class="login-pagina">' +
     '<section class="login-marca">' +
       marca(40) +
@@ -232,23 +233,33 @@ export function telaLoginOficial() {
         '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
         '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
     '</section>' +
-    '<section class="login-lado">' +
+    '<section class="login-lado">' + conteudo + '</section>' +
+  '</div>';
+}
+
+/* Os dois caminhos sem conta: o portal e o protótipo. */
+export function htmlCaminhosEntrada() {
+  return '<div class="login-caminhos">' +
+    '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário') + '</span></span>' + icone('seta', 18) + '</a>' +
+    '<a class="login-caminho" href="' + URL_PROTOTIPO + '">' + icone('play', 20) + '<span><b>' + tr('Abrir o protótipo') + '</b><span class="mudo">' + tr('Com dados de exemplo, sem conta: para conhecer e apresentar') + '</span></span>' + icone('seta', 18) + '</a>' +
+  '</div>';
+}
+
+/* O formulário de entrar (contas reais; ações em oficial-telas.js). */
+export function telaLoginOficial() {
+  return paginaEntrada(
       '<form class="login-form" id="form-login-oficial" novalidate>' +
         htmlSeletorIdioma('login-idioma') + '<h2>' + tr('Entrar') + '</h2><p class="mudo">' + tr('Use o e-mail da sua empresa.') + '</p>' +
         '<label for="oficial-email">' + tr('E-mail') + '</label>' +
         '<input id="oficial-email" name="email" type="email" autocomplete="email" required>' +
-        '<div class="login-linha"><label for="oficial-senha">' + tr('Senha') + '</label><button type="button" class="link" data-acao="esqueci-senha-oficial">' + tr('Esqueci a senha') + '</button></div>' +
+        '<div class="login-linha"><label for="oficial-senha">' + tr('Senha') + '</label><a class="link" href="#/esqueci-senha">' + tr('Esqueci a senha') + '</a></div>' +
         '<input id="oficial-senha" name="senha" type="password" autocomplete="current-password" required>' +
         '<label class="lembrar"><input type="checkbox" checked> ' + tr('Manter conectado') + '</label>' +
         '<p class="login-erro" id="login-erro" role="alert" hidden></p>' +
         '<button type="submit" class="btn btn-primario btn-bloco btn-grande">' + tr('Entrar') + '</button>' +
-        '<div class="login-caminhos">' +
-          '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário') + '</span></span>' + icone('seta', 18) + '</a>' +
-          '<a class="login-caminho" href="' + URL_PROTOTIPO + '">' + icone('play', 20) + '<span><b>' + tr('Abrir o protótipo') + '</b><span class="mudo">' + tr('Com dados de exemplo, sem conta: para conhecer e apresentar') + '</span></span>' + icone('seta', 18) + '</a>' +
-        '</div>' +
-      '</form>' +
-    '</section>' +
-  '</div>';
+        '<p class="login-alternativa">' + tr('Ainda não tem conta?') + ' <a href="#/criar-conta">' + tr('Criar a conta da sua empresa') + '</a></p>' +
+        htmlCaminhosEntrada() +
+      '</form>');
 }
 
 /* ---------- Login ---------- */

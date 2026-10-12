@@ -114,7 +114,7 @@ Cada perfil só abre as telas das suas permissões: sem "acompanhar", o painel n
 - **Modelos de etapas** (Settings › Obras › Modelos de etapas): ao criar a obra, o modelo vira o cronograma, dividindo o prazo entre as etapas; obra sem etapas também pode começar por um modelo.
 - **Do Measure:** projeto *Ganha* tem o botão **Criar obra a partir deste projeto**, com o cadastro já preenchido; projeto e obra ficam ligados.
 - **Concorrências** (prontas no protótipo): convite para cotar entre empresas, comparação, fechamento que liga as obras, canal e quarteirização ([`docs/concorrencias.md`](docs/concorrencias.md)).
-- **Próximo: o banco de dados (Supabase)**, em fatias, a partir de contas, empresas e perfis de acesso ([`docs/banco.md`](docs/banco.md)). O banco antigo foi limpo; backup da estrutura em `supabase/backup/`.
+- **Banco de dados (Supabase)**, em fatias ([`docs/banco.md`](docs/banco.md)). Fatia 1 pronta: na página oficial (sem `?demo`), criar a conta, a empresa no primeiro acesso, entrar, trocar a senha, convidar e aceitar convite, usuários e perfis de acesso de verdade (`js/conta.js`, `js/oficial-telas.js`, `supabase/migrations/`). `tests/conta.test.mjs` testa contra o banco (roda onde o Supabase é alcançável, com `SUPABASE_ACCESS_TOKEN`).
 
 **Cronograma da obra** (documentação em [`docs/cronograma.md`](docs/cronograma.md))
 - **A prestadora monta** as etapas do serviço dela (início, fim, responsável, % concluído) e vê tudo num **Gantt**: barra pelo % concluído, linha de base embaixo, linha do hoje, situação (concluída, em andamento, em risco, atrasada, não iniciada) e o desvio em dias.
