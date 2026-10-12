@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatia 1 **concluída** no banco (migrações `0001`, `0001b`, `0002`, `0003`) e no app: a página oficial (sem `?demo`) cria a conta, a empresa no primeiro acesso, entra, troca a senha, convida e aceita convite, e o Administrador cuida de usuários, perfis e dados da empresa (`js/conta.js`, `js/oficial-telas.js`; teste contra o banco: `tests/conta.test.mjs`). As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1 e 2 no banco. Fatia 1 (migrações `0001`–`0003`): a página oficial (sem `?demo`) cria a conta, a empresa no primeiro acesso, entra, troca a senha, convida e aceita convite, e o Administrador cuida de usuários, perfis e dados da empresa. Fatia 2 (migração `0004`): Meu perfil (nome, telefone, idioma, e-mail e senha) e os cadastros do Settings no banco: Obras (com quem trabalha em cada uma e os modelos de etapas), Funcionários (com valor hora por vigência), Contatos e Regras (encargos e jornada), em `js/cadastros.js` e `js/cadastros-telas.js`. Testes: `tests/conta.test.mjs` (contra o Supabase), `tests/oficial-simulado.test.mjs` (as telas com um Supabase falso) e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 

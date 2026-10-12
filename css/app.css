@@ -1413,6 +1413,9 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .oficial-empresa { display: flex; flex-direction: column; margin-right: auto; line-height: 1.25; }
 .oficial-pagina { display: flex; flex-direction: column; gap: 16px; padding-top: 20px; }
 .oficial-titulo { font-size: 24px; margin: 0 0 12px; }
+.oficial-cabeca { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.oficial-cabeca .oficial-titulo { margin: 0; }
+.oficial-pagina > p.mudo { margin: -8px 0 0; }
 .oficial-link { width: 100%; font-family: monospace; font-size: 13px; margin: 6px 0; }
 .perfil-grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 20px; margin: 8px 0 12px; }
 .perfil-grupos fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }

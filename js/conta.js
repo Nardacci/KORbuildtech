@@ -86,11 +86,14 @@ export async function carregarMinhaConta() {
   } else { conta.membros = [membro]; conta.convites = []; }
 }
 
+/* O cliente do Supabase, para os cadastros (js/cadastros.js). */
+export const cliente = () => sb;
+
 export function pode(permissao) { return !!(conta.perfil && conta.perfil.permissoes.includes(permissao)); }
 export const emailAtual = () => (conta.sessao && conta.sessao.user.email) || '';
 
 /* Mensagens do Supabase no idioma da tela. */
-function traduzir(erro) {
+export function traduzir(erro) {
   const m = (erro && (erro.message || erro.msg || String(erro))) || '';
   if (/Invalid login credentials/i.test(m)) return tr('E-mail ou senha incorretos.');
   if (/Email not confirmed/i.test(m)) return tr('Confirme o seu e-mail antes de entrar: abra o link que enviamos.');

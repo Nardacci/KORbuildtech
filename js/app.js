@@ -23,7 +23,7 @@ import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
-import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, mudarOficial } from './oficial-telas.js';
+import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, acoesCadastros, mudarOficial } from './oficial-telas.js';
 import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder, telaConvitePublico } from './concorrencias-telas.js';
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
@@ -187,6 +187,7 @@ function desenhar() {
     app.innerHTML = r.html;
     document.documentElement.lang = idioma() === 'en' ? 'en' : 'pt-BR';
     document.body.dataset.modo = location.hash.startsWith('#/conta') ? 'oficial' : 'entrar';
+    if (r.depois) r.depois();
     return;
   }
   const p = rota();
@@ -1685,7 +1686,7 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias, acoesOficiais);
+  Object.assign(acoes, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias, acoesOficiais, acoesCadastros);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });

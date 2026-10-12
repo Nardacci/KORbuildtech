@@ -121,6 +121,36 @@ try {
   verificar(b0.url().includes('#/conta'), 'a senha nova vale para entrar', b0.url());
   await b0.close();
 
+  console.log('Cadastros (fatia 2)');
+  await irPara(a, '#/conta/contatos/novo', '#form-contato');
+  await a.fill('#ct-nome', 'Granite E2E'); await a.check('input[name="papeis"][value="cliente"]');
+  await a.click('[data-acao="cad-salvar-contato"]'); await esperar(a, 3000);
+  verificar((await sql(`select count(*)::int n from public.contatos c join public.empresas e on e.id = c.empresa_id where e.nome = 'Construtora E2E' and c.nome = 'Granite E2E'`))[0].n === 1, 'contato gravado no banco');
+  await irPara(a, '#/conta/obras/nova', '#form-obra');
+  await a.fill('#ob-nome', 'Obra E2E'); await a.selectOption('#ob-contratanteId', { label: 'Granite E2E' });
+  await a.fill('#ob-municipio', 'Manchester'); await a.fill('#ob-estado', 'NH'); await a.fill('#ob-lat', '42.99'); await a.fill('#ob-lon', '-71.46');
+  await a.fill('#ob-inicio', '2026-10-01'); await a.fill('#ob-prazo', '2026-12-15');
+  await a.click('[data-acao="cad-salvar-obra"]'); await aparecer(a, '#equipe-obra');
+  verificar(a.url().includes('#/conta/obras/') && (await sql(`select count(*)::int n from public.obras where nome = 'Obra E2E'`))[0].n === 1, 'obra gravada no banco (construtora: sem responsável pelo diário)', a.url());
+  await a.selectOption('#al-quem', { index: 1 }); await a.click('[data-acao="cad-alocar"]'); await esperar(a, 3000);
+  verificar((await sql(`select count(*)::int n from public.alocacoes al join public.obras o on o.id = al.obra_id where o.nome = 'Obra E2E'`))[0].n === 1, 'alguém incluído na obra');
+  await irPara(a, '#/conta/funcionarios/novo', '#form-func');
+  await a.fill('#ff-nome', 'Carlos E2E'); await a.fill('#ff-funcao', 'Carpenter'); await a.fill('#ff-admissao', '2026-01-05'); await a.fill('#ff-valorHora', '32.5');
+  await a.click('[data-acao="cad-salvar-func"]'); await aparecer(a, '#form-valor-hora');
+  await a.fill('#vh-valor', '34'); await a.fill('#vh-motivo', 'Reajuste E2E'); await a.click('[data-acao="cad-valor-hora"]'); await esperar(a, 3000);
+  const vals = await sql(`select v.valor::float valor, v.motivo from public.funcionario_valores v join public.funcionarios f on f.id = v.funcionario_id where f.nome = 'Carlos E2E' order by v.desde`);
+  verificar(vals.length === 2 && vals[0].valor === 32.5 && vals[1].motivo === 'Reajuste E2E', 'funcionário com o valor da admissão e um reajuste', vals);
+  await irPara(a, '#/conta/regras/encargos', '#form-encargos');
+  await a.fill('#enc-motivo', 'Tabela E2E'); await a.click('[data-acao="cad-salvar-encargos"]'); await esperar(a, 3000);
+  await irPara(a, '#/conta/regras/jornada', '#form-regra');
+  await a.fill('#rg-motivo', 'Regra E2E'); await a.click('[data-acao="cad-salvar-regra"]'); await esperar(a, 3000);
+  const vers = (await sql(`select (select count(*)::int from public.encargos_versoes where motivo = 'Tabela E2E') enc, (select count(*)::int from public.regras_jornada_versoes where motivo = 'Regra E2E') reg`))[0];
+  verificar(vers.enc === 1 && vers.reg === 1, 'encargos e regra de jornada gravados como versões', vers);
+  await irPara(a, '#/conta/obras/modelos/novo', '#form-modelo');
+  await a.fill('#md-nome', 'Modelo E2E'); await a.fill('#md-linhas [name="etapaNome"]', 'Framing'); await a.fill('#md-linhas [name="etapaPct"]', '100');
+  await a.click('[data-acao="cad-salvar-modelo"]'); await esperar(a, 3000);
+  verificar((await sql(`select count(*)::int n from public.modelos_cronograma where nome = 'Modelo E2E'`))[0].n === 1, 'modelo de etapas gravado');
+
   console.log('Convidar e aceitar');
   await irPara(a, '#/conta/usuarios', '#cv-email');
   await a.fill('#cv-email', BETO); await a.fill('#cv-nome', 'Beto E2E'); await a.selectOption('#cv-perfil', { label: 'Gestor de obras' });
@@ -140,6 +170,10 @@ try {
   txt = await b.locator('body').innerText();
   verificar(txt.includes('Construtora E2E') && txt.includes('Gestor de obras'), 'Beto entra na empresa como Gestor de obras', await tela(b));
   verificar(await b.locator('.abas-segmento a', { hasText: 'Usuários' }).count() === 0, 'o Gestor não vê Usuários nem Perfis');
+  verificar(await b.locator('.abas-segmento a', { hasText: 'Obras' }).count() === 1 && await b.locator('.abas-segmento a', { hasText: 'Funcionários' }).count() === 0,
+    'o Gestor cuida das obras, mas não dos funcionários');
+  await irPara(b, '#/conta/obras', '.tabela');
+  verificar((await b.locator('body').innerText()).includes('Obra E2E'), 'o Gestor vê a obra da empresa');
   await irPara(b, '#/conta/usuarios'); await esperar(b, 500);
   verificar(!b.url().includes('usuarios'), 'nem digitando o endereço', b.url());
   await irPara(b, '#/conta/empresa', '#em-nome');

@@ -12,13 +12,16 @@ import {
   conta, iniciar, aoMudar, carregarMinhaConta, pode, emailAtual, entrar, cadastrar, pedirNovaSenha, definirNovaSenha, sair, criarEmpresa,
   aceitarConvite, convidar, salvarEmpresa, atualizarMeuPerfil, trocarEmail, emailPendente, salvarPermissoes, mudarPerfilDoMembro, ativarMembro, cancelarConvite, criarPerfil, excluirPerfil,
 } from './conta.js';
+import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
+import { esquecer as esquecerCadastros } from './cadastros.js';
+export { acoesCadastros };
 
 let redesenhar = () => {};
 
 /* Os perfis padrão vêm do banco em português (criar_empresa); na tela, no idioma escolhido. Os criados pela empresa ficam como estão. */
 const nomeDoPerfil = (p) => (p ? (p.chave ? tr(p.nome) : p.nome) : '');
 const descricaoDoPerfil = (p) => (p && p.descricao ? (p.chave ? tr(p.descricao) : p.descricao) : '');
-export function ligarOficial(fn) { redesenhar = fn; aoMudar(() => redesenhar()); }
+export function ligarOficial(fn) { redesenhar = fn; aoMudar(() => redesenhar()); ligarCadastros({ redesenhar: () => redesenhar(), ir: (h) => ir(h) }); }
 
 const CONVITE = 'kbt.convite';
 
@@ -73,6 +76,12 @@ export function telaOficial(p) {
   if (aba === 'perfis' && pode('settings.acesso')) return { html: moldura('perfis', htmlPerfis()) };
   if (aba === 'empresa') return { html: moldura('empresa', htmlEmpresa()) };
   if (aba === 'perfil') return { html: moldura('perfil', htmlMeuPerfil()) };
+  const cadastro = ABAS_CADASTROS.find(([k]) => k === aba);
+  if (cadastro) {
+    if (!pode(cadastro[2])) return { trocar: '#/conta' };
+    const r = telaCadastro(aba, p.slice(2));
+    return r.trocar ? r : { html: moldura(aba, r.html), depois: r.depois };
+  }
   if (aba !== 'inicio') return { trocar: '#/conta' };
   return { html: moldura('inicio', htmlInicio()) };
 }
@@ -144,7 +153,8 @@ function telaNovaEmpresa() {
 /* ---------- Área da conta ---------- */
 
 function moldura(ativa, conteudo) {
-  const abas = [['inicio', tr('Início')]].concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
+  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([, , perm]) => pode(perm)).map(([k, nome]) => [k, tr(nome)]))
+    .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
   return '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
       htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>' +
@@ -302,7 +312,7 @@ export const FORMS_OFICIAIS = ['form-login-oficial', 'form-criar-conta', 'form-e
 const comResultado = (r, ok) => { if (r.erro) { toast(r.erro); return; } if (ok) toast(ok); redesenhar(); };
 
 export const acoesOficiais = {
-  async 'of-sair'() { await sair(); esquecerConvite(); ir('#/entrar'); },
+  async 'of-sair'() { await sair(); esquecerConvite(); esquecerCadastros(); ir('#/entrar'); },
   async 'of-aceitar'() {
     const r = await aceitarConvite(conviteGuardado());
     if (r.erro) return mostrarErro(r.erro);
