@@ -132,6 +132,26 @@ export async function definirNovaSenha(senha) {
 }
 export async function sair() { await iniciar(); await sb.auth.signOut(); }
 
+/* ---------- Meu perfil ---------- */
+
+/* Nome e telefone ficam no cadastro da empresa (membros); e-mail e senha, no login (Auth). */
+export async function atualizarMeuPerfil(nome, telefone) {
+  if (String(nome).trim().length < 2) return { erro: tr('Diga o seu nome.') };
+  return rpc('atualizar_meu_perfil', { p_nome: String(nome).trim(), p_telefone: String(telefone || '').trim() });
+}
+/* O e-mail só muda depois que a pessoa abre o link enviado para o novo endereço (supabase/email/troca-de-email.html). */
+export async function trocarEmail(email) {
+  await iniciar();
+  const novo = String(email).trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novo)) return { erro: tr('E-mail inválido.') };
+  if (novo === emailAtual().toLowerCase()) return { erro: tr('Este já é o seu e-mail.') };
+  const r = resultado(await sb.auth.updateUser({ email: novo }, { emailRedirectTo: enderecoBase() }));
+  if (r.ok && r.data && r.data.user) conta.sessao = { ...conta.sessao, user: r.data.user };
+  return r;
+}
+/* O e-mail novo que espera confirmação (o Supabase guarda em new_email). */
+export const emailPendente = () => (conta.sessao && conta.sessao.user && conta.sessao.user.new_email) || '';
+
 /* ---------- Empresa e convites (funções do banco: criar_empresa, convidar_usuario, aceitar_convite) ---------- */
 
 async function rpc(nome, args) {

@@ -13,7 +13,7 @@ const REF = process.env.SUPABASE_PROJECT_REF || 'gbdmtgephszxhaprpiss';
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 if (!TOKEN) { console.error('Defina SUPABASE_ACCESS_TOKEN.'); process.exit(1); }
 const URL_SB = 'https://' + REF + '.supabase.co';
-const SENHA = 'Teste-e2e-1234';
+const SENHA = 'Teste-e2e-1234', SENHA2 = 'Teste-e2e-5678';
 const ANA = 'kb-e2e-ana@example.com', BETO = 'kb-e2e-beto@example.com';
 
 let falhas = 0, passos = 0;
@@ -102,6 +102,24 @@ try {
   await irPara(a, '#/conta/empresa', '#em-telefone');
   await a.fill('#em-telefone', '(603) 555-0199'); await a.click('[data-acao="of-salvar-empresa"]'); await esperar(a, 3000);
   verificar((await sql(`select telefone from public.empresas where nome = 'Construtora E2E'`))[0].telefone === '(603) 555-0199', 'dados da empresa salvos no banco');
+
+  console.log('Meu perfil');
+  await irPara(a, '#/conta/perfil', '#mp-nome');
+  await a.fill('#mp-nome', 'Ana E2E Silva'); await a.fill('#mp-telefone', '(603) 555-0123');
+  await a.click('[data-acao="of-salvar-meu-perfil"]'); await esperar(a, 3000);
+  const mp = (await sql(`select m.nome, m.telefone from public.membros m join auth.users u on u.id = m.user_id where u.email = '${ANA}'`))[0] || {};
+  verificar(mp.nome === 'Ana E2E Silva' && mp.telefone === '(603) 555-0123', 'meu perfil: nome e telefone salvos no banco', mp);
+  await a.fill('#mp-email', ANA); await a.click('[data-acao="of-trocar-email"]'); await esperar(a, 1000);
+  verificar((await a.locator('body').innerText()).includes('Este já é o seu e-mail'), 'trocar para o mesmo e-mail é recusado');
+  await a.fill('#mp-senha', SENHA2); await a.fill('#mp-senha2', SENHA2);
+  await a.click('[data-acao="of-trocar-senha"]'); await esperar(a, 3000);
+  const b0 = await pagina();
+  await irPara(b0, '#/entrar', '#form-login-oficial');
+  await b0.fill('#oficial-email', ANA); await b0.fill('#oficial-senha', SENHA2);
+  await b0.click('#form-login-oficial button[type="submit"]');
+  await b0.waitForURL((u) => !String(u).includes('#/entrar'), { timeout: ESPERA }).catch(() => null);
+  verificar(b0.url().includes('#/conta'), 'a senha nova vale para entrar', b0.url());
+  await b0.close();
 
   console.log('Convidar e aceitar');
   await irPara(a, '#/conta/usuarios', '#cv-email');

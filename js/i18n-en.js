@@ -2880,4 +2880,27 @@ export const EN = {
   'Este convite é para outro e-mail.': 'This invitation is for another email.',
   'Este e-mail já pertence a uma empresa no KORbuild.': 'This email already belongs to a company on KORbuild.',
   'Sem permissão para convidar.': 'You don\'t have permission to invite.',
+
+  // ---------- Meu perfil e mensagens do banco (fatia 2) ----------
+  'Este já é o seu e-mail.': 'This is already your email.',
+  'Meu perfil': 'My profile',
+  'Seus dados': 'Your details',
+  'Perfil de acesso: {perfil}. Só quem cuida dos acessos da empresa muda o perfil.': 'Access profile: {perfil}. Only the person who manages company access can change it.',
+  'O idioma das telas vale também para os e-mails que o KORbuild manda para você.': 'The language you pick here is also used for the emails KORbuild sends you.',
+  'E-mail de acesso': 'Sign-in email',
+  'Você entra com {email}.': 'You sign in with {email}.',
+  'Aguardando a confirmação de {email}: abra o link que enviamos para esse endereço.': 'Waiting for {email} to be confirmed: open the link we sent to that address.',
+  'E-mail novo': 'New email',
+  'Trocar o e-mail': 'Change email',
+  'O e-mail só muda depois que você abrir o link enviado para o endereço novo. A empresa, o perfil e o histórico continuam os mesmos.': 'Your email only changes after you open the link sent to the new address. Your company, profile and history stay the same.',
+  'Repita a senha nova': 'Repeat the new password',
+  'Trocar a senha': 'Change password',
+  'Seus dados foram salvos.': 'Your details were saved.',
+  'Enviamos um link para {email}. O e-mail muda quando você abrir o link.': 'We sent a link to {email}. Your email changes when you open it.',
+  'As duas senhas não são iguais.': 'The two passwords don\'t match.',
+  'Esta conta ainda não pertence a uma empresa.': 'This account doesn\'t belong to a company yet.',
+  'Entre para alterar o seu perfil.': 'Sign in to change your profile.',
+
+  // ---------- Perfis padrão vindos do banco ----------
+  'Só bate o próprio ponto': 'Only clocks their own time',
 };
