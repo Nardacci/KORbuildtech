@@ -14,6 +14,7 @@ import {
   SITUACOES, SITUACOES_CONVITE, MOSTRAR_ORCAMENTO, QUARTEIRIZACAO, enviadas, concorrenciaEnviada, situacaoDe, ultimaProposta,
   comparar, salvarRascunho, enviar, pendenciasDeEnvio, prorrogar, convidarMais, fechar, cancelar, contaDoContato,
   recebidas, recebida, marcarVisto, responder, enviarProposta, vincularProjeto,
+  canalDaContratante, canalRecebido, escreverComoConvidada, escreverComoContratante, perguntasSemResposta,
 } from './concorrencias.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
@@ -181,7 +182,7 @@ function dadosDoForm() {
 
 /* ---------- Página da concorrência ---------- */
 
-const ABAS_PAGINA = [['convidados', tr('Convidados')], ['comparar', tr('Comparar')], ['detalhes', tr('Detalhes')]];
+const ABAS_PAGINA = [['convidados', tr('Convidados')], ['perguntas', tr('Perguntas')], ['comparar', tr('Comparar')], ['detalhes', tr('Detalhes')]];
 
 export function telaConcorrencia(moldura, id, abaPedida) {
   const c = concorrenciaEnviada(id);
@@ -205,13 +206,13 @@ export function telaConcorrencia(moldura, id, abaPedida) {
     const v = c.convites.find((x) => x.id === c.fechamento.conviteId);
     aviso = '<div class="aviso aviso-verde"><b>' + tr('Fechada com {nome}', { nome: esc(v.nome) }) + '</b><span>' + tr('Rev. {rev} · {valor} · {quando} por {quem}', { rev: c.fechamento.rev, valor: dinheiro(c.fechamento.valor), quando: dataHora(c.fechamento.em), quem: esc(c.fechamento.por) }) + (c.fechamento.observacao ? ' · ' + esc(c.fechamento.observacao) : '') + '</span></div>';
   } else if (c.situacao === 'cancelada') aviso = '<div class="aviso"><b>' + tr('Cancelada') + '</b><span>' + esc(c.cancelamento.motivo) + ' · ' + dataHora(c.cancelamento.em) + '</span></div>';
-  const conteudo = aba === 'comparar' ? htmlComparar(c, ativa) : aba === 'detalhes' ? htmlDetalhes(c) : htmlConvidados(c);
+  const conteudo = aba === 'comparar' ? htmlComparar(c, ativa) : aba === 'detalhes' ? htmlDetalhes(c) : aba === 'perguntas' ? htmlPerguntas(c) : htmlConvidados(c);
   return moldura({
     ativo: 'concorrencias', largo: true, titulo: c.servico || tr('(sem nome)'),
     subtitulo: nomeObra(c.obraId) + ' · ' + SITUACOES[s].nome + (ativa ? ' · ' + tr('prazo {quando}', { quando: textoPrazo(c) }) : ''),
     voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') }, acoes,
     conteudo: aviso + '<div id="concorrencia" data-id="' + c.id + '"></div>' +
-      (c.situacao === 'rascunho' ? '' : '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + ABAS_PAGINA.map(([k, r]) => '<a href="#/daily/concorrencias/' + c.id + (k === 'convidados' ? '' : '/' + k) + '"' + (k === aba ? ' class="ativa" aria-current="page"' : '') + '>' + r + (k === 'comparar' ? ' <span class="mz-contagem">' + c.convites.filter((v) => v.propostas.length).length + '</span>' : '') + '</a>').join('') + '</nav>') +
+      (c.situacao === 'rascunho' ? '' : '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + ABAS_PAGINA.map(([k, r]) => '<a href="#/daily/concorrencias/' + c.id + (k === 'convidados' ? '' : '/' + k) + '"' + (k === aba ? ' class="ativa" aria-current="page"' : '') + '>' + r + (k === 'comparar' ? ' <span class="mz-contagem">' + c.convites.filter((v) => v.propostas.length).length + '</span>' : '') + (k === 'perguntas' && perguntasSemResposta(c).length ? ' <span class="mz-contagem co-pendente">' + perguntasSemResposta(c).length + '</span>' : '') + '</a>').join('') + '</nav>') +
       conteudo,
   });
 }
@@ -226,6 +227,58 @@ function htmlConvidados(c) {
         '<td>' + (v.vistoEm ? dataHora(v.vistoEm) : '<span class="mudo">' + (c.situacao === 'rascunho' ? '—' : tr('ainda não')) + '</span>') + '</td></tr>';
     }).join('') + '</tbody></table></div>' +
     (c.situacao === 'rascunho' ? '' : '<p class="mudo pequeno">' + tr('Cada prestadora vê só o próprio convite e a própria proposta: nunca quem mais foi convidado nem os valores dos outros.') + '</p>') + '</section>';
+}
+
+/* ---------- Canal ---------- */
+
+function htmlMensagens(lista, { responder, concorrenciaId } = {}) {
+  if (!lista.length) return '<p class="mudo">' + tr('Nenhuma mensagem ainda.') + '</p>';
+  const semResposta = responder ? new Set(responder.map((m) => m.id)) : new Set();
+  return '<ol class="co-mensagens">' + lista.slice().sort((a, b) => a.em - b.em).map((m) => '<li class="co-msg co-msg-' + m.de + (m.aviso ? ' co-msg-aviso' : '') + '">' +
+    '<span class="co-msg-cabeca"><b>' + esc(m.autor) + '</b> · ' + dataHora(m.em) +
+      (m.aviso ? ' <span class="etiqueta etiqueta-ambar">' + tr('Aviso a todos') + '</span>' : m.publica ? ' <span class="etiqueta etiqueta-azul">' + tr('Para todos') + '</span>' : '') + '</span>' +
+    '<span class="co-msg-texto">' + esc(m.texto) + '</span>' +
+    (semResposta.has(m.id) ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="co-responder" data-id="' + concorrenciaId + '" data-msg="' + m.id + '">' + tr('Responder') + '</button>' : '') +
+    '</li>').join('') + '</ol>';
+}
+function formMensagem(acao, dados, rotulo, dica) {
+  return '<div class="co-escrever"><textarea rows="2" name="mensagem" aria-label="' + esc(rotulo) + '" placeholder="' + esc(dica || '') + '"></textarea>' +
+    '<button type="button" class="btn btn-primario btn-pequeno" data-acao="' + acao + '"' + Object.entries(dados).map(([k, v]) => ' data-' + k + '="' + esc(v) + '"').join('') + '>' + esc(rotulo) + '</button></div>';
+}
+
+function htmlPerguntas(c) {
+  const aberta = c.situacao === 'aberta';
+  const pend = perguntasSemResposta(c);
+  const conversas = c.convites.filter((v) => c.situacao !== 'fechada' || v.id === c.fechamento.conviteId || canalDaContratante(c, v.id).some((m) => m.conviteId === v.id));
+  return (aberta ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Aviso a todos os convidados') + '</h2>' +
+      '<p class="mudo pequeno">' + tr('Um adendo, uma mudança de data, uma folha nova: todas as convidadas recebem.') + '</p>' +
+      formMensagem('co-aviso', { id: c.id }, tr('Avisar a todos'), tr('Ex.: Adendo nº 1: a folha A-102 foi revisada.')) + '</section>' : '') +
+    conversas.map((v) => {
+      const lista = canalDaContratante(c, v.id);
+      const vencedora = c.fechamento && c.fechamento.conviteId === v.id;
+      const escreve = aberta || vencedora;
+      return '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(v.nome) + '</h2>' + etiquetaConvite(v) + '</div>' +
+        htmlMensagens(lista, { responder: pend.filter((m) => m.conviteId === v.id), concorrenciaId: c.id }) +
+        (escreve ? formMensagem('co-escrever', { id: c.id, convite: v.id }, vencedora ? tr('Enviar') : tr('Escrever só para esta prestadora'), vencedora ? tr('A conversa da obra continua aqui.') : '') : '') + '</section>';
+    }).join('') +
+    '<p class="mudo pequeno">' + tr('Ao responder uma pergunta, escolha: para todas as convidadas (a pergunta vai junto, sem dizer quem perguntou) ou só para quem perguntou. Nada se apaga: o canal é o registro do que foi combinado.') + '</p>';
+}
+
+/* Canal na página da obra, depois do fechamento: na contratante, com cada contratada pela concorrência; na
+ * contratada, com quem a contratou. */
+export function htmlCanalDaObra(o) {
+  const cartoes = [];
+  for (const c of enviadas().filter((x) => x.obraId === o.id && x.situacao === 'fechada')) {
+    const v = c.convites.find((x) => x.id === c.fechamento.conviteId);
+    cartoes.push('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Canal com {nome}', { nome: esc(v.nome) }) + '</h2><span class="mudo pequeno">' + esc(c.servico) + '</span></div>' +
+      htmlMensagens(canalDaContratante(c, v.id).filter((m) => m.conviteId === v.id)) + formMensagem('co-escrever', { id: c.id, convite: v.id }, tr('Enviar'), tr('Dúvidas de projeto, mudanças, avisos…')) + '</section>');
+  }
+  if (o.concorrenciaId) {
+    const x = recebida(o.concorrenciaId);
+    if (x && x.convite.situacao === 'vencedora') cartoes.push('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Canal com {nome}', { nome: esc(nomeContratante(x)) }) + '</h2><span class="mudo pequeno">' + esc(x.servico) + '</span></div>' +
+      htmlMensagens(canalRecebido(x.id)) + formMensagem('cv-escrever', { id: x.id }, tr('Enviar'), tr('Dúvidas de projeto, mudanças, avisos…')) + '</section>');
+  }
+  return cartoes.join('');
 }
 
 function htmlComparar(c, ativa) {
@@ -330,6 +383,8 @@ export function telaConvite(moldura, id) {
         '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
         '<dt>' + tr('Quarteirização') + '</dt><dd>' + QUARTEIRIZACAO[x.quarteirizacao || 'permitida'] + '</dd>' +
       '</dl></section></div>' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Perguntas e mensagens') + '</h2>' + htmlMensagens(canalRecebido(x.id)) +
+        ((aberta && v.situacao !== 'nao-vai') || v.situacao === 'vencedora' ? formMensagem('cv-escrever', { id: x.id }, v.situacao === 'vencedora' ? tr('Enviar') : tr('Perguntar'), v.situacao === 'vencedora' ? '' : tr('A contratante pode responder só para você ou para todas as convidadas (sem dizer quem perguntou).')) : '') + '</section>' +
       (v.propostas.length ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Suas propostas') + '</h2><ul class="lista-simples">' + v.propostas.slice().reverse().map((p) => '<li><b>' + tr('rev. {rev}', { rev: p.rev }) + ' · ' + dinheiro(p.total) + '</b> · ' + dataHora(p.enviadaEm) + (p.numero ? ' · ' + esc(p.numero) : '') + ' · ' + esc(p.por) + '</li>').join('') + '</ul>' +
         '<p class="mudo pequeno">' + tr('A contratante compara a revisão mais recente. Você nunca vê quem mais foi convidado nem os valores dos outros.') + '</p></section>' : ''),
   });
@@ -398,7 +453,43 @@ export function propostaParaConcorrencia(x, emitida) {
 
 /* ---------- Ações ---------- */
 
+const textoDe = (el) => { const t = el.closest('.co-escrever').querySelector('textarea'); return t ? t.value : ''; };
+
 export const acoesConcorrencias = {
+  'co-escrever'(el) {
+    const r = escreverComoContratante(el.dataset.id, { conviteId: el.dataset.convite, texto: textoDe(el) }, quem());
+    toast(r.erro || tr('Mensagem enviada.'));
+    if (r.ok) app.desenhar();
+  },
+  async 'co-aviso'(el) {
+    const texto = textoDe(el);
+    if (!texto.trim()) { toast(tr('Escreva a mensagem.')); return; }
+    if (!(await confirmar(tr('Avisar todas as convidadas?'), texto, tr('Avisar a todos')))) return;
+    const r = escreverComoContratante(el.dataset.id, { conviteId: null, texto }, quem());
+    toast(r.erro || tr('Aviso enviado a todas as convidadas.'));
+    if (r.ok) app.desenhar();
+  },
+  async 'co-responder'(el) {
+    const c = concorrenciaEnviada(el.dataset.id);
+    const q = canalDaContratante(c).find((m) => m.id === el.dataset.msg);
+    const res = await abrirDialogo({
+      titulo: tr('Responder'),
+      corpo: '<p class="co-citacao">' + esc(q.texto) + '</p>' + campo('rs-texto', tr('Resposta'), '<textarea id="rs-texto" name="texto" rows="3" required></textarea>') +
+        '<fieldset class="co-para"><legend class="rotulo-pequeno">' + tr('Para quem') + '</legend>' +
+          '<label class="check"><input type="radio" name="para" value="todos" checked> ' + tr('Todas as convidadas (a pergunta vai junto, sem dizer quem perguntou)') + '</label>' +
+          '<label class="check"><input type="radio" name="para" value="um"> ' + tr('Só para quem perguntou') + '</label></fieldset>',
+      acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Responder'), valor: true, classe: 'btn-primario' }],
+    });
+    if (!res || !res.valor) return;
+    const r = escreverComoContratante(c.id, { respostaDe: q.id, paraTodos: res.campos.para === 'todos', texto: res.campos.texto }, quem());
+    toast(r.erro || (res.campos.para === 'todos' ? tr('Resposta enviada a todas as convidadas.') : tr('Resposta enviada.')));
+    if (r.ok) app.desenhar();
+  },
+  'cv-escrever'(el) {
+    const r = escreverComoConvidada(el.dataset.id, textoDe(el), quem());
+    toast(r.erro || tr('Mensagem enviada.'));
+    if (r.ok) app.desenhar();
+  },
   'cv-vou'(el) {
     const r = responder(el.dataset.id, true, '', quem());
     if (r.erro) { toast(r.erro); return; }

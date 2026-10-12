@@ -335,7 +335,7 @@ async function criarRdos(obras, autor, aprovador, semente) {
 }
 
 /* Mude quando o formato dos dados mudar: dados de versão antiga são recriados. */
-export const VERSAO_DADOS = 28;
+export const VERSAO_DADOS = 29;
 
 const plano = (dia0, nome, limite) => ({ nome: tr(nome), status: 'teste', testeAte: somarDias(dia0, limite), limiteObras: 5 });
 
@@ -407,6 +407,8 @@ function criarConcorrencias(dia0, contatos) {
   const proposta = (rev, numero, em, por, porEtapa, prazoExecucaoDias, exclusoes) => ({
     rev, numero, enviadaEm: em, por, porEtapa, total: Object.values(porEtapa).reduce((s, x) => s + x, 0), prazoExecucaoDias, exclusoes, pdf: null,
   });
+  const ana = tr('Ana Ribeiro') + ' · ' + tr('Construtora Exemplo');
+  const msg = (id, em, conviteId, de, autor, texto, publica, respostaDe = null) => ({ id, em, conviteId, de, autor, texto, publica, respostaDe, aviso: false });
   const FRAMING = '06 11 00 · Wood framing', DRYWALL = '09 29 00 · Gypsum board', SIDING = '07 46 33 · Plastic siding';
   const enviada = momento(somarDias(dia0, -6), 10, 30);
   const atlantico = {
@@ -421,6 +423,12 @@ function criarConcorrencias(dia0, contatos) {
     quarteirizacao: 'permitida', situacao: 'aberta', criadaPor: tr('Ana Ribeiro'), criadaEm: enviada - 3600000, enviadaEm: enviada,
     historico: [{ em: enviada, por: tr('Ana Ribeiro'), acao: tr('Convites enviados'), detalhe: [ct('ct-northfield'), ct('ct-bayside'), ct('ct-pineridge')].map((c) => c.nome).join(', ') }],
     fechamento: null,
+    mensagens: [
+      msg('mg-atl-1', momento(somarDias(dia0, -4), 10, 0), 'cv-atl-bayside', 'convidada', tr('Ellen Price') + ' · ' + ct('ct-bayside').nome, tr('Os andaimes ficam por conta de quem?'), true),
+      msg('mg-atl-2', momento(somarDias(dia0, -4), 14, 30), 'cv-atl-bayside', 'contratante', ana, tr('Ficam com a prestadora, como está no escopo incluso. A construtora libera o acesso e a área de montagem.'), true, 'mg-atl-1'),
+      msg('mg-atl-3', momento(somarDias(dia0, -3), 9, 15), 'cv-atl-northfield', 'convidada', tr('Tom Reilly') + ' · ' + ct('ct-northfield').nome, tr('Podemos começar pelo 6º pavimento e descer?'), false),
+      msg('mg-atl-4', momento(somarDias(dia0, -3), 11, 0), 'cv-atl-northfield', 'contratante', ana, tr('Pode, desde que o 2º pavimento fique pronto até o fim do segundo mês.'), false, 'mg-atl-3'),
+    ],
     convites: [
       convite('cv-atl-northfield', 'ct-northfield', {
         situacao: 'proposta', vistoEm: enviada + 7200000, respondidoEm: momento(somarDias(dia0, -5), 8, 40),
@@ -447,6 +455,10 @@ function criarConcorrencias(dia0, contatos) {
       { em: fechada, por: tr('Ana Ribeiro'), acao: tr('Concorrência fechada'), detalhe: ct('ct-northfield').nome + ' · rev. 2' },
     ],
     fechamento: { conviteId: 'cv-jar-northfield', rev: 2, valor: 238600, por: tr('Ana Ribeiro'), em: fechada, observacao: '' },
+    mensagens: [
+      msg('mg-jar-1', momento(somarDias(dia0, -3), 16, 10), 'cv-jar-northfield', 'contratante', ana, tr('O siding da casa 4 pode começar na segunda?'), false),
+      msg('mg-jar-2', momento(somarDias(dia0, -3), 17, 40), 'cv-jar-northfield', 'convidada', tr('Tom Reilly') + ' · ' + ct('ct-northfield').nome, tr('Pode. A equipe do José entra segunda às 7h.'), false),
+    ],
     convites: [
       convite('cv-jar-northfield', 'ct-northfield', {
         situacao: 'vencedora', vistoEm: momento(somarDias(dia0, -60), 11, 0), respondidoEm: momento(somarDias(dia0, -59), 8, 0),

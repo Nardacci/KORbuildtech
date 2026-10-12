@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Versão 2: desenho das telas, estrutura e regras **para o protótipo**. A versão 1 dizia que precisava de servidor; no protótipo, as duas empresas já se encontram no aparelho (como o cronograma publicado em `compartilhados()` e os diários em `diariosDeFora()`), então a concorrência pode ser simulada do mesmo jeito. No produto, esse lugar comum é o servidor.
 >
-> **Situação:** fatias 1 a 3 prontas: o motor (`js/concorrencias.js`), as telas da contratante (Daily › Concorrências) e as da convidada (Measure › Convites: o convite, Vou cotar → projeto no Measure, Enviar pela plataforma a partir da proposta emitida, Não vou participar, e a vitória que vira obra já ligada). `tests/concorrencias.test.mjs`, 86 verificações. O canal, a quarteirização pelas telas e o link vêm nas próximas fatias (§10).
+> **Situação:** fatias 1 a 4 prontas: o motor (`js/concorrencias.js`), as telas da contratante (Daily › Concorrências) e as da convidada (Measure › Convites: o convite, Vou cotar → projeto no Measure, Enviar pela plataforma a partir da proposta emitida, Não vou participar, e a vitória que vira obra já ligada), o canal (aba Perguntas, conversa no convite, aviso a todos, canal da obra depois do fechamento) e os avisos no sininho. `tests/concorrencias.test.mjs`, 103 verificações. A quarteirização pelas telas e o link vêm nas próximas fatias (§10).
 >
 > **Simplificações:** a proposta enviada pela plataforma usa as linhas da proposta emitida no Measure: as que têm o código de uma etapa da concorrência vão por etapa, as outras (e os outros itens) vão em **outros itens**, que aparecem numa linha própria na comparação. "Vou cotar" cria o projeto sem as folhas (o protótipo não guarda os PDFs da contratante; a prestadora envia as plantas no projeto, como hoje). A convidada que não tem o Measure no plano responde pelo link (fatia 6).
 >
@@ -209,14 +209,13 @@ banco.concorrencias: [{
   fechamento: { conviteId, rev, valor, por, em, observacao } | null
 }]
 
-banco.canais: [{
-  id, contratanteId, contratadaId (ou conviteId, se pelo link), concorrenciaId, obraId (depois do fechamento),
-  mensagens: [{ id, em, de: { empresaId, usuarioId, nome }, texto, anexos: [],
-                para: 'todos' | 'um', respostaDe: mensagemId }]
+concorrencia.mensagens: [{                         // o canal fica na própria concorrência
+  id, em, conviteId (a conversa de um convite; null = aviso a todos), de: 'contratante' | 'convidada', autor, texto,
+  publica (todas as convidadas veem), respostaDe (a pergunta respondida), aviso
 }]
 ```
 
-- Uma resposta **para todos** fica no canal de quem perguntou e é **copiada** nos canais dos outros convidados como "pergunta de um convidado", com a resposta (sem o nome de quem perguntou).
+- Uma resposta **para todos** marca a pergunta e a resposta como públicas: as outras convidadas veem as duas, com a pergunta como "Pergunta de um convidado" (sem o nome). Depois do fechamento, a conversa da vencedora é o **canal da obra**, nas páginas da obra das duas empresas. Os anexos nas mensagens ficam para depois.
 - No projeto do Measure: `concorrencia: { id, conviteId, contratanteId }`. Na obra criada: `vinculo` (já existe) + `concorrenciaId`.
 - Na quarteirização, o `vinculo` da obra da Bay State aponta para a obra da **Northfield**. A cadeia se descobre seguindo os vínculos; para a presença na obra (CO-21), a construtora sobe a cadeia até a própria obra.
 - Linha do Measure vinda de uma proposta recebida: `{ categoria: 'subempreiteiro', costCode, valor, origem: { concorrenciaId, conviteId, rev } }`.
@@ -229,7 +228,7 @@ banco.canais: [{
 | --- | --- | --- | --- |
 | **Fazer concorrências e fechar** | Concorrências (qualquer empresa) | Criar, enviar, prorrogar, comparar, fechar, cancelar; ver os valores. | Administrador, Gestor de obras |
 | **Responder convites e enviar propostas** | Concorrências (prestadora) | Ver convites, Vou cotar / Não vou, enviar pela plataforma. Inclui *Medir plantas*. | Administrador, Gestor de obras |
-| **Canal da obra** | Daily | Ler e escrever no canal das obras que acompanha. | Administrador, Gestor de obras (Encarregado: ver *A confirmar*) |
+| **Canal da obra** | Daily | No protótipo, sem permissão própria: o canal aparece na página da obra, para quem já abre a obra (*Acompanhar todas as obras*). | Administrador, Gestor de obras (Encarregado: ver *A confirmar*) |
 
 As permissões só aparecem para a atuação certa (como hoje o Crew some para a construtora).
 
@@ -256,7 +255,7 @@ Roteiro para apresentar (vai para o guia do apresentador): Ana abre a concorrên
 | 1 ✓ | `js/concorrencias.js` (modelo, situações, regras CO-04/05/08/09/10/12/13/15/16/18/19, visão por empresa e pelo link), dados de exemplo, permissões | `tests/concorrencias.test.mjs` (50): criar, enviar, responder, revisões, prazo e prorrogação, comparar, fechar, cancelar, isolamento entre empresas, prestadora contratante |
 | 2 ✓ | Telas da contratante: lista com abas, nova concorrência (rascunho e envio), página com Convidados, Comparar e Detalhes, prorrogar, convidar mais, fechar, cancelar; seção na página da obra | Navegador (Ana; Laura entra, Carlos não) |
 | 3 ✓ | Lado da convidada: Measure › Convites, o convite (visto), Vou cotar → projeto no Measure com a faixa da concorrência, Não vou participar com motivo, Enviar pela plataforma (etapas, outros itens, não cotadas), fechada → projeto *Ganha* → obra ligada à da contratante | Navegador (Tom e Ana), ponta a ponta |
-| 4 | Canal (antes e depois do fechamento) e sininho | Navegador, as duas empresas |
+| 4 ✓ | Canal: aba Perguntas (uma conversa por convidada, responder para todas ou só para quem perguntou, aviso a todos), conversa no convite, canal da obra depois do fechamento; sininho das duas empresas | Unidade + navegador, as duas empresas |
 | 5 | Quarteirização: concorrência a partir do projeto ou da obra, **Usar no meu orçamento**, CO-23/24/25, presença da cadeia na construtora (CO-21) | Unidade + navegador, três empresas |
 | 6 | Link sem conta (página única), inglês, portal (EN e PT) e guia do apresentador | Navegador + teste EN |
 

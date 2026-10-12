@@ -404,6 +404,81 @@ verificar((await page.locator('.tabela-convidados').innerText()).includes('equip
 await ir('u-rita', '#/measure/convites');
 verificar(page.url().endsWith('#/measure/convites'), 'a estimadora (gestora de obras) também vê os convites');
 
+console.log('Canal e sininho (fatia 4)');
+await page.evaluate(() => { localStorage.removeItem('kbt.rdo.v1'); localStorage.removeItem('kbt.sessao'); });
+await page.goto('about:blank');
+await page.goto(BASE);
+await page.waitForSelector('#form-login', { timeout: 30000 });
+r = await rodar((m, a, h) => {
+  const nf = m.canalRecebido('co-atlantico-framing', h.NF);
+  const pine = h.como(h.GC, () => m.canalDaContratante(m.concorrenciaEnviada('co-atlantico-framing'), 'cv-atl-pineridge'));
+  const bay = m.porToken('lk-cv-atl-bayside');
+  return { nf: nf.map((x) => [x.autor, x.texto.slice(0, 12), x.minha]), pine: pine.length };
+});
+verificar(r.nf.length === 4 && r.nf.some((x) => x[0] === 'Pergunta de um convidado') && !JSON.stringify(r.nf).includes('Bayside'), 'a Northfield vê a pergunta respondida para todos sem saber de quem é, e a própria conversa');
+verificar(r.pine === 0, 'a resposta só para a Northfield não aparece na conversa da Pine Ridge');
+r = await rodar((m, a, h) => {
+  const vazio = h.como(h.NF, () => m.escreverComoConvidada('co-atlantico-framing', '  ', 'Tom Reilly'));
+  const p1 = h.como(h.NF, () => m.escreverComoConvidada('co-atlantico-framing', 'O drywall do 2º pavimento é resistente à umidade?', 'Tom Reilly'));
+  const c = m.concorrenciaEnviada('co-atlantico-framing', h.GC);
+  const pend = m.perguntasSemResposta(c).map((x) => x.id);
+  const resp = h.como(h.GC, () => m.escreverComoContratante('co-atlantico-framing', { respostaDe: p1.id, paraTodos: true, texto: 'Sim, nos banheiros e na copa.' }, 'Ana Ribeiro'));
+  const aviso = h.como(h.GC, () => m.escreverComoContratante('co-atlantico-framing', { texto: 'Adendo nº 1: a folha A-102 foi revisada.' }, 'Ana Ribeiro'));
+  const bay = m.porToken('lk-cv-atl-bayside');
+  const canalBay = (() => { const cc = m.concorrenciaEnviada('co-atlantico-framing', h.GC); return m.canalDaConvidada(cc, 'cv-atl-bayside'); })();
+  return { vazio: vazio.erro, pend: pend.includes(p1.id), resp: resp.ok, aviso: aviso.ok, depois: m.perguntasSemResposta(c).some((x) => x.id === p1.id), bay: canalBay.map((x) => x.autor + '|' + x.texto), hist: c.historico.some((x) => x.acao === 'Aviso a todos') };
+});
+verificar(r.vazio && r.pend, 'mensagem vazia é recusada; a pergunta nova fica "sem resposta" para a construtora');
+verificar(r.resp && !r.depois && r.bay.some((x) => x.startsWith('Pergunta de um convidado|O drywall')) && r.bay.some((x) => x.includes('Sim, nos banheiros')), 'respondida para todos, a Bayside vê a pergunta (sem o autor) e a resposta');
+verificar(r.aviso && r.hist && r.bay.some((x) => x.includes('Adendo nº 1')), 'o aviso a todos chega a todas e fica no histórico');
+r = await rodar((m, a, h) => {
+  const perdedora = h.como(h.GC, () => m.escreverComoContratante('co-jardim-siding', { conviteId: 'cv-jar-pineridge', texto: 'oi' }, 'Ana Ribeiro'));
+  const avisoFechada = h.como(h.GC, () => m.escreverComoContratante('co-jardim-siding', { texto: 'a todos' }, 'Ana Ribeiro'));
+  const obra = h.como(h.GC, () => m.escreverComoContratante('co-jardim-siding', { conviteId: 'cv-jar-northfield', texto: 'Caçamba chega quinta.' }, 'Ana Ribeiro'));
+  const nf = h.como(h.NF, () => m.escreverComoConvidada('co-jardim-siding', 'Combinado.', 'Tom Reilly'));
+  return { perdedora: perdedora.erro, avisoFechada: avisoFechada.erro, obra: obra.ok, nf: nf.ok };
+});
+verificar(r.perdedora && r.avisoFechada, 'depois do fechamento, não se conversa com quem perdeu nem se avisa a todos');
+verificar(r.obra && r.nf, 'com a vencedora, o canal continua (conversa da obra)');
+
+await ir('u-ana', '#/daily/concorrencias/co-atlantico-framing/perguntas');
+txt = await page.locator('main').innerText();
+verificar(txt.includes('Podemos começar pelo 6º pavimento') && txt.includes('Os andaimes ficam por conta de quem?') && await page.locator('[data-acao="co-aviso"]').count() === 1, 'Perguntas: uma conversa por convidada e o aviso a todos');
+await ir('u-tom', '#/measure/convite/co-atlantico-framing');
+await page.locator('.co-escrever textarea').fill('Qual o pé-direito do 6º pavimento?');
+await page.locator('[data-acao="cv-escrever"]').click();
+await page.waitForTimeout(400);
+verificar((await page.locator('.co-mensagens').innerText()).includes('Qual o pé-direito'), 'a prestadora pergunta pela tela do convite');
+await ir('u-ana', '#/daily/concorrencias/co-atlantico-framing/perguntas');
+verificar((await page.locator('.abas-segmento .co-pendente').innerText()).trim() === '1', 'a aba Perguntas mostra 1 sem resposta');
+await page.locator('[data-acao="co-responder"]').first().click();
+await page.fill('dialog #rs-texto', '2,70 m em todos os pavimentos.');
+await page.locator('dialog [name="para"][value="um"]').check();
+await page.locator('dialog button', { hasText: 'Responder' }).click();
+await page.waitForTimeout(400);
+r = await rodar((m) => m.porToken('lk-cv-atl-bayside'));
+verificar(await page.locator('.abas-segmento .co-pendente').count() === 0, 'respondida, sai das pendentes');
+verificar(await rodar((m, a, h) => !m.canalDaConvidada(m.concorrenciaEnviada('co-atlantico-framing', h.GC), 'cv-atl-bayside').some((x) => x.texto.includes('2,70'))), 'a resposta só para quem perguntou não chega à Bayside');
+await ir('u-ana', '#/daily/obras/jardim');
+txt = await page.locator('main').innerText();
+verificar(txt.includes('Canal com Northfield Framing & Siding') && txt.includes('Combinado.'), 'na obra da construtora, o canal com a contratada');
+await ir('u-tom', '#/daily/obras/nf-jardim');
+await page.locator('.co-escrever textarea').fill('Entramos segunda às 7h.');
+await page.locator('[data-acao="cv-escrever"]').click();
+await page.waitForTimeout(400);
+verificar((await page.locator('main').innerText()).includes('Canal com Construtora Exemplo') && (await page.locator('.co-mensagens').innerText()).includes('Entramos segunda'), 'na obra da prestadora, o mesmo canal, para escrever');
+r = await rodar(async (m, a, h) => {
+  const gc = h.como(h.GC, () => m.avisosDaContratante()).map((n) => n.titulo);
+  const nf = h.como(h.NF, () => m.avisosDaConvidada()).map((n) => n.titulo);
+  return { gc, nf };
+});
+verificar(r.gc.some((t) => t.startsWith('Proposta de Northfield')) && r.gc.some((t) => t.includes('não vai participar')) && r.gc.some((t) => t.startsWith('Mensagem de')), 'sininho da construtora: propostas, recusas e mensagens');
+verificar(r.nf.some((t) => t.startsWith('Convite para cotar')) && r.nf.some((t) => t.startsWith('Você venceu')) && r.nf.some((t) => t.startsWith('Aviso a todos')), 'sininho da prestadora: convite, resultado e avisos');
+await ir('u-tom', '#/measure/convites');
+await page.locator('details.sino summary').click();
+await page.waitForTimeout(300);
+verificar((await page.locator('.painel-notificacoes').innerText()).includes('Convite para cotar'), 'e aparece no sininho da tela');
+
 verificar(erros.length === 0, 'sem erros na página' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
 await browser.close();
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');

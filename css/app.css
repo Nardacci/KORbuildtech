@@ -1386,3 +1386,15 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .lista-dados dt { color: var(--mudo); font-size: 13px; font-weight: 600; }
 .lista-dados dd { margin: 0; }
 @media (max-width: 560px) { .lista-dados { grid-template-columns: 1fr; } .lista-dados dd { margin-bottom: 6px; } }
+.co-mensagens { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.co-msg { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--superficie); max-width: 85%; }
+.co-msg-contratante { align-self: flex-end; background: var(--azul-claro); border-color: var(--azul-borda); }
+.co-msg-aviso { max-width: 100%; align-self: stretch; background: var(--ambar-claro); border-color: var(--ambar-borda); }
+.co-msg-cabeca { font-size: 12px; color: var(--mudo); }
+.co-msg-texto { white-space: pre-wrap; }
+.co-escrever { display: flex; gap: 8px; align-items: flex-end; }
+.co-escrever textarea { flex: 1; }
+.co-citacao { border-left: 3px solid var(--borda-forte); padding-left: 10px; color: var(--mudo); margin: 0 0 10px; }
+.co-para { border: 0; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.mz-contagem.co-pendente { background: var(--primario); color: #fff; }
+@media (max-width: 560px) { .co-msg { max-width: 100%; } .co-escrever { flex-direction: column; align-items: stretch; } }

@@ -371,3 +371,116 @@ export function enviarProposta(id, dados, por, quem, agora = Date.now()) {
   salvar();
   return { ok: true, rev };
 }
+
+/* ---------- Canal (docs/concorrencias.md §5) ----------
+ * As mensagens ficam na concorrência. Cada uma pertence à conversa de um convite (conviteId), ou é um aviso a
+ * todos (conviteId null). "publica" = todas as convidadas veem. Uma pergunta respondida para todos fica pública,
+ * sem o nome de quem perguntou. Depois do fechamento, a conversa da vencedora continua como o canal da obra.
+ * Nada se edita nem se apaga. */
+
+function msgs(c) { c.mensagens = c.mensagens || []; return c.mensagens; }
+
+/* O que a convidada vê: a própria conversa e o que é público; perguntas de outras, sem o nome. */
+export function canalDaConvidada(c, conviteId) {
+  return msgs(c).filter((m) => m.conviteId === conviteId || m.publica).map((m) => ({
+    ...m, minha: m.de === 'convidada' && m.conviteId === conviteId,
+    autor: m.de === 'convidada' && m.conviteId !== conviteId ? tr('Pergunta de um convidado') : m.autor,
+  }));
+}
+/* O que a contratante vê: tudo; com conviteId, só a conversa daquele convite (e os avisos a todos). */
+export function canalDaContratante(c, conviteId) {
+  return msgs(c).filter((m) => !conviteId || m.conviteId === conviteId || m.conviteId === null);
+}
+export function canalRecebido(id, empresaId = empresaAtualId()) {
+  const c = achar(id);
+  const v = c && c.convites.find((x) => x.empresaId === empresaId);
+  return v ? canalDaConvidada(c, v.id) : [];
+}
+
+function podeConversar(c, v, agora) {
+  if (c.situacao === 'cancelada') return tr('Esta concorrência foi cancelada.');
+  if (c.situacao === 'fechada') return v && c.fechamento.conviteId === v.id ? null : tr('A conversa continua só com a empresa contratada.');
+  if (c.situacao === 'aberta' && instante(c.prazo) <= agora && v && !ultimaProposta(v)) return tr('O prazo da proposta já venceu.');
+  return null;
+}
+
+/* A convidada escreve na própria conversa (pergunta antes do fechamento; depois, se venceu, o canal da obra). */
+export function escreverComoConvidada(id, texto, por, quem, agora = Date.now()) {
+  const { c, v } = alvo(id, quem);
+  if (!v) return { erro: tr('Convite não encontrado.') };
+  const t = String(texto || '').trim();
+  if (!t) return { erro: tr('Escreva a mensagem.') };
+  const bloqueio = podeConversar(c, v, agora);
+  if (bloqueio) return { erro: bloqueio };
+  const m = { id: novoId('mg'), em: agora, conviteId: v.id, de: 'convidada', autor: (por ? por + ' · ' : '') + v.nome, texto: t, publica: false, respostaDe: null };
+  msgs(c).push(m);
+  salvar();
+  return { ok: true, id: m.id };
+}
+
+/* A contratante escreve: para um convite (conviteId), respondendo a uma pergunta (respostaDe) para todos ou só
+ * para quem perguntou, ou um aviso/adendo a todos (conviteId null, só com a concorrência aberta). */
+export function escreverComoContratante(id, { conviteId = null, respostaDe = null, paraTodos = false, texto }, por, agora = Date.now()) {
+  const c = concorrenciaEnviada(id);
+  if (!c) return { erro: tr('Concorrência não encontrada.') };
+  const t = String(texto || '').trim();
+  if (!t) return { erro: tr('Escreva a mensagem.') };
+  if (c.situacao === 'rascunho') return { erro: tr('Envie os convites antes de conversar.') };
+  const pergunta = respostaDe ? msgs(c).find((m) => m.id === respostaDe && m.de === 'convidada') : null;
+  if (respostaDe && !pergunta) return { erro: tr('Pergunta não encontrada.') };
+  const alvoId = pergunta ? pergunta.conviteId : conviteId;
+  const v = alvoId ? c.convites.find((x) => x.id === alvoId) : null;
+  if (alvoId && !v) return { erro: tr('Convite não encontrado.') };
+  if (!alvoId && c.situacao !== 'aberta') return { erro: tr('Aviso a todos só com a concorrência aberta.') };
+  if (c.situacao === 'cancelada') return { erro: tr('Esta concorrência foi cancelada.') };
+  if (c.situacao === 'fechada' && alvoId !== c.fechamento.conviteId) return { erro: tr('A conversa continua só com a empresa contratada.') };
+  const publica = !alvoId || (!!pergunta && !!paraTodos && c.situacao === 'aberta');
+  if (pergunta && publica) pergunta.publica = true;
+  const quemEmpresa = (empresaPorId(c.contratanteId) || {}).empresa || {};
+  const m = { id: novoId('mg'), em: agora, conviteId: alvoId || null, de: 'contratante', autor: (por ? por + ' · ' : '') + (quemEmpresa.nome || ''), texto: t, publica, respostaDe: pergunta ? pergunta.id : null, aviso: !alvoId };
+  msgs(c).push(m);
+  if (!alvoId) registrar(c, por, tr('Aviso a todos'), t.slice(0, 80), agora);
+  salvar();
+  return { ok: true, id: m.id };
+}
+
+/* Perguntas da conversa de cada convite ainda sem resposta da contratante. */
+export function perguntasSemResposta(c) {
+  const respondidas = new Set(msgs(c).filter((m) => m.respostaDe).map((m) => m.respostaDe));
+  return msgs(c).filter((m) => m.de === 'convidada' && !respondidas.has(m.id) && !msgs(c).some((x) => x.de === 'contratante' && x.conviteId === m.conviteId && x.em > m.em));
+}
+
+/* ---------- Avisos para o sininho (calculados, como os outros módulos) ---------- */
+
+export function avisosDaContratante(empresaId = empresaAtualId()) {
+  const lista = [];
+  for (const c of enviadas(empresaId)) {
+    if (c.situacao === 'rascunho') continue;
+    const href = '#/daily/concorrencias/' + c.id;
+    for (const v of c.convites) {
+      for (const p of v.propostas) lista.push({ id: 'co-prop-' + v.id + '-' + p.rev, em: p.enviadaEm, titulo: tr('Proposta de {nome} (rev. {rev}) · {servico}', { nome: v.nome, rev: p.rev, servico: c.servico }), href: href + '/comparar' });
+      if (v.situacao === 'nao-vai' && v.respondidoEm) lista.push({ id: 'co-recusa-' + v.id, em: v.respondidoEm, titulo: tr('{nome} não vai participar · {servico}', { nome: v.nome, servico: c.servico }), href });
+    }
+    for (const m of msgs(c).filter((x) => x.de === 'convidada')) lista.push({ id: 'co-msg-' + m.id, em: m.em, titulo: tr('Mensagem de {nome} · {servico}', { nome: m.autor, servico: c.servico }), href: href + '/perguntas' });
+    if (c.situacao === 'aberta' && instante(c.prazo) <= Date.now()) lista.push({ id: 'co-prazo-' + c.id + '-' + c.prazo, em: instante(c.prazo), titulo: tr('Prazo vencido: compare e feche · {servico}', { servico: c.servico }), href: href + '/comparar' });
+  }
+  return lista;
+}
+
+export function avisosDaConvidada(empresaId = empresaAtualId()) {
+  const saida = [];
+  for (const c of lista()) {
+    if (c.situacao === 'rascunho') continue;
+    const v = c.convites.find((x) => x.empresaId === empresaId);
+    if (!v) continue;
+    const nome = ((empresaPorId(c.contratanteId) || {}).empresa || {}).nome || '';
+    const href = '#/measure/convite/' + c.id;
+    const convidadaEm = (c.historico.find((h) => h.detalhe && h.detalhe.includes(v.nome)) || {}).em || c.enviadaEm || c.criadaEm;
+    saida.push({ id: 'cv-novo-' + v.id, em: convidadaEm, titulo: tr('Convite para cotar: {servico} · {nome}', { servico: c.servico, nome }), href });
+    for (const h of c.historico.filter((x) => x.acao === tr('Prazo prorrogado'))) saida.push({ id: 'cv-prazo-' + v.id + '-' + h.em, em: h.em, titulo: tr('Prazo prorrogado: {servico}', { servico: c.servico }), href });
+    for (const m of canalDaConvidada(c, v.id).filter((x) => x.de === 'contratante')) saida.push({ id: 'cv-msg-' + m.id, em: m.em, titulo: (m.aviso ? tr('Aviso a todos') : m.respostaDe ? tr('Resposta') : tr('Mensagem de {nome}', { nome })) + ' · ' + c.servico, href });
+    if (c.situacao === 'fechada') saida.push({ id: 'cv-fim-' + v.id, em: c.fechamento.em, titulo: v.situacao === 'vencedora' ? tr('Você venceu: {servico} · {nome}', { servico: c.servico, nome }) : tr('Concorrência fechada com outra empresa: {servico}', { servico: c.servico }), href });
+    if (c.situacao === 'cancelada') saida.push({ id: 'cv-cancel-' + v.id, em: c.cancelamento.em, titulo: tr('Concorrência cancelada: {servico}', { servico: c.servico }), href });
+  }
+  return saida;
+}

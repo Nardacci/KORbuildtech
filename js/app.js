@@ -23,7 +23,8 @@ import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
-import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, acoesConcorrencias, ligarConcorrencias } from './concorrencias-telas.js';
+import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder } from './concorrencias-telas.js';
+import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
@@ -995,7 +996,7 @@ function telaObraAdmin(id) {
   return moldura({
     ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
     conteudo: (situacaoDaObra(o) !== 'andamento' ? '<div class="aviso aviso-ambar"><b>' + tr('Obra {situacao}', { situacao: SITUACOES_OBRA[situacaoDaObra(o)].nome.toLowerCase() }) + '</b><span>' + tr('Não cobra o diário e não aparece no campo nem no ponto. O histórico continua aqui.') + '</span></div>' : '') +
-      resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) + htmlConcorrenciasDaObra(o) +
+      resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) + htmlCanalDaObra(o) + htmlConcorrenciasDaObra(o) +
       (soAcompanha() ? (pode(usuarioAtual(), 'settings.obras') ? '<p class="dica"><a href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a></p>' : '') + htmlDiariosPorPrestadora(o, lista) : htmlRdoObrigatorio(o, lista, item)),
   });
 }
@@ -1694,7 +1695,10 @@ async function iniciar() {
   ligarConcorrencias({ desenhar, ir });
   definirFonteNotificacoes((u) => {
     const mods = estado().empresa.modulos;
-    return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
+    // concorrências: a contratante (propostas, recusas, perguntas, prazo) e a convidada (convites, respostas, resultado)
+    const concorrencias = (pode(u, 'concorrencias.gerir') ? avisosDaContratante().map((n) => ({ ...n, modulo: 'daily' })) : [])
+      .concat(podeResponder() ? avisosDaConvidada().map((n) => ({ ...n, modulo: 'measure' })) : []);
+    return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u)).concat(concorrencias);
   });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
