@@ -446,7 +446,7 @@ Condições e medições não vão para a auditoria (são centenas de gravaçõe
 - Atrair o clique às linhas do desenho (docs/measure.md §5).
 
 
-## 14. Fatia 7 — as concorrências no banco (desenho para aprovação)
+## 14. Fatia 7 — as concorrências no banco (desenho aprovado em outubro de 2026)
 
 As concorrências são o **único lugar onde duas empresas escrevem no mesmo registro**: a contratante monta e fecha,
 as convidadas respondem, perguntam e mandam proposta, e uma delas pode nem ter conta (o link, CO-07). Por isso aqui
@@ -491,13 +491,13 @@ ganha `concorrencia jsonb` ({id, conviteId, contratanteId, vinculo}) gravado só
 | `adendo(id, texto, desenho_path)` | contratante | Aberta; grava o aviso a todos (mensagem `aviso`) e, se vier PDF, a linha em `concorrencia_desenhos`; histórico. |
 | `fechar_concorrencia(id, convite_id, observacao)` | contratante | Aberta (vencida ou não); convite com proposta; origem projeto exige projeto `ganha` com `obra_id` (CO-24) e copia o `obra_id`; CO-23: se a de cima pede aprovação, grava `aprovacao` pendente e devolve `{pendente: true}`; senão conclui: `fechamento`, situações dos convites (CO-13), na vencedora com conta: `projetos.situacao = 'ganha'` e `projetos.concorrencia` com o vínculo (CO-14). |
 | `decidir_quarteirizacao(id, aprovar, motivo)` | a contratante **de cima** (`pai_id.empresa_id = minha_empresa()`) | Pendente; aprovar conclui o fechamento em nome de quem pediu; recusar registra. Auditoria nas duas empresas. |
-| `cancelar_concorrencia(id, motivo)` | contratante | Motivo obrigatório (CO-15); rascunho sai (delete); aberta vira `cancelada` e os convites `cancelado`. |
+| `cancelar_concorrencia(id, motivo)` | contratante | Motivo obrigatório (CO-15); rascunho sai (delete); aberta vira `cancelada` e os convites `cancelado`. `cancelar_concorrencias_do_projeto(projeto)` cancela as abertas que saíram de um projeto perdido (CO-24). |
 | `concorrencias_recebidas(id default null)` | convidada com conta | Visão do 14.2, como `setof jsonb`. |
-| `marcar_visto(convite_id)`, `responder_convite(convite_id, vai, motivo)`, `enviar_proposta_concorrencia(convite_id, dados jsonb)`, `escrever_como_convidada(convite_id, texto)` | convidada com conta (`convidada_id = minha_empresa()` e `concorrencias.responder`) **ou** o link (versão `_por_token(token, …)` chamada só pela função de borda) | Prazo (CO-10: só até o prazo; depois só se prorrogada), não participar sem proposta, `por_etapa` só com etapas da concorrência, total = soma (ou total informado sem etapas), `rev` seguinte; `proposta_emitida_id` precisa ser da convidada e do `projeto_id` do convite. Conversa: só na própria conversa; depois do fechamento só a vencedora (canal da obra). |
+| `marcar_visto(convite_id)`, `responder_convite(convite_id, vai, motivo)`, `enviar_proposta_concorrencia(convite_id, dados jsonb)`, `escrever_como_convidada(convite_id, texto)` | convidada com conta (`convidada_id = minha_empresa()` e `concorrencias.responder`) **ou** o link (`visto_por_token`, `responder_por_token`, `proposta_por_token`, `escrever_por_token(token, …)`, só para `service_role`: a função de borda) | Prazo (CO-10: só até o prazo; depois só se prorrogada), não participar sem proposta, `por_etapa` só com etapas da concorrência, total = soma (ou total informado sem etapas), `rev` seguinte; `proposta_emitida_id` precisa ser da convidada e do `projeto_id` do convite. Conversa: só na própria conversa; depois do fechamento só a vencedora (canal da obra). |
 | `vincular_projeto_ao_convite(convite_id, projeto_id)` | convidada com conta | O projeto é dela; grava `convites.projeto_id` e `projetos.concorrencia` ({id, conviteId, contratanteId}). |
 | `escrever_como_contratante(id, convite_id, resposta_de, para_todos, texto)` | contratante | Não em rascunho; aviso a todos só aberta; cancelada não; fechada só com a vencedora; resposta para todos marca a pergunta `publica`. |
-| `criar_obra_da_concorrencia(projeto_id, dados_da_obra)` | a vencedora, `settings.obras` | O projeto está `ganha` com `concorrencia.vinculo`; cria a obra (como o app faz hoje no `insert`) e grava `vinculo_empresa_id`, `vinculo_obra_id` e `concorrencia_id`, que o `insert` direto não aceita (fatia 2). É o que **sela o vínculo** (CO-06, CO-14) e liga a cadeia inteira: diários, cronograma e presença passam a funcionar sozinhos. |
-| `ligar_conta_aos_convites()` | quem acaba de criar a empresa (chamada por `criar_empresa`) | CO-07, segunda metade: convites por link cujo `email` é o do novo administrador ganham `convidada_id`; o histórico vem junto. Um convite `vencedora` passa a permitir `criar_obra_da_concorrencia` por um projeto criado depois. |
+| `criar_obra_da_concorrencia(convite_id, dados_da_obra)` | a vencedora, `settings.obras` | O convite é `vencedora` e da empresa de quem chama; cria a obra (os mesmos campos do `insert` direto) e grava `vinculo_empresa_id`, `vinculo_obra_id`, `concorrencia_id` e, se houver projeto no Measure, `projeto_id` e `projetos.obra_id`. É o que **sela o vínculo** (CO-06, CO-14) e liga a cadeia inteira: diários, cronograma e presença passam a funcionar sozinhos. Serve também para quem respondeu sem o Measure. |
+| gatilho `membros_ligar_convites` | ao entrar um membro (criar a empresa ou aceitar convite) | CO-07, segunda metade: convites por link cujo `email` é o do novo membro ganham `convidada_id` (a empresa dele) e o contato da contratante ganha `conta_empresa_id`; o histórico vem junto. Um convite `vencedora` passa a permitir `criar_obra_da_concorrencia`. |
 | `pedidos_de_quarteirizacao()` | contratante de cima | Só nome e serviço. |
 | `concorrencias_vencidas()` (job diário, fatia 8) | — | Não muda nada: só gera o aviso "prazo vencido: compare e feche". |
 
@@ -545,11 +545,20 @@ mesma de hoje (`#/convite/<token>`), lendo da função de borda em vez do aparel
   convite pelo link; SQL `supabase/testes/0008_concorrencias.sql` (isolamento entre convidadas, prazo, revisões,
   fechamento, CO-23, token).
 
-### 14.7 Pontos para decidir
+### 14.7 Decidido (outubro de 2026)
 
-1. **Token sem vencimento** enquanto a concorrência vive (14.5), ou vencer em 30 dias depois do fechamento?
-2. **Prestadora sem conta ganha:** o vínculo nasce quando ela cria a conta (CO-14). Até lá, a obra da construtora
-   mostra "Bayside Drywall (pelo link)" sem diário, cronograma nem presença. Ok?
-3. **Desenhos no "Vou cotar":** cópia no `plantas` da convidada (14.4) ou folha apontando o bucket da contratante
-   (menos espaço, mas o projeto dela fica preso à concorrência e à política do outro bucket)? Proposta: **cópia**.
-4. **Encarregado no canal da obra** (docs/concorrencias.md §11): proposta, só lê, com `daily.acompanhar`.
+1. **Token do link sem vencimento** enquanto a concorrência vive (aberta, ou fechada com esse convite); cancelada, o
+   link responde "encerrada".
+2. **Prestadora sem conta que ganha:** o vínculo nasce quando ela cria a conta com o e-mail do link (CO-14). Até lá, a
+   obra da construtora a mostra "pelo link", sem diário, cronograma nem presença.
+3. **Desenhos no "Vou cotar":** cópia no bucket `plantas` da convidada (o projeto dela não fica preso à concorrência).
+4. **Canal da obra:** o encarregado **dos dois lados** (o da prestadora que preenche o diário e o da construtora que
+   acompanha a obra) lê o canal; escrevem os que têm `concorrencias.gerir` (contratante) ou `concorrencias.responder`
+   (contratada). No banco, a leitura da convidada já é por função; a tela do app é que decide quem vê o botão.
+
+### 14.8 Pronto no banco
+
+`supabase/migrations/20261019_0010_concorrencias.sql` e `supabase/testes/0008_concorrencias.sql` (cinco empresas:
+construtora, duas prestadoras com conta, uma pelo link que depois cria a conta, e a quarteirização com aprovação;
+isolamento entre convidadas, prazo, revisões, canal público e privado, adendo, prorrogação, fechamento, vínculo da obra,
+cancelamento e a cascata ao excluir empresas). O app (fatia 7b) e a função de borda `convite-publico` vêm em seguida.
