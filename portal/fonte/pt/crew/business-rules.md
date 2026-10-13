@@ -61,7 +61,7 @@ Cada regra tem um código (`CRW-nnn`) para ser citada em reuniões, testes e ped
 
 | Código | Regra | Situação |
 |---|---|---|
-| CRW-050 | **Localização só com o ponto aberto.** Registrada em cada batida, quando o app é aberto durante a jornada e a cada 15 minutos na obra (a cada 5 em deslocamento). Nunca no intervalo, depois da saída ou fora do horário. A pessoa é avisada disso. | Simulado (veja Situação do protótipo) |
+| CRW-050 | **Localização só com o ponto aberto.** Registrada em cada batida, quando o app é aberto durante a jornada e a cada 15 minutos na obra (a cada 5 em deslocamento). Nunca no intervalo, depois da saída ou fora do horário. A pessoa é avisada disso e precisa aceitar o aviso antes. | Funcionando na conta de verdade com o app aberto (simulado na demonstração); em segundo plano, com o app das lojas |
 | CRW-051 | O mapa do dia é visto por quem acompanha o ponto (escritório). | Funcionando |
 
 ## Acesso

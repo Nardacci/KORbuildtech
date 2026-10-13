@@ -33,6 +33,8 @@ Abaixo do botão, **Hoje** lista as suas batidas e **Minha semana** mostra as ho
 !!! note "A sua localização"
     A localização só é registrada com o ponto aberto: em cada batida e durante a jornada. Nada é registrado no intervalo nem depois da saída. A tela avisa isso embaixo.
 
+    Na conta de verdade, na primeira vez que você abre o ponto aparece um cartão **Aviso sobre a sua localização** explicando isso; o registro só começa depois que você toca em **Li e aceito**. Ele registra com o app aberto; com o app fechado ou a tela bloqueada, nada é registrado.
+
 ## Encarregado: bater o ponto da equipe inteira
 
 **Para que serve:** um celular bate o ponto da equipe toda de uma vez — o jeito mais comum de trabalhar no canteiro.
@@ -141,7 +143,7 @@ Abaixo do mapa: o **percurso do dia** (obra → deslocamento → obra, com a dis
 ![O mapa do dia](img/crew-day-map.png)
 
 !!! simulated "No protótipo"
-    O trajeto entre as batidas é **simulado** a partir delas (o mapa mostra *Trilha simulada*). No produto, ele vem do GPS do celular durante a jornada, o que exige o app das lojas. Mapas de ruas, rotas e endereços usam serviços públicos gratuitos no protótipo; sem internet, o mapa vira um desenho simples.
+    O trajeto entre as batidas é **simulado** a partir delas (o mapa mostra *Trilha simulada*). Na conta de verdade, os pontos vêm do GPS do celular com o app aberto e o ponto aberto; os trechos sem registro (app fechado ou sem sinal) são avisados embaixo do mapa. Registrar com o app fechado precisa do app das lojas. Mapas de ruas, rotas e endereços usam serviços públicos gratuitos; sem internet, o mapa vira um desenho simples.
 
 ## Escritório: acompanhar o custo de mão de obra por obra
 

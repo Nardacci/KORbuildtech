@@ -33,6 +33,8 @@ Below the button, **Today** lists your punches and **My week** shows your hours 
 !!! note "Your location"
     Your location is only recorded while you are clocked in: at each punch and during the workday. Nothing is recorded during breaks or after you clock out. The screen says so at the bottom.
 
+    In the real account, the first time you open the time clock a card titled **About your location** explains this; location recording only starts after you tap **I have read and accept**. It records while the app is open; with the app closed or the screen locked, nothing is recorded.
+
 ## Foreman: clock in the whole crew
 
 **What it is for:** one phone clocks in the whole crew at once — the most common way crews work on site.
@@ -141,7 +143,7 @@ Below the map: the **route of the day** (job → travel → job, with distance a
 ![The day map](img/crew-day-map.png)
 
 !!! simulated "In the prototype"
-    The trail between punches is **simulated** from the punches (the map shows *Simulated trail*). In the product, it comes from the phone's GPS during the workday, which requires the store app. Street maps, routes and addresses use free public services in the prototype; without internet, the map becomes a simple drawing.
+    The trail between punches is **simulated** from the punches (the map shows *Simulated trail*). In the real account, the points come from the phone's GPS while the app is open and the person is clocked in; stretches with no record (app closed or no signal) are flagged under the map. Recording with the app closed needs the store app. Street maps, routes and addresses use free public services; without internet, the map becomes a simple drawing.
 
 ## Office: follow labor cost by job
 

@@ -38,8 +38,39 @@
       <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Prototype status.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
     </header>
     <article class="texto">
-<p>What is simulated in the prototype today, and what comes next.</p>
-<h2 id="simulated-today">Simulated today</h2>
+<p>The prototype (the demo with sample data) shows the product working. Beside it, the <strong>real account</strong> already runs the time clock on the cloud database and is in homologation. This page says what is real today and what is still simulated in the demo.</p>
+<h2 id="already-running-on-the-database-real-account">Already running on the database (real account)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>How it works today</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time clock</td>
+<td>The foreman clocks in the crew and the worker clocks in and out on their own phone, online or offline: the phone keeps the punch and sends it when the signal is back, <strong>with the time it was punched</strong>. A punch is never edited or deleted; the database refuses it.</td>
+</tr>
+<tr>
+<td>Geofence</td>
+<td>Checked by the database at every punch; outside the geofence the punch is accepted, flagged and listed for the office to review.</td>
+</tr>
+<tr>
+<td>Office</td>
+<td>Review, adjust (a new punch with a reason), approve and return the week, labor budget. A week with a missing clock-out cannot be approved; an approved week is closed — no late punch, no adjustment, no new hourly rate inside it.</td>
+</tr>
+<tr>
+<td>Location during the workday</td>
+<td>After the worker accepts the <strong>location notice</strong> in the app, the phone records its position while the app is open and the person is clocked in: when the app is opened and every 15 minutes on site (5 while traveling). Never during breaks or clocked out — the database refuses those. The day map shows the real records and flags stretches with no record (app closed).</td>
+</tr>
+<tr>
+<td>General contractor</td>
+<td>Sees names, trades and hours of the subcontractors' people on its jobs — never wages, costs or location.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="simulated-today-in-the-demo">Simulated today (in the demo)</h2>
 <table>
 <thead>
 <tr>
@@ -52,7 +83,7 @@
 <tr>
 <td>Where the data lives</td>
 <td>Only in the browser of each device.</td>
-<td>A cloud database, separated by company, with audit trail.</td>
+<td>The cloud database, separated by company, with audit trail — <strong>already running</strong> in the real account.</td>
 </tr>
 <tr>
 <td>GPS at the punch</td>
@@ -62,7 +93,7 @@
 <tr>
 <td>Location during the workday (trail)</td>
 <td><strong>Simulated</strong> from the punches (the map says <em>Simulated trail</em>).</td>
-<td>The store app's GPS in the background, with notice and consent. A web app cannot record in the background.</td>
+<td><strong>Already running</strong> while the app is open, after the worker's consent. With the app closed or the screen locked the browser cannot record: that part needs the store app, which will use the same database.</td>
 </tr>
 <tr>
 <td>Street maps, routes and addresses</td>
@@ -72,7 +103,7 @@
 <tr>
 <td>Past weeks</td>
 <td>Generated as summarized history.</td>
-<td>Real approved timesheets.</td>
+<td>Real approved timesheets — <strong>already running</strong>.</td>
 </tr>
 <tr>
 <td>Labor burden</td>
@@ -101,6 +132,10 @@
 </thead>
 <tbody>
 <tr>
+<td>Crew photo at the punch</td>
+<td>The real account records that a photo was taken; capturing and storing the photo comes next.</td>
+</tr>
+<tr>
 <td>Geofence reminder to clock in</td>
 <td>Reminds the worker at the job; never clocks in by itself.</td>
 </tr>
@@ -120,10 +155,10 @@
 </table>
     </article>
   </main>
-  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#simulated-today">Simulated today</a></li><li><a href="#coming-next">Coming next</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#already-running-on-the-database-real-account">Already running on the database (real account)</a></li><li><a href="#simulated-today-in-the-demo">Simulated today (in the demo)</a></li><li><a href="#coming-next">Coming next</a></li></ul></nav>
 </div>
 <footer class="rodape">
-  <div><b>KORbuild</b> · KORbuild product guide · updated October 12, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 13, 2026 · <a href="../../">Main sign-in</a> · <a href="../../?demo#/entrar">Prototype</a></div>
   <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
 </footer>
 <button class="voltar-topo" type="button" aria-label="Back to top">↑</button>

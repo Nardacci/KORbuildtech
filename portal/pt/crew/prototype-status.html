@@ -38,8 +38,39 @@
       <div class="doc-acoes"><a class="botao" href="../files/KORbuild Crew - Situação do protótipo.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
     </header>
     <article class="texto">
-<p>O que é simulado no protótipo hoje, e o que vem depois.</p>
-<h2 id="simulado-hoje">Simulado hoje</h2>
+<p>O protótipo (a demonstração com dados de exemplo) mostra o produto funcionando. Ao lado dele, a <strong>conta de verdade</strong> já roda o ponto no banco de dados na nuvem e está em homologação. Esta página diz o que é real hoje e o que ainda é simulado na demonstração.</p>
+<h2 id="ja-funciona-no-banco-de-dados-conta-de-verdade">Já funciona no banco de dados (conta de verdade)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Como funciona hoje</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ponto</td>
+<td>O encarregado bate o ponto da equipe e o trabalhador bate o próprio ponto no celular, com ou sem internet: o celular guarda a batida e envia quando o sinal volta, <strong>com a hora em que foi batida</strong>. Batida nunca é editada nem apagada; o banco recusa.</td>
+</tr>
+<tr>
+<td>Cerca</td>
+<td>Conferida pelo banco em cada batida; fora da cerca a batida é aceita, marcada e listada para o escritório conferir.</td>
+</tr>
+<tr>
+<td>Escritório</td>
+<td>Conferir, ajustar (uma batida nova com o motivo), aprovar e devolver a semana, orçamento de mão de obra. Semana com dia sem saída não aprova; semana aprovada é fechada: sem batida atrasada, sem ajuste e sem valor hora novo dentro dela.</td>
+</tr>
+<tr>
+<td>Localização durante a jornada</td>
+<td>Depois que o trabalhador aceita o <strong>aviso de localização</strong> no app, o celular registra a posição enquanto o app está aberto e o ponto, aberto: ao abrir o app e a cada 15 minutos na obra (5 em deslocamento). Nunca no intervalo nem com o ponto fechado — o banco recusa. O mapa do dia mostra os registros reais e avisa dos trechos sem registro (app fechado).</td>
+</tr>
+<tr>
+<td>Construtora</td>
+<td>Vê nomes, funções e horas das pessoas das prestadoras nas obras dela — nunca salários, custos nem localização.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="simulado-hoje-na-demonstracao">Simulado hoje (na demonstração)</h2>
 <table>
 <thead>
 <tr>
@@ -52,7 +83,7 @@
 <tr>
 <td>Onde ficam os dados</td>
 <td>Só no navegador de cada aparelho.</td>
-<td>Um banco de dados na nuvem, separado por empresa, com trilha de auditoria.</td>
+<td>O banco de dados na nuvem, separado por empresa, com trilha de auditoria — <strong>já funciona</strong> na conta de verdade.</td>
 </tr>
 <tr>
 <td>GPS na batida</td>
@@ -62,7 +93,7 @@
 <tr>
 <td>Localização durante a jornada (trajeto)</td>
 <td><strong>Simulada</strong> a partir das batidas (o mapa diz <em>Trilha simulada</em>).</td>
-<td>O GPS do app das lojas em segundo plano, com aviso e consentimento. Um app web não consegue registrar em segundo plano.</td>
+<td><strong>Já funciona</strong> com o app aberto, depois do consentimento do trabalhador. Com o app fechado ou a tela bloqueada o navegador não grava: essa parte precisa do app das lojas, que vai usar o mesmo banco.</td>
 </tr>
 <tr>
 <td>Mapas de ruas, rotas e endereços</td>
@@ -72,7 +103,7 @@
 <tr>
 <td>Semanas passadas</td>
 <td>Geradas como histórico resumido.</td>
-<td>Os timesheets aprovados de verdade.</td>
+<td>Os timesheets aprovados de verdade — <strong>já funciona</strong>.</td>
 </tr>
 <tr>
 <td>Encargos</td>
@@ -101,6 +132,10 @@
 </thead>
 <tbody>
 <tr>
+<td>Foto da equipe na batida</td>
+<td>A conta de verdade registra que houve foto; capturar e guardar a foto vem a seguir.</td>
+</tr>
+<tr>
 <td>Lembrete de entrada pela cerca</td>
 <td>Lembra o trabalhador quando ele chega na obra; nunca bate a entrada sozinho.</td>
 </tr>
@@ -120,10 +155,10 @@
 </table>
     </article>
   </main>
-  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#simulado-hoje">Simulado hoje</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#ja-funciona-no-banco-de-dados-conta-de-verdade">Já funciona no banco de dados (conta de verdade)</a></li><li><a href="#simulado-hoje-na-demonstracao">Simulado hoje (na demonstração)</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
 </div>
 <footer class="rodape">
-  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 12 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 13 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
   <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
 </footer>
 <button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>

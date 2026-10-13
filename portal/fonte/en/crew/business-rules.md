@@ -61,7 +61,7 @@ Each rule has an ID (`CRW-nnn`) so it can be quoted in meetings, tests and chang
 
 | ID | Rule | Status |
 |---|---|---|
-| CRW-050 | **Location only while clocked in.** Recorded at each punch, when the app is opened during the workday and every 15 minutes on site (every 5 while traveling). Never during breaks, while clocked out or off hours. The worker is told so. | Simulated (see Prototype status) |
+| CRW-050 | **Location only while clocked in.** Recorded at each punch, when the app is opened during the workday and every 15 minutes on site (every 5 while traveling). Never during breaks, while clocked out or off hours. The worker is told so and must accept the notice first. | Working in the real account while the app is open (simulated in the demo); in the background, with the store app |
 | CRW-051 | The day map is seen by those who follow the time clock (office). | Working |
 
 ## Access

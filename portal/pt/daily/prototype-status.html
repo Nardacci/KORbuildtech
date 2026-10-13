@@ -38,8 +38,43 @@
       <div class="doc-acoes"><a class="botao" href="../files/KORbuild Daily - Situação do protótipo.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
     </header>
     <article class="texto">
-<p>O protótipo mostra o produto funcionando com dados de exemplo. Algumas coisas são simuladas porque ainda não há servidor. Esta página lista essas coisas, para ninguém prometer mais do que existe — e para o cliente saber o que vem por aí.</p>
-<h2 id="simulado-hoje">Simulado hoje</h2>
+<p>O protótipo (a demonstração com dados de exemplo) mostra o produto funcionando. Ao lado dele, a <strong>conta de verdade</strong> já roda no banco de dados na nuvem e está em homologação. Esta página diz o que é real hoje e o que ainda é simulado na demonstração, para ninguém prometer mais do que existe.</p>
+<h2 id="ja-funciona-no-banco-de-dados-conta-de-verdade">Já funciona no banco de dados (conta de verdade)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Como funciona hoje</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contas</td>
+<td>Cadastro com e-mail e senha; a empresa, os usuários, os perfis e os convites ficam no banco, separados por empresa.</td>
+</tr>
+<tr>
+<td>Diários</td>
+<td>Preenchidos no canteiro com fotos, com ou sem internet: o celular guarda o diário e envia quando o sinal volta. O mesmo diário nunca duplica por causa de sinal ruim.</td>
+</tr>
+<tr>
+<td>Aprovações</td>
+<td>O escritório aprova ou pede ajustes; o diário da prestadora numa obra ligada é aprovado pela construtora, nunca pela prestadora.</td>
+</tr>
+<tr>
+<td>Lacre</td>
+<td>O banco calcula o lacre (SHA-256) e o código de verificação na aprovação; depois disso nada muda.</td>
+</tr>
+<tr>
+<td>Link do cliente</td>
+<td>Abre em qualquer lugar, sem login, com as fotos por links temporários; o banco confere o lacre a cada abertura.</td>
+</tr>
+<tr>
+<td>Dois aparelhos, um diário</td>
+<td>Se o mesmo diário mudou em outro aparelho sem sinal, o segundo é avisado e escolhe qual versão fica.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="simulado-hoje-na-demonstracao">Simulado hoje (na demonstração)</h2>
 <table>
 <thead>
 <tr>
@@ -51,8 +86,8 @@
 <tbody>
 <tr>
 <td>Onde ficam os dados</td>
-<td>Só no navegador de cada aparelho. O celular do campo e o computador do escritório não veem os dados um do outro.</td>
-<td>Um banco de dados na nuvem, separado por empresa; todos veem os mesmos dados.</td>
+<td>Só no navegador de cada aparelho.</td>
+<td>O banco de dados na nuvem, separado por empresa — <strong>já funciona</strong> na conta de verdade.</td>
 </tr>
 <tr>
 <td>Lembretes das 16h e das 18h</td>
@@ -72,17 +107,17 @@
 <tr>
 <td>Link do cliente</td>
 <td>Abre só no mesmo navegador.</td>
-<td>Abre em qualquer lugar.</td>
+<td>Abre em qualquer lugar — <strong>já funciona</strong>.</td>
 </tr>
 <tr>
 <td>Falta de sinal</td>
 <td>Simulada tocando em <strong>Online</strong>.</td>
-<td>Real.</td>
+<td>Real — <strong>já funciona</strong> (o celular guarda o diário e envia depois).</td>
 </tr>
 <tr>
 <td>Entrada</td>
 <td>Usuários de exemplo, sem senha.</td>
-<td>E-mail e senha da empresa.</td>
+<td>E-mail e senha da empresa — <strong>já funciona</strong>.</td>
 </tr>
 <tr>
 <td>Clima</td>
@@ -101,8 +136,8 @@
 </thead>
 <tbody>
 <tr>
-<td>Contas dos clientes no banco de dados</td>
-<td>A página de entrada principal está pronta; as contas chegam com o banco de dados.</td>
+<td>Equipe do diário vinda do ponto</td>
+<td>Já funciona: a equipe do diário vem de quem bateu o ponto na obra.</td>
 </tr>
 <tr>
 <td>Aplicativos nas lojas (App Store, Google Play)</td>
@@ -118,16 +153,16 @@
 </tr>
 <tr>
 <td>A construtora convida a prestadora (concorrência) e um canal entre as duas</td>
-<td>Especificado; chega com o banco de dados.</td>
+<td>Especificado; próxima etapa do banco (hoje as obras são ligadas pela equipe do KORbuild).</td>
 </tr>
 </tbody>
 </table>
     </article>
   </main>
-  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#simulado-hoje">Simulado hoje</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#ja-funciona-no-banco-de-dados-conta-de-verdade">Já funciona no banco de dados (conta de verdade)</a></li><li><a href="#simulado-hoje-na-demonstracao">Simulado hoje (na demonstração)</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
 </div>
 <footer class="rodape">
-  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 12 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 13 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>
   <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
 </footer>
 <button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
