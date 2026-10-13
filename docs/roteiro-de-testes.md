@@ -126,6 +126,13 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Como a prestadora vencedora: o convite mostra "Você venceu"; "Criar obra a partir deste projeto" abre o cadastro preenchido; ao criar, a obra aparece ligada (Daily → Obras) e a construtora passa a receber o diário dela.
 - [ ] No link, a prestadora sem conta vê "fechou com outra empresa", sem o valor.
 
+### Avisos (fatia 8; os e-mails só depois de configurar o SMTP)
+- [ ] Com duas contas (uma prestadora, uma construtora ligadas por uma concorrência ganha): a prestadora envia um diário; no sininho da construtora aparece "RDO nº … aguardando aprovação"; ao abrir, o aviso fica lido (e continua lido em outro aparelho).
+- [ ] A construtora aprova: o sininho da prestadora mostra "RDO nº … aprovado". Pedir ajustes: "O escritório pediu ajustes no RDO nº …".
+- [ ] Concorrência: o convite chega no sininho da prestadora com conta; a pergunta e a proposta chegam no da construtora.
+- [ ] Meu perfil › Avisos por e-mail: desligar "Diário de obra" e recarregar: continua desligado; o sininho segue mostrando os avisos.
+- [ ] Depois de configurar o SMTP (docs/banco.md §15.6): convidar um usuário novo e conferir o e-mail "… convidou você para o KORbuild" na caixa; abrir o botão e aceitar. Convidar uma prestadora só por e-mail numa concorrência: o e-mail traz o link pessoal.
+
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).
 - [ ] Obras: criar uma obra marcando o local no **mapa** (o círculo é a cerca); salvar; incluir pessoas em "Quem trabalha nesta obra".

@@ -15,6 +15,7 @@ import {
 import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
 import { esquecer as esquecerCadastros } from './cadastros.js';
 import { espelho } from './espelho.js';
+import { CATEGORIAS_DE_EMAIL, textoDaCategoria, recebePorEmail, prefsLidas, lerPrefs, salvarPrefEmail } from './avisos-oficial.js';
 export { acoesCadastros };
 
 let redesenhar = () => {};
@@ -249,6 +250,15 @@ function htmlEmpresa() {
 }
 
 /* Meu perfil: nome e telefone (o cadastro na empresa), idioma, e-mail de acesso e senha. */
+/* Quais avisos chegam também por e-mail (o sininho mostra todos). Sem escolha, tudo ligado. */
+function htmlAvisosPorEmail() {
+  if (!prefsLidas()) lerPrefs().then(() => redesenhar()).catch(() => { /* fica o padrão */ });
+  return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Avisos por e-mail') + '</h2>' +
+    '<p>' + tr('O sininho mostra todos os avisos. Aqui você escolhe quais deles também chegam por e-mail, em {email}.', { email: '<b>' + esc(emailAtual()) + '</b>' }) + '</p>' +
+    CATEGORIAS_DE_EMAIL.map((c) => '<label class="check"><input type="checkbox" data-acao="of-pref-email" data-categoria="' + c + '"' + (recebePorEmail(c) ? ' checked' : '') + '> ' + textoDaCategoria[c]() + '</label>').join('') +
+    '<p class="mudo pequeno">' + tr('Os convites para entrar numa empresa ou numa concorrência sempre chegam por e-mail.') + '</p></section>';
+}
+
 function htmlMeuPerfil() {
   const m = conta.membro;
   const pendente = emailPendente();
@@ -262,6 +272,7 @@ function htmlMeuPerfil() {
       '<p class="mudo pequeno">' + tr('Perfil de acesso: {perfil}. Só quem cuida dos acessos da empresa muda o perfil.', { perfil: esc(nomeDoPerfil(conta.perfil)) }) + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Idioma') + '</h2>' +
       '<p>' + tr('O idioma das telas vale também para os e-mails que o KORbuild manda para você.') + '</p>' + htmlSeletorIdioma('perfil-idioma') + '</section>' +
+    htmlAvisosPorEmail() +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('E-mail de acesso') + '</h2>' +
       '<p>' + tr('Você entra com {email}.', { email: '<b>' + esc(emailAtual()) + '</b>' }) + '</p>' +
       (pendente ? '<div class="aviso aviso-ambar"><span>' + tr('Aguardando a confirmação de {email}: abra o link que enviamos para esse endereço.', { email: '<b>' + esc(pendente) + '</b>' }) + '</span></div>' : '') +
@@ -376,6 +387,11 @@ export const acoesOficiais = {
   async 'of-salvar-meu-perfil'() {
     const f = document.getElementById('form-meu-perfil');
     comResultado(await atualizarMeuPerfil(f.nome.value, f.telefone.value), tr('Seus dados foram salvos.'));
+  },
+  async 'of-pref-email'(el) {
+    const r = await salvarPrefEmail(el.dataset.categoria, el.checked);
+    if (r.erro) { el.checked = !el.checked; toast(r.erro); return; }
+    toast(el.checked ? tr('Você vai receber esses avisos por e-mail.') : tr('Esses avisos não vão mais por e-mail. Continuam no sininho.'));
   },
   async 'of-trocar-email'() {
     const f = document.getElementById('form-trocar-email');

@@ -688,8 +688,21 @@ situação que trava: as funções de gravação (`salvar_rdo`, `registrar_batid
    - **Segurança:** `notificar`, `notificar_empresa`, `avisos_pendentes_email` e `marcar_avisos_enviados` não são mais
      executáveis pelo app (só gatilhos e a chave de serviço). As versões do sistema antigo eram `security definer` e, se
      as permissões padrão do Supabase valiam, qualquer usuário (até sem login) podia chamá-las; confira antes de aplicar.
-2. **8b, o envio e o sininho:** função de borda `enviar-avisos` reescrita (SMTP genérico, dois idiomas, `fila_email`,
-   token apagado depois de enviado), `js` lendo `notificacoes` no espelho, Meu perfil › Avisos por e-mail; teste do app.
+2. **8b, o envio e o sininho (pronto):**
+   - `supabase/functions/enviar-avisos` reescrita do zero: `modelos.ts` (os e-mails nos dois idiomas, tudo escapado),
+     `rodar.ts` (uma rodada: a fila de quem não tem conta e os avisos agrupados de quem tem; nada é marcado como enviado se
+     o SMTP não aceitou; o token sai da fila depois de enviado; 5 tentativas e para) e `index.ts` (só liga o Supabase e o
+     SMTP). Sem os segredos de SMTP responde 503 e não mexe em nada. Teste: `tests/avisos-envio.test.mjs` (29).
+   - **Publicar:** `supabase functions deploy enviar-avisos --no-verify-jwt` (o job manda o `CRON_SECRET`, não um JWT; a
+     função aceita o cabeçalho `x-cron-secret` ou `Authorization: Bearer`). **Segredos:** `SMTP_HOST`, `SMTP_PORT`
+     (465 = TLS direto; 587 = STARTTLS), `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
+     (`KORbuild <no-reply@korbuildtech.com>`), `SITE_URL` (o endereço do app, com a barra no fim; homologação:
+     `https://nardacci.github.io/KORbuildtech/`, no lançamento `https://korbuildtech.com/`). `CRON_SECRET` já existe.
+   - **No app:** `js/avisos-oficial.js` lê `notificacoes` (cada um só os seus, pelo RLS) ao abrir, depois de cada leitura do
+     espelho e a cada minuto com a janela à vista; marca `lida_em` ao abrir o aviso; o sininho mostra o texto traduzido
+     (`tr(chave, dados)`) e deixa de calcular no aparelho o que o servidor já avisa (diário a aprovar, ajustes, aprovado,
+     concorrências); os lembretes do relógio (16h, RDO atrasado, etapa atrasada, sem saída) continuam no aparelho.
+     Meu perfil › Avisos por e-mail liga e desliga por categoria em `notificacao_prefs`. Teste: `tests/avisos-oficial.test.mjs` (13).
 3. **8c, a administração:** `20261021_0012_plataforma.sql` (tabela `plataforma`, funções `admin_*`, `teste_ate` no
    `criar_empresa`, `empresa_ativa()`) e `admin.html`.
 

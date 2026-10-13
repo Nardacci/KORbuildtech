@@ -120,14 +120,26 @@ export function notificacoesDe(u) {
   const agora = Date.now();
   const lidas = new Set(((estado().lidas || {})[u.id]) || []);
   return fonteNotificacoes(u).filter((n) => n.em <= agora).sort((a, b) => b.em - a.em).slice(0, 30)
-    .map((n) => ({ ...n, lida: lidas.has(n.id) }));
+    .map((n) => ({ ...n, lida: lidas.has(n.id) || n.lida === true }));   // lida no banco (avisos do servidor) ou neste aparelho
 }
 
+/* Quem precisa saber que algo foi lido (na conta de verdade, os avisos do servidor gravam lida_em; js/avisos-oficial.js). */
+const ganchosLidas = [];
+export function aoMarcarLidas(fn) { ganchosLidas.push(fn); }
 export function marcarLidas(u, ids) {
   const d = estado();
   d.lidas = d.lidas || {};
   d.lidas[u.id] = Array.from(new Set((d.lidas[u.id] || []).concat(ids)));
   salvar();
+  for (const fn of ganchosLidas) { try { fn(ids); } catch (e) { console.error(e); } }
+}
+
+/* Redesenha só o sininho (chegou aviso novo): se a lista está aberta, deixa como está para não fechá-la na cara de quem lê. */
+export function atualizarSino() {
+  const el = document.querySelector('details.sino');
+  const u = usuarioAtual();
+  if (!el || el.open || !u) return;
+  el.outerHTML = sino(u);
 }
 
 function quandoFoi(ts) {

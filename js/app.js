@@ -17,6 +17,7 @@ import { ligarCrewOficial } from './crew-oficial.js';
 import { ligarCronogramaOficial } from './cronograma-oficial.js';
 import { ligarMeasureOficial } from './measure-oficial.js';
 import { ligarConcorrenciasOficial, lerConvitePublico, mostrarConvitePublico } from './concorrencias-oficial.js';
+import { ligarAvisosOficial, avisosDoServidor } from './avisos-oficial.js';
 import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
@@ -1874,7 +1875,10 @@ async function iniciar() {
     // concorrências: a contratante (propostas, recusas, perguntas, prazo) e a convidada (convites, respostas, resultado)
     const concorrencias = (pode(u, 'concorrencias.gerir') ? avisosDaContratante().map((n) => ({ ...n, modulo: 'daily' })) : [])
       .concat(podeResponder() ? avisosDaConvidada().map((n) => ({ ...n, modulo: 'measure' })) : []);
-    return (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u)).concat(concorrencias);
+    const doAparelho = (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
+    // conta de verdade: o que acontece entre pessoas e empresas vem do servidor (avisos-oficial.js); no aparelho ficam só os lembretes do relógio
+    if (estado().oficial) return doAparelho.filter((n) => !/^(d-recebido-|d-ajuste-|d-aprovado-)/.test(n.id)).concat(avisosDoServidor());
+    return doAparelho.concat(concorrencias);
   });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -1890,6 +1894,7 @@ async function iniciar() {
     ligarCronogramaOficial();
     ligarMeasureOficial();
     ligarConcorrenciasOficial();
+    ligarAvisosOficial();
     let envioDoPonto = null;
     aoRegistrarBatida(() => { clearTimeout(envioDoPonto); envioDoPonto = setTimeout(sincronizarOficial, 1200); });
     ligarOficial(desenhar);
