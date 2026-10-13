@@ -4,11 +4,11 @@
  * Administrador: quem está trabalhando agora, timesheets com aprovação e ajustes, custo por obra e o mapa do dia. */
 
 import { esc, decimal, distancia, numTexto, diaMes, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
-import { estado, salvar, obra as acharObra } from './armazem.js';
+import { estado, salvar, obra as acharObra, guardarFoto, urlDaFoto, idDaFotoDePonto } from './armazem.js';
 import { tr, tn, locale, emIngles } from './i18n.js';
 import { casca, usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
-import { obterPosicao } from './fotos.js';
+import { obterPosicao, processarFoto } from './fotos.js';
 import {
   ETAPAS, distanciaM, dentroDaCerca, inicioDaSemana, diasDaSemana, horas, dinheiro, funcionario, equipe,
   equipeDoEncarregado, membros, jornada, semana, aprovacaoDaSemana, registrarBatidas, decidirSemana,
@@ -277,11 +277,30 @@ async function dialogoComLocal({ titulo, obraId, corpoAntes, corpoDepois, rotulo
 /* A pessoa batendo o próprio ponto (Meu ponto), e não o encarregado pela equipe. */
 function proprio(ids) { return ids.length === 1 && ids[0] === usuarioAtual().funcionarioId; }
 
+/* A foto da batida: reduzida e carimbada (obra, hora e local) como as do Daily, guardada no aparelho; sobe com a batida (js/sincronizacao.js).
+ * Uma foto vale para a equipe toda; devolve o id dela (ou null se o arquivo não for uma imagem utilizável). */
+async function guardarFotoDaBatida(arquivo, obraId) {
+  if (!arquivo || !arquivo.size) return null;
+  try {
+    const { blob, mini } = await processarFoto(arquivo, acharObra(obraId), true);
+    const id = crypto.randomUUID();
+    await guardarFoto(idDaFotoDePonto(id), blob, mini);
+    return id;
+  } catch { return null; }
+}
+
 function aplicar(ids, tipo, obraId, etapa, loc, extra) {
-  registrarBatidas(ids, {
+  return registrarBatidas(ids, {
     tipo, obraId, etapa, lat: loc.lat, lon: loc.lon, precisao: loc.precisao, dentroCerca: loc.fonte === 'gps' ? !!loc.dentro : false,
     fonteGps: loc.fonte, registradoPor: usuarioAtual().id, modo: proprio(ids) ? 'pessoal' : 'equipe', ...(extra || {}),
   });
+}
+
+/* A foto da batida: miniatura que abre em tamanho grande (no aparelho, ou pelo Storage com link temporário). */
+function htmlFotoDaBatida(b) {
+  const id = b.fotoId || (b.fotoPath ? b.id : null);
+  if (!b.foto || !id) return '';
+  return '<button type="button" class="foto-batida" data-acao="crew-ver-foto" data-foto="' + idDaFotoDePonto(id) + '" aria-label="' + esc(tr('Ver a foto')) + '"><img data-foto="' + idDaFotoDePonto(id) + '" alt="' + esc(tr('Foto da batida')) + '"></button>';
 }
 
 function obraAtualDe(id) {
@@ -290,6 +309,11 @@ function obraAtualDe(id) {
 }
 
 export const acoesCrew = {
+  async 'crew-ver-foto'(el) {
+    const url = await urlDaFoto(el.dataset.foto);
+    if (!url) { toast(tr('A foto ainda não está disponível. Tente de novo com internet.')); return; }
+    await abrirDialogo({ titulo: tr('Foto da batida'), corpo: '<img class="foto-batida-grande" src="' + esc(url) + '" alt="">', acoes: [{ rotulo: tr('Fechar'), valor: true, classe: 'btn-primario' }] });
+  },
   'crew-mapa-cheio'() { alternarTelaCheia(); },
   async 'crew-aceitar-aviso'() {
     const r = await aceitarAvisoDeLocalizacao();
@@ -353,10 +377,12 @@ export const acoesCrew = {
     const r = await dialogoComLocal({
       titulo: proprio(ids) ? tr('Sua entrada') : tn(ids.length, 'Entrada de {n} pessoa', 'Entrada de {n} pessoas'), obraId: eq.obraBaseId, comObra: true, rotulo: tr('Bater entrada'),
       corpoDepois: ('<label class="rotulo-pequeno" for="crew-etapa">' + tr('Etapa (cost code)') + '</label><select id="crew-etapa" name="etapa">') + opcoesEtapas((acharObra(eq.obraBaseId).etapa || '').includes('Alvenaria') ? tr('Alvenaria') : ETAPAS[0]) + '</select>' +
-        ('<label class="lembrar"><input type="checkbox" name="foto" value="1"> ' + tr('Foto da equipe (no celular, abre a câmera)') + '</label>'),
+        ('<label class="rotulo-pequeno" for="crew-foto">' + tr('Foto da equipe (opcional; no celular, abre a câmera)') + '</label><input type="file" id="crew-foto" name="fotoArq" accept="image/*" capture="environment">'),
     });
     if (!r) return;
-    aplicar(ids, 'entrada', r.obraId, r.campos.etapa, r.loc, { foto: !!r.campos.foto, nota: r.campos.nota });
+    const fotoId = await guardarFotoDaBatida(r.campos.fotoArq, r.obraId);
+    if (r.campos.fotoArq && !fotoId) toast(tr('Não foi possível usar a foto; a entrada foi registrada sem ela.'));
+    aplicar(ids, 'entrada', r.obraId, r.campos.etapa, r.loc, { fotoId, nota: r.campos.nota });
     selecionados.clear();
     toast(tr('Entrada registrada') + (proprio(ids) ? '' : ' ' + tn(ids.length, 'para {n} pessoa', 'para {n} pessoas')) + (' ' + tr('às') + ' ') + horaCurta(Date.now()) + '.');
     app.desenhar();
@@ -1390,7 +1416,7 @@ function telaDia(funcId, iso) {
     em: b.em, html: '<span><b>' + ROTULO_BATIDA[b.tipo] + '</b> · ' + esc(nomeObra(b.obraId)) + (b.etapa ? ' · ' + esc(b.etapa) : '') + '</span>' +
       '<span class="mudo pequeno">' + (b.ajuste ? (tr('Ajuste de') + ' ') + esc(b.ajuste.por) + ': "' + esc(b.ajuste.motivo) + '"'
         : (b.fonteGps === 'gps' ? (b.dentroCerca ? tr('Dentro da cerca') : tr('Fora da cerca') + (b.conferida ? (' ' + tr('· conferida')) : '')) + (' ' + tr('· GPS ±')) + b.precisao + ' m' : tr('Sem GPS')) +
-          (' ' + tr('· registrado por') + ' ') + esc((estado().usuarios.find((x) => x.id === b.registradoPor) || {}).nome || '—') + (b.foto ? (' ' + tr('· com foto')) : '')) + '</span>' + htmlNota(b),
+          (' ' + tr('· registrado por') + ' ') + esc((estado().usuarios.find((x) => x.id === b.registradoPor) || {}).nome || '—') + (b.foto ? (' ' + tr('· com foto')) : '')) + '</span>' + htmlNota(b) + htmlFotoDaBatida(b),
     classe: b.ajuste ? 'ajuste' : b.dentroCerca === false ? 'fora' : '',
   })).concat(trilha.excursoes.map((e) => ({
     em: e.ini, html: ('<span><b>' + tr('Saiu da cerca com o ponto aberto') + '</b> · ') + horaCurta(e.ini) + '–' + horaCurta(e.fim) + '</span><span class="mudo pequeno">' + esc(e.local) + (' ' + tr('(trilha do GPS)') + '</span>'), classe: 'fora',

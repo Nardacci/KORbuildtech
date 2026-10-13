@@ -1420,3 +1420,8 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .perfil-grupos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px 20px; margin: 8px 0 12px; }
 .perfil-grupos fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
 @media (max-width: 560px) { .oficial-topo { padding: 10px 16px; } .oficial-empresa { order: 3; width: 100%; } }
+
+/* Foto da batida do ponto (Crew): miniatura na linha do tempo; abre grande no diálogo */
+.foto-batida { display: block; margin-top: 6px; padding: 0; border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden; background: var(--neutro-claro); cursor: zoom-in; width: 96px; height: 72px; }
+.foto-batida img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto-batida-grande { display: block; max-width: 100%; max-height: 70vh; margin: 0 auto; border-radius: var(--raio); }

@@ -389,17 +389,22 @@ export function presencaDaCadeia(obraId, iso, agora, via = null, nivel = 0) {
 
 export function registrarBatidas(funcIds, dados) {
   const em = dados.em || Date.now();
+  const novas = [];
   for (const id of funcIds) {
-    crew().batidas.push({
+    const nova = {
       id: novoId('bt'), funcionarioId: id, tipo: dados.tipo, obraId: dados.obraId, etapa: dados.etapa || null, em,
       lat: dados.lat, lon: dados.lon, precisao: dados.precisao, dentroCerca: dados.dentroCerca,
       fonteGps: dados.fonteGps || 'gps', registradoPor: dados.registradoPor, modo: dados.modo || 'equipe',
-      foto: !!dados.foto, ajuste: dados.ajuste || null, conferida: false,
+      foto: !!dados.foto || !!dados.fotoId, fotoId: dados.fotoId || null,   // fotoId: a foto guardada no aparelho (uma para a equipe toda)
+      ajuste: dados.ajuste || null, conferida: false,
       nota: String(dados.nota || '').trim().slice(0, 280) || null, // opcional: quem bate o ponto explica algo (atraso, saída antes…)
-    });
+    };
+    crew().batidas.push(nova);
+    novas.push(nova);
   }
   salvar();
   pedirEnvioDoPonto();
+  return novas;
 }
 
 export function decidirSemana(funcIds, segunda, status, por, motivo) {

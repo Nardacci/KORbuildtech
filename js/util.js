@@ -179,6 +179,7 @@ export function abrirDialogo({ titulo, corpo, acoes }) {
       dlg.querySelectorAll('[name]').forEach((c) => {
         // Opções de escolha (radio/checkbox) só contam quando marcadas.
         if ((c.type === 'radio' || c.type === 'checkbox') && !c.checked) return;
+        if (c.type === 'file') { if (c.files && c.files[0]) campos[c.name] = c.files[0]; return; }   // o arquivo escolhido, não o caminho falso
         campos[c.name] = c.value;
       });
       resultado = { valor: acoes[i] ? acoes[i].valor : null, campos };

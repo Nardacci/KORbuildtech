@@ -36,7 +36,7 @@ export function batidaDoBanco(b, conferidas) {
   return {
     id: b.id, funcionarioId: b.funcionario_id, tipo: b.tipo, obraId: b.obra_id, etapa: b.etapa || null, em: ms(b.em),
     lat: b.lat, lon: b.lon, precisao: b.precisao, dentroCerca: b.dentro_cerca, fonteGps: b.fonte_gps, registradoPor: b.registrado_por,
-    modo: b.modo, foto: !!b.foto_path, nota: b.nota || null,
+    modo: b.modo, foto: !!b.foto_path, fotoPath: b.foto_path || null, nota: b.nota || null,
     ajuste: ajuste ? { motivo: b.ajuste_motivo, por: b.registrado_por_nome, em: ms(b.recebida_em) } : null,
     conferida: !!c, conferidaPor: c ? c.por_nome : undefined, _banco: true,
   };

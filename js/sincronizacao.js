@@ -4,7 +4,7 @@
  * atividade (dia_sem_atividade). Repetir não duplica: os ids nascem no aparelho. Se outro aparelho mudou o mesmo
  * diário, o banco recusa e quem chamou decide (aoConflito). */
 
-import { estado, salvar, lerFoto, idMiniatura } from './armazem.js';
+import { estado, salvar, lerFoto, idMiniatura, idDaFotoDePonto } from './armazem.js';
 import { tr } from './i18n.js';
 import { cliente } from './conta.js';
 import { conteudoDe, assinatura, temPendencia, rdoDoBanco, lembrarCaminhos } from './espelho.js';
@@ -158,8 +158,27 @@ export const MOTIVOS_DA_RECUSA = () => ({
 const paraBanco = (b) => ({
   id: b.id, funcionario_id: b.funcionarioId, tipo: b.tipo, obra_id: b.obraId || null, etapa: b.etapa || null, em: new Date(b.em).toISOString(),
   lat: b.lat == null ? null : b.lat, lon: b.lon == null ? null : b.lon, precisao: b.precisao == null ? null : Math.round(b.precisao),
-  fonte_gps: b.fonteGps || 'gps', modo: b.modo === 'equipe' ? 'equipe' : 'pessoal', nota: b.nota || null, criado_no_aparelho_em: new Date(b.em).toISOString(),
+  fonte_gps: b.fonteGps || 'gps', modo: b.modo === 'equipe' ? 'equipe' : 'pessoal', foto_path: b.fotoPath || null, nota: b.nota || null, criado_no_aparelho_em: new Date(b.em).toISOString(),
 });
+
+/* A foto da batida sobe antes dela, para {empresa}/{funcionário}/{batida}.jpg (bucket ponto). Falhou: a batida espera a próxima
+ * rodada; depois de 3 tentativas ela sobe sem a foto (a batida nunca é editada e o ponto não pode ficar preso). */
+async function subirFotoDaBatida(b, empresaId) {
+  if (!b.fotoId || b.fotoPath) return true;
+  try {
+    const [foto, mini] = await Promise.all([lerFoto(idDaFotoDePonto(b.fotoId)), lerFoto(idMiniatura(idDaFotoDePonto(b.fotoId)))]);
+    if (!foto) throw new Error('foto-ausente');
+    const caminho = empresaId + '/' + b.funcionarioId + '/' + b.id + '.jpg';
+    const { error } = await cliente().storage.from('ponto').upload(caminho, foto, { contentType: foto.type || 'image/jpeg', upsert: false });
+    if (error && !/exist|duplicate/i.test(error.message || '')) throw error;
+    b.fotoPath = caminho;
+    return true;
+  } catch {
+    b._fotoTentativas = (b._fotoTentativas || 0) + 1;
+    if (b._fotoTentativas >= 3) { b.foto = false; b.fotoId = null; return true; }
+    return false;
+  }
+}
 
 let rodandoPonto = null;
 /* Sobe as batidas e os registros de localização do aparelho, na ordem em que aconteceram. aoRecusar(batida, motivo). */
@@ -169,7 +188,10 @@ export function sincronizarPonto({ aoRecusar } = {}) {
     const d = estado();
     if (!d || !d.oficial || !d.crew || !navigator.onLine) return 0;
     let subiram = 0;
-    const pendentes = d.crew.batidas.filter((b) => !b._banco && b.modo !== 'ajuste').sort((a, b) => a.em - b.em);
+    const todas = d.crew.batidas.filter((b) => !b._banco && b.modo !== 'ajuste').sort((a, b) => a.em - b.em);
+    const pendentes = [];
+    for (const b of todas) if (await subirFotoDaBatida(b, d.empresa.id)) pendentes.push(b);
+    salvar();
     for (let i = 0; i < pendentes.length; i += 100) {
       const lote = pendentes.slice(i, i + 100);
       const res = await rpc('registrar_batidas', { p: lote.map(paraBanco) });

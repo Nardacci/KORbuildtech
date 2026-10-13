@@ -135,11 +135,13 @@ try {
   await j.p.waitForSelector('dialog #crew-local');
   verificar((await j.p.textContent('dialog #crew-local')).includes('dentro da cerca'), 'celular perto: dentro da cerca');
   await j.p.fill('dialog textarea[name="nota"]', 'Material atrasou');
+  await j.p.setInputFiles('dialog input[name="fotoArq"]', { name: 'equipe.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC', 'base64') });
   await j.p.click('dialog button:has-text("Bater entrada")');
   verificar(await esperarAte(async () => (await batidas(`funcionario_id = '${fLuis}' and em > now() - interval '1 hour'`)).length === 1), 'a entrada do Luis chegou ao banco');
   const [bl] = await batidas(`funcionario_id = '${fLuis}' and em > now() - interval '1 hour'`);
   verificar(bl.dentro_cerca === true && (await sql(`select nota from public.batidas where id = '${bl.id}'`))[0].nota === 'Material atrasou', 'dentro da cerca, com a nota', bl);
   verificar((await estadoDe(j.p, 'Luis Local')).includes('Trabalhando'), 'a tela mostra o Luis trabalhando');
+  verificar(await esperarAte(async () => (await sql(`select foto_path from public.batidas where id = '${bl.id}'`))[0].foto_path === A + '/' + fLuis + '/' + bl.id + '.jpg'), 'a foto da equipe subiu e a batida guarda o caminho {empresa}/{funcionário}/{batida}.jpg');
 
   console.log('Sem internet: a batida fica no aparelho e sobe com a hora de quando foi batida');
   await j.ctx.setOffline(true);
@@ -176,6 +178,12 @@ try {
 
   console.log('Ana (escritório): confere, ajusta, aprova e devolve');
   const a = await aparelho('ana', 1280);
+  await a.p.goto(BASE + '#/crew/dia/' + fLuis + '/' + iso(new Date()));
+  await a.p.waitForSelector('.linha-tempo', { timeout: 30000 });
+  verificar(await esperarAte(async () => (await a.p.locator('.foto-batida img').count()) === 1 && await a.p.locator('.foto-batida img').evaluate((i) => i.complete && i.naturalWidth > 0)), 'o escritório vê a foto da batida do Luis na linha do dia (link temporário do Storage)');
+  await a.p.click('.foto-batida');
+  verificar(await esperarAte(async () => (await a.p.locator('dialog img.foto-batida-grande').count()) === 1), 'tocar na miniatura abre a foto grande');
+  await a.p.click('dialog button:has-text("Fechar")');
   await a.p.goto(BASE + '#/crew/agora');
   await a.p.waitForSelector('.grade-obras-agora', { timeout: 30000 });
   await a.p.waitForFunction(() => document.body.innerText.includes('Pedro Local'), null, { timeout: 15000 }).catch(() => null);

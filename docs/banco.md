@@ -297,7 +297,14 @@ mostra os trechos sem registro como "sem registro (app fechado)", para ninguém 
 - **Localização:** `js/localizacao.js` grava a posição com o app aberto e o ponto aberto (ao abrir, a cada 15 min na obra e 5 min em
   deslocamento; `empresas.configuracao.localizacao` muda os minutos), só depois que a própria pessoa aceita o aviso. O mapa do dia usa os
   registros reais e avisa dos trechos sem registro (app fechado).
-- **Foto da batida:** o protótipo só marca "com foto"; a captura real da foto fica para depois (o bucket `ponto` já existe).
+- **Foto da batida (pronta):** na entrada da equipe, o campo "Foto da equipe" abre a câmera do celular. A foto é reduzida e
+  carimbada (obra, hora e local) como a do Daily (`processarFoto`) e fica guardada no aparelho, sob o id `ponto:{foto}`;
+  uma foto vale para a equipe toda. Ao subir, cada batida leva a sua cópia para `{empresa}/{funcionário}/{batida}.jpg` no
+  bucket `ponto` **antes** da batida, e `registrar_batidas` grava o `foto_path` (o banco confere o caminho). Se o envio da
+  foto falhar a batida espera a rodada seguinte; depois de 3 falhas sobe sem a foto, para o ponto nunca ficar preso.
+  Quem pode ver a foto é quem já vê a batida (`posso_ver_foto_ponto`): o escritório vê a miniatura na linha do dia e toca
+  para abrir (link temporário do Storage). A construtora não vê foto. Sem mudança no banco: só o app e o teste
+  `crew-oficial` (47).
 - **Fuso:** o app agrupa as batidas por dia no fuso do celular e o banco, no da empresa (`configuracao.fuso`, padrão Nova York); para quem
   trabalha no mesmo fuso da empresa é igual.
 - **Quarteirização:** a presença de empresas abaixo da prestadora (nível 2 em diante) chega com a fatia 7 (ligação entre obras).

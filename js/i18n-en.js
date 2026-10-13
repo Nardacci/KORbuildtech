@@ -3138,4 +3138,9 @@ export const EN = {
   'Seu período de teste terminou: fale com o KORbuild.': 'Your trial period has ended: please contact KORbuild.',
   'Administração da plataforma (KORbuild)': 'Platform administration (KORbuild)',
   'Desde': 'Since',
+  'Foto da equipe (opcional; no celular, abre a câmera)': 'Team photo (optional; on a phone, opens the camera)',
+  'Não foi possível usar a foto; a entrada foi registrada sem ela.': 'The photo could not be used; the clock-in was saved without it.',
+  'Ver a foto': 'View the photo',
+  'Foto da batida': 'Clock-in photo',
+  'A foto ainda não está disponível. Tente de novo com internet.': 'The photo is not available yet. Try again with internet.',
 };

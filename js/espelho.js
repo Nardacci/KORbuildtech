@@ -9,7 +9,7 @@
 
 import { tr } from './i18n.js';
 import { usarIdsUuid } from './util.js';
-import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatura } from './armazem.js';
+import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatura, idDaFotoDePonto, estado } from './armazem.js';
 import { criarSettings } from './settings.js';
 import { conta, cliente, iniciar, emailAtual } from './conta.js';
 import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca, lerCronograma, aplicarCronograma, lerMeasure, aplicarMeasure } from './espelho-crew.js';
@@ -31,6 +31,13 @@ const cidadeDe = (o) => [o.municipio, [o.estado, o.zip].filter(Boolean).join(' '
 /* Fotos que não estão no aparelho: o caminho no Storage de cada id (e da miniatura), para pedir um link temporário. */
 const caminhos = new Map();
 async function fotoRemota(id) {
+  // foto de uma batida do ponto: o id é 'ponto:{batida}' e o caminho é {empresa}/{funcionário}/{batida}.jpg no bucket ponto
+  if (id.startsWith('ponto:')) {
+    const b = (((estado() || {}).crew || {}).batidas || []).find((x) => id === idDaFotoDePonto(x.fotoId || x.id));
+    if (!b || !b.fotoPath) return '';
+    const { data } = await cliente().storage.from('ponto').createSignedUrl(b.fotoPath, 3600);
+    return (data && data.signedUrl) || '';
+  }
   const path = caminhos.get(id);
   if (!path) return '';
   const { data } = await cliente().storage.from('diarios').createSignedUrl(path, 3600);

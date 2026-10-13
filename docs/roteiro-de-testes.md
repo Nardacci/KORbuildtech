@@ -127,6 +127,12 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Como a prestadora vencedora: o convite mostra "Você venceu"; "Criar obra a partir deste projeto" abre o cadastro preenchido; ao criar, a obra aparece ligada (Daily → Obras) e a construtora passa a receber o diário dela.
 - [ ] No link, a prestadora sem conta vê "fechou com outra empresa", sem o valor.
 
+### Foto da batida (Crew)
+- [ ] No celular, como encarregado: Bater entrada da equipe com "Foto da equipe": a câmera abre; bata a entrada. No ponto de cada pessoa aparece "· com foto".
+- [ ] Sem internet: repita; a batida fica "no aparelho"; com o sinal de volta ela sobe com a foto.
+- [ ] Como escritório: Crew › dia da pessoa mostra a miniatura; tocar abre a foto grande, com o carimbo de obra, hora e local.
+- [ ] Como construtora (obra ligada): vê quem bateu, mas não a foto.
+
 ### Avisos (fatia 8; os e-mails só depois de configurar o SMTP)
 - [ ] Com duas contas (uma prestadora, uma construtora ligadas por uma concorrência ganha): a prestadora envia um diário; no sininho da construtora aparece "RDO nº … aguardando aprovação"; ao abrir, o aviso fica lido (e continua lido em outro aparelho).
 - [ ] A construtora aprova: o sininho da prestadora mostra "RDO nº … aprovado". Pedir ajustes: "O escritório pediu ajustes no RDO nº …".

@@ -181,6 +181,9 @@ async function operacao(modo, fn) {
 /* Cada foto tem duas versões: a do relatório (id) e a miniatura das listas (id + '-mini'). */
 export function idMiniatura(id) { return id + '-mini'; }
 
+/* A foto de uma batida do ponto fica no mesmo cofre de fotos, com este prefixo (a do RDO usa o id puro). */
+export const idDaFotoDePonto = (id) => 'ponto:' + id;
+
 export function guardarFoto(id, blob, mini) {
   return operacao('readwrite', (s) => { if (mini) s.put(mini, idMiniatura(id)); return s.put(blob, id); });
 }
