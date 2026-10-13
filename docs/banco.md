@@ -129,7 +129,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 3 | `supabase/migrations/20261014_0005_daily.sql` (só cria): `rdos`, `rdo_fotos`, `rdo_historico`, bucket `diarios` com as políticas das fotos, `salvar_rdo()`, `enviar_rdo()`, `dia_sem_atividade()`, `aprovar_rdo()` (lacre no banco), `pedir_ajustes()`, `diarios_recebidos()`, `diario_por_codigo()`; função de borda `supabase/functions/diario-publico` (link do cliente, fotos por links temporários). Teste: `supabase/testes/0003_daily.sql` (desenho no §10) | Usar o diário de verdade, com e sem internet |
 | 4 | `supabase/migrations/20261015_0006_crew.sql` (só cria; acrescenta `funcionarios.equipe_id`). Teste: `supabase/testes/0004_crew.sql`. Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
 | 5 | `supabase/migrations/20261016_0007_cronograma.sql` (só cria; reescreve `aprovar_rdo`). Teste: `supabase/testes/0005_cronograma.sql`. Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
-| 6 | Measure: projetos, folhas (Storage), condições com as medições, typicals, catálogo, preços e margens (só `insert`), propostas emitidas (desenho no §13) | Medir, cotar e emitir propostas de verdade; consulta no celular |
+| 6 | `supabase/migrations/20261017_0008_measure.sql` (só cria). Teste: `supabase/testes/0006_measure.sql`. Measure: projetos, folhas (Storage `plantas`), condições com as medições, typicals, catálogo, preços e margens (só `insert`), propostas emitidas (desenho no §13) | Medir, cotar e emitir propostas de verdade; consulta no celular |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
 | 8 | Notificações por e-mail e a área de administração da plataforma | |
 
@@ -365,7 +365,7 @@ situação, avanço e desvio continua em `js/cronograma.js`, sobre o espelho.
 
 - Dependência "começa depois de" entre etapas, metas vindas do Measure e horas do Crew por etapa (docs/cronograma.md §5).
 
-## 13. Fatia 6 — o Measure no banco (desenho para aprovação)
+## 13. Fatia 6 — o Measure no banco (desenho aprovado em outubro de 2026)
 
 O Measure é trabalho de escritório, **no computador e com internet** (docs/measure.md §3e: desenhar e medir é só no
 computador; o celular consulta). Por isso esta fatia não tem fila sem internet: cada mudança vai ao banco na hora
@@ -381,7 +381,7 @@ estão testados; o banco guarda os dados, garante quem pode e congela o que não
 | `folhas` | `id`, `empresa_id`, `projeto_id`, `nome`, `arquivo_path` (Storage), `arquivo_nome`, `pagina`, `escala jsonb` (ppp, origem, conferência), `criada_em` | Uma linha por página do PDF enviado. A escala é da folha (MZ-03). |
 | `condicoes` | `id`, `empresa_id`, `projeto_id`, `nome`, `tipo` (linear · area · contagem), `cor`, `props jsonb`, `assemblies uuid[]`, `folhas uuid[]`, `oculta`, **`medicoes jsonb`**, `versao`, `atualizado_em` | As medições ficam **dentro da condição** (MZ-05: condição ≠ medições, mas elas só existem nela): `[{id, folhaId, pontos, desconto, vao, vaoDe, em}]` em points do PDF (MZ-02). `versao` detecta dois computadores na mesma condição. |
 | `typicais` | `id`, `empresa_id`, `projeto_id`, `folha_id`, `nome`, `regiao jsonb` (null = folha inteira), `ocorrencias jsonb`, `por_nome`, `em` | TY-01 a TY-04 conferidos no banco (sem sobreposição; folha inteira não convive com região). |
-| `itens` | `id`, `empresa_id`, `codigo`, `nome`, `categoria` (material · mao-de-obra · equipamento · subempreiteiro), `unidade`, `etapa`, `nota` | Código único na empresa. Não sai enquanto um assembly o usa (gatilho). |
+| `itens` | `id`, `empresa_id`, `codigo`, `nome`, `categoria` (material · mao-de-obra · equipamento · subempreiteiro), `unidade`, `etapa`, `nota` | Código único na empresa. Não sai enquanto um assembly o usa (gatilho); sem assembly, sai e leva os preços dele (o histórico fica na auditoria). |
 | `item_precos` | `id`, `empresa_id`, `item_id`, `desde`, `valor`, `fonte`, `fornecedor_id` (→ `contatos`), `por`, `por_nome`, `em` | Só `insert` (PR-01). O app usa o preço que vale no dia. |
 | `assemblies` | `id`, `empresa_id`, `nome`, `tipo`, `descricao`, `linhas jsonb` ([{id, itemId, formula, perda, passo}]) | A fórmula é validada no app (mathjs restrito) **e** o banco recusa linha sem item da empresa ou com caracteres fora do alfabeto das fórmulas (defesa em profundidade). |
 | `margens_versoes` | `id`, `empresa_id`, `desde`, `overhead_pct`, `lucro_pct`, `modo` (markup · margem), `imposto_material_pct`, `motivo`, `por`, `por_nome`, `em` | Só `insert`, com motivo (PR-03), na auditoria. |
