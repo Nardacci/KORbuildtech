@@ -23,7 +23,11 @@ let redesenhar = () => {};
 /* Os perfis padrão vêm do banco em português (criar_empresa); na tela, no idioma escolhido. Os criados pela empresa ficam como estão. */
 const nomeDoPerfil = (p) => (p ? (p.chave ? tr(p.nome) : p.nome) : '');
 const descricaoDoPerfil = (p) => (p && p.descricao ? (p.chave ? tr(p.descricao) : p.descricao) : '');
-export function ligarOficial(fn) { redesenhar = fn; aoMudar(() => redesenhar()); ligarCadastros({ redesenhar: () => redesenhar(), ir: (h) => ir(h) }); }
+/* A conta é relida sozinha (renovação do token, idioma gravado, outro aparelho): quem está na área da conta com um formulário em que já
+ * mexeu não o vê apagado. As ações da própria pessoa chamam redesenhar() direto e não passam por aqui; as telas de entrada
+ * (login, cadastro) ficam de fora, porque precisam trocar de tela quando a sessão muda. */
+const formularioEmEdicao = () => !!(conta.membro && location.hash.startsWith('#/conta') && document.querySelector('#app form[data-sujo]'));
+export function ligarOficial(fn) { redesenhar = fn; aoMudar(() => { if (!formularioEmEdicao()) redesenhar(); }); ligarCadastros({ redesenhar: () => redesenhar(), ir: (h) => ir(h) }); }
 
 const CONVITE = 'kbt.convite';
 

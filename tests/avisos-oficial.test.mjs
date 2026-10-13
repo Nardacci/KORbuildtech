@@ -97,6 +97,15 @@ try {
   await aviso('Prazo prorrogado: {servico}', { servico: 'Siding' }, '#/measure/convite/c2', 'concorrencia');
   const pendentes = await sql(`select count(*)::int n from public.avisos_pendentes_email(50, 0) p, jsonb_array_elements(p.avisos) a where p.user_id = '${ID}' and a ->> 'categoria' = 'concorrencia'`);
   verificar(pendentes[0].n === 0, 'com os avisos de concorrência desligados por e-mail, o banco não os entrega à função de envio', pendentes);
+
+  console.log('Formulário da conta em preenchimento: um evento de login não o apaga');
+  await p.goto(BASE + '#/conta/perfil');
+  await p.waitForSelector('#mp-nome', { timeout: 30000 });
+  await p.fill('#mp-nome', 'Ana Editada');
+  // o Supabase avisa o app de uma mudança na sessão (renovação do token, idioma gravado na conta…) e o app relê a conta
+  await p.evaluate(async () => { const c = await import('./js/conta.js'); c.cliente().auth._notifyAllSubscribers('USER_UPDATED', c.conta.sessao); });
+  await p.waitForTimeout(1500);
+  verificar((await p.inputValue('#mp-nome')) === 'Ana Editada', 'o que a pessoa digitou continua no campo depois da releitura da conta', await p.inputValue('#mp-nome'));
 } catch (e) {
   falhas++;
   console.log('FALHA inesperada: ' + (e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e));
