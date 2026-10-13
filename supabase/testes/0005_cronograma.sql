@@ -209,10 +209,10 @@ do $$ begin
 end $$;
 reset role;
 
--- Excluir a empresa leva tudo junto (cascata), sem esbarrar nas travas.
+-- Excluir a empresa leva tudo junto (cascata), sem esbarrar nas travas. (Confere só a empresa da cena: o banco de verdade tem a massa de demonstração.)
 delete from public.empresas where id = pg_temp.g('A')::uuid;
 do $$ begin
-  if exists (select 1 from public.cronograma_etapas) or exists (select 1 from public.etapa_avancos) or exists (select 1 from public.linhas_base) or exists (select 1 from public.publicacoes_cronograma) then
+  if exists (select 1 from public.cronograma_etapas where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.etapa_avancos where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.linhas_base where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.publicacoes_cronograma where de_empresa_id = pg_temp.g('A')::uuid or para_empresa_id = pg_temp.g('A')::uuid) then
     raise exception 'FALHOU: sobrou cronograma da empresa excluída';
   end if;
 end $$;

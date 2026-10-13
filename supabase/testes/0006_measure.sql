@@ -207,11 +207,11 @@ do $$ begin
 end $$;
 reset role;
 
--- Excluir a empresa leva tudo junto (cascata), sem esbarrar nas travas.
+-- Excluir a empresa leva tudo junto (cascata), sem esbarrar nas travas. (Confere só a empresa da cena: o banco de verdade tem a massa de demonstração.)
 delete from public.empresas where id = pg_temp.g('A')::uuid;
 do $$ begin
-  if exists (select 1 from public.projetos) or exists (select 1 from public.itens) or exists (select 1 from public.item_precos) or exists (select 1 from public.margens_versoes)
-     or exists (select 1 from public.propostas_emitidas) or exists (select 1 from public.assemblies) then
+  if exists (select 1 from public.projetos where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.itens where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.item_precos where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.margens_versoes where empresa_id = pg_temp.g('A')::uuid)
+     or exists (select 1 from public.propostas_emitidas where empresa_id = pg_temp.g('A')::uuid) or exists (select 1 from public.assemblies where empresa_id = pg_temp.g('A')::uuid) then
     raise exception 'FALHOU: sobrou Measure da empresa excluída';
   end if;
 end $$;
