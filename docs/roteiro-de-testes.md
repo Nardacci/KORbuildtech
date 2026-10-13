@@ -49,6 +49,8 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `sql 0001_acesso`, `sql 0002_settings` | Supabase | Regras de acesso das fatias 1 e 2 (cada empresa só vê o que é dela; dinheiro só para quem pode) | segundos |
 | `conta` | navegador + Supabase | O caminho real: entrar, criar empresa, perfis, Meu perfil, cadastros, convite, permissões, auditoria | ~2 min |
 | `sql 0003_daily` | Supabase | Regras do Daily: quem preenche, envia e aprova; lacre; fotos; link do cliente; sem internet | segundos |
+| `sql 0004_crew` | Supabase | Regras do Crew: batida que não se edita, cerca, semana aprovada fechada, dia sem saída, localização só com o ponto aberto, presença para a construtora sem dinheiro |
+| `crew-oficial` | navegador + Supabase | O Crew de ponta a ponta: o encarregado bate o ponto da equipe (dentro e fora da cerca), sem internet a batida sobe depois com a hora certa, o trabalhador bate o próprio ponto e a localização é gravada, o escritório confere, ajusta, aprova e devolve a semana, orçamento, mapa do dia e a visão da construtora | ~3 min |
 | `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
 
 O teste `daily` cria os usuários `kb-e2e-daily-…@example.com`, duas empresas, obras, diários e fotos, e apaga tudo
@@ -85,6 +87,15 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Modo avião no celular: preencher e enviar outro RDO (fica "para enviar"); tirar do modo avião: sobe sozinho.
 - [ ] Aprovar: aparece o código; "Copiar o link" e abrir numa janela anônima: "Documento autêntico" e a foto.
 - [ ] Pedir ajustes: o celular mostra o pedido e "Reenviar".
+
+### Crew (fatia 4)
+- [ ] Início → "Abrir o Crew". Como Encarregado, no celular: aceite o aviso de localização e bata a entrada de duas pessoas.
+- [ ] Modo avião: bata o intervalo; o aviso de conexão mostra "1 no aparelho". Tire do modo avião: sobe sozinho, com a hora em que foi batido.
+- [ ] Como Trabalhador: "Meu ponto" bate a volta do intervalo e a saída; com o app aberto, a localização é registrada.
+- [ ] No computador, como Administrador: "Agora" mostra quem está na obra; a batida fora da cerca pede "Conferido".
+- [ ] Timesheets: a semana com dia sem saída não aprova; "Ajustar" cria uma batida nova com o motivo; aprovar e devolver.
+- [ ] Custos: cadastre o orçamento de uma obra; o mapa do dia mostra os registros de localização reais.
+- [ ] Como Construtora, numa obra ligada: a página da obra mostra quem bateu o ponto, sem valores.
 
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).

@@ -59,7 +59,7 @@ if (-not (NoAr)) {
 
 # ---------- O que roda ----------
 # Protótipo e telas oficiais: no navegador, sem banco. Banco: SQL (com ROLLBACK) e a conta de verdade.
-$prototipo = Get-ChildItem tests -Filter '*.test.mjs' | Where-Object { $_.Name -notin @('conta.test.mjs', 'daily.test.mjs') } | Sort-Object Name |
+$prototipo = Get-ChildItem tests -Filter '*.test.mjs' | Where-Object { $_.Name -notin @('conta.test.mjs', 'daily.test.mjs', 'crew-oficial.test.mjs') } | Sort-Object Name |
   ForEach-Object { @{ nome = $_.BaseName -replace '\.test$', ''; tipo = 'navegador'; cmd = @($_.FullName, $base) } }
 $banco = @()
 if ($temToken) {
@@ -67,6 +67,7 @@ if ($temToken) {
     ForEach-Object { @{ nome = 'sql ' + $_.BaseName; tipo = 'banco'; cmd = @('tools/rodar-sql.mjs', $_.FullName) } }
   $banco += @{ nome = 'conta'; tipo = 'banco'; cmd = @('tests/conta.test.mjs', $base) }
   $banco += @{ nome = 'daily'; tipo = 'banco'; cmd = @('tests/daily.test.mjs', $base, '--real') }
+  $banco += @{ nome = 'crew-oficial'; tipo = 'banco'; cmd = @('tests/crew-oficial.test.mjs', $base, '--real') }
 }
 $lista = switch ($Parte) { 'prototipo' { $prototipo } 'banco' { $banco } default { $prototipo + $banco } }
 if ($Somente.Count) { $lista = $lista | Where-Object { $n = $_.nome; $Somente | Where-Object { $n -like "*$_*" } } }

@@ -12,6 +12,12 @@ import { conteudoDe, assinatura, temPendencia, rdoDoBanco, lembrarCaminhos } fro
 let rodando = null;
 export const sincronizando = () => !!rodando;
 
+/* Quantas batidas e registros de localização do aparelho ainda não subiram. */
+export function pendentesDoPonto() {
+  const d = estado();
+  return d && d.oficial && d.crew ? d.crew.batidas.filter((b) => !b._banco).length : 0;
+}
+
 /* Quantos diários do aparelho ainda não subiram (para o aviso de conexão). */
 export function pendentesNoAparelho() {
   const d = estado();
@@ -135,3 +141,61 @@ export function sincronizarDaily({ aoConflito, aoErro } = {}) {
   })().finally(() => { rodando = null; });
   return rodando;
 }
+
+
+/* ---------- O ponto (Crew, docs/banco.md §11.3) ---------- */
+
+/* O banco recusa só o que não pode entrar (semana já aprovada, obra de fora…): volta o motivo e a batida sai da fila. */
+export const MOTIVOS_DA_RECUSA = () => ({
+  'semana-aprovada': tr('A semana dessa batida já foi aprovada e enviada para a folha.'),
+  obra: tr('A obra dessa batida não foi encontrada.'),
+  funcionario: tr('O funcionário dessa batida não foi encontrado.'),
+  'funcionario-inativo': tr('O funcionário dessa batida não está ativo.'),
+  permissao: tr('Você não tem permissão para bater o ponto dessa pessoa.'),
+  hora: tr('A hora dessa batida não é válida.'),
+});
+
+const paraBanco = (b) => ({
+  id: b.id, funcionario_id: b.funcionarioId, tipo: b.tipo, obra_id: b.obraId || null, etapa: b.etapa || null, em: new Date(b.em).toISOString(),
+  lat: b.lat == null ? null : b.lat, lon: b.lon == null ? null : b.lon, precisao: b.precisao == null ? null : Math.round(b.precisao),
+  fonte_gps: b.fonteGps || 'gps', modo: b.modo === 'equipe' ? 'equipe' : 'pessoal', nota: b.nota || null, criado_no_aparelho_em: new Date(b.em).toISOString(),
+});
+
+let rodandoPonto = null;
+/* Sobe as batidas e os registros de localização do aparelho, na ordem em que aconteceram. aoRecusar(batida, motivo). */
+export function sincronizarPonto({ aoRecusar } = {}) {
+  if (rodandoPonto) return rodandoPonto;
+  rodandoPonto = (async () => {
+    const d = estado();
+    if (!d || !d.oficial || !d.crew || !navigator.onLine) return 0;
+    let subiram = 0;
+    const pendentes = d.crew.batidas.filter((b) => !b._banco && b.modo !== 'ajuste').sort((a, b) => a.em - b.em);
+    for (let i = 0; i < pendentes.length; i += 100) {
+      const lote = pendentes.slice(i, i + 100);
+      const res = await rpc('registrar_batidas', { p: lote.map(paraBanco) });
+      const gravadas = new Set(res.gravadas);
+      const recusadas = new Map(res.recusadas.map((x) => [x.id, x.motivo]));
+      for (const b of lote) {
+        if (gravadas.has(b.id)) { b._banco = true; subiram++; } else if (recusadas.has(b.id)) {
+          d.crew.batidas.splice(d.crew.batidas.indexOf(b), 1);
+          if (aoRecusar) aoRecusar(b, recusadas.get(b.id));
+        }
+      }
+      salvar();
+    }
+    const locais = (d.crew.localizacoes || []).filter((l) => !l._banco).sort((a, b) => a.em - b.em);
+    for (let i = 0; i < locais.length; i += 100) {
+      const lote = locais.slice(i, i + 100);
+      const res = await rpc('registrar_localizacoes', { p: lote.map((l) => ({ id: l.id, em: new Date(l.em).toISOString(), lat: l.lat, lon: l.lon, precisao: l.precisao == null ? null : Math.round(l.precisao), gatilho: l.gatilho, criado_no_aparelho_em: new Date(l.em).toISOString() })) });
+      const gravadas = new Set(res.gravadas);
+      for (const l of lote) {
+        if (gravadas.has(l.id)) l._banco = true;
+        else d.crew.localizacoes.splice(d.crew.localizacoes.indexOf(l), 1);   // recusada (ponto fechado, intervalo, sem o aviso): não volta
+      }
+      salvar();
+    }
+    return subiram;
+  })().finally(() => { rodandoPonto = null; });
+  return rodandoPonto;
+}
+export const subindoPonto = () => !!rodandoPonto;

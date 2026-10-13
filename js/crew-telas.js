@@ -12,11 +12,13 @@ import { obterPosicao } from './fotos.js';
 import {
   ETAPAS, distanciaM, dentroDaCerca, inicioDaSemana, diasDaSemana, horas, dinheiro, funcionario, equipe,
   equipeDoEncarregado, membros, jornada, semana, aprovacaoDaSemana, registrarBatidas, decidirSemana,
-  valorHoraEm, valorAtual, historicoDeValores, alterarValorHora, encargos, orcamento, definirOrcamento,
-  custosDoPeriodo, resumoDaObra, statusSemana,
+  valorHoraEm, valorAtual, historicoDeValores, alterarValorHora, encargos, orcamento, definirOrcamento, conferirBatida, ajustarBatida,
+  custosDoPeriodo, resumoDaObra, statusSemana, REGISTRO_GPS_MIN, REGISTRO_MOVIMENTO_MIN, pedirEnvioDoPonto,
 } from './crew.js';
 import { ativos, funcionarios as todosFuncionarios, regraEm, resumoRegra, encargosVersao } from './settings.js';
 import { emAndamento } from './obras.js';
+import { aceitarAvisoDeLocalizacao } from './crew-oficial.js';
+import { registrarLocalizacaoSePreciso } from './localizacao.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarCrew(funcoes) { app = { ...app, ...funcoes }; }
@@ -122,6 +124,7 @@ function telaEquipe() {
   return moldura({
     ativo: 'equipe', titulo: tr('Ponto da equipe'), subtitulo: eq.nome + ' · ' + primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
+      cartaoAvisoLocalizacao(u.funcionarioId && funcionario(u.funcionarioId)) +
       ('<section class="cartao relogio-ponto"><div><span class="mudo pequeno">' + tr('Hora oficial do ponto') + '</span><b id="relogio-crew">') + horaComSegundos() + '</b></div>' +
         '<div class="resumo-ponto"><span><b>' + conta('trabalho') + '</b> ' + tr('trabalhando') + '</span><span><b>' + conta('intervalo') + ('</b> ' + tr('em intervalo') + '</span>') +
         '<span><b>' + conta('deslocamento') + ('</b> ' + tr('em deslocamento') + '</span><span><b>') + (conta('fora') + conta('saiu')) + '</b> ' + tr('fora') + '</span></div></section>' +
@@ -152,6 +155,14 @@ function telaEquipe() {
   });
 }
 
+/* Conta de verdade: a localização durante a jornada só começa depois que a própria pessoa aceita o aviso (RN-17). */
+function cartaoAvisoLocalizacao(f) {
+  if (!estado().oficial || !f || f.avisoGps) return '';
+  return '<section class="cartao aviso-local"><h2 class="cartao-titulo">' + tr('Aviso sobre a sua localização') + '</h2>' +
+    '<p class="mudo">' + tr('Com o ponto aberto e o app aberto, o KORbuild registra onde o seu celular está: ao abrir o app e de tempos em tempos. Nada é registrado no intervalo, depois da saída nem com o ponto fechado. O escritório vê o percurso do dia.') + '</p>' +
+    '<button type="button" class="btn btn-primario" data-acao="crew-aceitar-aviso">' + tr('Li e aceito') + '</button></section>';
+}
+
 /* ---------- Trabalhador: o próprio ponto (sem tela de módulos) ---------- */
 
 function telaMeuPonto() {
@@ -169,6 +180,7 @@ function telaMeuPonto() {
   return moldura({
     ativo: 'meu', titulo: (tr('Olá,') + ' ') + f.nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
     conteudo:
+      cartaoAvisoLocalizacao(f) +
       ('<section class="cartao meu-ponto"><span class="mudo pequeno">' + tr('Hora oficial do ponto') + '</span><b id="relogio-crew" class="relogio-grande">') + horaComSegundos() + '</b>' +
         '<span class="estado-ponto estado-' + d.classe + '">' + esc(d.texto) + '</span>' +
         (j.pago ? ('<span class="mudo">' + tr('Hoje:') + ' <b>') + horas(j.pago) + '</b> trabalhadas</span>' : '') +
@@ -279,6 +291,13 @@ function obraAtualDe(id) {
 
 export const acoesCrew = {
   'crew-mapa-cheio'() { alternarTelaCheia(); },
+  async 'crew-aceitar-aviso'() {
+    const r = await aceitarAvisoDeLocalizacao();
+    if (r.erro) { toast(r.erro); return; }
+    toast(tr('Aviso aceito. Obrigado!'));
+    if (await registrarLocalizacaoSePreciso()) pedirEnvioDoPonto();
+    app.desenhar();
+  },
   async 'crew-valor-hora'(el) {
     const f = funcionario(el.dataset.id);
     // padrão: a partir da próxima segunda (semana nova, ainda aberta)
@@ -293,7 +312,7 @@ export const acoesCrew = {
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Salvar novo valor'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = alterarValorHora(f.id, Number(String(res.campos.valor).replace(',', '.')), res.campos.desde, res.campos.motivo, usuarioAtual().nome);
+    const r = await alterarValorHora(f.id, Number(String(res.campos.valor).replace(',', '.')), res.campos.desde, res.campos.motivo, usuarioAtual().nome);
     if (r.erro) { toast(r.erro); return; }
     toast((tr('Novo valor de') + ' ') + f.nome.split(' ')[0] + ': ' + dinheiro(Number(String(res.campos.valor).replace(',', '.'))) + (tr('/h a partir de') + ' ') + dataCurta(res.campos.desde) + '.');
     app.desenhar();
@@ -311,7 +330,8 @@ export const acoesCrew = {
     if (!res || !res.valor) return;
     const valor = Number(res.campos.valor), avanco = res.campos.avanco === '' ? null : Number(res.campos.avanco);
     if (!(valor > 0) || (avanco != null && (avanco < 0 || avanco > 100))) { toast(tr('Informe um orçamento maior que zero e um avanço entre 0 e 100%.')); return; }
-    definirOrcamento(id, { valor, avanco }, usuarioAtual().nome);
+    const gravado = await definirOrcamento(id, { valor, avanco }, usuarioAtual().nome);
+    if (gravado && gravado.erro) { toast(gravado.erro); return; }
     toast((tr('Orçamento de') + ' ') + nomeObra(id) + ' atualizado.');
     app.desenhar();
   },
@@ -332,7 +352,7 @@ export const acoesCrew = {
     const eq = equipeDoEncarregado(usuarioAtual().id) || equipe(funcionario(ids[0]).equipeId) || { obraBaseId: estado().obras[0].id };
     const r = await dialogoComLocal({
       titulo: proprio(ids) ? tr('Sua entrada') : tn(ids.length, 'Entrada de {n} pessoa', 'Entrada de {n} pessoas'), obraId: eq.obraBaseId, comObra: true, rotulo: tr('Bater entrada'),
-      corpoDepois: ('<label class="rotulo-pequeno" for="crew-etapa">' + tr('Etapa (cost code)') + '</label><select id="crew-etapa" name="etapa">') + opcoesEtapas(acharObra(eq.obraBaseId).etapa.includes('Alvenaria') ? tr('Alvenaria') : ETAPAS[0]) + '</select>' +
+      corpoDepois: ('<label class="rotulo-pequeno" for="crew-etapa">' + tr('Etapa (cost code)') + '</label><select id="crew-etapa" name="etapa">') + opcoesEtapas((acharObra(eq.obraBaseId).etapa || '').includes('Alvenaria') ? tr('Alvenaria') : ETAPAS[0]) + '</select>' +
         ('<label class="lembrar"><input type="checkbox" name="foto" value="1"> ' + tr('Foto da equipe (no celular, abre a câmera)') + '</label>'),
     });
     if (!r) return;
@@ -384,11 +404,8 @@ export const acoesCrew = {
     app.desenhar();
   },
   async 'crew-conferir'(el) {
-    const b = estado().crew.batidas.find((x) => x.id === el.dataset.id);
-    if (!b) return;
-    b.conferida = true;
-    b.conferidaPor = usuarioAtual().nome;
-    salvar();
+    const r = await conferirBatida(el.dataset.id, usuarioAtual().nome);
+    if (r.erro) { toast(r.erro); return; }
     toast(tr('Batida conferida. Ela continua registrada como fora da cerca.'));
     app.desenhar();
   },
@@ -405,7 +422,8 @@ export const acoesCrew = {
       return;
     }
     if (!(await confirmar(tn(ids.length, 'Aprovar {n} timesheet?', 'Aprovar {n} timesheets?'), tr('As horas aprovadas ficam liberadas para a folha de pagamento.'), tr('Aprovar')))) return;
-    decidirSemana(ids, segunda, 'aprovado', usuarioAtual().nome);
+    const r = await decidirSemana(ids, segunda, 'aprovado', usuarioAtual().nome);
+    if (r && r.erro) { toast(r.erro); return; }
     selecionados.clear();
     toast(tr('Aprovado. As horas já podem ser exportadas para a folha.'));
     app.desenhar();
@@ -417,7 +435,8 @@ export const acoesCrew = {
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Devolver'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor || !res.campos.motivo.trim()) return;
-    decidirSemana([el.dataset.id], el.dataset.semana, 'devolvido', usuarioAtual().nome, res.campos.motivo.trim());
+    const r = await decidirSemana([el.dataset.id], el.dataset.semana, 'devolvido', usuarioAtual().nome, res.campos.motivo.trim());
+    if (r && r.erro) { toast(r.erro); return; }
     toast(tr('Devolvido ao encarregado com o motivo.'));
     app.desenhar();
   },
@@ -439,11 +458,11 @@ export const acoesCrew = {
     const em = new Date(a, me - 1, d, Number(m[1]), Number(m[2])).getTime();
     const j = jornada(f.id, iso);
     const ultima = j.batidas[j.batidas.length - 1];
-    registrarBatidas([f.id], {
+    const r = await ajustarBatida(f.id, {
       tipo: res.campos.tipo, obraId: ultima ? ultima.obraId : (equipe(f.equipeId) || {}).obraBaseId, etapa: ultima ? ultima.etapa : null, em,
-      lat: null, lon: null, dentroCerca: null, fonteGps: 'ajuste', registradoPor: usuarioAtual().id, modo: 'ajuste',
-      ajuste: { motivo: res.campos.motivo.trim(), por: usuarioAtual().nome, em: Date.now() },
-    });
+      registradoPor: usuarioAtual().id, motivo: res.campos.motivo.trim(),
+    }, usuarioAtual().nome);
+    if (r && r.erro) { toast(r.erro); return; }
     toast(tr('Ajuste registrado.'));
     app.desenhar();
   },
@@ -836,9 +855,32 @@ function semearRnd(texto) {
 /* Registro de localização (simulado): só com o ponto aberto e pausado no intervalo.
  * Um registro a cada 15 min na obra, a cada 5 min em deslocamento e a cada 3 min fora da cerca.
  * As próprias batidas também são pontos do caminho (ver passosDoDia). */
-const REGISTRO_GPS_MIN = 15;
-const REGISTRO_MOVIMENTO_MIN = 5;
+/* Conta de verdade: os registros que o celular gravou (PONTO-GPS-01), no lugar da trilha simulada do protótipo. */
+function trilhaReal(f, iso, j) {
+  const pts = [];
+  for (const l of (estado().crew.localizacoes || []).filter((x) => x.funcionarioId === f.id && isoDoDia(new Date(x.em)) === iso)) {
+    const seg = j.segmentos.find((s) => l.em >= s.ini && l.em <= (s.fim || Date.now()));
+    const o = acharObra(l.obraId || (seg && seg.obraId));
+    const fora = !!o && !(seg && seg.tipo === 'deslocamento') && !dentroDaCerca(o, l.lat, l.lon);
+    pts.push({ em: l.em, lat: l.lat, lon: l.lon, fora, situacao: seg && seg.tipo === 'deslocamento' ? 'deslocamento' : fora ? 'fora' : 'obra', obraId: (o || {}).id || (seg || {}).obraId, precisao: l.precisao, gatilho: l.gatilho === 'app-aberto' ? 'app' : 'periodico' });
+  }
+  return { pontos: pts.sort((a, b) => a.em - b.em), excursoes: [] };
+}
+
+/* Trechos de trabalho com mais de duas vezes o intervalo sem nenhum registro: app fechado ou sem sinal (o navegador não grava em segundo plano). */
+function trechosSemRegistro(j, trilha) {
+  const pausa = 2 * REGISTRO_GPS_MIN * 60000;
+  let n = 0;
+  for (const s of j.segmentos.filter((x) => x.tipo !== 'intervalo')) {
+    const fim = s.fim || (s.aberto ? Date.now() : s.ini);
+    const marcas = [s.ini].concat(trilha.pontos.filter((p) => p.em > s.ini && p.em < fim).map((p) => p.em), [fim]).sort((a, b) => a - b);
+    for (let i = 1; i < marcas.length; i++) if (marcas[i] - marcas[i - 1] > pausa) n++;
+  }
+  return n;
+}
+
 function trilhaDoDia(f, iso, j) {
+  if (estado().oficial) return trilhaReal(f, iso, j);
   const rnd = semearRnd(f.id + iso);
   const exc = (estado().crew.excursoes || []).filter((e) => e.funcionarioId === f.id && e.data === iso);
   const pts = [];
@@ -1360,12 +1402,14 @@ function telaDia(funcId, iso) {
     conteudo:
       (j.alertas.length ? '<p class="alertas-dia">' + j.alertas.map((a) => '<span class="etiqueta etiqueta-alerta">' + esc(a.texto) + '</span>').join('') + '</p>' : '') +
       '<div class="dia-coluna">' +
-        (admin ? ('<section class="cartao mapa-cartao" id="mapa-cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Mapa do dia') + ' <span class="etiqueta etiqueta-neutro">' + tr('Trilha simulada') + '</span></h2>') +
+        (admin ? ('<section class="cartao mapa-cartao" id="mapa-cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Mapa do dia') + (estado().oficial ? '' : ' <span class="etiqueta etiqueta-neutro">' + tr('Trilha simulada') + '</span>') + '</h2>') +
             (j.batidas.length ? '<div class="mapa-botoes"><button type="button" class="btn btn-primario btn-pequeno" data-acao="crew-reproduzir">' + icone('play', 16) + ('<span>' + tr('Reproduzir') + '</span></button>') +
               '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="crew-mapa-cheio">' + icone('olho', 16) + ('<span>' + tr('Tela cheia') + '</span></button></div>') : '') + '</div>' +
           (j.batidas.length ? resumoPassos(passos) + '<div class="mapa-area" id="mapa-dia" data-mapa="' + esc(JSON.stringify(dadosDoMapa(j, trilha, percurso, passos))) + '">' + mapaSvg(j, trilha) + '</div>' : ('<p class="vazio">' + tr('Sem batidas neste dia.') + '</p>')) +
           ('<p class="legenda-mapa"><span><i class="lg-inicio"></i>' + tr('entrada') + '</span><span><i class="lg-fim"></i>' + tr('saída') + '</span><span><i class="lg-ponto"></i>' + tr('registro de localização') + '</span><span><i class="lg-seta"></i>' + tr('sentido do percurso') + '</span><span><i class="lg-parada">1</i>' + tr('obra (ordem da visita)') + '</span><span><i class="lg-cerca"></i>' + tr('cerca da obra') + '</span><span><i class="lg-desloc"></i>' + tr('deslocamento') + '</span><span><i class="lg-batida"></i>' + tr('batida') + '</span><span><i class="lg-fora"></i>' + tr('fora da cerca') + '</span></p>') +
-          ('<p class="mudo pequeno">' + tr('A localização só é registrada com o ponto aberto: na entrada, na saída, na troca de obra, quando o app é aberto e a cada') + ' ') + REGISTRO_GPS_MIN + (' ' + tr('min (a cada') + ' ') + REGISTRO_MOVIMENTO_MIN + (' ' + tr('min em deslocamento). Nada é registrado no intervalo nem com o ponto fechado. O trabalhador é avisado e vê o próprio mapa. No protótipo, os registros são simulados; na versão real, vêm do GPS do app nativo.') + '</p></section>') +
+          ('<p class="mudo pequeno">' + tr('A localização só é registrada com o ponto aberto: na entrada, na saída, na troca de obra, quando o app é aberto e a cada') + ' ') + REGISTRO_GPS_MIN + (' ' + tr('min (a cada') + ' ') + REGISTRO_MOVIMENTO_MIN + (' ' + tr('min em deslocamento). Nada é registrado no intervalo nem com o ponto fechado. O trabalhador é avisado e vê o próprio mapa. No protótipo, os registros são simulados; na versão real, vêm do GPS do app nativo.') + '</p>' +
+          (estado().oficial ? ('<p class="mudo pequeno">' + tr('Os registros vêm do celular, com o app aberto. Com o app fechado ou a tela bloqueada o navegador não grava: esses trechos aparecem como "sem registro".') + '</p>') +
+            (trechosSemRegistro(j, trilha) ? ('<p class="alertas-dia"><span class="etiqueta etiqueta-neutro">' + tn(trechosSemRegistro(j, trilha), '{n} trecho sem registro (app fechado ou sem sinal)', '{n} trechos sem registro (app fechado ou sem sinal)') + '</span></p>') : '') : '') + '</section>') +
           (j.batidas.length ? htmlPercurso(percurso) + htmlPassos(passos) : '') : '') +
         ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Linha do tempo') + '</h2>') +
           (eventos.length ? '<ol class="linha-tempo">' + eventos.map((e) => '<li class="' + e.classe + '"><span class="lt-hora">' + horaCurta(e.em) + '</span><div>' + e.html + '</div></li>').join('') + '</ol>' : ('<p class="vazio">' + tr('Sem batidas neste dia.') + '</p>')) +

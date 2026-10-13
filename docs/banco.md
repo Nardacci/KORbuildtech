@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatias 1, 2 e 3 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1, 2, 3 e 4 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -284,3 +284,21 @@ mostra os trechos sem registro como "sem registro (app fechado)", para ninguém 
   e-mail fica para a fatia 8.
 - **CSV para a folha:** continua gerado no app, só com semanas aprovadas. Integrações (QuickBooks, Gusto, ADP) ficam
   para depois do lançamento.
+
+### 11.8 No app (fatia 4 pronta)
+
+- **Espelho:** ao entrar no Crew, `js/espelho-crew.js` lê equipes, funcionários, valores, regras, encargos, batidas, conferências, aprovações,
+  orçamentos e localizações (de mil em mil linhas, o limite do servidor) e monta o mesmo formato do protótipo. Sem encargos cadastrados, o custo
+  sai sem encargos (a empresa ainda não definiu); sem regra de jornada, vale a padrão (FLSA federal). A construtora recebe a presença das
+  prestadoras ligadas às obras dela (`presenca_na_obra`) como empresas vizinhas, sem valores e sem localização.
+- **Ponto no aparelho:** bater o ponto grava no espelho e sobe sozinho (`registrar_batidas`), com a hora da batida; sem internet, fica na
+  fila e o aviso de conexão mostra "N no aparelho". Recusada pelo banco (semana aprovada, obra de fora…) = sai da fila com um aviso.
+- **Escritório:** conferir, ajustar, aprovar, devolver, orçamento e valor hora vão direto ao banco e pedem internet; depois o espelho é lido de novo.
+- **Localização:** `js/localizacao.js` grava a posição com o app aberto e o ponto aberto (ao abrir, a cada 15 min na obra e 5 min em
+  deslocamento; `empresas.configuracao.localizacao` muda os minutos), só depois que a própria pessoa aceita o aviso. O mapa do dia usa os
+  registros reais e avisa dos trechos sem registro (app fechado).
+- **Foto da batida:** o protótipo só marca "com foto"; a captura real da foto fica para depois (o bucket `ponto` já existe).
+- **Fuso:** o app agrupa as batidas por dia no fuso do celular e o banco, no da empresa (`configuracao.fuso`, padrão Nova York); para quem
+  trabalha no mesmo fuso da empresa é igual.
+- **Quarteirização:** a presença de empresas abaixo da prestadora (nível 2 em diante) chega com a fatia 7 (ligação entre obras).
+

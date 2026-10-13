@@ -12,6 +12,7 @@ import { usarIdsUuid } from './util.js';
 import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatura } from './armazem.js';
 import { criarSettings } from './settings.js';
 import { conta, cliente, iniciar, emailAtual } from './conta.js';
+import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca } from './espelho-crew.js';
 
 export const espelho = { pronto: false, lendo: null, lidoEm: 0, erro: null };
 
@@ -92,7 +93,7 @@ function dadosBase(empresa, por) {
   return {
     criadoEm: Date.now(), offlineSimulado: false, oficial: true,
     empresa, usuarios: [], contasDemo: [], interesses: [], contatos: [], obras: [], rdos: [], funcionarios: [],
-    settings, crew: { equipes: [], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {} },
+    settings, crew: { equipes: [], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {}, localizacoes: [] },
     cronogramas: {}, modelosCronograma: [], measure: { projetos: [], itens: [], assemblies: [], precos: [] },
   };
 }
@@ -107,11 +108,7 @@ export function temPendencia(r) {
   return r.status === 'enviado' && ['rascunho', 'ajustes'].includes(r._banco.status);
 }
 
-async function ler(tabela, ordem) {
-  const { data, error } = await cliente().from(tabela).select('*').order(ordem);
-  if (error) throw error;
-  return data || [];
-}
+const ler = (tabela, ordem) => lerTudo(tabela, ordem);   // de mil em mil: o servidor entrega no máximo 1000 por pedido
 
 export function montar() {
   if (espelho.lendo) return espelho.lendo;
@@ -120,16 +117,17 @@ export function montar() {
     if (!conta.sessao || !conta.membro || !conta.empresa) throw new Error('sem-conta');
     prepararArmazem(conta.sessao.user.id);
     const e = conta.empresa;
-    const [obras, contatos, membros, rdos, fotos, historico, recebidos] = await Promise.all([
+    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido] = await Promise.all([
       ler('obras', 'nome'), ler('contatos', 'nome'), ler('membros', 'nome'), ler('rdos', 'data'), ler('rdo_fotos', 'ordem'), ler('rdo_historico', 'em'),
       cliente().rpc('diarios_recebidos', { p_obra: null }).then(({ data, error }) => { if (error) throw error; return data || []; }),
+      lerCrew(),
     ]);
     const empresa = {
       id: e.id, nome: e.nome, razaoSocial: e.razao_social, sigla: e.sigla, ein: e.ein, atuacao: e.atuacao, especialidades: e.especialidades,
       endereco: e.endereco, cidade: e.cidade, estado: e.estado, zip: e.zip, telefone: e.telefone, email: e.email, site: e.site,
       licencas: e.licencas, seguros: e.seguros, termosProposta: e.termos_proposta, logo: null,
       plano: { nome: (e.plano || {}).nome || '', status: (e.plano || {}).status || 'teste' },
-      modulos: ['daily'],   // fatia 3: só o Daily usa o espelho; os outros módulos chegam nas próximas fatias
+      modulos: ['daily', 'crew'],   // fatias 3 e 4; os outros módulos chegam nas próximas (o plano de cada empresa vem no fim do projeto)
       desde: (e.criada_em || '').slice(0, 10),
     };
     const d = dadosBase(empresa, conta.membro.nome);
@@ -143,7 +141,9 @@ export function montar() {
 
     // o que o aparelho ainda não subiu fica (o banco não sabe dele, ou sabe uma versão mais velha)
     const antes = bancoDeDados();
-    const locais = ((antes && antes.empresas && antes.empresas[e.id]) || {}).rdos || [];
+    const minhaAntes = (antes && antes.empresas && antes.empresas[e.id]) || {};
+    aplicarCrew(d, crewLido, d.usuarios, minhaAntes);
+    const locais = minhaAntes.rdos || [];
     const pendentes = locais.filter(temPendencia);
     const ids = new Set(pendentes.map((r) => r.id));
     d.rdos = doBanco.filter((r) => !ids.has(r.id)).concat(pendentes);
@@ -156,6 +156,10 @@ export function montar() {
       const v = vizinhas[emp.id] = vizinhas[emp.id] || dadosBase({ id: emp.id, nome: emp.nome, atuacao: 'prestadora', modulos: ['daily'], logo: null, plano: {} }, '');
       if (!v.obras.some((o) => o.id === x.obra.id)) v.obras.push(obraDoBanco({ ...x.obra, contratante_id: null, lat: null, lon: null }, { empresaId: e.id, obraId: x.obra.vinculo_obra_id }));
       v.rdos.push(rdoDoBanco(x));
+    }
+    // quem bateu o ponto nas obras ligadas às minhas (sem valores nem localização, HS-10)
+    if (e.atuacao !== 'prestadora' && obras.length) {
+      aplicarPresenca(vizinhas, await lerPresencaDasPrestadoras(obras).catch(() => []), (emp) => dadosBase(emp, ''), obraDoBanco, e.id);
     }
     // a obra da prestadora chega sem datas: o período vem dos próprios diários recebidos
     for (const v of Object.values(vizinhas)) {

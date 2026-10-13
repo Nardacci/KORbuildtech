@@ -19,6 +19,10 @@ import { regraEm, encargosEm, extrasDaSemana, funcionarios as listaFuncionarios,
 
 export const ETAPAS = [tr('Fundação'), tr('Estrutura'), tr('Alvenaria'), tr('Instalações elétricas'), tr('Instalações hidráulicas'), tr('Acabamento'), tr('Piso'), tr('Limpeza e apoio')];
 export const RAIO_CERCA = 150; // metros
+// Registros de localização com o ponto aberto (RN-17): a cada 15 min na obra e a cada 5 min em deslocamento.
+// Na conta de verdade, a empresa pode mudar (empresas.configuracao.localizacao, BD-07).
+export const REGISTRO_GPS_MIN = 15;
+export const REGISTRO_MOVIMENTO_MIN = 5;
 
 /* ---------- Utilidades ---------- */
 
@@ -55,6 +59,15 @@ export function dinheiro(valor) {
 }
 
 function crew() { return estado().crew; }
+
+/* Na página oficial, o escritório grava no banco (js/crew-oficial.js): quem decide, ajusta, confere ou muda valores
+ * passa por aqui e recebe { ok } ou { erro }. No protótipo não há servidor e tudo é gravado no aparelho. */
+let servidor = null;
+export function ligarServidorCrew(s) { servidor = s; }
+/* Na conta de verdade, a batida nasce no aparelho e sobe sozinha logo depois (js/app.js liga isto). */
+let aoRegistrar = null;
+export function aoRegistrarBatida(fn) { aoRegistrar = fn; }
+export function pedirEnvioDoPonto() { if (aoRegistrar) aoRegistrar(); }
 export function funcionario(id) { return listaFuncionarios().find((f) => f.id === id); }
 export function equipe(id) { return crew().equipes.find((e) => e.id === id); }
 export function equipeDoEncarregado(usuarioId) { return crew().equipes.find((e) => e.encarregadoUsuarioId === usuarioId); }
@@ -156,6 +169,7 @@ export function alterarValorHora(funcId, valor, desde, motivo, por) {
   const segunda = inicioDaSemana(desde);
   if (statusSemana(funcId, segunda) === 'aprovado') return { erro: (tr('A semana de') + ' ') + segunda.split('-').reverse().join('/') + (' ' + tr('já foi aprovada e enviada para a folha. Escolha uma data a partir da próxima semana aberta.')) };
   if ((f.valores || []).some((x) => x.desde === desde)) return { erro: tr('Já existe um valor a partir dessa data.') };
+  if (servidor) return servidor.valorHora(funcId, valor, desde, motivo.trim());
   f.valores = f.valores || [];
   const antes = valorHoraEm(f, desde);
   f.valores.push({ desde, valor: Math.round(valor * 100) / 100, motivo: motivo.trim(), por, em: Date.now() });
@@ -176,10 +190,12 @@ function encargosDe(f, iso) { return f.classificacao === '1099' ? 0 : encargosEm
 
 export function orcamento(obraId) { return (crew().orcamentos || {})[obraId] || null; }
 export function definirOrcamento(obraId, dados, por) {
+  if (servidor) return servidor.orcamento(obraId, dados);
   const c = crew();
   c.orcamentos = c.orcamentos || {};
   c.orcamentos[obraId] = { ...(c.orcamentos[obraId] || { porEtapa: {} }), ...dados, por, em: Date.now() };
   salvar();
+  return { ok: true };
 }
 
 /* ---------- Custo da mão de obra ---------- */
@@ -383,13 +399,38 @@ export function registrarBatidas(funcIds, dados) {
     });
   }
   salvar();
+  pedirEnvioDoPonto();
 }
 
 export function decidirSemana(funcIds, segunda, status, por, motivo) {
+  if (servidor) return servidor.semana(funcIds, segunda, status, motivo || '');
   const c = crew();
   c.aprovacoes = c.aprovacoes || [];
   for (const id of funcIds) c.aprovacoes.push({ funcionarioId: id, semana: segunda, status, por, motivo: motivo || '', em: Date.now() });
   salvar();
+  return { ok: true };
+}
+
+/* "Conferido": o escritório viu a batida fora da cerca (ela continua marcada como fora). */
+export function conferirBatida(id, por) {
+  const b = crew().batidas.find((x) => x.id === id);
+  if (!b) return { erro: tr('Batida não encontrada.') };
+  if (servidor) return servidor.conferir(id);
+  b.conferida = true;
+  b.conferidaPor = por;
+  salvar();
+  return { ok: true };
+}
+
+/* Ajuste do escritório: uma batida nova, marcada como ajuste, com quem fez e o motivo (RN-01). */
+export function ajustarBatida(funcId, dados, por) {
+  const nova = {
+    tipo: dados.tipo, obraId: dados.obraId, etapa: dados.etapa, em: dados.em, lat: null, lon: null, dentroCerca: null, fonteGps: 'ajuste',
+    registradoPor: dados.registradoPor, modo: 'ajuste', ajuste: { motivo: dados.motivo, por, em: Date.now() },
+  };
+  if (servidor) return servidor.ajustar(funcId, nova);
+  registrarBatidas([funcId], nova);
+  return { ok: true };
 }
 
 /* ---------- Dados de exemplo ---------- */

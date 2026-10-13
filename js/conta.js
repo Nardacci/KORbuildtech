@@ -124,6 +124,11 @@ export function traduzir(erro) {
   if (/rate limit|too many/i.test(m)) return tr('Muitas tentativas seguidas. Espere um pouco e tente de novo.');
   if (/Unable to validate email|invalid email/i.test(m)) return tr('E-mail inválido.');
   if (/Failed to fetch|NetworkError|network/i.test(m)) return tr('Sem conexão com o servidor. Confira a internet e tente de novo.');
+  // mensagens do Crew com datas e nomes
+  let x = /^A semana de (\S+) já foi aprovada e enviada para a folha\. Escolha uma data a partir de (\S+)\.$/.exec(m);
+  if (x) return tr('A semana de {a} já foi aprovada e enviada para a folha. Escolha uma data a partir de {b}.', { a: x[1], b: x[2] });
+  x = /^Antes de aprovar, ajuste as batidas sem saída de: (.+)\.$/.exec(m);
+  if (x) return tr('Antes de aprovar, ajuste as batidas sem saída de: {nomes}.', { nomes: x[1] });
   // as regras do banco (gatilhos) respondem em português; tr() traduz as conhecidas
   return m ? tr(m) : tr('Algo deu errado. Tente de novo.');
 }

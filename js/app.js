@@ -2,7 +2,7 @@
 
 import {
   esc, novoId, hoje, somarDias, diasEntre, dataCurta, dataLonga, dataRelativa, diaDaSemana, horaCurta, dataHora, tamanho,
-  toast, abrirDialogo, confirmar, horaCheia, temperatura, chuva, diaMes,
+  toast, abrirDialogo, confirmar, horaCheia, temperatura, chuva, diaMes, isoDoDia,
 } from './util.js';
 import {
   estado, bancoDeDados, todasAsEmpresas, definirEstado, salvar, obra as acharObra, rdo as acharRdo, rdosDaObra, rdoDoDia, recebido, registrar,
@@ -12,7 +12,9 @@ import {
 import { criarDemonstracao, VERSAO_DADOS } from './exemplo.js';
 import { conta, cliente as clienteDaConta, traduzir } from './conta.js';
 import { espelho, montar as montarEspelho, usarOQueTemNoAparelho, espelhoDoLinkPublico } from './espelho.js';
-import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily } from './sincronizacao.js';
+import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily, sincronizarPonto, pendentesDoPonto, MOTIVOS_DA_RECUSA } from './sincronizacao.js';
+import { ligarCrewOficial } from './crew-oficial.js';
+import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
 import { tr, tn, idioma, definirIdioma } from './i18n.js';
@@ -35,7 +37,7 @@ import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartao
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
-import { presencaNaObra, prestadorasNaObra, presencaDaCadeia, horas } from './crew.js';
+import { presencaNaObra, prestadorasNaObra, presencaDaCadeia, horas, aoRegistrarBatida } from './crew.js';
 import { icone, marca } from './icones.js';
 import {
   PRAZO_HORA, LEMBRETE_HORA, ESCALADA_HORA, prazoDe, situacaoDeHoje, diasAtrasados, pendenciasDoCampo, semRdoOntem, enviadoComAtraso, descreverDias,
@@ -70,13 +72,15 @@ const ehOficial = () => !MODO_DEMO && !!(estado() && estado().oficial);
 function htmlConexao() {
   const pendentes = ehOficial() ? pendentesNoAparelho() : filaDoAparelho().length;
   if (ehOficial() && subindoDaily()) return '<span class="pontinho azul"></span>' + tr('Enviando');
-  if (ehOficial() && !semInternet() && pendentes) return '<span class="pontinho ambar"></span>' + tn(pendentes, '{n} diário para enviar', '{n} diários para enviar');
+  const batidas = ehOficial() ? pendentesDoPonto() : 0;
+  if (ehOficial() && !semInternet() && pendentes) return '<span class="pontinho ambar"></span>' + tn(pendentes, '{n} diário para enviar', '{n} diários para enviar') + (batidas ? ' · ' + tn(batidas, '{n} batida para enviar', '{n} batidas para enviar') : '');
+  if (ehOficial() && !semInternet() && batidas) return '<span class="pontinho ambar"></span>' + tn(batidas, '{n} batida para enviar', '{n} batidas para enviar');
   if (sincronizando) {
     return ('<span class="pontinho azul"></span>' + tr('Enviando') + ' ') + esc(sincronizando.nome) + ' · ' + sincronizando.feito + '/' + sincronizando.total;
   }
   if (semInternet()) {
     return ('<span class="pontinho ambar"></span>' + tr('Sem internet')) + (bancoDeDados().offlineSimulado ? (' ' + tr('(simulado)')) : '') +
-      (pendentes ? ' · ' + pendentes + (' ' + tr('no aparelho')) : '');
+      (pendentes + batidas ? ' · ' + (pendentes + batidas) + (' ' + tr('no aparelho')) : '');
   }
   return ('<span class="pontinho verde"></span>' + tr('Online'));
 }
@@ -194,8 +198,9 @@ function desenhar() {
     const p0 = rota();
     if (p0[0] === 'cliente') { desenharLinkPublico(p0[1]); return; }
     // o Daily da conta de verdade: as telas do protótipo, com o espelho do banco no aparelho (docs/banco.md §10.4)
-    if (p0[0] === 'daily' && conta.pronto && conta.membro && conta.membro.ativo) {
+    if ((p0[0] === 'daily' || p0[0] === 'crew') && conta.pronto && conta.membro && conta.membro.ativo) {
       if (!espelho.pronto || !estado() || !estado().oficial || estado().empresa.id !== conta.empresa.id) { app.innerHTML = carregando(); abrirDailyOficial(); return; }
+      if (p0[0] === 'crew') return desenharPrototipo();
       const q0 = rotaDaily();
       // concorrências e cronograma ainda não estão no banco (fatias 5 e 7)
       if (q0[0] === 'concorrencias' || (q0[0] === 'obras' && q0[2] === 'cronograma')) return trocarRota('#/daily');
@@ -1182,6 +1187,7 @@ async function abrirDailyOficial() {
   }
   desenhar();
   sincronizarOficial();
+  ligarRegistroDeLocalizacao(sincronizarOficial);
 }
 
 async function sincronizarOficial() {
@@ -1190,12 +1196,16 @@ async function sincronizarOficial() {
     aoConflito: escolherVersao,
     aoErro: (r, e) => toast(tr('O RDO nº {n} não foi enviado: {erro}', { n: r.numero, erro: traduzir(e) })),
   });
+  const ponto = sincronizarPonto({
+    aoRecusar: (b, motivo) => toast(tr('Uma batida de {quando} não foi aceita: {motivo}', { quando: horaCurta(b.em) + ' ' + dataCurta(isoDoDia(new Date(b.em))), motivo: MOTIVOS_DA_RECUSA()[motivo] || motivo })),
+  }).catch((e) => { toast(tr('O ponto não foi enviado: {erro}', { erro: traduzir(e) })); return 0; });
   atualizarConexao();
-  const subiram = await promessa;
-  // relê o banco: numeração, aprovações e ajustes pedidos pelo escritório, diários de outros aparelhos
+  const [subiram, batidas] = await Promise.all([promessa, ponto]);
+  // relê o banco: numeração, aprovações e ajustes pedidos pelo escritório, diários e ponto de outros aparelhos
   await montarEspelho().catch(() => {});
-  if (location.hash.startsWith('#/daily')) desenhar(); else atualizarConexao();
+  if (location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew')) desenhar(); else atualizarConexao();
   if (subiram) toast(tn(subiram, '{n} diário enviado ao servidor.', '{n} diários enviados ao servidor.'));
+  if (batidas) toast(tn(batidas, '{n} batida enviada ao servidor.', '{n} batidas enviadas ao servidor.'));
 }
 
 /* Outro aparelho mudou o mesmo diário sem sinal (decisão de outubro de 2026): a pessoa escolhe a versão. */
@@ -1855,13 +1865,17 @@ async function iniciar() {
   });
   if (!MODO_DEMO) {
     Object.assign(acoes, acoesDailyOficial);
+    ligarCrewOficial();
+    let envioDoPonto = null;
+    aoRegistrarBatida(() => { clearTimeout(envioDoPonto); envioDoPonto = setTimeout(sincronizarOficial, 1200); });
     ligarOficial(desenhar);
     window.addEventListener('hashchange', desenhar);
     window.addEventListener('online', () => { atualizarConexao(); sincronizarOficial(); });
     window.addEventListener('offline', atualizarConexao);
     // de tempos em tempos (e ao voltar para o app), envia o que ficou no aparelho e relê o banco
-    setInterval(() => { if (location.hash.startsWith('#/daily')) sincronizarOficial(); }, 60000);
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && location.hash.startsWith('#/daily')) sincronizarOficial(); });
+    const noDailyOuCrew = () => location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew');
+    setInterval(() => { if (noDailyOuCrew()) sincronizarOficial(); }, 60000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && noDailyOuCrew()) sincronizarOficial(); });
     desenhar();
     return;
   }
