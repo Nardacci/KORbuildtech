@@ -3014,4 +3014,24 @@ export const EN = {
   // ---------- Início da conta (fatia 5) ----------
   'A conta, os cadastros, o Daily (com o cronograma da obra) e o Crew já estão no banco de dados. O Measure e as concorrências chegam nas próximas etapas.': 'Your account, company records, Daily (with the job schedule) and Crew are already on the database. Measure and bidding arrive in the next stages.',
   'O diário de obra e o cronograma já funcionam com o banco de dados, com e sem internet: preencha no canteiro, envie, aprove, mande o link para o cliente e acompanhe as etapas da obra.': 'Daily reports and the schedule now run on the database, online and offline: fill out in the field, send, approve, share the client link and follow the job\'s stages.',
+
+  // ---------- Measure no banco (fatia 6) ----------
+  'Esta condição mudou em outro computador. A tela foi atualizada com a versão do banco.': 'This condition changed on another computer. The screen was refreshed with the database version.',
+  'Não foi possível gravar no banco: {erro}': 'Could not save to the database: {erro}',
+  'Para emitir, o escritório precisa estar com internet.': 'The office needs an internet connection to issue.',
+  'Sem permissão para emitir propostas.': 'You don\'t have permission to issue proposals.',
+  'Este projeto está encerrado.': 'This project is closed.',
+  'O total da proposta não bate com as linhas.': 'The proposal total does not match the lines.',
+  'A planta precisa estar na pasta do projeto.': 'The plan must be in the project folder.',
+  'Não é possível trocar o projeto ou o tipo de uma condição.': 'A condition cannot change project or type.',
+  'KB_CONFLITO: a condição mudou em outro computador (versão %).': 'KB_CONFLITO: the condition changed on another computer (version %).',
+  'Linha do assembly com item que não é da empresa.': 'Assembly line with an item that does not belong to the company.',
+  'Fórmula inválida na linha do assembly.': 'Invalid formula in the assembly line.',
+  'Item usado em assembly: tire do assembly antes.': 'Item used in an assembly: remove it from the assembly first.',
+  'Não é possível trocar o tipo de um assembly.': 'An assembly cannot change type.',
+
+  // ---------- Início da conta (fatia 6) ----------
+  'A conta, os cadastros, o Daily (com o cronograma da obra), o Crew e o Measure já estão no banco de dados. As concorrências e os avisos por e-mail chegam nas próximas etapas.': 'Your account, company records, Daily (with the job schedule), Crew and Measure are already on the database. Bidding and email notices arrive in the next stages.',
+  'A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.': 'Plan measuring now runs on the database, on the computer: upload the PDF, set the scale, measure, build the catalog and issue the proposal.',
+  'Abrir o Measure': 'Open Measure',
 };

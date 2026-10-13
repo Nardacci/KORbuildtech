@@ -75,12 +75,16 @@ export function definirEstado(novo) {
 /* Só para desenhar (o link do cliente): troca o banco em memória sem gravar no aparelho. */
 export function mostrarSemGuardar(novo) { banco = novo; }
 
+/* Quem quer saber de cada gravação (na conta de verdade, o Measure leva as mudanças ao banco; js/measure-oficial.js). */
+const ganchosAoSalvar = [];
+export function aoSalvar(fn) { ganchosAoSalvar.push(fn); }
 export function salvar() {
   try {
     localStorage.setItem(CHAVE, JSON.stringify(banco));
   } catch (e) {
     console.error('Não foi possível salvar no aparelho', e);
   }
+  for (const fn of ganchosAoSalvar) { try { fn(); } catch (e) { console.error(e); } }
 }
 
 export function obra(id) { return estado().obras.find((o) => o.id === id); }

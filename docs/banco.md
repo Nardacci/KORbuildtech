@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatias 1 a 5 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Faltam as concorrências (7) e as notificações (8) (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -426,7 +426,21 @@ Condições e medições não vão para a auditoria (são centenas de gravaçõe
 - E-mail ao fornecedor e ao contratante: abre no programa de e-mail (RL-04); o envio pelo sistema vem com a fatia 8.
 - CSV das quantidades: no app.
 
-### 13.5 Fica para depois
+### 13.5 No app (fatia 6 pronta)
+
+- **Gravação direta, agrupada:** as telas do Measure continuam gravando no espelho (`salvar()`); `js/measure-oficial.js`
+  escuta cada gravação, compara com o que o banco já tem e sobe só o que mudou (projetos, folhas, condições, typicals,
+  itens, assemblies), 800 ms depois da última mudança; o que sumiu é apagado. Preços e margens só entram. Antes de o
+  espelho ser relido, o que está na fila sobe.
+- **Condição com versão:** cada gravação leva a versão que o computador conhecia; outra versão no banco (outro
+  computador na mesma condição) avisa e recarrega a tela com a versão do banco.
+- **Plantas:** o PDF vai ao Storage (`plantas/{empresa}/{projeto}/{arquivo}.pdf`) e fica no aparelho como cópia; ao
+  abrir uma folha sem cópia, o app baixa por link temporário. Excluir o projeto apaga as plantas antes das linhas.
+- **Proposta:** `emitir_proposta` recebe o retrato pronto do app; o número e a data voltam do banco.
+- **Dinheiro:** quem não lê preços nem margens recebe o espelho sem eles (o RLS não entrega), e a tela mostra "sem preço".
+- **Responsável/estimador:** um usuário (membro), como no cronograma.
+
+### 13.6 Fica para depois
 
 - Plantas de exemplo (`assets/plantas`) na conta de verdade: ficam só na demonstração.
 - Atrair o clique às linhas do desenho (docs/measure.md §5).

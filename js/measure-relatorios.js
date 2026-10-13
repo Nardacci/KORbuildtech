@@ -19,6 +19,9 @@ import { botaoEnviarPelaPlataforma } from './concorrencias-telas.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarRelatorios(funcoes) { app = { ...app, ...funcoes }; }
+/* Na conta de verdade, emitir vai ao banco (js/measure-oficial.js): o número e a data vêm de lá. */
+let servidor = null;
+export function ligarServidorMeasure(s) { servidor = s; }
 
 const qtd = (v) => { const r = Math.round(v * 100) / 100; return numero(r, Number.isInteger(r) ? 0 : 2); };
 const quem = () => (usuarioAtual() || {}).nome || '';
@@ -388,6 +391,13 @@ export const acoesRelatorios = {
     if (t.semPreco.length) { toast((tr('Falta o preço de:') + ' ') + t.semPreco.map((l) => l.titulo).join(', ') + tr('. Ou tire a linha da proposta.')); return; }
     if (t.extras.some((x) => !x.valor)) { toast(tr('Falta o valor de um dos outros itens.')); return; }
     if (!(await confirmar((tr('Emitir a proposta de') + ' ') + dinheiro(t.total) + '?', tr('Ela recebe um número e fica congelada: mudanças no projeto depois não alteram o que foi enviado.'), tr('Emitir')))) return;
+    if (servidor) {
+      const r = await servidor.emitir(p, dadosDaProposta(p));
+      if (r.erro) { toast(r.erro); return; }
+      toast((tr('Proposta') + ' ') + r.numero + (' ' + tr('emitida. Baixe o PDF ou envie por e-mail.')));
+      app.desenhar();
+      return;
+    }
     const m = estado().measure;
     m.seqPropostas = (m.seqPropostas || 0) + 1;
     const numeroDoc = 'P-' + hoje().slice(0, 4) + '-' + String(m.seqPropostas).padStart(3, '0');

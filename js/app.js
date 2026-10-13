@@ -15,6 +15,7 @@ import { espelho, montar as montarEspelho, usarOQueTemNoAparelho, espelhoDoLinkP
 import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily, sincronizarPonto, pendentesDoPonto, MOTIVOS_DA_RECUSA } from './sincronizacao.js';
 import { ligarCrewOficial } from './crew-oficial.js';
 import { ligarCronogramaOficial } from './cronograma-oficial.js';
+import { ligarMeasureOficial } from './measure-oficial.js';
 import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
@@ -199,9 +200,9 @@ function desenhar() {
     const p0 = rota();
     if (p0[0] === 'cliente') { desenharLinkPublico(p0[1]); return; }
     // o Daily da conta de verdade: as telas do protótipo, com o espelho do banco no aparelho (docs/banco.md §10.4)
-    if ((p0[0] === 'daily' || p0[0] === 'crew') && conta.pronto && conta.membro && conta.membro.ativo) {
+    if ((p0[0] === 'daily' || p0[0] === 'crew' || p0[0] === 'measure') && conta.pronto && conta.membro && conta.membro.ativo) {
       if (!espelho.pronto || !estado() || !estado().oficial || estado().empresa.id !== conta.empresa.id) { app.innerHTML = carregando(); abrirDailyOficial(); return; }
-      if (p0[0] === 'crew') return desenharPrototipo();
+      if (p0[0] === 'crew' || p0[0] === 'measure') return desenharPrototipo();
       const q0 = rotaDaily();
       // concorrências ainda não estão no banco (fatia 7)
       if (q0[0] === 'concorrencias') return trocarRota('#/daily');
@@ -1868,6 +1869,7 @@ async function iniciar() {
     Object.assign(acoes, acoesDailyOficial);
     ligarCrewOficial();
     ligarCronogramaOficial();
+    ligarMeasureOficial();
     let envioDoPonto = null;
     aoRegistrarBatida(() => { clearTimeout(envioDoPonto); envioDoPonto = setTimeout(sincronizarOficial, 1200); });
     ligarOficial(desenhar);
@@ -1875,7 +1877,7 @@ async function iniciar() {
     window.addEventListener('online', () => { atualizarConexao(); sincronizarOficial(); });
     window.addEventListener('offline', atualizarConexao);
     // de tempos em tempos (e ao voltar para o app), envia o que ficou no aparelho e relê o banco
-    const noDailyOuCrew = () => location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew');
+    const noDailyOuCrew = () => location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew') || location.hash.startsWith('#/measure');
     setInterval(() => { if (noDailyOuCrew()) sincronizarOficial(); }, 60000);
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && noDailyOuCrew()) sincronizarOficial(); });
     desenhar();

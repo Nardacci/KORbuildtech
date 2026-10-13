@@ -144,3 +144,43 @@ export function aplicarCronograma(d, lido) {
     obraNome: p.retrato.obraNome, cronograma: p.retrato.cronograma, responsaveis: p.retrato.responsaveis || {},
   }));
 }
+
+/* ---------- Measure (fatia 6, docs/banco.md §13) ---------- */
+
+export function lerMeasure() {
+  return Promise.all([
+    lerTudo('projetos', 'nome'), lerTudo('folhas', 'criada_em'), lerTudo('condicoes', 'criado_em'), lerTudo('typicais', 'em'),
+    lerTudo('itens', 'nome'), lerTudo('item_precos', 'em'), lerTudo('assemblies', 'nome'), lerTudo('margens_versoes', 'em'), lerTudo('propostas_emitidas', 'emitida_em'),
+  ]).then(([projetos, folhas, condicoes, typicais, itens, precos, assemblies, margens, propostas]) => ({ projetos, folhas, condicoes, typicais, itens, precos, assemblies, margens, propostas }));
+}
+
+/* Do banco para o formato de js/measure.js. O que não é da empresa (preços e margens sem permissão) simplesmente não vem. */
+export function aplicarMeasure(d, lido) {
+  const propostasPor = new Map();
+  for (const p of lido.propostas) {
+    if (!propostasPor.has(p.projeto_id)) propostasPor.set(p.projeto_id, []);
+    propostasPor.get(p.projeto_id).push({ id: p.id, numero: p.numero, emitidaEm: p.emitida_em, por: p.por_nome, total: Number(p.total), dados: p.retrato, _banco: true });
+  }
+  const precosPor = new Map();
+  for (const x of lido.precos) {
+    if (!precosPor.has(x.item_id)) precosPor.set(x.item_id, []);
+    precosPor.get(x.item_id).push({ id: x.id, valor: Number(x.valor), desde: x.desde, fonte: x.fonte, fornecedorId: x.fornecedor_id || null, por: x.por_nome, em: ms(x.em), _banco: true });
+  }
+  const nomeDoArquivo = (path) => (path || '').split('/').pop().replace(/\.pdf$/i, '');
+  d.measure = {
+    projetos: lido.projetos.map((p) => ({
+      id: p.id, nome: p.nome, contratanteId: p.contratante_id, donoId: p.dono_id || null, endereco: p.endereco, cidade: p.cidade, estado: p.estado, zip: p.zip,
+      tipo: p.tipo, situacao: p.situacao, descricao: p.descricao, obraId: p.obra_id || null, estimadorId: p.estimador_id || null, prazoProposta: p.prazo_proposta || null,
+      proposta: Object.keys(p.proposta_rascunho || {}).length ? p.proposta_rascunho : undefined, cotacao: Object.keys(p.cotacao || {}).length ? p.cotacao : undefined,
+      propostas: propostasPor.get(p.id) || [], criadoEm: ms(p.criado_em), alteradoEm: ms(p.atualizado_em),
+    })),
+    folhas: lido.folhas.map((f) => ({ id: f.id, projetoId: f.projeto_id, nome: f.nome, arquivo: { tipo: 'storage', path: f.arquivo_path, id: nomeDoArquivo(f.arquivo_path), nome: f.arquivo_nome }, pagina: f.pagina, escala: f.escala || null, criadaEm: ms(f.criada_em) })),
+    condicoes: lido.condicoes.map((c) => ({ id: c.id, projetoId: c.projeto_id, nome: c.nome, tipo: c.tipo, cor: c.cor, props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: c.oculta, medicoes: c.medicoes || [], _banco: { versao: c.versao } })),
+    typicais: lido.typicais.map((t) => ({ id: t.id, projetoId: t.projeto_id, folhaId: t.folha_id, nome: t.nome, regiao: t.regiao, ocorrencias: t.ocorrencias, por: t.por_nome, em: ms(t.em) })),
+    itens: lido.itens.map((i) => ({ id: i.id, codigo: i.codigo, nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa, nota: i.nota, precos: precosPor.get(i.id) || [] })),
+    assemblies: lido.assemblies.map((a) => ({ id: a.id, nome: a.nome, tipo: a.tipo, descricao: a.descricao, linhas: a.linhas })),
+    margens: lido.margens.map((m) => ({ id: m.id, overheadPct: Number(m.overhead_pct), lucroPct: Number(m.lucro_pct), modo: m.modo, impostoMaterialPct: Number(m.imposto_material_pct), desde: m.desde, motivo: m.motivo, por: m.por_nome, em: ms(m.em), _banco: true })),
+  };
+  // as propostas de projetos que já saíram ficam guardadas (consulta pelo número)
+  d.measure.propostasSemProjeto = lido.propostas.filter((p) => !lido.projetos.some((x) => x.id === p.projeto_id)).map((p) => ({ numero: p.numero, projetoNome: p.projeto_nome, emitidaEm: p.emitida_em, total: Number(p.total) }));
+}

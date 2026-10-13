@@ -55,7 +55,7 @@ export async function sessao(id, email, nome) {
 
 /* O Storage em memória (compartilhado entre os contextos do teste). */
 const arquivos = new Map();
-export async function arquivosDaPasta(prefixo) { return [...arquivos.keys()].filter((k) => k.startsWith('diarios/' + prefixo)); }
+export async function arquivosDaPasta(prefixo, bucket = 'diarios') { return [...arquivos.keys()].filter((k) => k.startsWith(bucket + '/' + prefixo)); }
 export async function limpar() { /* o banco local é recriado por tools/supabase-local.sh */ }
 export const nome = 'Supabase local (PostgREST na porta 3001)';
 
@@ -91,6 +91,19 @@ export async function rotear(contexto, urlProjeto) {
     if (m && req.method() === 'GET') {
       const a = arquivos.get(m[1] + '/' + decodeURIComponent(m[2]));
       return a ? route.fulfill({ status: 200, headers: { 'content-type': a.tipo, 'access-control-allow-origin': '*' }, body: a.dados }) : route.fulfill({ status: 404 });
+    }
+    m = caminho.match(/^\/storage\/v1\/object\/list\/([^/]+)$/);
+    if (m && req.method() === 'POST') {
+      const { prefix } = JSON.parse(req.postData() || '{}');
+      const base = m[1] + '/' + (prefix || '').replace(/\/$/, '') + '/';
+      const nomes = [...arquivos.keys()].filter((k) => k.startsWith(base)).map((k) => ({ name: k.slice(base.length), id: k }));
+      return route.fulfill({ status: 200, headers: cors, body: JSON.stringify(nomes) });
+    }
+    m = caminho.match(/^\/storage\/v1\/object\/([^/]+)$/);
+    if (m && req.method() === 'DELETE') {
+      const { prefixes } = JSON.parse(req.postData() || '{}');
+      for (const p of prefixes || []) arquivos.delete(m[1] + '/' + p);
+      return route.fulfill({ status: 200, headers: cors, body: '[]' });
     }
     m = caminho.match(/^\/storage\/v1\/object\/([^/]+)\/(.+)$/);
     if (m && (req.method() === 'POST' || req.method() === 'PUT')) {

@@ -177,8 +177,12 @@ function htmlInicio() {
       ? '<section class="cartao"><h2 class="cartao-titulo">Crew</h2><p>' + tr('O ponto da equipe já funciona com o banco de dados, com e sem internet: bata a entrada, o intervalo e a saída no celular; o escritório confere, ajusta e aprova a semana.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/crew">' + icone('relogio', 18) + tr('Abrir o Crew') + '</a></div></section>'
       : '') +
+    (conta.empresa.atuacao !== 'construtora' && pode('measure.medir')
+      ? '<section class="cartao"><h2 class="cartao-titulo">Measure</h2><p>' + tr('A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.') + '</p>' +
+        '<div class="btn-linha"><a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + tr('Abrir o Measure') + '</a></div></section>'
+      : '') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Os módulos chegam em etapas') + '</h2>' +
-      '<p>' + tr('A conta, os cadastros, o Daily (com o cronograma da obra) e o Crew já estão no banco de dados. O Measure e as concorrências chegam nas próximas etapas.') + '</p>' +
+      '<p>' + tr('A conta, os cadastros, o Daily (com o cronograma da obra), o Crew e o Measure já estão no banco de dados. As concorrências e os avisos por e-mail chegam nas próximas etapas.') + '</p>' +
       '<p>' + tr('Enquanto isso, conheça cada módulo no protótipo, com dados de exemplo.') + '</p>' +
       '<div class="btn-linha"><a class="btn btn-primario" href="' + URL_PROTOTIPO + '">' + icone('play', 18) + tr('Abrir o protótipo') + '</a><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>';
 }

@@ -311,7 +311,7 @@ export function telaModulos(u, saudacao) {
     const contratado = m.incluso || d.empresa.modulos.includes(m.id);
     const disponivel = m.status === 'disponivel';
     const etiqueta = disponivel
-      ? (m.incluso ? ('<span class="etiqueta etiqueta-neutro">' + tr('Incluído no plano') + '</span>') : m.prototipo && contratado ? ('<span class="etiqueta etiqueta-ambar">' + tr('Protótipo') + '</span>') : contratado ? ('<span class="etiqueta etiqueta-verde">' + tr('Contratado') + '</span>') : ('<span class="etiqueta etiqueta-neutro">' + tr('Não contratado') + '</span>'))
+      ? (m.incluso ? ('<span class="etiqueta etiqueta-neutro">' + tr('Incluído no plano') + '</span>') : m.prototipo && contratado && !estado().oficial ? ('<span class="etiqueta etiqueta-ambar">' + tr('Protótipo') + '</span>') : contratado ? ('<span class="etiqueta etiqueta-verde">' + tr('Contratado') + '</span>') : ('<span class="etiqueta etiqueta-neutro">' + tr('Não contratado') + '</span>'))
       : ('<span class="etiqueta etiqueta-neutro">' + tr('Em breve') + '</span>');
     return '<a class="modulo modulo-' + m.id + (disponivel ? '' : ' em-breve') + '" href="#/' + m.id + '">' +
       '<div class="modulo-topo"><span class="modulo-icone">' + icone(m.id, 26) + '</span>' + etiqueta + '</div>' +

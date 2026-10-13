@@ -12,9 +12,17 @@ import { usarIdsUuid } from './util.js';
 import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatura } from './armazem.js';
 import { criarSettings } from './settings.js';
 import { conta, cliente, iniciar, emailAtual } from './conta.js';
-import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca, lerCronograma, aplicarCronograma } from './espelho-crew.js';
+import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca, lerCronograma, aplicarCronograma, lerMeasure, aplicarMeasure } from './espelho-crew.js';
 
 export const espelho = { pronto: false, lendo: null, lidoEm: 0, erro: null };
+/* Quem tem algo para subir antes de o espelho ser relido (o Measure leva as gravações agrupadas; js/measure-oficial.js). */
+const antesDeLer = [];
+export function antesDeMontar(fn) { antesDeLer.push(fn); }
+const depoisDeLer = [];
+export function depoisDeMontar(fn) { depoisDeLer.push(fn); }
+/* Antes de o espelho novo entrar no lugar do antigo: quem tem mudanças locais ainda não subidas as carrega para o novo. */
+const aoTrocar = [];
+export function aoTrocarEspelho(fn) { aoTrocar.push(fn); }
 
 const ms = (t) => (t ? new Date(t).getTime() : null);
 const cidadeDe = (o) => [o.municipio, [o.estado, o.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
@@ -94,7 +102,7 @@ function dadosBase(empresa, por) {
     criadoEm: Date.now(), offlineSimulado: false, oficial: true,
     empresa, usuarios: [], contasDemo: [], interesses: [], contatos: [], obras: [], rdos: [], funcionarios: [],
     settings, crew: { equipes: [], batidas: [], excursoes: [], aprovacoes: [], historico: [], orcamentos: {}, localizacoes: [] },
-    cronogramas: {}, modelosCronograma: [], measure: { projetos: [], itens: [], assemblies: [], precos: [] },
+    cronogramas: {}, modelosCronograma: [], measure: { projetos: [], folhas: [], condicoes: [], typicais: [], itens: [], assemblies: [], margens: [] },
   };
 }
 
@@ -123,20 +131,21 @@ export function montar(atualizado = false) {
   }
   espelho.lendo = (async () => {
     await iniciar();
+    for (const fn of antesDeLer) await fn().catch(() => {});
     if (!conta.sessao || !conta.membro || !conta.empresa) throw new Error('sem-conta');
     prepararArmazem(conta.sessao.user.id);
     const e = conta.empresa;
-    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido, cronLido] = await Promise.all([
+    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido, cronLido, measureLido] = await Promise.all([
       ler('obras', 'nome'), ler('contatos', 'nome'), ler('membros', 'nome'), ler('rdos', 'data'), ler('rdo_fotos', 'ordem'), ler('rdo_historico', 'em'),
       cliente().rpc('diarios_recebidos', { p_obra: null }).then(({ data, error }) => { if (error) throw error; return data || []; }),
-      lerCrew(), lerCronograma(),
+      lerCrew(), lerCronograma(), e.atuacao === 'construtora' ? null : lerMeasure(),
     ]);
     const empresa = {
       id: e.id, nome: e.nome, razaoSocial: e.razao_social, sigla: e.sigla, ein: e.ein, atuacao: e.atuacao, especialidades: e.especialidades,
       endereco: e.endereco, cidade: e.cidade, estado: e.estado, zip: e.zip, telefone: e.telefone, email: e.email, site: e.site,
       licencas: e.licencas, seguros: e.seguros, termosProposta: e.termos_proposta, logo: null,
       plano: { nome: (e.plano || {}).nome || '', status: (e.plano || {}).status || 'teste' },
-      modulos: ['daily', 'crew'],   // fatias 3 e 4; os outros módulos chegam nas próximas (o plano de cada empresa vem no fim do projeto)
+      modulos: ['daily', 'crew', 'measure'],   // fatias 3 a 6; as concorrências chegam na 7 (o plano de cada empresa vem no fim do projeto)
       desde: (e.criada_em || '').slice(0, 10),
     };
     const d = dadosBase(empresa, conta.membro.nome);
@@ -153,6 +162,7 @@ export function montar(atualizado = false) {
     const minhaAntes = (antes && antes.empresas && antes.empresas[e.id]) || {};
     aplicarCrew(d, crewLido, d.usuarios, minhaAntes);
     const compartilhados = aplicarCronograma(d, cronLido);
+    if (measureLido) aplicarMeasure(d, measureLido);
     const locais = minhaAntes.rdos || [];
     const pendentes = locais.filter(temPendencia);
     const ids = new Set(pendentes.map((r) => r.id));
@@ -180,11 +190,13 @@ export function montar(atualizado = false) {
       }
     }
 
+    for (const fn of aoTrocar) { try { fn(d, minhaAntes); } catch (err) { console.error(err); } }
     definirEstado({ versao: 'oficial', oficial: true, padrao: e.id, empresas: { [e.id]: d, ...vizinhas }, compartilhados, concorrencias: [] });
     try { localStorage.setItem('kbt.oficial.sessao', conta.membro.id); } catch { /* sem armazenamento */ }
     espelho.pronto = true;
     espelho.lidoEm = Date.now();
     espelho.erro = null;
+    for (const fn of depoisDeLer) { try { fn(); } catch (err) { console.error(err); } }
   })().catch((err) => { espelho.erro = err; throw err; }).finally(() => { espelho.lendo = null; });
   return espelho.lendo;
 }

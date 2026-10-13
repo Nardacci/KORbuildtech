@@ -54,18 +54,20 @@ export async function rest(id, caminho, { metodo = 'GET', corpo } = {}) {
 
 export async function rotear() { /* de verdade: nada a interceptar */ }
 
-export async function arquivosDaPasta(prefixo) {
-  return (await sql(`select 'diarios/' || name as n from storage.objects where bucket_id = 'diarios' and name like '${prefixo.replace(/'/g, "''")}%'`)).map((x) => x.n);
+export async function arquivosDaPasta(prefixo, bucket = 'diarios') {
+  return (await sql(`select '${bucket}/' || name as n from storage.objects where bucket_id = '${bucket}' and name like '${prefixo.replace(/'/g, "''")}%'`)).map((x) => x.n);
 }
 
 export async function limpar() {
   const empresas = (await sql(`select distinct m.empresa_id as id from public.membros m join auth.users u on u.id = m.user_id where u.email like '${PADRAO}'`)).map((x) => x.id);
   if (empresas.length) {
     const lista = empresas.map((e) => "'" + e + "/%'").join(', ');
-    const nomes = (await sql(`select name from storage.objects where bucket_id = 'diarios' and name like any (array[${lista}])`)).map((x) => x.name);
-    for (let i = 0; i < nomes.length; i += 100) {
-      const r = await comServico('/storage/v1/object/diarios', 'DELETE', { prefixes: nomes.slice(i, i + 100) });
-      if (!r.ok) throw new Error('apagar fotos de teste: ' + r.status + ' ' + (await r.text()));
+    for (const bucket of ['diarios', 'ponto', 'plantas']) {
+      const nomes = (await sql(`select name from storage.objects where bucket_id = '${bucket}' and name like any (array[${lista}])`)).map((x) => x.name);
+      for (let i = 0; i < nomes.length; i += 100) {
+        const r = await comServico('/storage/v1/object/' + bucket, 'DELETE', { prefixes: nomes.slice(i, i + 100) });
+        if (!r.ok) throw new Error('apagar arquivos de teste (' + bucket + '): ' + r.status + ' ' + (await r.text()));
+      }
     }
     await sql(`delete from public.empresas where id in (${empresas.map((e) => "'" + e + "'").join(', ')})`);
   }

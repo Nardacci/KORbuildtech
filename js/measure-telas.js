@@ -3,7 +3,7 @@
 
 import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta } from './util.js';
 import { tr, tn } from './i18n.js';
-import { lerFoto, guardarFoto, estado, obra } from './armazem.js';
+import { lerFoto, guardarFoto, estado, obra, salvar } from './armazem.js';
 import { casca, usuarioAtual, pode, modulosLiberados } from './plataforma.js';
 import { icone } from './icones.js';
 import {
@@ -23,6 +23,7 @@ import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
 import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta } from './measure-relatorios.js';
 import { telaPrecos } from './precos-telas.js';
+import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
@@ -540,7 +541,7 @@ async function abrirDocumento(f) {
   if (!documentos.has(chave)) {
     documentos.set(chave, (async () => {
       const pdfjs = await carregarPdfjs();
-      const fonte = f.arquivo.tipo === 'url' ? { url: f.arquivo.src } : { data: new Uint8Array(await (await lerFoto(f.arquivo.id)).arrayBuffer()) };
+      const fonte = f.arquivo.tipo === 'url' ? { url: f.arquivo.src } : f.arquivo.tipo === 'storage' ? { data: await bytesDaPlanta(f.arquivo) } : { data: new Uint8Array(await (await lerFoto(f.arquivo.id)).arrayBuffer()) };
       return pdfjs.getDocument(fonte).promise;
     })().catch((e) => { documentos.delete(chave); throw e; }));
   }
@@ -832,8 +833,12 @@ async function enviarPdf(input) {
     const pdfjs = await carregarPdfjs();
     const doc = await pdfjs.getDocument({ data: dados.slice() }).promise;
     const id = novoId('pdf');
-    await guardarFoto(id, new Blob([dados], { type: 'application/pdf' }));
+    const blob = new Blob([dados], { type: 'application/pdf' });
+    // conta de verdade: a planta vai ao Storage da empresa (e fica no aparelho só como cópia)
+    const arquivo = estado().oficial ? await enviarPlanta(input.dataset.projeto, id, blob, arq.name) : null;
+    if (!arquivo) await guardarFoto(id, blob);
     const novas = criarFolhas(input.dataset.projeto, id, arq.name, doc.numPages);
+    if (arquivo) { for (const f of novas) f.arquivo = arquivo; salvar(); }
     toast(novas.length === 1 ? tr('Folha adicionada. Abra e defina a escala.') : novas.length + (' ' + tr('folhas adicionadas. Abra cada uma e defina a escala.')));
     app.desenhar();
   } catch (e) {
@@ -1198,6 +1203,7 @@ export const acoesMeasure = {
     const p = projeto(el.dataset.id);
     const nf = folhasDo(p.id).length, nc = condicoesDo(p.id).length;
     if (!(await confirmar(tr('Excluir "') + p.nome + '"?', nf || nc ? tr('Também serão apagadas: {folhas} e {condicoes} (com as medições).', { folhas: tn(nf, '{n} folha', '{n} folhas'), condicoes: tn(nc, '{n} condição', '{n} condições') }) : tr('O projeto ainda não tem folhas.'), tr('Excluir')))) return;
+    if (estado().oficial) await apagarPlantasDoProjeto(p.id).catch(() => {});
     excluirProjeto(p.id);
     toast(tr('Projeto excluído.'));
     app.ir('#/measure');

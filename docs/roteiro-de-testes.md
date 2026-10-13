@@ -54,6 +54,7 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `crew-oficial` | navegador + Supabase | O Crew de ponta a ponta: o encarregado bate o ponto da equipe (dentro e fora da cerca), sem internet a batida sobe depois com a hora certa, o trabalhador bate o próprio ponto e a localização é gravada, o escritório confere, ajusta, aprova e devolve a semana, orçamento, mapa do dia e a visão da construtora | ~3 min |
 | `sql 0006_measure` | Supabase | Regras do Measure: só prestadora, quem mede e quem mexe no catálogo, dinheiro só para quem pode, preços e margens só com insert, versão da condição, typicals sem sobreposição, proposta numerada e congelada, plantas na pasta da empresa | segundos |
 | `cronograma-oficial` | navegador + Supabase | O cronograma de ponta a ponta: modelo, etapas, % à mão, linha de base, publicação; o encarregado aponta a etapa no RDO; a construtora aprova e o andamento entra; a etapa fica travada; a construtora vê a versão publicada só leitura | ~2 min |
+| `measure-oficial` | navegador + Supabase | O Measure de ponta a ponta: item e assembly, projeto, PDF no Storage, escala, medição e recorte (versão da condição), preço e margens, proposta emitida e numerada; tudo volta ao recarregar; a gestora não vê dinheiro; excluir o projeto leva as plantas | ~2 min |
 | `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
 
 O teste `daily` cria os usuários `kb-e2e-daily-…@example.com`, duas empresas, obras, diários e fotos, e apaga tudo
@@ -106,6 +107,13 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Numa obra ligada à construtora: "Publicar para o contratante"; como construtora, a obra dela lista "Cronogramas das prestadoras" e abre a versão só leitura.
 - [ ] No celular, como encarregado: a obra mostra "Próximas 3 semanas"; na atividade do RDO, escolha a etapa e o %; envie.
 - [ ] Aprovar o RDO: o aviso diz que o cronograma recebeu o andamento; a etapa não pode mais ser excluída e só quem aprovou a edita.
+
+### Measure (fatia 6, no computador)
+- [ ] Início → Measure: Itens → novo item com código e unidade; Assemblies → novo assembly com uma linha (fórmula `area / 32`).
+- [ ] Novo projeto com contratante; enviar um PDF; abrir a folha, escolher a escala da lista e conferir uma cota.
+- [ ] Incluir o assembly no desenho e medir uma área; recortar um vão. Recarregar a página: tudo volta do banco.
+- [ ] Preços: novo preço no item; nova versão das margens com motivo. Proposta: emitir; o número vem do banco (P-AAAA-001).
+- [ ] Entrar como Gestor (sem "Ver custos"): vê o projeto e as quantidades, não vê preços nem margens.
 
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).
