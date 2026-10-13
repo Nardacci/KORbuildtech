@@ -33,7 +33,7 @@ function moldura(ativa, conteudo) {
       '<a class="topo-marca" href="#empresas" aria-label="KORbuild">' + marca(26) + logotipo({ classe: 'topo-nome' }) + '</a>' +
       '<span class="topo-sep" aria-hidden="true"></span><span class="topo-modulo">' + tr('Administração da plataforma') + '</span>' +
       '<span class="topo-espaco"></span>' + htmlSeletorIdioma() +
-      '<a class="topo-botao" href="index.html#/inicio" title="' + esc(email) + '">' + tr('Voltar ao KORbuild') + '</a>' +
+      '<a class="btn btn-contorno btn-pequeno" style="white-space:nowrap" href="index.html#/inicio" title="' + esc(email) + '">' + tr('Voltar ao KORbuild') + '</a>' +
     '</div></header>' +
     '<div class="corpo"><main class="pagina pagina-larga" id="conteudo">' +
       '<nav class="abas-segmento" aria-label="' + esc(tr('Seções')) + '">' + ABAS().map(([k, r]) => '<a href="#' + k + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
