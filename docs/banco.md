@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Fatia 7 (`0010` e a função de borda `convite-publico`): as concorrências — tudo por funções do banco, o link sem conta, o canal, a quarteirização e o vínculo da obra selado por `criar_obra_da_concorrencia`; as telas do protótipo sobre o espelho (`js/espelho-concorrencias.js`, `js/concorrencias-oficial.js`); teste `tests/concorrencias-oficial.test.mjs`. Faltam as notificações (8) (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Fatia 7 (`0010` e a função de borda `convite-publico`): as concorrências — tudo por funções do banco, o link sem conta, o canal, a quarteirização e o vínculo da obra selado por `criar_obra_da_concorrencia`; as telas do protótipo sobre o espelho (`js/espelho-concorrencias.js`, `js/concorrencias-oficial.js`); teste `tests/concorrencias-oficial.test.mjs`. Falta a fatia 8 (avisos por e-mail e administração da plataforma: desenho no §15, para aprovação). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -131,7 +131,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 5 | `supabase/migrations/20261016_0007_cronograma.sql` (só cria; reescreve `aprovar_rdo`). Teste: `supabase/testes/0005_cronograma.sql`. Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
 | 6 | `supabase/migrations/20261017_0008_measure.sql` (só cria). Teste: `supabase/testes/0006_measure.sql`. Depois, `20261018_0009_cascata_auditoria.sql` (só reescreve funções): excluir empresas ligadas na mesma instrução não esbarra na auditoria nem nas travas "só insert" (teste `0007_cascata.sql`). Measure: projetos, folhas (Storage `plantas`), condições com as medições, typicals, catálogo, preços e margens (só `insert`), propostas emitidas (desenho no §13) | Medir, cotar e emitir propostas de verdade; consulta no celular |
 | 7 | `supabase/migrations/20261019_0010_concorrencias.sql` (só cria). Teste: `supabase/testes/0008_concorrencias.sql`. Concorrências: tudo por funções do banco, o link sem conta pela função de borda `convite-publico`, o canal, a quarteirização e `criar_obra_da_concorrencia` (sela o vínculo) (desenho no §14). Teste do app: `tests/concorrencias-oficial.test.mjs` ✓ | Convidar, cotar, comparar, fechar e conversar de verdade; a cadeia de obras liga-se sozinha |
-| 8 | Notificações por e-mail e a área de administração da plataforma | |
+| 8 | `20261020_0011_avisos.sql`: avisos gravados pelas funções das fatias 3 a 7, `fila_email`, categorias novas, `plataforma`, funções `admin_*`, `empresa_ativa()`; função de borda `enviar-avisos` reescrita (remetente definitivo, dois idiomas); `admin.html` (desenho no §15) | Receber por e-mail o que acontece entre empresas; administrar empresas, planos e valores padrão |
 
 ## 10. Fatia 3 — o Daily no banco (desenho aprovado em outubro de 2026)
 
@@ -577,3 +577,95 @@ mesma de hoje (`#/convite/<token>`), lendo da função de borda em vez do aparel
 - **Testes:** `tests/concorrencias-oficial.test.mjs` (37 verificações; local com a função de borda imitada em
   `tests/_supabase-local.mjs`, ou `--real`).
 - **Fica para a fatia 8:** o e-mail do convite (hoje o link é copiado) e os avisos por e-mail.
+
+## 15. Fatia 8 — avisos por e-mail e a administração da plataforma (desenho para aprovação)
+
+Duas coisas que o produto precisa para sair do teste: **avisar por e-mail** o que acontece entre empresas e entre
+pessoas (hoje tudo fica no sininho, que é calculado no aparelho) e **uma área da plataforma** para quem administra o
+KORbuild cuidar das empresas, dos planos e dos valores padrão. Remetente **definitivo** desde já (decisão de outubro
+de 2026): `KORbuild <no-reply@korbuildtech.com>`.
+
+### 15.1 O que já existe e fica
+
+`notificacoes` (uma linha por aviso, por usuário, com `lida_em` e `email_em`), `notificacao_prefs` (por usuário e
+categoria: push e e-mail), `notificar()`, `avisos_pendentes_email()`, `marcar_avisos_enviados()`, a função de borda
+`enviar-avisos` e o job `kor-enviar-avisos` (pg_cron) vieram do sistema antigo e já ganharam `empresa_id` (fatia 1).
+O que muda: as **categorias** (as antigas eram do Match), o **remetente e o modelo** do e-mail (o layout de
+`supabase/email`, nos dois idiomas) e **quem chama `notificar()`**: as funções das fatias 3 a 7.
+
+### 15.2 Avisos: o que vira linha em `notificacoes` (sininho de verdade) e e-mail
+
+Só o que acontece **no servidor por ação de outra pessoa ou empresa** vira aviso gravado; o que o aparelho calcula
+sozinho (lembrete das 16h, RDO atrasado, etapa atrasada, certificação a vencer) continua no sininho local, sem
+e-mail (docs/alertas.md). Categorias novas (as de `notificacoes` e de `notificacao_prefs`):
+
+| Categoria | Avisa quem | Quando (função que grava) | E-mail |
+| --- | --- | --- | --- |
+| `daily` | a contratante (`daily.aprovar`) · o autor do RDO | RDO enviado para aprovar (`enviar_rdo`) · aprovado ou ajustes pedidos (`aprovar_rdo`, `pedir_ajustes`) | sim, agrupado |
+| `cronograma` | a contratante (`daily.acompanhar`) | cronograma publicado (`publicar_cronograma`) | sim, agrupado |
+| `concorrencia` | contratante (`concorrencias.gerir`) · convidada (`concorrencias.responder`) | convite, prorrogação, adendo, resposta e pergunta, proposta, recusa, fechamento (vencedora e não escolhidas), cancelamento, pedido e decisão de quarteirização (as funções da fatia 7) · **prazo vencido: compare e feche** (job diário) | sim, agrupado; o convite e o fechamento, na hora |
+| `crew` | o funcionário com login · quem aprova | semana aprovada ou devolvida (`decidir_semana`) · batida recusada no envio | só sininho |
+| `conta` | quem administra a empresa (`settings.conta`) | teste a vencer (7 e 1 dia antes), plano alterado pela plataforma | sim, na hora |
+
+**Agrupado** = como hoje: a função de borda roda a cada 5 minutos, junta os avisos não lidos de cada pessoa com mais
+de 3 minutos num e-mail só, respeitando `notificacao_prefs`. **Na hora** = `email_em` null e espera zero.
+
+**Quem não tem login** (a prestadora convidada só por e-mail; a pessoa convidada para entrar na empresa) não tem
+linha em `notificacoes`. Para eles, uma tabela nova, **`fila_email`**: `id`, `empresa_id`, `para_email`, `para_nome`,
+`idioma`, `modelo` (`convite-usuario` · `convite-concorrencia` · `adendo-link` · `fechamento-link`), `dados jsonb` (o
+link com o token, nomes, serviço, prazo), `criado_em`, `enviado_em`, `erro`. Sem RLS para o app (ninguém lê pelo app;
+só a chave de serviço). O link do convite entra aqui **na mesma transação** em que o token é gerado
+(`convidar_usuario`, `enviar_concorrencia`, `convidar_mais`) e é apagado de `dados` depois de enviado (fica o
+registro, não o token). "Copiar o link" continua existindo para reenviar à mão.
+
+### 15.3 O e-mail
+
+- **Remetente:** `KORbuild <no-reply@korbuildtech.com>`. Para isso o domínio precisa estar verificado no provedor de
+  envio (os registros SPF e DKIM no DNS do korbuildtech.com): é uma tarefa sua, no painel do provedor; eu digo quais
+  registros assim que souber o provedor (a função de borda publicada é quem sabe: ver 15.6).
+- **Modelo:** o mesmo layout de `supabase/email` (marca, botão, rodapé), gerado por `tools/gerar-emails.py`, com os
+  dois idiomas: o da pessoa (`user_metadata.idioma`) ou o de `fila_email.idioma` (o da contratante que convidou).
+- **Conteúdo:** título, uma linha por aviso, um botão **Abrir no KORbuild** (o `link` do aviso, no endereço de
+  homologação até o lançamento, depois korbuildtech.com); o convite de usuário leva o link `#/aceitar/{token}`; o de
+  concorrência sem conta, o `#/convite/{token}`.
+- **Resposta:** `no-reply`; o rodapé diz como mudar as preferências (Meu perfil).
+
+### 15.4 No app
+
+- **Sininho na conta de verdade:** lê `notificacoes` do usuário (RLS própria, já existe) e junta com os avisos
+  calculados; marcar como lida grava `lida_em` (política `notificacoes_marcar`, já existe). O espelho lê a tabela
+  junto com o resto.
+- **Meu perfil › Avisos por e-mail:** uma linha por categoria (ligado por padrão), gravando em `notificacao_prefs`.
+- **Convidar usuário:** o e-mail sai sozinho; a tela continua mostrando o link para copiar.
+- **Concorrências:** ao enviar, a janela dos links passa a dizer "e-mail enviado para …" (o link fica para reenviar).
+
+### 15.5 Administração da plataforma
+
+Quem está em `admins_plataforma` (hoje: você) entra pelo **mesmo login**, numa página à parte do mesmo site
+(`admin.html`, só para quem é admin; quem não é, vê "sem acesso"). Tudo por funções `security definer` que conferem
+`eh_admin_plataforma()`; nada de política que abra as tabelas das empresas.
+
+| Tela | O que faz | Função |
+| --- | --- | --- |
+| Empresas | Lista: nome, atuação, plano e situação, teste até, usuários, obras, último acesso, criada em; busca | `admin_empresas()` |
+| Empresa | Detalhe e ações: mudar o plano e a situação (`teste` · `ativa` · `atraso` · `cancelada` · `suspensa`), prorrogar o teste, limites (`limite_obras`, `limite_usuarios`), módulos; anotações | `admin_alterar_plano(empresa, plano jsonb, motivo)` (auditoria da empresa + log da plataforma) |
+| Valores padrão | O que hoje está fixo no código e entra em `empresas.configuracao` para empresas novas (duração do teste, intervalos do GPS, fuso padrão) | `admin_valores_padrao(jsonb)` numa tabela `plataforma` de uma linha |
+| E-mails | A fila (`fila_email`) e os avisos com erro de envio; reenviar | `admin_fila_email()`, `admin_reenviar(id)` |
+| Administradores | Quem administra; incluir ou tirar pelo e-mail | `admin_definir(email, boolean)` |
+
+**Plano e teste:** `criar_empresa` passa a gravar `plano.teste_ate = hoje + 14 dias` (valor padrão da plataforma).
+Enquanto não há pagamento (fica para o fim, com o preço), **o fim do teste não bloqueia nada**: a empresa vê uma faixa
+"Seu período de teste terminou: fale com o KORbuild" e a plataforma lista os testes vencidos. `suspensa` é a única
+situação que trava: as funções de gravação (`salvar_rdo`, `registrar_batidas`, `enviar_concorrencia`, `emitir_proposta`,
+`salvar_etapa`…) e as políticas de `insert`/`update` passam a conferir `empresa_ativa()`; a leitura continua.
+
+### 15.6 Migração e o que preciso de você
+
+- `20261020_0011_avisos.sql` (só cria e altera restrições): categorias novas em `notificacoes` e `notificacao_prefs`
+  (troca da restrição `check`), `fila_email`, `plataforma` (uma linha), `notificar()` e `notificar_empresa()` novos,
+  `avisos_pendentes_email()` com idioma, as chamadas dentro das funções das fatias 3 a 7 (`create or replace`), as funções
+  `admin_*`, `empresa_ativa()` e `teste_ate` no `criar_empresa`; job `kor-prazos` (diário, 8h de Nova York).
+  Teste `0009_avisos.sql`. Depois: a função de borda `enviar-avisos` reescrita (remetente, modelo, `fila_email`) e
+  `admin.html` + `js/admin.js`; teste `tests/avisos-oficial.test.mjs` (com a função de borda imitada no local).
+- **De você:** (1) o ok a este desenho; (2) a sessão local baixar a função `enviar-avisos` publicada (só leitura) para
+  eu ver o provedor de envio e a frequência do job; (3) os registros de DNS do domínio no provedor, quando eu disser quais.
