@@ -213,7 +213,8 @@ begin
   begin perform public.prorrogar_concorrencia(pg_temp.u('co'), now() + interval '1 day'); raise exception 'FALHOU: prorrogou para antes';
   exception when others then if sqlerrm not like 'O novo prazo%' then raise exception 'FALHOU: %', sqlerrm; end if; end;
   perform public.prorrogar_concorrencia(pg_temp.u('co'), now() + interval '9 days', 'Adendo');
-  if (select string_agg(acao, ',' order by em) from public.concorrencia_historico where concorrencia_id = pg_temp.u('co')) <> 'enviada,adendo,prorrogada' then raise exception 'FALHOU: histórico'; end if;
+  -- numa transação só, now() empata: confere o conjunto, não a ordem
+  if (select string_agg(acao, ',' order by acao) from public.concorrencia_historico where concorrencia_id = pg_temp.u('co')) <> 'adendo,enviada,prorrogada' then raise exception 'FALHOU: histórico'; end if;
   -- fechar com quem não mandou proposta
   begin perform public.fechar_concorrencia(pg_temp.u('co'), pg_temp.u('cvC')); raise exception 'FALHOU: fechou com quem não cotou';
   exception when others then if sqlerrm not like 'Escolha uma prestadora%' then raise exception 'FALHOU: %', sqlerrm; end if; end;
@@ -229,7 +230,7 @@ begin
   if (select count(*) from jsonb_array_elements(x -> 'mensagens')) <> 3 then raise exception 'FALHOU: Eva vê % mensagens', (select count(*) from jsonb_array_elements(x -> 'mensagens')); end if;
   if not exists (select 1 from jsonb_array_elements(x -> 'mensagens') m where m ->> 'autor' = 'Pergunta de um convidado' and m ->> 'texto' like 'O forro%') then raise exception 'FALHOU: pergunta pública sem o nome'; end if;
   if exists (select 1 from jsonb_array_elements(x -> 'mensagens') m where m ->> 'texto' like 'Só para você%') then raise exception 'FALHOU: Eva vê a mensagem só para a Ana'; end if;
-  if (select string_agg(h ->> 'acao', ',') from jsonb_array_elements(x -> 'historico') h) <> 'adendo,prorrogada' then raise exception 'FALHOU: histórico da convidada'; end if;
+  if (select string_agg(h ->> 'acao', ',' order by h ->> 'acao') from jsonb_array_elements(x -> 'historico') h) <> 'adendo,prorrogada' then raise exception 'FALHOU: histórico da convidada'; end if;
 end $$;
 reset role;
 
