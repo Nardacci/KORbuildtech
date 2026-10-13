@@ -1204,7 +1204,8 @@ async function sincronizarOficial() {
   const [subiram, batidas] = await Promise.all([promessa, ponto]);
   // relê o banco: numeração, aprovações e ajustes pedidos pelo escritório, diários e ponto de outros aparelhos
   await montarEspelho(true).catch(() => {});
-  if (location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew')) desenhar(); else atualizarConexao();
+  // quem está no meio de um formulário não perde o que digitou: a tela fica como está (o espelho novo entra no próximo desenho)
+  if ((location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew')) && !formularioEmEdicao()) desenhar(); else atualizarConexao();
   if (subiram) toast(tn(subiram, '{n} diário enviado ao servidor.', '{n} diários enviados ao servidor.'));
   if (batidas) toast(tn(batidas, '{n} batida enviada ao servidor.', '{n} batidas enviadas ao servidor.'));
 }
@@ -1761,8 +1762,13 @@ app.addEventListener('submit', (ev) => {
   fazerLogin(u);
 });
 
+/* Um formulário em que a pessoa já mexeu (fora do RDO, que grava a cada tecla): a releitura do espelho não o redesenha. */
+const formularioEmEdicao = () => !!app.querySelector('form[data-sujo]');
+app.addEventListener('change', (ev) => { const f = ev.target.closest && ev.target.closest('form'); if (f && !ev.target.dataset.bind) f.dataset.sujo = '1'; });
 app.addEventListener('input', (ev) => {
   const el = ev.target;
+  const f = el.closest && el.closest('form');
+  if (f && !el.dataset.bind) f.dataset.sujo = '1';
   if (!el.dataset.bind) return;
   const r = rdoDaTela();
   if (!r || !editavel(r)) return;
