@@ -126,7 +126,7 @@ A pesquisa confirma que os líderes do mercado (ClockShark, busybusy, Workyard) 
 
 ### 5.5 Referência: rastreamento GPS no QuickBooks Workforce (Intuit)
 
-> **Status: em estudo.** O requisito abaixo é **provisório**. Antes de virar requisito do produto, precisamos documentar exatamente como o Workforce faz, quais são as limitações dele e o que queremos fazer diferente.
+> **Status: confirmado** (outubro de 2026). No app do navegador, grava com o app aberto; em segundo plano, com o app nativo (ver `banco.md` §11.5 e §11.6).
 
 **O que a documentação atual da Intuit diz** (levantamento feito em out/2026; conferir na fonte antes de citar externamente):
 
@@ -138,7 +138,7 @@ A pesquisa confirma que os líderes do mercado (ClockShark, busybusy, Workyard) 
 | Playback | Reproduz o movimento do funcionário em ordem cronológica, durante o período com o ponto aberto |
 | Quando NÃO grava | Em intervalo (break), com o ponto fechado (clocked out) e sem conexão/desconectado. A localização fica associada só ao período "no relógio" |
 
-**Requisito provisório: PONTO-GPS-01. Rastreamento GPS durante a jornada.** O sistema deve permitir visualizar os pontos de localização registrados durante o período de trabalho, associados à jornada do funcionário, incluindo deslocamentos entre obras e reprodução cronológica do percurso.
+**Requisito: PONTO-GPS-01. Rastreamento GPS durante a jornada.** O sistema deve permitir visualizar os pontos de localização registrados durante o período de trabalho, associados à jornada do funcionário, incluindo deslocamentos entre obras e reprodução cronológica do percurso.
 
 **O que o protótipo já demonstra** (Crew › Timesheets › dia de um funcionário, simulado):
 - pontos na entrada, na saída, na troca de obra, na abertura do app e a cada 15 min (a cada 5 min em deslocamento);

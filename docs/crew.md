@@ -177,7 +177,7 @@ O sistema recusa uma data dentro de uma semana aprovada (RN-13). O histórico mo
 - **Linha do tempo:** cada batida com cerca, precisão, quem registrou, foto e ajustes.
 
 ### 7.3 Situação do requisito
-O rastreamento durante a jornada é o requisito **PONTO-GPS-01**, ainda **provisório**. A referência do QuickBooks Workforce e as perguntas em aberto estão em [`crew-analise.md` §5.5](crew-analise.md). Ele exige **app nativo**: um PWA não grava em segundo plano.
+O rastreamento durante a jornada é o requisito **PONTO-GPS-01**, **confirmado** em outubro de 2026 (referência do QuickBooks Workforce em [`crew-analise.md` §5.5](crew-analise.md)). No app do navegador, a localização é gravada nas batidas, ao abrir o app e periodicamente **enquanto o app está aberto**; com o app fechado ou a tela bloqueada, só o **app nativo** grava (ver [`banco.md` §11.5 e §11.6](banco.md)).
 
 ---
 
@@ -296,7 +296,7 @@ Sem SMS e sem e-mail: só o sininho e os alertas do sistema (ver [`alertas.md`](
 | CREW-10 | **Orçamento de mão de obra por obra e etapa, orçado × realizado** | Protótipo · MVP |
 | CREW-11 | **Projeção ao final da obra e situação (no rumo, atenção, estouro)** | Protótipo · MVP |
 | CREW-12 | Equipe do RDO vinda do ponto | Protótipo · MVP |
-| PONTO-GPS-01 | Registros de localização durante a jornada, mapa e reprodução | Protótipo · **em estudo** (ver crew-analise §5.5) |
+| PONTO-GPS-01 | Registros de localização durante a jornada, mapa e reprodução | Protótipo · **confirmado**; no banco na fatia 4 (com o app aberto); em segundo plano com o app nativo |
 | CREW-13 | Cerca que lembra de bater o ponto (nunca bate sozinha) | Fase 2 |
 | CREW-14 | Avanço físico vindo do Daily e das medições | Fase 2 |
 | CREW-15 | Integração com a folha e folha certificada | Fase 2 |

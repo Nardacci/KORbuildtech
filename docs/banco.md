@@ -68,6 +68,7 @@ As listas configuráveis (funções, equipamentos, ocorrências) entram quando o
 | `batidas` | `empresa_id`, `funcionario_id`, `tipo`, `obra_id`, `etapa`, `em`, `lat`, `lon`, `precisao`, `dentro_cerca`, `fonte_gps`, `registrado_por`, `modo`, `foto_path`, `ajuste_de` (a batida corrigida), `conferida`, `criado_no_aparelho_em` | **Nunca editada** (SET-004): a correção é uma batida nova com `ajuste_de`. |
 | `localizacoes` | `empresa_id`, `funcionario_id`, `em`, `lat`, `lon`, `precisao` | Só com o ponto aberto (aviso de localização aceito). |
 | `aprovacoes_semana` | `empresa_id`, `funcionario_id`, `semana`, `status`, `por`, `motivo`, `em` | |
+| `localizacoes` | `id` (do aparelho), `empresa_id`, `funcionario_id`, `em`, `lat`, `lon`, `precisao`, `gatilho` (batida · app-aberto · periodico), `obra_id` (a obra da jornada naquele momento), `criado_no_aparelho_em` | PONTO-GPS-01 (requisito confirmado em outubro de 2026). Só `insert`. O banco recusa o registro fora de jornada aberta ou no intervalo (RN-17). Lido por quem tem `crew.acompanhar` e pelo próprio trabalhador; **nunca** pela contratante. |
 | `orcamentos_obra` | `empresa_id`, `obra_id`, `valor`, `avanco`, `por_etapa jsonb`, `por`, `em` | |
 
 **Para a contratante:** `presenca_na_obra(obra_id, dia)` devolve, de cada empresa ligada (e de toda a cadeia, CO-21), nomes, função, entrada, situação e horas — **sem valor hora, encargos nem custo** (HS-10).
@@ -126,7 +127,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada); `0002` (quem foi desativado lê o próprio cadastro) e `0003` (excluir a empresa em cascata, sem esbarrar nas travas nem na auditoria). Teste do app contra o banco: `tests/conta.test.mjs` (23/23) ✓ | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
 | 2 | `supabase/migrations/20261013_0004_settings.sql` (só cria): `funcionarios` (com certificações), `funcionario_valores`, `encargos_versoes`, `regras_jornada_versoes`, `contatos`, `obras` (sem apagar; a ligação entre obras só pelas funções do banco), `alocacoes`, `modelos_cronograma`, `criar_funcionario()`, `atualizar_meu_perfil()`. Teste: `supabase/testes/0002_settings.sql` | Cadastrar tudo no banco; meu perfil (nome, idioma, e-mail, senha) |
 | 3 | `supabase/migrations/20261014_0005_daily.sql` (só cria): `rdos`, `rdo_fotos`, `rdo_historico`, bucket `diarios` com as políticas das fotos, `salvar_rdo()`, `enviar_rdo()`, `dia_sem_atividade()`, `aprovar_rdo()` (lacre no banco), `pedir_ajustes()`, `diarios_recebidos()`, `diario_por_codigo()`; função de borda `supabase/functions/diario-publico` (link do cliente, fotos por links temporários). Teste: `supabase/testes/0003_daily.sql` (desenho no §10) | Usar o diário de verdade, com e sem internet |
-| 4 | Crew: equipes, batidas (só `insert`), conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
+| 4 | Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
 | 5 | Cronograma: etapas, avanços, linhas de base, publicações | |
 | 6 | Measure: projetos, folhas (Storage), condições, medições, typicals, catálogo, preços, margens, propostas | |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
@@ -188,7 +189,7 @@ em vez de reescrever as telas. As obras e os usuários vêm dos cadastros da fat
 - O **andamento no cronograma** ao aprovar entra na fatia 5 (o cronograma ainda está só no protótipo).
 - Os **lembretes por e-mail** (16h, 18h, manhã seguinte) entram na fatia 8; o sininho continua no app.
 
-## 11. Fatia 4 — o Crew no banco (desenho para aprovação)
+## 11. Fatia 4 — o Crew no banco (desenho aprovado em outubro de 2026)
 
 Mesmo caminho da fatia 3: as telas do Crew do protótipo (Meu ponto, Ponto da equipe, Horas, Agora, Timesheets,
 Semana e Dia do funcionário, Custos) passam a funcionar sobre o espelho do banco no aparelho, com e sem internet.
@@ -204,6 +205,7 @@ não podem depender do aparelho.
 | `batidas` | `id` (gerado **no aparelho**), `empresa_id`, `funcionario_id`, `tipo` (entrada · intervalo-inicio · intervalo-fim · troca · chegada · etapa · saida), `obra_id`, `etapa`, `em`, `lat`, `lon`, `precisao`, `dentro_cerca`, `fonte_gps`, `modo` (proprio · equipe · ajuste), `registrado_por` (membro), `foto_path`, `nota` (até 280), `ajuste_motivo`, `criado_no_aparelho_em`, `recebida_em` | **Só `insert`** (RN-01, BD-04): o gatilho recusa `update` e `delete`. Correção = batida nova com `modo = ajuste` e motivo. Subir de novo o mesmo `id` não duplica. Fora da cerca é aceita e marcada (RN-09). |
 | `batidas_conferidas` | `batida_id`, `empresa_id`, `por`, `em` | "Conferido" do painel Agora: fica numa tabela à parte para a batida continuar intocada. Só `insert`. |
 | `aprovacoes_semana` | `id`, `empresa_id`, `funcionario_id`, `semana` (segunda-feira), `status` (aprovado · devolvido), `motivo`, `por`, `em` | Só `insert`; vale a última decisão (como no protótipo). |
+| `localizacoes` | `id` (do aparelho), `empresa_id`, `funcionario_id`, `em`, `lat`, `lon`, `precisao`, `gatilho` (batida · app-aberto · periodico), `obra_id` (a obra da jornada naquele momento), `criado_no_aparelho_em` | PONTO-GPS-01 (requisito confirmado em outubro de 2026). Só `insert`. O banco recusa o registro fora de jornada aberta ou no intervalo (RN-17). Lido por quem tem `crew.acompanhar` e pelo próprio trabalhador; **nunca** pela contratante. |
 | `orcamentos_obra` | `id`, `empresa_id`, `obra_id`, `valor`, `avanco`, `por_etapa jsonb`, `por`, `em` | Só `insert` (versões); vale a última. Lido só com `crew.custos`. |
 
 **Storage:** bucket privado `ponto`, caminho `{empresa_id}/{funcionario_id}/{batida_id}.jpg`, com as mesmas
@@ -219,6 +221,7 @@ políticas do bucket `diarios` (só a própria empresa, só quem pode ver o pont
 | Conferir batida fora da cerca | `conferir_batida(id)` | `crew.acompanhar` |
 | Aprovar / devolver a semana (RN-11) | `decidir_semana(funcionarios, semana, status, motivo)` | `crew.aprovar`. O banco recusa aprovar dia passado **sem saída** (RN-08) e devolver sem motivo |
 | Ler batidas, equipes, aprovações | RLS | Quem tem `crew.acompanhar` lê a empresa toda; o encarregado (`crew.ponto.equipe`) lê as de toda a empresa sem dinheiro; o trabalhador lê só as próprias |
+| Registros de localização | `registrar_localizacoes(lista)` | Só a própria pessoa, do próprio celular, com o ponto dela aberto (o encarregado grava a dele; quem não usa o app fica só com as posições das batidas) |
 | Orçamento da obra | `insert` direto | `crew.custos` |
 | Presença para a contratante (HS-10) | `presenca_na_obra(obra_id, de, ate)` | A contratante, nas obras ligadas à dela (e na cadeia, até 3 níveis, CO-21), com `crew.acompanhar` ou `daily.acompanhar` |
 
@@ -248,11 +251,27 @@ pessoas **naquela obra** (tipo, hora, dentro/fora da cerca); a batida em outra o
 - **Custos:** o app calcula com o valor hora vigente em cada dia, os encargos e a regra de jornada da semana
   (fatia 2). Quem não tem `crew.custos` não recebe `funcionario_valores` nem `encargos_versoes` (já é assim no RLS).
 
-### 11.5 Fica para depois
+### 11.5 Registros de localização (PONTO-GPS-01)
 
-- **Registros de localização durante a jornada (PONTO-GPS-01):** precisam de app nativo (o PWA não grava em segundo
-  plano) e o requisito ainda está em estudo. Nesta fatia fica só a posição de cada batida; a tabela `localizacoes`
-  entra junto com o app nativo. O mapa do dia mostra as batidas.
+O requisito está confirmado. Nesta fatia, no app atual (o do navegador, instalado no celular):
+
+- grava a posição **em cada batida**, **ao abrir o app** durante a jornada e **a cada 15 min na obra e 5 min em
+  deslocamento enquanto o app estiver aberto** (os intervalos ficam em `empresas.configuracao`, BD-07);
+- nunca no intervalo, com o ponto fechado ou fora do expediente (RN-17, conferido também no banco);
+- sem sinal, os registros ficam na fila do aparelho e sobem depois, como as batidas;
+- o mapa do dia, o percurso e a reprodução passam a usar os registros reais, em vez dos simulados.
+
+### 11.6 Limite do app do navegador
+
+Com o app fechado, minimizado ou com a tela bloqueada, o navegador **não grava** a localização. No computador isso
+não importa (o ponto é batido no celular); no celular, o registro contínuo em segundo plano depende do **app
+nativo** (iOS e Android), que usa as mesmas tabelas e funções desta fatia, sem mudar o banco. Até lá, a tela do dia
+mostra os trechos sem registro como "sem registro (app fechado)", para ninguém confundir falta de dado com parada.
+
+### 11.7 Fica para depois
+
+- **Localização em segundo plano** (com o app fechado ou o celular bloqueado): só com o app nativo, porque o
+  navegador não grava em segundo plano (§11.6). A tabela e as regras já ficam prontas nesta fatia.
 - **Avisos do sininho** (sem saída, timesheets pendentes, batida fora da cerca) continuam calculados no app; o
   e-mail fica para a fatia 8.
 - **CSV para a folha:** continua gerado no app, só com semanas aprovadas. Integrações (QuickBooks, Gusto, ADP) ficam
