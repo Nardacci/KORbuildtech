@@ -29,6 +29,13 @@ export const SITUACOES_CONVITE = {
 export const MOSTRAR_ORCAMENTO = { nao: tr('Não mostrar'), total: tr('Mostrar o total'), etapa: tr('Mostrar por etapa') };
 export const QUARTEIRIZACAO = { permitida: tr('Permitida'), 'com-aprovacao': tr('Com a minha aprovação'), 'nao-permitida': tr('Não permitida') };
 
+/* Na conta de verdade (docs/banco.md §14), as ações vão às funções do banco: js/concorrencias-oficial.js liga aqui um
+ * "servidor". As regras locais continuam valendo antes (a mensagem sai na hora); o banco confere de novo e devolve
+ * { ok } ou { erro }; o espelho é relido em seguida. No protótipo não há servidor e tudo fica no aparelho. */
+let servidor = null;
+export function ligarServidorConcorrencias(s) { servidor = s; }
+export const servidorConcorrencias = () => servidor;
+
 const DATA_HORA = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 const instante = (dataHora) => new Date(dataHora).getTime();
 
@@ -144,6 +151,7 @@ export function salvarRascunho(id, dados, por) {
   // convidados: contatos (marcador prestadora) desta empresa, sem repetir (CO-16)
   const ids = [...new Set(dados.convidados || (atual ? atual.convites.map((v) => v.contatoId) : []))];
   for (const cid of ids) if (!contato(cid)) return { erro: tr('Convidado não encontrado nos Contatos.') };
+  if (servidor) return servidor.salvarRascunho(id, d, ids, dados.desenhosNovos || []);
   const convites = ids.map((cid) => (atual && atual.convites.find((v) => v.contatoId === cid)) || novoConvite(cid));
   if (atual) {
     Object.assign(atual, d, { convites });
@@ -198,6 +206,7 @@ export function enviar(id, por, agora = Date.now()) {
   if (c.situacao !== 'rascunho') return { erro: tr('Esta concorrência já foi enviada.') };
   const falta = pendenciasDeEnvio(c, agora);
   if (falta.length) return { erro: falta[0], pendencias: falta };
+  if (servidor) return servidor.enviar(c.id);
   c.situacao = 'aberta';
   c.enviadaEm = agora;
   registrar(c, por, tr('Convites enviados'), c.convites.map((v) => v.nome).join(', '), agora);
@@ -212,6 +221,7 @@ export function prorrogar(id, novoPrazo, motivo, por, agora = Date.now()) {
   if (!['aberta', 'para-fechar'].includes(situacaoDe(c, agora))) return { erro: tr('Só uma concorrência aberta pode ser prorrogada.') };
   if (!DATA_HORA.test(novoPrazo || '')) return { erro: tr('Prazo da proposta inválido.') };
   if (instante(novoPrazo) <= Math.max(agora, instante(c.prazo))) return { erro: tr('O novo prazo precisa ser depois do prazo atual e no futuro.') };
+  if (servidor) return servidor.prorrogar(c.id, novoPrazo, motivo);
   const antes = c.prazo;
   c.prazo = novoPrazo;
   registrar(c, por, tr('Prazo prorrogado'), antes + ' → ' + novoPrazo + (motivo ? ' · ' + motivo : ''), agora);
@@ -227,6 +237,7 @@ export function convidarMais(id, contatoIds, por, agora = Date.now()) {
   const novos = [...new Set(contatoIds)].filter((cid) => !c.convites.some((v) => v.contatoId === cid));
   if (!novos.length) return { erro: tr('Essas prestadoras já foram convidadas.') };
   for (const cid of novos) if (!contato(cid)) return { erro: tr('Convidado não encontrado nos Contatos.') };
+  if (servidor) return servidor.convidarMais(c.id, novos);
   const convites = novos.map(novoConvite);
   c.convites.push(...convites);
   registrar(c, por, tr('Convidados a mais'), convites.map((v) => v.nome).join(', '), agora);
@@ -264,6 +275,7 @@ export function fechar(id, conviteId, observacao, por, agora = Date.now()) {
   const v = conviteDe(c, conviteId);
   const p = ultimaProposta(v);
   if (!v || !p) return { erro: tr('Escolha uma prestadora que mandou proposta.') };
+  if (servidor) return servidor.fechar(c.id, v.id, observacao);
   if (c.origem && c.origem.tipo === 'projeto') {
     const pj = projetoDe(estado(), c.origem.id);
     if (!pj || pj.situacao !== 'ganha') return { erro: tr('Esta concorrência saiu de um projeto em orçamento: só fecha depois que o projeto for ganho.') };
@@ -303,10 +315,12 @@ function concluirFechamento(c, v, p, observacao, por, agora) {
 /* Pedidos de aprovação de quarteirização que chegam à contratante de cima (CO-23). Ela vê só o nome da
  * empresa escolhida, nunca o valor entre as duas (CO-22). */
 export function pedidosDeQuarteirizacao(empresaId = empresaAtualId()) {
+  if (servidor && estado() && estado().pedidosQuarteirizacao) return estado().pedidosQuarteirizacao;
   return lista().filter((c) => c.aprovacao && c.aprovacao.situacao === 'pendente' && (concorrenciaPai(c) || {}).contratanteId === empresaId)
     .map((c) => ({ id: c.id, paiId: c.paiId, servico: c.servico, contratante: ((empresaPorId(c.contratanteId) || {}).empresa || {}).nome || '', escolhida: c.aprovacao.nome, pedidaEm: c.aprovacao.pedidaEm }));
 }
 export function decidirQuarteirizacao(id, aprovar, motivo, por, agora = Date.now()) {
+  if (servidor) return servidor.decidirQuarteirizacao(id, aprovar, motivo);
   const c = achar(id);
   const pai = concorrenciaPai(c);
   if (!c || !pai || pai.contratanteId !== empresaAtualId() || !c.aprovacao || c.aprovacao.situacao !== 'pendente') return { erro: tr('Pedido não encontrado.') };
@@ -325,6 +339,7 @@ export function decidirQuarteirizacao(id, aprovar, motivo, por, agora = Date.now
 
 /* CO-24: projeto perdido cancela as concorrências que saíram dele. */
 export function cancelarDoProjeto(projetoId, por, agora = Date.now()) {
+  if (servidor) return servidor.cancelarDoProjeto(projetoId);
   for (const c of enviadas().filter((x) => x.origem && x.origem.tipo === 'projeto' && x.origem.id === projetoId && ['aberta', 'rascunho'].includes(x.situacao))) {
     cancelar(c.id, tr('O projeto foi perdido.'), por, agora);
   }
@@ -334,6 +349,7 @@ export function cancelarDoProjeto(projetoId, por, agora = Date.now()) {
 export function vincularProjeto(id, projetoId, quem) {
   const { v } = alvo(id, quem);
   if (!v) return { erro: tr('Convite não encontrado.') };
+  if (servidor) return servidor.vincularProjeto(v.id, projetoId);
   v.projetoId = projetoId;
   salvar();
   return { ok: true };
@@ -345,6 +361,7 @@ export function cancelar(id, motivo, por, agora = Date.now()) {
   if (!c) return { erro: tr('Concorrência não encontrada.') };
   if (c.situacao === 'fechada' || c.situacao === 'cancelada') return { erro: tr('Esta concorrência já foi encerrada.') };
   if (!String(motivo || '').trim()) return { erro: tr('Diga o motivo do cancelamento.') };
+  if (servidor) return servidor.cancelar(c.id, motivo, c.situacao === 'rascunho');
   if (c.situacao === 'rascunho') {
     lista().splice(lista().indexOf(c), 1);
     salvar();
@@ -376,6 +393,7 @@ function aberta(c, agora) {
 export function marcarVisto(id, quem, agora = Date.now()) {
   const { c, v } = alvo(id, quem);
   if (!v) return { erro: tr('Convite não encontrado.') };
+  if (servidor && !v.vistoEm) return servidor.marcarVisto(v.id, quem);
   if (!v.vistoEm) {
     v.vistoEm = agora;
     if (v.situacao === 'enviado') v.situacao = 'visto';
@@ -391,6 +409,7 @@ export function responder(id, vai, motivo, por, quem, agora = Date.now()) {
   const fechado = aberta(c, agora);
   if (fechado) return { erro: fechado };
   if (v.propostas.length) return { erro: tr('Você já mandou proposta para esta concorrência.') };
+  if (servidor) return servidor.responder(v.id, !!vai, String(motivo || '').trim(), quem);
   v.situacao = vai ? 'vai-cotar' : 'nao-vai';
   v.motivo = vai ? '' : String(motivo || '').trim();
   v.respondidoEm = agora;
@@ -425,6 +444,7 @@ export function enviarProposta(id, dados, por, quem, agora = Date.now()) {
   if (Object.keys(porEtapa).length && Math.abs(total - soma) > 0.01) return { erro: tr('O total precisa ser a soma dos valores por etapa.') };
   const prazoExecucaoDias = dados.prazoExecucaoDias === '' || dados.prazoExecucaoDias == null ? null : Math.round(Number(dados.prazoExecucaoDias));
   if (prazoExecucaoDias != null && !(prazoExecucaoDias > 0)) return { erro: tr('Prazo de execução inválido.') };
+  if (servidor) return servidor.enviarProposta(v.id, { total, porEtapa, outros, prazoExecucaoDias, exclusoes: textoItens(dados.exclusoes), numero: dados.numero || '', propostaEmitidaId: dados.propostaEmitidaId || null, pdf: dados.pdf || null }, quem);
   const rev = v.propostas.length + 1;
   v.propostas.push({
     rev, numero: dados.numero || null, enviadaEm: agora, por: por || '—', total, porEtapa, outros, prazoExecucaoDias,
@@ -486,6 +506,7 @@ export function escreverComoConvidada(id, texto, por, quem, agora = Date.now()) 
   if (!t) return { erro: tr('Escreva a mensagem.') };
   const bloqueio = podeConversar(c, v, agora);
   if (bloqueio) return { erro: bloqueio };
+  if (servidor) return servidor.escreverComoConvidada(v.id, t, quem);
   const m = { id: novoId('mg'), em: agora, conviteId: v.id, de: 'convidada', autor: (por ? por + ' · ' : '') + v.nome, texto: t, publica: false, respostaDe: null };
   msgs(c).push(m);
   salvar();
@@ -508,6 +529,7 @@ export function escreverComoContratante(id, { conviteId = null, respostaDe = nul
   if (!alvoId && c.situacao !== 'aberta') return { erro: tr('Aviso a todos só com a concorrência aberta.') };
   if (c.situacao === 'cancelada') return { erro: tr('Esta concorrência foi cancelada.') };
   if (c.situacao === 'fechada' && alvoId !== c.fechamento.conviteId) return { erro: tr('A conversa continua só com a empresa contratada.') };
+  if (servidor) return servidor.escreverComoContratante(c.id, { conviteId: alvoId || null, respostaDe: pergunta ? pergunta.id : null, paraTodos: !!paraTodos, texto: t });
   const publica = !alvoId || (!!pergunta && !!paraTodos && c.situacao === 'aberta');
   if (pergunta && publica) pergunta.publica = true;
   const quemEmpresa = (empresaPorId(c.contratanteId) || {}).empresa || {};

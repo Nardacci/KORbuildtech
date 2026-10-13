@@ -56,6 +56,7 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `sql 0007_cascata` | Supabase | Excluir duas empresas ligadas na mesma instrução leva tudo junto, sem esbarrar na auditoria (0009) | segundos |
 | `cronograma-oficial` | navegador + Supabase | O cronograma de ponta a ponta: modelo, etapas, % à mão, linha de base, publicação; o encarregado aponta a etapa no RDO; a construtora aprova e o andamento entra; a etapa fica travada; a construtora vê a versão publicada só leitura | ~2 min |
 | `measure-oficial` | navegador + Supabase | O Measure de ponta a ponta: item e assembly, projeto, PDF no Storage, escala, medição e recorte (versão da condição), preço e margens, proposta emitida e numerada; tudo volta ao recarregar; a gestora não vê dinheiro; excluir o projeto leva as plantas | ~2 min |
+| `concorrencias-oficial` | navegador + Supabase | As concorrências de ponta a ponta: a construtora monta (PDF no Storage), envia e recebe os links; a prestadora com conta vê o convite, "Vou cotar" copia os desenhos para o projeto, pergunta e manda a proposta emitida pela plataforma; a prestadora sem conta responde e manda a proposta em PDF pelo link (função de borda); a construtora responde para todos, avisa a todos, compara e fecha; a obra da vencedora nasce ligada | ~2 min |
 | `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
 
 O teste `daily` cria os usuários `kb-e2e-daily-…@example.com`, duas empresas, obras, diários e fotos, e apaga tudo
@@ -115,6 +116,14 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Incluir o assembly no desenho e medir uma área; recortar um vão. Recarregar a página: tudo volta do banco.
 - [ ] Preços: novo preço no item; nova versão das margens com motivo. Proposta: emitir; o número vem do banco (P-AAAA-001).
 - [ ] Entrar como Gestor (sem "Ver custos"): vê o projeto e as quantidades, não vê preços nem margens.
+
+### Concorrências (fatia 7, no computador)
+- [ ] Como construtora: Daily → Concorrências → Nova concorrência: obra, serviço, etapas (uma por linha), escopo incluso, prazo, um PDF, convidados (uma prestadora com conta e uma só com e-mail). Salvar rascunho; depois Enviar convites: a janela mostra o link da prestadora sem conta (copie).
+- [ ] Como a prestadora com conta: o sininho e Measure → Convites mostram o convite; abrir e "Vou cotar": o projeto nasce no Measure com as folhas do PDF. Perguntar no canal.
+- [ ] Abrir o link copiado num navegador sem login: responder "Vou cotar", mandar a proposta com total e PDF, perguntar.
+- [ ] Como construtora: Perguntas → responder a primeira "para todas" e mandar um aviso a todos; Comparar mostra as propostas; Fechar com a prestadora com conta.
+- [ ] Como a prestadora vencedora: o convite mostra "Você venceu"; "Criar obra a partir deste projeto" abre o cadastro preenchido; ao criar, a obra aparece ligada (Daily → Obras) e a construtora passa a receber o diário dela.
+- [ ] No link, a prestadora sem conta vê "fechou com outra empresa", sem o valor.
 
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).

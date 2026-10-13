@@ -9,6 +9,8 @@ import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { contatosCom, contatos, salvarContato } from './contatos.js';
 import { salvarProjeto, projeto as acharProjeto } from './measure.js';
+import { importarPdfNoProjeto } from './measure-telas.js';
+import { cliente } from './conta.js';
 import { dinheiro } from './crew.js';
 import {
   SITUACOES, SITUACOES_CONVITE, MOSTRAR_ORCAMENTO, QUARTEIRIZACAO, enviadas, concorrenciaEnviada, situacaoDe, ultimaProposta,
@@ -141,7 +143,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
         '<input type="hidden" name="desenhosAtuais" value="' + esc(JSON.stringify(d.desenhos)) + '">' +
         (d.desenhos.length ? '<p class="pequeno">' + d.desenhos.map((x) => esc(x.nome)).join(' · ') + '</p>' : '') +
         campo('co-desenhos', tr('Acrescentar PDFs'), '<input type="file" id="co-desenhos" name="desenhos" accept="application/pdf" multiple>') +
-        '<p class="mudo pequeno">' + tr('No protótipo, só o nome de cada arquivo é guardado.') + '</p>' +
+        '<p class="mudo pequeno">' + (estado().oficial ? tr('Os PDFs vão para a pasta da concorrência; quem cotar recebe uma cópia no projeto do Measure.') : tr('No protótipo, só o nome de cada arquivo é guardado.')) + '</p>' +
       '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Prazos') + '</h2><div class="grade-campos">' +
         campo('co-prazoData', tr('Prazo da proposta *'), '<input type="date" id="co-prazoData" name="prazoData" value="' + esc(prazoData) + '">') +
@@ -176,7 +178,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
 function dadosDoForm() {
   const form = document.getElementById('form-concorrencia');
   const fd = new FormData(form);
-  const anexos = Array.from((document.getElementById('co-desenhos') || {}).files || []).map((f) => ({ nome: f.name.replace(/\.pdf$/i, '') }));
+  const anexos = Array.from((document.getElementById('co-desenhos') || {}).files || []).map((f) => ({ nome: f.name.replace(/\.pdf$/i, ''), arquivo: f }));
   let atuais = [];
   try { atuais = JSON.parse(fd.get('desenhosAtuais') || '[]'); } catch (e) { atuais = []; }
   const visitaAntes = (concorrenciaEnviada(form.dataset.id) || { exigencias: {} }).exigencias.visita || {};
@@ -186,7 +188,7 @@ function dadosDoForm() {
       obraId: fd.get('obraId'), origem: fd.get('origemProjeto') ? { tipo: 'projeto', id: fd.get('origemProjeto') } : null, servico: fd.get('servico'),
       etapas: fd.getAll('etapas').concat(String(fd.get('outrasEtapas') || '').split('\n')),
       incluso: fd.get('incluso'), excluso: fd.get('excluso'), observacoes: fd.get('observacoes'),
-      desenhos: atuais.concat(anexos),
+      desenhos: atuais.concat(anexos.map((a) => ({ nome: a.nome }))), desenhosNovos: anexos,
       prazo: fd.get('prazoData') ? fd.get('prazoData') + 'T' + (fd.get('prazoHora') || '17:00') : '',
       inicio: fd.get('inicio'), termino: fd.get('termino'),
       orcamento: { valor: fd.get('orcamento'), mostrar: fd.get('mostrar') },
@@ -246,7 +248,7 @@ function htmlConvidados(c) {
     c.convites.map((v) => {
       const p = ultimaProposta(v);
       return '<tr><td><b>' + esc(v.nome) + '</b>' + (v.email ? '<span class="mudo pequeno bloco">' + esc(v.email) + '</span>' : '') + '</td><td>' + comoRecebe(v) +
-          (!v.empresaId && c.situacao !== 'rascunho' ? '<button type="button" class="link-botao pequeno bloco" data-acao="co-link" data-token="' + esc(v.token) + '">' + tr('Copiar o link') + '</button>' : '') + '</td>' +
+          (!v.empresaId && c.situacao !== 'rascunho' ? (v.token ? '<button type="button" class="link-botao pequeno bloco" data-acao="co-link" data-token="' + esc(v.token) + '">' + tr('Copiar o link') + '</button>' : '<span class="mudo pequeno bloco">' + tr('link no aparelho que enviou') + '</span>') : '') + '</td>' +
         '<td>' + etiquetaConvite(v) + (v.motivo ? '<span class="mudo pequeno bloco">“' + esc(v.motivo) + '”</span>' : '') + '</td>' +
         '<td>' + (p ? '<b>' + dinheiro(p.total) + '</b><span class="mudo pequeno bloco">' + tr('rev. {rev} · {quando}', { rev: p.rev, quando: dataHora(p.enviadaEm) }) + '</span>' : '<span class="mudo">—</span>') + '</td>' +
         '<td>' + (v.vistoEm ? dataHora(v.vistoEm) : '<span class="mudo">' + (c.situacao === 'rascunho' ? '—' : tr('ainda não')) + '</span>') + '</td></tr>';
@@ -383,7 +385,7 @@ export function telaConvite(moldura, id) {
   if (x.situacao === 'cancelada') situacao = '<div class="aviso"><b>' + tr('Concorrência cancelada pela contratante.') + '</b></div>';
   else if (v.situacao === 'vencedora') situacao = '<div class="aviso aviso-verde"><b>' + tr('Você venceu esta concorrência.') + '</b><span>' + tr('Rev. {rev} aceita.', { rev: (v.propostas[v.propostas.length - 1] || {}).rev }) + ' ' +
     (obraLigada ? tr('A obra já está criada e ligada à da contratante.') : pj ? tr('Crie a obra a partir do projeto: ela já nasce ligada à obra da contratante.') : '') + '</span>' +
-    (obraLigada ? '<a class="btn btn-primario btn-pequeno" href="#/daily/obras/' + obraLigada.id + '">' + tr('Abrir a obra') + '</a>' : pj ? '<a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova/' + pj.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a>' : '') + '</div>';
+    (obraLigada ? '<a class="btn btn-primario btn-pequeno" href="#/daily/obras/' + obraLigada.id + '">' + tr('Abrir a obra') + '</a>' : pj ? '<a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + pj.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a>' : '') + '</div>';
   else if (v.situacao === 'nao-escolhida') situacao = '<div class="aviso"><b>' + tr('A contratante fechou com outra empresa.') + '</b><span>' + tr('Obrigado por cotar. O valor da vencedora não é informado.') + '</span></div>';
   else if (x.situacao === 'fechada') situacao = '<div class="aviso"><b>' + tr('Esta concorrência já foi fechada.') + '</b></div>';
   else if (!aberta) situacao = '<div class="aviso aviso-ambar"><b>' + tr('O prazo da proposta venceu.') + '</b><span>' + tr('Só dá para mandar proposta se a contratante prorrogar.') + '</span></div>';
@@ -468,10 +470,28 @@ export function botaoEnviarPelaPlataforma(p, numeroDoc) {
 }
 
 /* O contato da contratante nos Contatos da convidada: o que tem a mesma conta; se não houver, é criado. */
-function contatoDaContratante(x) {
+async function contatoDaContratante(x) {
   const achado = contatos().find((c) => c.contaId === x.contratanteId);
   if (achado) return achado.id;
   const e = x.contratante || {};
+  if (estado().oficial) {
+    // conta de verdade: o contato nasce no banco (o projeto aponta para ele) e entra no espelho na hora
+    const mesmoNome = contatos().find((c) => c.nome.toLowerCase() === String(e.nome || '').toLowerCase());
+    const sb = cliente();
+    try {
+      if (mesmoNome) {
+        const { error } = await sb.from('contatos').update({ conta_empresa_id: x.contratanteId }).eq('id', mesmoNome.id);
+        if (error) throw error;
+        mesmoNome.contaId = x.contratanteId; salvar();
+        return mesmoNome.id;
+      }
+      const { data, error } = await sb.from('contatos').insert({ nome: e.nome, email: e.email || '', telefone: e.telefone || '', papeis: ['construtora'], conta_empresa_id: x.contratanteId }).select('id').single();
+      if (error) throw error;
+      estado().contatos.push({ id: data.id, nome: e.nome, pessoa: '', papeis: ['construtora'], email: e.email || '', telefone: e.telefone || '', endereco: '', cidade: '', estado: '', zip: '', etapas: [], notas: '', contaId: x.contratanteId });
+      salvar();
+      return data.id;
+    } catch (err) { console.error(err); return null; }
+  }
   const r = salvarContato(null, { nome: e.nome, email: e.email || '', telefone: e.telefone || '', papeis: ['construtora'] }, quem());
   if (r.erro) return null;
   const novo = contatos().find((c) => c.nome === e.nome);
@@ -479,8 +499,8 @@ function contatoDaContratante(x) {
   return novo ? novo.id : null;
 }
 
-function criarProjetoDoConvite(x) {
-  const ct = contatoDaContratante(x);
+async function criarProjetoDoConvite(x) {
+  const ct = await contatoDaContratante(x);
   if (!ct) return { erro: tr('Não foi possível cadastrar a contratante nos seus Contatos.') };
   const o = x.obra || {};
   const r = salvarProjeto(null, {
@@ -489,7 +509,23 @@ function criarProjetoDoConvite(x) {
   });
   if (r.erro) return r;
   acharProjeto(r.id).concorrencia = { id: x.id, conviteId: x.convite.id, contratanteId: x.contratanteId };
-  vincularProjeto(x.id, r.id);
+  const v = await vincularProjeto(x.id, r.id);
+  if (v && v.erro) return v;
+  // conta de verdade: os desenhos da contratante viram cópias no projeto (bucket da convidada), folha a folha
+  if (estado().oficial) {
+    let falhou = 0;
+    for (const d of x.desenhos || []) {
+      if (!d.path) continue;
+      try {
+        const { data, error } = await cliente().storage.from('concorrencias').createSignedUrl(d.path, 600);
+        if (error) throw error;
+        const resp = await fetch(data.signedUrl);
+        if (!resp.ok) throw new Error('desenho ' + resp.status);
+        await importarPdfNoProjeto(r.id, new File([await resp.blob()], d.nome + '.pdf', { type: 'application/pdf' }));
+      } catch (e) { console.error('cópia do desenho ' + d.path + ': ' + (e && e.message ? e.message : e)); falhou++; }
+    }
+    if (falhou) toast(tn(falhou, 'Um desenho não pôde ser copiado: envie o PDF no projeto.', '{n} desenhos não puderam ser copiados: envie os PDFs no projeto.'));
+  }
   return r;
 }
 
@@ -510,12 +546,23 @@ export function propostaParaConcorrencia(x, emitida) {
 
 /* ---------- Pelo link, sem conta (CO-07, §3.3) ---------- */
 
-export const linkDoConvite = (token) => location.origin + location.pathname + '?demo#/convite/' + token;
+export const linkDoConvite = (token) => location.origin + location.pathname + (estado().oficial ? '' : '?demo') + '#/convite/' + token;
+
+/* Os links dos convidados sem conta, para copiar (o banco entrega o token uma vez, ao enviar). */
+async function mostrarLinks(links) {
+  if (!links || !links.length) return;
+  await abrirDialogo({
+    titulo: tr('Links dos convidados sem conta'),
+    corpo: '<p class="mudo pequeno">' + tr('Mande cada link para a prestadora (o envio por e-mail vem em seguida). O link é pessoal e só abre aquele convite.') + '</p>' +
+      links.map((l) => '<p><b>' + esc(l.nome) + '</b><input type="text" readonly value="' + esc(linkDoConvite(l.token)) + '" onclick="this.select()"></p>').join(''),
+    acoes: [{ rotulo: tr('Fechar'), valor: true, classe: 'btn-primario' }],
+  });
+}
 
 export function telaConvitePublico(token, marca) {
   let x = porToken(token);
-  if (!x) return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>' + tr('Convite não encontrado') + '</b><span>' + tr('Confira o link. No protótipo não há servidor, então o link só abre no mesmo navegador em que a concorrência foi enviada.') + '</span></div></main>';
-  if (!x.convite.vistoEm) { marcarVisto(x.id, { token }); x = porToken(token); }
+  if (!x) return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>' + tr('Convite não encontrado') + '</b><span>' + (estado() && estado().oficial ? tr('Confira o link: ele pode estar incompleto, ou a concorrência foi encerrada.') : tr('Confira o link. No protótipo não há servidor, então o link só abre no mesmo navegador em que a concorrência foi enviada.')) + '</span></div></main>';
+  if (!x.convite.vistoEm && !estado().oficial) { marcarVisto(x.id, { token }); x = porToken(token); }
   const v = x.convite;
   const aberta = x.situacao === 'aberta';
   const ex = x.exigencias || {};
@@ -577,8 +624,8 @@ export const acoesConcorrencias = {
     try { await navigator.clipboard.writeText(link); toast(tr('Link copiado. No produto, ele vai por e-mail para a prestadora.')); }
     catch (e) { await abrirDialogo({ titulo: tr('Link do convite'), corpo: '<input type="text" readonly value="' + esc(link) + '">', acoes: [{ rotulo: tr('Fechar'), valor: true }] }); }
   },
-  'lk-vou'(el) {
-    const r = responder(porToken(el.dataset.token).id, true, '', '', { token: el.dataset.token });
+  async 'lk-vou'(el) {
+    const r = await responder(porToken(el.dataset.token).id, true, '', '', { token: el.dataset.token });
     toast(r.erro || tr('Resposta enviada à contratante.'));
     app.desenhar();
   },
@@ -589,11 +636,11 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: tr('Não vou participar'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = responder(porToken(el.dataset.token).id, false, res.campos.motivo, '', { token: el.dataset.token });
+    const r = await responder(porToken(el.dataset.token).id, false, res.campos.motivo, '', { token: el.dataset.token });
     toast(r.erro || tr('Resposta enviada à contratante.'));
     app.desenhar();
   },
-  'lk-enviar'(el) {
+  async 'lk-enviar'(el) {
     const token = el.dataset.token;
     const x = porToken(token);
     const form = document.getElementById('form-link');
@@ -603,23 +650,23 @@ export const acoesConcorrencias = {
     form.querySelectorAll('[name="etapa"]').forEach((i) => { if (i.value.trim()) porEtapa[i.dataset.etapa] = num(i.value); });
     const arquivo = (document.getElementById('lk-pdf').files || [])[0];
     if (!arquivo) { toast(tr('Anexe a proposta em PDF.')); return; }
-    const r = enviarProposta(x.id, { total: num(fd.get('total')), porEtapa, prazoExecucaoDias: fd.get('prazo'), exclusoes: fd.get('exclusoes'), pdf: { nome: arquivo.name } }, x.convite.nome, { token });
+    const r = await enviarProposta(x.id, { total: num(fd.get('total')), porEtapa, prazoExecucaoDias: fd.get('prazo'), exclusoes: fd.get('exclusoes'), pdf: { nome: arquivo.name, arquivo } }, x.convite.nome, { token });
     toast(r.erro || tr('Proposta enviada (rev. {rev}).', { rev: r.rev }));
     if (r.ok) app.desenhar();
   },
-  'lk-perguntar'(el) {
+  async 'lk-perguntar'(el) {
     const x = porToken(el.dataset.token);
-    const r = escreverComoConvidada(x.id, textoDe(el), '', { token: el.dataset.token });
+    const r = await escreverComoConvidada(x.id, textoDe(el), '', { token: el.dataset.token });
     toast(r.erro || tr('Mensagem enviada.'));
     if (r.ok) app.desenhar();
   },
-  'co-usar'(el) {
+  async 'co-usar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
     const r = usarNoOrcamento(c, el.dataset.convite);
     toast(r.erro || tn(r.linhas, 'Preço levado à proposta do projeto (1 linha, com as suas margens).', 'Preço levado à proposta do projeto ({n} linhas, com as suas margens).'));
   },
   async 'co-aprovar-q'(el) {
-    const r = decidirQuarteirizacao(el.dataset.id, true, '', quem());
+    const r = await decidirQuarteirizacao(el.dataset.id, true, '', quem());
     toast(r.erro || tr('Quarteirização aprovada.'));
     if (r.ok) app.desenhar();
   },
@@ -630,12 +677,12 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: tr('Recusar'), valor: true, classe: 'btn-perigo' }],
     });
     if (!res || !res.valor) return;
-    const r = decidirQuarteirizacao(el.dataset.id, false, res.campos.motivo, quem());
+    const r = await decidirQuarteirizacao(el.dataset.id, false, res.campos.motivo, quem());
     toast(r.erro || tr('Quarteirização recusada.'));
     if (r.ok) app.desenhar();
   },
-  'co-escrever'(el) {
-    const r = escreverComoContratante(el.dataset.id, { conviteId: el.dataset.convite, texto: textoDe(el) }, quem());
+  async 'co-escrever'(el) {
+    const r = await escreverComoContratante(el.dataset.id, { conviteId: el.dataset.convite, texto: textoDe(el) }, quem());
     toast(r.erro || tr('Mensagem enviada.'));
     if (r.ok) app.desenhar();
   },
@@ -643,7 +690,7 @@ export const acoesConcorrencias = {
     const texto = textoDe(el);
     if (!texto.trim()) { toast(tr('Escreva a mensagem.')); return; }
     if (!(await confirmar(tr('Avisar todas as convidadas?'), texto, tr('Avisar a todos')))) return;
-    const r = escreverComoContratante(el.dataset.id, { conviteId: null, texto }, quem());
+    const r = await escreverComoContratante(el.dataset.id, { conviteId: null, texto }, quem());
     toast(r.erro || tr('Aviso enviado a todas as convidadas.'));
     if (r.ok) app.desenhar();
   },
@@ -659,25 +706,25 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Responder'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = escreverComoContratante(c.id, { respostaDe: q.id, paraTodos: res.campos.para === 'todos', texto: res.campos.texto }, quem());
+    const r = await escreverComoContratante(c.id, { respostaDe: q.id, paraTodos: res.campos.para === 'todos', texto: res.campos.texto }, quem());
     toast(r.erro || (res.campos.para === 'todos' ? tr('Resposta enviada a todas as convidadas.') : tr('Resposta enviada.')));
     if (r.ok) app.desenhar();
   },
-  'cv-escrever'(el) {
-    const r = escreverComoConvidada(el.dataset.id, textoDe(el), quem());
+  async 'cv-escrever'(el) {
+    const r = await escreverComoConvidada(el.dataset.id, textoDe(el), quem());
     toast(r.erro || tr('Mensagem enviada.'));
     if (r.ok) app.desenhar();
   },
-  'cv-vou'(el) {
-    const r = responder(el.dataset.id, true, '', quem());
+  async 'cv-vou'(el) {
+    const r = await responder(el.dataset.id, true, '', quem());
     if (r.erro) { toast(r.erro); return; }
-    const pj = criarProjetoDoConvite(recebida(el.dataset.id));
+    const pj = await criarProjetoDoConvite(recebida(el.dataset.id));
     if (pj.erro) { toast(pj.erro); app.desenhar(); return; }
     toast(tr('Projeto criado no Measure. Meça, monte a proposta e envie pela plataforma.'));
     app.ir('#/measure/projeto/' + pj.id);
   },
-  'cv-projeto'(el) {
-    const pj = criarProjetoDoConvite(recebida(el.dataset.id));
+  async 'cv-projeto'(el) {
+    const pj = await criarProjetoDoConvite(recebida(el.dataset.id));
     if (pj.erro) { toast(pj.erro); return; }
     toast(tr('Projeto criado no Measure.'));
     app.ir('#/measure/projeto/' + pj.id);
@@ -689,7 +736,7 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: tr('Não vou participar'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = responder(el.dataset.id, false, res.campos.motivo, quem());
+    const r = await responder(el.dataset.id, false, res.campos.motivo, quem());
     toast(r.erro || tr('Resposta enviada à contratante.'));
     app.desenhar();
   },
@@ -710,26 +757,28 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Enviar'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = enviarProposta(x.id, { ...m, numero: emitida.numero, prazoExecucaoDias: res.campos.prazo, exclusoes: res.campos.exclusoes, pdf: { numero: emitida.numero } }, quem());
+    const r = await enviarProposta(x.id, { ...m, numero: emitida.numero, propostaEmitidaId: emitida._banco ? emitida.id : null, prazoExecucaoDias: res.campos.prazo, exclusoes: res.campos.exclusoes, pdf: { numero: emitida.numero } }, quem());
     toast(r.erro || tr('Proposta enviada para {nome} (rev. {rev}).', { nome: nomeContratante(x), rev: r.rev }));
     if (r.ok) app.desenhar();
   },
-  'co-salvar'(el) {
+  async 'co-salvar'(el) {
     const { id, dados } = dadosDoForm();
-    const r = salvarRascunho(id, dados, quem());
+    const r = await salvarRascunho(id, dados, quem());
     if (r.erro) { toast(r.erro); return; }
     if (el.dataset.enviar) {
-      const e = enviar(r.id, quem());
+      const e = await enviar(r.id, quem());
       if (e.erro) { toast(tr('Rascunho salvo. Para enviar: {falta}', { falta: e.erro })); app.ir('#/daily/concorrencias/' + r.id); return; }
       toast(tr('Convites enviados.'));
+      await mostrarLinks(e.links);
     } else toast(tr('Rascunho salvo.'));
     app.ir('#/daily/concorrencias/' + r.id);
   },
   async 'co-enviar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
     if (!(await confirmar(tr('Enviar os convites?'), tn(c.convites.length, 'A prestadora recebe o pacote para cotar. Depois de enviado, só dá para prorrogar o prazo, convidar mais ou cancelar.', 'As {n} prestadoras recebem o pacote para cotar. Depois de enviado, só dá para prorrogar o prazo, convidar mais ou cancelar.'), tr('Enviar')))) return;
-    const r = enviar(c.id, quem());
+    const r = await enviar(c.id, quem());
     toast(r.erro || tr('Convites enviados.'));
+    if (r.ok) await mostrarLinks(r.links);
     app.desenhar();
   },
   async 'co-prorrogar'(el) {
@@ -743,7 +792,7 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Prorrogar'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = prorrogar(c.id, res.campos.data + 'T' + res.campos.hora, res.campos.motivo, quem());
+    const r = await prorrogar(c.id, res.campos.data + 'T' + res.campos.hora, res.campos.motivo, quem());
     toast(r.erro || tr('Prazo prorrogado.'));
     if (r.ok) app.desenhar();
   },
@@ -760,9 +809,9 @@ export const acoesConcorrencias = {
     if (!res || !res.valor) return;
     const ids = Object.values(res.campos);
     if (!ids.length) { toast(tr('Marque pelo menos uma prestadora.')); return; }
-    const r = convidarMais(c.id, ids, quem());
+    const r = await convidarMais(c.id, ids, quem());
     toast(r.erro || tn(ids.length, 'Convite enviado.', '{n} convites enviados.'));
-    if (r.ok) app.desenhar();
+    if (r.ok) { await mostrarLinks(r.links); app.desenhar(); }
   },
   async 'co-fechar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
@@ -779,7 +828,7 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Fechar negócio'), valor: true, classe: 'btn-primario' }],
     });
     if (!res || !res.valor) return;
-    const r = fechar(c.id, v.id, res.campos.observacao, quem());
+    const r = await fechar(c.id, v.id, res.campos.observacao, quem());
     toast(r.erro || (r.pendente ? tr('Pedido de aprovação enviado a quem contratou a sua empresa.') : tr('Fechada com {nome}.', { nome: v.nome })));
     if (r.ok) app.ir('#/daily/concorrencias/' + c.id);
   },
@@ -793,7 +842,7 @@ export const acoesConcorrencias = {
       acoes: [{ rotulo: tr('Voltar'), valor: false }, { rotulo: rascunho ? tr('Excluir') : tr('Cancelar a concorrência'), valor: true, classe: 'btn-perigo' }],
     });
     if (!res || !res.valor) return;
-    const r = cancelar(c.id, res.campos.motivo, quem());
+    const r = await cancelar(c.id, res.campos.motivo, quem());
     if (r.erro) { toast(r.erro); return; }
     toast(r.excluida ? tr('Rascunho excluído.') : tr('Concorrência cancelada.'));
     app.ir(r.excluida ? '#/daily/concorrencias' : '#/daily/concorrencias/' + c.id);

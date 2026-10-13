@@ -6,6 +6,8 @@
 import { tr } from './i18n.js';
 import { hoje } from './util.js';
 import { conta, cliente, iniciar, traduzir } from './conta.js';
+import { estado } from './armazem.js';
+import { espelho, montar } from './espelho.js';
 
 /* O que já foi lido do banco; cada tela pede só o que usa. */
 export const cad = { funcionarios: [], valores: [], encargos: [], regras: [], contatos: [], obras: [], alocacoes: [], modelos: [], membros: [] };
@@ -194,8 +196,18 @@ export async function salvarObra(id, d) {
     const r = await gravar(cliente().from('obras').update(o).eq('id', id), ['obras'], repetida);
     return r.erro ? r : { ok: true, data: id };
   }
+  // a partir do projeto ganho (OB-07): ganho numa concorrência, é a função do banco que cria a obra já ligada (CO-14)
+  const pj = d.projetoId ? (((estado() || {}).measure || {}).projetos || []).find((p) => p.id === d.projetoId) : null;
+  if (pj && pj.concorrencia && pj.concorrencia.conviteId && pj.concorrencia.vinculo) {
+    const r = await gravar(cliente().rpc('criar_obra_da_concorrencia', { p_convite: pj.concorrencia.conviteId, p: o }), ['obras'], repetida);
+    if (!r.erro && espelho.pronto) montar(true).catch(() => {});
+    return r.erro ? r : { ok: true, data: r.data };
+  }
+  if (d.projetoId) o.projeto_id = d.projetoId;
   const r = await gravar(cliente().from('obras').insert(o).select('id').single(), ['obras'], repetida);
-  return r.erro ? r : { ok: true, data: r.data.id };
+  if (r.erro) return r;
+  if (d.projetoId) { await cliente().from('projetos').update({ obra_id: r.data.id }).eq('id', d.projetoId); if (espelho.pronto) montar(true).catch(() => {}); }
+  return { ok: true, data: r.data.id };
 }
 
 export const alocacoesDa = (obraId) => cad.alocacoes.filter((a) => a.obra_id === obraId);

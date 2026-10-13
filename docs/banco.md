@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Faltam as concorrências (7, desenho no §14, para aprovação) e as notificações (8) (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Fatia 7 (`0010` e a função de borda `convite-publico`): as concorrências — tudo por funções do banco, o link sem conta, o canal, a quarteirização e o vínculo da obra selado por `criar_obra_da_concorrencia`; as telas do protótipo sobre o espelho (`js/espelho-concorrencias.js`, `js/concorrencias-oficial.js`); teste `tests/concorrencias-oficial.test.mjs`. Faltam as notificações (8) (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -130,7 +130,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 4 | `supabase/migrations/20261015_0006_crew.sql` (só cria; acrescenta `funcionarios.equipe_id`). Teste: `supabase/testes/0004_crew.sql`. Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
 | 5 | `supabase/migrations/20261016_0007_cronograma.sql` (só cria; reescreve `aprovar_rdo`). Teste: `supabase/testes/0005_cronograma.sql`. Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
 | 6 | `supabase/migrations/20261017_0008_measure.sql` (só cria). Teste: `supabase/testes/0006_measure.sql`. Depois, `20261018_0009_cascata_auditoria.sql` (só reescreve funções): excluir empresas ligadas na mesma instrução não esbarra na auditoria nem nas travas "só insert" (teste `0007_cascata.sql`). Measure: projetos, folhas (Storage `plantas`), condições com as medições, typicals, catálogo, preços e margens (só `insert`), propostas emitidas (desenho no §13) | Medir, cotar e emitir propostas de verdade; consulta no celular |
-| 7 | `supabase/migrations/20261019_0010_concorrencias.sql` (só cria). Teste: `supabase/testes/0008_concorrencias.sql`. Concorrências: tudo por funções do banco, o link sem conta pela função de borda `convite-publico`, o canal, a quarteirização e `criar_obra_da_concorrencia` (sela o vínculo) (desenho no §14) | Convidar, cotar, comparar, fechar e conversar de verdade; a cadeia de obras liga-se sozinha |
+| 7 | `supabase/migrations/20261019_0010_concorrencias.sql` (só cria). Teste: `supabase/testes/0008_concorrencias.sql`. Concorrências: tudo por funções do banco, o link sem conta pela função de borda `convite-publico`, o canal, a quarteirização e `criar_obra_da_concorrencia` (sela o vínculo) (desenho no §14). Teste do app: `tests/concorrencias-oficial.test.mjs` ✓ | Convidar, cotar, comparar, fechar e conversar de verdade; a cadeia de obras liga-se sozinha |
 | 8 | Notificações por e-mail e a área de administração da plataforma | |
 
 ## 10. Fatia 3 — o Daily no banco (desenho aprovado em outubro de 2026)
@@ -556,9 +556,24 @@ mesma de hoje (`#/convite/<token>`), lendo da função de borda em vez do aparel
    acompanha a obra) lê o canal; escrevem os que têm `concorrencias.gerir` (contratante) ou `concorrencias.responder`
    (contratada). No banco, a leitura da convidada já é por função; a tela do app é que decide quem vê o botão.
 
-### 14.8 Pronto no banco
+### 14.8 Pronto
 
-`supabase/migrations/20261019_0010_concorrencias.sql` e `supabase/testes/0008_concorrencias.sql` (cinco empresas:
-construtora, duas prestadoras com conta, uma pelo link que depois cria a conta, e a quarteirização com aprovação;
-isolamento entre convidadas, prazo, revisões, canal público e privado, adendo, prorrogação, fechamento, vínculo da obra,
-cancelamento e a cascata ao excluir empresas). O app (fatia 7b) e a função de borda `convite-publico` vêm em seguida.
+- **Banco:** `supabase/migrations/20261019_0010_concorrencias.sql` e `supabase/testes/0008_concorrencias.sql` (cinco empresas:
+  construtora, duas prestadoras com conta, uma pelo link que depois cria a conta, e a quarteirização com aprovação;
+  isolamento entre convidadas, prazo, revisões, canal público e privado, adendo, prorrogação, fechamento, vínculo da obra,
+  cancelamento e a cascata ao excluir empresas).
+- **App (fatia 7b):** o motor do protótipo ganha um "servidor" (`ligarServidorConcorrencias`, em `js/concorrencias-oficial.js`):
+  as regras locais continuam dando a mensagem na hora e cada ação vai à função do banco; o espelho é relido em seguida.
+  O rascunho é gravação direta (com os PDFs no bucket `concorrencias`). `js/espelho-concorrencias.js` monta
+  `estado().concorrencias` com as enviadas (tabelas) e as recebidas (`concorrencias_recebidas`, cada uma com um convite só
+  e a contratante como empresa vizinha com a obra) e `estado().pedidosQuarteirizacao`. Os links dos convidados sem conta
+  chegam uma vez, ao enviar (uma janela para copiar), e ficam guardados no aparelho que enviou. "Vou cotar" cria o contato
+  da contratante e o projeto no banco e copia cada desenho para o bucket `plantas` da convidada (folha a folha). "Criar obra
+  a partir deste projeto" vai para `#/conta/obras/nova/{projeto}` (preenchido) e, se o projeto veio de concorrência,
+  `criar_obra_da_concorrencia` sela o vínculo.
+- **Link sem conta:** `supabase/functions/convite-publico` (GET: a visão, marca "visto", desenhos e PDFs por links de 1 h;
+  POST: responder, escrever, proposta com PDF em multipart; 60 chamadas por minuto por token). A página `#/convite/{token}`
+  da conta de verdade é a tela do protótipo sobre um banco só em memória. Publicar: `supabase functions deploy convite-publico --no-verify-jwt`.
+- **Testes:** `tests/concorrencias-oficial.test.mjs` (37 verificações; local com a função de borda imitada em
+  `tests/_supabase-local.mjs`, ou `--real`).
+- **Fica para a fatia 8:** o e-mail do convite (hoje o link é copiado) e os avisos por e-mail.

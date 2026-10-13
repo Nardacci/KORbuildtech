@@ -10,6 +10,10 @@ import { conta, pode } from './conta.js';
 import { CLASSIFICACOES, FLSA, SITUACOES_FUNC, MODELOS_REGRA, ENCARGOS_INICIAIS, resumoRegra } from './settings.js';
 import { PAPEIS } from './contatos.js';
 import { SITUACOES_OBRA } from './obras.js';
+import { estado } from './armazem.js';
+
+/* O projeto do Measure no espelho (quando o Measure já foi aberto nesta sessão). */
+const projetoDoEspelho = (id) => { try { return (((estado() || {}).measure || {}).projetos || []).find((p) => p.id === id) || null; } catch { return null; } };
 import { NOMES_DIAS } from './prazos.js';
 import { dinheiro } from './crew.js';
 import { aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
@@ -62,7 +66,7 @@ export function telaCadastro(aba, resto) {
   }
   if (aba === 'obras') {
     if (resto[0] === 'modelos') return resto[1] ? telaFormModelo(resto[1] === 'novo' ? null : resto[1]) : { html: telaModelos() };
-    if (resto[0]) return telaFormObra(resto[0] === 'nova' ? null : resto[0]);
+    if (resto[0]) return telaFormObra(resto[0] === 'nova' ? null : resto[0], resto[0] === 'nova' ? resto[1] : null);
     return { html: telaObras() };
   }
   if (aba === 'funcionarios') {
@@ -299,10 +303,12 @@ function telaObras() {
     (cad.contatos.some((c) => c.papeis.includes('construtora') || c.papeis.includes('cliente')) ? '' : '<p class="dica">' + tr('Antes da primeira obra, cadastre o contratante em <a href="#/conta/contatos/novo">Contatos</a>.') + '</p>');
 }
 
-function telaFormObra(id) {
+function telaFormObra(id, projetoId) {
   const existente = id ? obra(id) : null;
   if (id && !existente) return { trocar: '#/conta/obras' };
-  const o = existente || { raio: RAIO_PADRAO, dias_trabalho: [1, 2, 3, 4, 5], situacao: 'andamento', inicio: hoje() };
+  // a partir do projeto ganho no Measure (OB-07; da concorrência, CO-14): nome, endereço e partes já vêm preenchidos
+  const pj = projetoId ? projetoDoEspelho(projetoId) : null;
+  const o = existente || { ...(pj ? { nome: pj.nome, contratante_id: pj.contratanteId, dono_id: pj.donoId, endereco: pj.endereco, municipio: pj.cidade, estado: pj.estado, zip: pj.zip } : {}), raio: RAIO_PADRAO, dias_trabalho: [1, 2, 3, 4, 5], situacao: 'andamento', inicio: hoje() };
   const tem = Number.isFinite(o.lat) && Number.isFinite(o.lon);
   const centro = tem ? { lat: o.lat, lon: o.lon } : { lat: 43.0, lon: -71.46 };
   const executa = empresaExecuta();
@@ -311,6 +317,7 @@ function telaFormObra(id) {
   const contratantes = cad.contatos.filter((c) => c.papeis.includes('construtora') || c.papeis.includes('cliente'));
   const html = cabeca(existente ? existente.nome : tr('Nova obra'), '', ['#/conta/obras', tr('Obras')]) +
     '<form id="form-obra" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    (pj ? '<input type="hidden" name="projetoId" value="' + esc(pj.id) + '"><p class="pequeno">' + tr('A partir do projeto {nome} (Measure)', { nome: esc(pj.nome) }) + (pj.concorrencia && pj.concorrencia.vinculo ? ' · ' + tr('ganho numa concorrência: a obra nasce ligada à obra da contratante') : '') + '</p>' : '') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Obra') + '</h2><div class="grade-campos">' +
       campo('ob-nome', tr('Nome da obra *'), texto('ob-nome', 'nome', o.nome, ' placeholder="' + esc(tr('Ex.: Residencial Thompson, Mezanino LogSul')) + '"')) +
       campo('ob-situacao', tr('Situação'), '<select id="ob-situacao" name="situacao">' + Object.entries(SITUACOES_OBRA).map(([k, s]) => '<option value="' + k + '"' + (o.situacao === k ? ' selected' : '') + '>' + s.nome + '</option>').join('') + '</select>') + '</div>' +

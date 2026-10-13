@@ -13,6 +13,7 @@ import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatu
 import { criarSettings } from './settings.js';
 import { conta, cliente, iniciar, emailAtual } from './conta.js';
 import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca, lerCronograma, aplicarCronograma, lerMeasure, aplicarMeasure } from './espelho-crew.js';
+import { lerConcorrencias, aplicarConcorrencias } from './espelho-concorrencias.js';
 
 export const espelho = { pronto: false, lendo: null, lidoEm: 0, erro: null };
 /* Quem tem algo para subir antes de o espelho ser relido (o Measure leva as gravações agrupadas; js/measure-oficial.js). */
@@ -135,10 +136,10 @@ export function montar(atualizado = false) {
     if (!conta.sessao || !conta.membro || !conta.empresa) throw new Error('sem-conta');
     prepararArmazem(conta.sessao.user.id);
     const e = conta.empresa;
-    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido, cronLido, measureLido] = await Promise.all([
+    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido, cronLido, measureLido, concLido] = await Promise.all([
       ler('obras', 'nome'), ler('contatos', 'nome'), ler('membros', 'nome'), ler('rdos', 'data'), ler('rdo_fotos', 'ordem'), ler('rdo_historico', 'em'),
       cliente().rpc('diarios_recebidos', { p_obra: null }).then(({ data, error }) => { if (error) throw error; return data || []; }),
-      lerCrew(), lerCronograma(), e.atuacao === 'construtora' ? null : lerMeasure(),
+      lerCrew(), lerCronograma(), e.atuacao === 'construtora' ? null : lerMeasure(), lerConcorrencias(),
     ]);
     const empresa = {
       id: e.id, nome: e.nome, razaoSocial: e.razao_social, sigla: e.sigla, ein: e.ein, atuacao: e.atuacao, especialidades: e.especialidades,
@@ -181,6 +182,8 @@ export function montar(atualizado = false) {
     if (e.atuacao !== 'prestadora' && obras.length) {
       aplicarPresenca(vizinhas, await lerPresencaDasPrestadoras(obras).catch(() => []), (emp) => dadosBase(emp, ''), obraDoBanco, e.id);
     }
+    // concorrências enviadas e recebidas (docs/banco.md §14); a contratante de cada recebida é uma vizinha com a obra
+    const concorrencias = aplicarConcorrencias(d, concLido, vizinhas, (emp) => dadosBase(emp, ''), e.id);
     // a obra da prestadora chega sem datas: o período vem dos próprios diários recebidos
     for (const v of Object.values(vizinhas)) {
       for (const o of v.obras) {
@@ -191,7 +194,7 @@ export function montar(atualizado = false) {
     }
 
     for (const fn of aoTrocar) { try { fn(d, minhaAntes); } catch (err) { console.error(err); } }
-    definirEstado({ versao: 'oficial', oficial: true, padrao: e.id, empresas: { [e.id]: d, ...vizinhas }, compartilhados, concorrencias: [] });
+    definirEstado({ versao: 'oficial', oficial: true, padrao: e.id, empresas: { [e.id]: d, ...vizinhas }, compartilhados, concorrencias });
     try { localStorage.setItem('kbt.oficial.sessao', conta.membro.id); } catch { /* sem armazenamento */ }
     espelho.pronto = true;
     espelho.lidoEm = Date.now();

@@ -191,7 +191,7 @@ function telaProjeto(id) {
         dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="#/daily/obras/' + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
         // projeto ganho vira obra: o cadastro já vem preenchido (docs/obras.md OB-07)
         (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
-          ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.') + '</span><a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova/' + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
+          ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.') + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
         '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
         fs.map((f) => {
@@ -824,21 +824,27 @@ export async function aposDesenharMeasure() {
   }
 }
 
+/* Um PDF vira folhas do projeto (uma por página); na conta de verdade, o arquivo vai ao Storage da empresa. */
+export async function importarPdfNoProjeto(projetoId, arq) {
+  const dados = new Uint8Array(await arq.arrayBuffer());
+  const pdfjs = await carregarPdfjs();
+  const doc = await pdfjs.getDocument({ data: dados.slice() }).promise;
+  const id = novoId('pdf');
+  const blob = new Blob([dados], { type: 'application/pdf' });
+  // conta de verdade: a planta vai ao Storage da empresa (e fica no aparelho só como cópia)
+  const arquivo = estado().oficial ? await enviarPlanta(projetoId, id, blob, arq.name) : null;
+  if (!arquivo) await guardarFoto(id, blob);
+  const novas = criarFolhas(projetoId, id, arq.name, doc.numPages);
+  if (arquivo) { for (const f of novas) f.arquivo = arquivo; salvar(); }
+  return novas;
+}
+
 async function enviarPdf(input) {
   const arq = input.files && input.files[0];
   if (!arq) return;
   toast(tr('Lendo o PDF…'));
   try {
-    const dados = new Uint8Array(await arq.arrayBuffer());
-    const pdfjs = await carregarPdfjs();
-    const doc = await pdfjs.getDocument({ data: dados.slice() }).promise;
-    const id = novoId('pdf');
-    const blob = new Blob([dados], { type: 'application/pdf' });
-    // conta de verdade: a planta vai ao Storage da empresa (e fica no aparelho só como cópia)
-    const arquivo = estado().oficial ? await enviarPlanta(input.dataset.projeto, id, blob, arq.name) : null;
-    if (!arquivo) await guardarFoto(id, blob);
-    const novas = criarFolhas(input.dataset.projeto, id, arq.name, doc.numPages);
-    if (arquivo) { for (const f of novas) f.arquivo = arquivo; salvar(); }
+    const novas = await importarPdfNoProjeto(input.dataset.projeto, arq);
     toast(novas.length === 1 ? tr('Folha adicionada. Abra e defina a escala.') : novas.length + (' ' + tr('folhas adicionadas. Abra cada uma e defina a escala.')));
     app.desenhar();
   } catch (e) {

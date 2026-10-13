@@ -16,6 +16,7 @@ import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily, s
 import { ligarCrewOficial } from './crew-oficial.js';
 import { ligarCronogramaOficial } from './cronograma-oficial.js';
 import { ligarMeasureOficial } from './measure-oficial.js';
+import { ligarConcorrenciasOficial, lerConvitePublico, mostrarConvitePublico } from './concorrencias-oficial.js';
 import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
@@ -199,13 +200,12 @@ function desenhar() {
   if (!MODO_DEMO) {
     const p0 = rota();
     if (p0[0] === 'cliente') { desenharLinkPublico(p0[1]); return; }
+    if (p0[0] === 'convite') { desenharLinkConvite(p0[1]); return; }
     // o Daily da conta de verdade: as telas do protótipo, com o espelho do banco no aparelho (docs/banco.md §10.4)
     if ((p0[0] === 'daily' || p0[0] === 'crew' || p0[0] === 'measure') && conta.pronto && conta.membro && conta.membro.ativo) {
       if (!espelho.pronto || !estado() || !estado().oficial || estado().empresa.id !== conta.empresa.id) { app.innerHTML = carregando(); abrirDailyOficial(); return; }
       if (p0[0] === 'crew' || p0[0] === 'measure') return desenharPrototipo();
       const q0 = rotaDaily();
-      // concorrências ainda não estão no banco (fatia 7)
-      if (q0[0] === 'concorrencias') return trocarRota('#/daily');
       // diário aberto pelo endereço (link, notificação) que ainda não está no aparelho: relê o banco uma vez
       const idRdo = q0[1] === 'rdo' ? q0[2] : q0[0] === 'pdf' ? q0[1] : null;
       if (idRdo && !acharRdo(idRdo) && !relidoPorRdo.has(idRdo) && !semInternet()) {
@@ -263,7 +263,7 @@ function desenharPrototipo() {
     else if (q[0] === 'concorrencias' && q[1] === 'nova' && q[2] === 'projeto') html = telaFormConcorrencia(moldura, null, null, q[3]) || naoEncontrado('#/daily/concorrencias');
     else if (q[0] === 'concorrencias' && q[1] === 'nova') html = telaFormConcorrencia(moldura, null, q[2]);
     else if (q[0] === 'concorrencias' && q[1] && q[2] === 'editar') html = telaFormConcorrencia(moldura, q[1]) || naoEncontrado('#/daily/concorrencias');
-    else if (q[0] === 'concorrencias' && q[1] && q[1].startsWith('co-')) html = telaConcorrencia(moldura, q[1], q[2]) || naoEncontrado('#/daily/concorrencias');
+    else if (q[0] === 'concorrencias' && q[1] && !['para-fechar', 'rascunhos', 'fechadas', 'todas'].includes(q[1])) html = telaConcorrencia(moldura, q[1], q[2]) || naoEncontrado('#/daily/concorrencias');
     else if (q[0] === 'concorrencias') html = telaConcorrencias(moldura, q[1]);
     else if (q[0] === 'pdf') html = telaPdf(q[1]);
     else return trocarRota(inicioDoPapel);
@@ -337,8 +337,7 @@ function navDaily() {
     if (pode(u, 'daily.aprovar')) itens.push({ id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: tr('Aprovações'), icone: 'aprovacoes', contador: rdos.filter((r) => recebido(r) && r.status === 'enviado').length });
     itens.push({ id: 'obras', href: '#/daily/obras', rotulo: tr('Obras'), icone: 'obras' });
   }
-  // concorrências: ainda só no protótipo (no banco, na fatia 7)
-  if (pode(u, 'concorrencias.gerir') && !estado().oficial) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
+  if (pode(u, 'concorrencias.gerir')) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
   if (pode(u, 'daily.preencher')) {
     // Contador de Hoje: dias atrasados, obras sem RDO hoje e ajustes pedidos.
     itens.push({ id: 'hoje', href: '#/daily/campo', rotulo: tr('Hoje'), icone: 'hoje', contador: pendenciasDoCampo().total });
@@ -1279,6 +1278,20 @@ async function desenharLinkPublico(codigo) {
   verificarLacreNaTela(x.codigo);
 }
 
+/* O link do convite (CO-07) na página oficial: a visão vem da função de borda convite-publico, sem login; a tela é a
+ * mesma do protótipo, sobre um banco só em memória. Depois de cada ação a página é desenhada de novo (relê). */
+async function desenharLinkConvite(token) {
+  app.innerHTML = carregando();
+  document.body.dataset.modo = 'cliente';
+  let x = null;
+  try { x = await lerConvitePublico(token); } catch (e) { x = null; }
+  if (location.hash !== '#/convite/' + token) return;
+  usarArmazem({ chave: 'kbt.publico', fotos: 'kbt-publico-fotos', sessao: 'kbt.publico.sessao' });
+  if (x) mostrarConvitePublico(x, token); else mostrarSemGuardar({ versao: 'publico', oficial: true, padrao: 'link', empresas: {}, compartilhados: [], concorrencias: [] });
+  app.innerHTML = telaConvitePublico(token, marca);
+  document.documentElement.lang = idioma() === 'en' ? 'en' : 'pt-BR';
+}
+
 async function verificarLacreNaTela(codigo) {
   const achado = diarioPorCodigo(codigo);
   if (!achado) return;
@@ -1870,6 +1883,7 @@ async function iniciar() {
     ligarCrewOficial();
     ligarCronogramaOficial();
     ligarMeasureOficial();
+    ligarConcorrenciasOficial();
     let envioDoPonto = null;
     aoRegistrarBatida(() => { clearTimeout(envioDoPonto); envioDoPonto = setTimeout(sincronizarOficial, 1200); });
     ligarOficial(desenhar);

@@ -62,7 +62,7 @@ export async function limpar() {
   const empresas = (await sql(`select distinct m.empresa_id as id from public.membros m join auth.users u on u.id = m.user_id where u.email like '${PADRAO}'`)).map((x) => x.id);
   if (empresas.length) {
     const lista = empresas.map((e) => "'" + e + "/%'").join(', ');
-    for (const bucket of ['diarios', 'ponto', 'plantas']) {
+    for (const bucket of ['diarios', 'ponto', 'plantas', 'concorrencias']) {
       const nomes = (await sql(`select name from storage.objects where bucket_id = '${bucket}' and name like any (array[${lista}])`)).map((x) => x.name);
       for (let i = 0; i < nomes.length; i += 100) {
         const r = await comServico('/storage/v1/object/' + bucket, 'DELETE', { prefixes: nomes.slice(i, i + 100) });

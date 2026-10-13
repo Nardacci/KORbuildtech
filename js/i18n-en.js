@@ -3034,4 +3034,19 @@ export const EN = {
   'A conta, os cadastros, o Daily (com o cronograma da obra), o Crew e o Measure já estão no banco de dados. As concorrências e os avisos por e-mail chegam nas próximas etapas.': 'Your account, company records, Daily (with the job schedule), Crew and Measure are already on the database. Bidding and email notices arrive in the next stages.',
   'A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.': 'Plan measuring now runs on the database, on the computer: upload the PDF, set the scale, measure, build the catalog and issue the proposal.',
   'Abrir o Measure': 'Open Measure',
+
+  // ---------- Concorrências na conta de verdade (fatia 7) ----------
+  'Os PDFs vão para a pasta da concorrência; quem cotar recebe uma cópia no projeto do Measure.': 'The PDFs go to the bid\'s folder; whoever quotes gets a copy in their Measure project.',
+  'Links dos convidados sem conta': 'Links for invitees without an account',
+  'Mande cada link para a prestadora (o envio por e-mail vem em seguida). O link é pessoal e só abre aquele convite.': 'Send each link to the subcontractor (email delivery comes next). The link is personal and opens only that invitation.',
+  'link no aparelho que enviou': 'link on the device that sent it',
+  'Confira o link: ele pode estar incompleto, ou a concorrência foi encerrada.': 'Check the link: it may be incomplete, or the bid has been closed.',
+  'Um desenho não pôde ser copiado: envie o PDF no projeto.': 'One drawing could not be copied: upload the PDF in the project.',
+  '{n} desenhos não puderam ser copiados: envie os PDFs no projeto.': '{n} drawings could not be copied: upload the PDFs in the project.',
+  'Quarteirização decidida': 'Sub-tier subcontracting decided',
+  'Sem internet. Tente de novo quando a conexão voltar.': 'No internet. Try again when the connection is back.',
+  'ganho numa concorrência: a obra nasce ligada à obra da contratante': 'won in a bid: the job is created already linked to the client\'s job',
+  'As concorrências já funcionam com o banco de dados: convide prestadoras, receba propostas (pela plataforma ou por link), compare e feche; a obra da vencedora nasce ligada à sua.': 'Bidding now runs on the database: invite subcontractors, receive proposals (through the platform or by link), compare and award; the winner\'s job is created linked to yours.',
+  'Abrir as concorrências': 'Open bids',
+  'A conta, os cadastros, o Daily (com o cronograma da obra), o Crew, o Measure e as concorrências já estão no banco de dados. Os avisos por e-mail chegam na próxima etapa.': 'Your account, company records, Daily (with the job schedule), Crew, Measure and bidding are already on the database. Email notices arrive in the next stage.',
 };
