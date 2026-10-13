@@ -65,6 +65,14 @@ export async function rest(uid, caminho, { metodo = 'GET', corpo } = {}) {
   return t ? JSON.parse(t) : null;
 }
 
+/* O REST como a chave de serviço (as funções de borda fazem assim): devolve o JSON; erro lança. */
+export async function servicoRest(caminho, { metodo = 'GET', corpo } = {}) {
+  const r = await fetch(REST + caminho, { method: metodo, headers: { Authorization: 'Bearer ' + jwt(null, 'service_role'), 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: corpo ? JSON.stringify(corpo) : undefined });
+  const t = await r.text();
+  if (!r.ok) throw new Error(caminho + ' ' + r.status + ': ' + t);
+  return t ? JSON.parse(t) : null;
+}
+
 export async function criarUsuario(email, nome) {
   const id = crypto.randomUUID();
   sqlExec(`insert into auth.users (id, email, raw_user_meta_data, aud, role) values ('${id}', '${email}', '${JSON.stringify({ nome })}', 'authenticated', 'authenticated') on conflict (id) do nothing`);

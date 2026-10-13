@@ -52,6 +52,14 @@ export async function rest(id, caminho, { metodo = 'GET', corpo } = {}) {
   return t ? JSON.parse(t) : null;
 }
 
+/* O REST como a chave de serviço (as funções de borda fazem assim): devolve o JSON; erro lança. */
+export async function servicoRest(caminho, { metodo = 'GET', corpo } = {}) {
+  const r = await fetch(URL_SB + '/rest/v1' + caminho, { method: metodo, headers: { apikey: SERVICO, Authorization: 'Bearer ' + SERVICO, 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: corpo ? JSON.stringify(corpo) : undefined });
+  const t = await r.text();
+  if (!r.ok) throw new Error(caminho + ' ' + r.status + ': ' + t);
+  return t ? JSON.parse(t) : null;
+}
+
 export async function rotear() { /* de verdade: nada a interceptar */ }
 
 export async function arquivosDaPasta(prefixo, bucket = 'diarios') {
