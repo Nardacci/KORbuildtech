@@ -44,7 +44,9 @@ update public.obras set vinculo_empresa_id = pg_temp.g('B')::uuid, vinculo_obra_
 -- as duas na mesma instrução (a ordem física é B, A)
 delete from public.empresas where id in (pg_temp.g('A')::uuid, pg_temp.g('B')::uuid);
 do $$ begin
-  if exists (select 1 from public.obras) or exists (select 1 from public.projetos) or exists (select 1 from public.item_precos) then raise exception 'FALHOU: sobrou algo das empresas excluídas'; end if;
+  if exists (select 1 from public.obras where empresa_id in (pg_temp.g('A')::uuid, pg_temp.g('B')::uuid))
+     or exists (select 1 from public.projetos where empresa_id = pg_temp.g('A')::uuid)
+     or exists (select 1 from public.item_precos where empresa_id = pg_temp.g('A')::uuid) then raise exception 'FALHOU: sobrou algo das empresas excluídas'; end if;
   if exists (select 1 from public.auditoria where empresa_id in (pg_temp.g('A')::uuid, pg_temp.g('B')::uuid)) then raise exception 'FALHOU: sobrou auditoria das empresas excluídas'; end if;
 end $$;
 
