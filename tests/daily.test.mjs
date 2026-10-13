@@ -47,6 +47,8 @@ await sqlExec(`update public.obras set vinculo_empresa_id = '${B}', vinculo_obra
 // ---------- O navegador ----------
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const erros = [];
+const diag = [];   // o que o navegador viu de estranho: erros, pedidos que falharam, respostas 4xx/5xx
+const paginas = new Map();
 async function aparelho(quem, largura) {
   const ctx = await browser.newContext({ viewport: { width: largura || 390, height: 844 }, geolocation: { latitude: 43.0041, longitude: -71.4635, accuracy: 8 }, permissions: ['geolocation'] });
   if (quem) await ctx.addInitScript(([s]) => { try { localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', 'pt'); } catch { /* */ } }, [await sessao(ID[quem], EMAIL[quem], quem)]);
@@ -61,6 +63,10 @@ async function aparelho(quem, largura) {
   await ctx.route('https://tile.openstreetmap.org/**', (r) => r.abort());
   const p = await ctx.newPage();
   p.on('pageerror', (e) => erros.push(quem + ': ' + e.message));
+  p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) diag.push(quem + ' [' + m.type() + '] ' + m.text().slice(0, 240)); });
+  p.on('requestfailed', (r) => { if (!/fonts|tile\.openstreetmap|open-meteo|osrm|nominatim|unpkg|jsdelivr/.test(r.url())) diag.push(quem + ' [falhou] ' + r.method() + ' ' + r.url().slice(0, 160) + ' ' + (r.failure() || {}).errorText); });
+  p.on('response', async (r) => { if (r.status() >= 400 && !/fonts|tile\.openstreetmap/.test(r.url())) diag.push(quem + ' [' + r.status() + '] ' + r.request().method() + ' ' + r.url().slice(0, 160) + ' ' + (await r.text().catch(() => '')).slice(0, 200)); });
+  paginas.set(quem, p);
   return { ctx, p };
 }
 const rdos = async (obraId) => sql(`select id, status, numero, codigo, aprovado_por_empresa, (select count(*) from public.rdo_fotos f where f.rdo_id = r.id)::int fotos from public.rdos r where obra_id = '${obraId}' order by data`);
@@ -211,7 +217,15 @@ try {
   verificar((await c.p.locator('body').innerText()).includes('Relatório não encontrado'), 'código errado: "Relatório não encontrado"');
 
   verificar(erros.length === 0, 'sem erros nas páginas' + (erros.length ? ': ' + erros.slice(0, 4).join(' | ') : ''));
+} catch (e) {
+  falhas++;
+  console.log('FALHA inesperada: ' + (e && e.message ? e.message.split('\n')[0] : e));
 } finally {
+  if (falhas) {   // para quem lê a saída sem ver a tela: o que cada aparelho mostrava
+    for (const [quem, p] of paginas) console.log('      [' + quem + '] ' + p.url() + ' · aviso: ' + ((await p.locator('#toast').textContent().catch(() => '')) || '').slice(0, 120) + ' · obras na tela: ' + (await p.locator('.cartao-obra').count().catch(() => '?')));
+    for (const e of erros.slice(0, 5)) console.log('      [erro de JavaScript] ' + e);
+    for (const l of diag.slice(0, 25)) console.log('      ' + l);
+  }
   await browser.close();
   await limpar();
 }

@@ -11,7 +11,8 @@ const PAGINA = 1000;   // o servidor entrega no máximo 1000 linhas por pedido
 /* Lê a tabela inteira, de mil em mil. */
 export async function lerTudo(tabela, ordem, desempate = 'id') {
   const linhas = [];
-  for (let de = 0; ; de += PAGINA) {
+  for (let de = 0, paginas = 0; ; de += PAGINA) {
+    if (++paginas > 200) throw new Error('A leitura de ' + tabela + ' não terminou (mais de 200 mil linhas).');
     const { data, error } = await cliente().from(tabela).select('*').order(ordem).order(desempate).range(de, de + PAGINA - 1);
     if (error) throw error;
     linhas.push(...(data || []));

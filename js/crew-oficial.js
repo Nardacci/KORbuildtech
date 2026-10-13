@@ -17,7 +17,7 @@ async function pedir(promessa) {
   try {
     const { data, error } = await promessa();
     if (error) return { erro: traduzir(error) };
-    await montar().catch(() => {});
+    await montar(true).catch(() => {});
     return { ok: true, data };
   } catch (e) { return { erro: traduzir(e) }; }
 }
@@ -42,7 +42,7 @@ export async function aceitarAvisoDeLocalizacao() {
   if (!navigator.onLine) return SEM_INTERNET();
   const { error } = await cliente().rpc('aceitar_aviso_gps');
   if (error) return { erro: traduzir(error) };
-  await montar().catch(() => {});
+  await montar(true).catch(() => {});
   return { ok: true };
 }
 

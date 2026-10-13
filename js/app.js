@@ -1202,7 +1202,7 @@ async function sincronizarOficial() {
   atualizarConexao();
   const [subiram, batidas] = await Promise.all([promessa, ponto]);
   // relê o banco: numeração, aprovações e ajustes pedidos pelo escritório, diários e ponto de outros aparelhos
-  await montarEspelho().catch(() => {});
+  await montarEspelho(true).catch(() => {});
   if (location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew')) desenhar(); else atualizarConexao();
   if (subiram) toast(tn(subiram, '{n} diário enviado ao servidor.', '{n} diários enviados ao servidor.'));
   if (batidas) toast(tn(batidas, '{n} batida enviada ao servidor.', '{n} batidas enviadas ao servidor.'));
@@ -1229,7 +1229,7 @@ const acoesDailyOficial = {
     if (!(await confirmar(tr('Aprovar e lacrar o RDO nº {n}?', { n: r.numero }), tr('Depois de aprovado, o relatório não pode mais ser alterado por ninguém. Ele recebe um código de verificação para o cliente conferir.'), tr('Aprovar e lacrar')))) return;
     const { data, error } = await clienteDaConta().rpc('aprovar_rdo', { p_id: r.id });
     if (error) { toast(traduzir(error)); return; }
-    await montarEspelho().catch(() => {});
+    await montarEspelho(true).catch(() => {});
     desenhar();
     toast((tr('RDO aprovado e lacrado. Código') + ' ') + data.codigo + '.');
   },
@@ -1248,7 +1248,7 @@ const acoesDailyOficial = {
     if (!motivo) { toast(tr('Escreva o que precisa ser corrigido.')); return; }
     const { error } = await clienteDaConta().rpc('pedir_ajustes', { p_id: r.id, p_motivo: motivo });
     if (error) { toast(traduzir(error)); return; }
-    await montarEspelho().catch(() => {});
+    await montarEspelho(true).catch(() => {});
     desenhar();
     toast(r.autor + (' ' + tr('vai ver o pedido no app do canteiro.')));
   },

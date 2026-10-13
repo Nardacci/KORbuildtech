@@ -9,6 +9,8 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
 export const SEGREDO = 'segredo-local-de-teste-com-mais-de-32-caracteres';
+/* LATENCIA_MS: espera antes de cada pedido ao REST, para reproduzir no banco local o que só aparece com a rede de verdade. */
+const ATRASO = Number(process.env.LATENCIA_MS || 0);
 export const REST = process.env.POSTGREST_URL || 'http://localhost:3001';
 const PG = ['-h', process.env.PGHOST || '/home/pgl/kb', '-p', process.env.PGPORT || '5499', '-U', 'postgres', '-d', 'kb'];
 
@@ -65,6 +67,7 @@ export async function rotear(contexto, urlProjeto) {
     const url = new URL(req.url());
     const caminho = url.pathname;
     if (caminho.startsWith('/rest/v1/')) {
+      if (ATRASO) await new Promise((ok) => setTimeout(ok, ATRASO));   // imita a rede de verdade (LATENCIA_MS=400)
       const h = req.headers();
       const headers = {};
       for (const k of ['authorization', 'content-type', 'prefer', 'accept', 'range', 'content-profile', 'accept-profile']) if (h[k]) headers[k] = h[k];

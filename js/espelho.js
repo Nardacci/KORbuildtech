@@ -110,8 +110,17 @@ export function temPendencia(r) {
 
 const ler = (tabela, ordem) => lerTudo(tabela, ordem);   // de mil em mil: o servidor entrega no máximo 1000 por pedido
 
-export function montar() {
-  if (espelho.lendo) return espelho.lendo;
+/* Lê o banco e remonta o espelho. Quem acabou de gravar algo (aviso aceito, aprovação, envio) chama montar(true): se já
+ * há uma leitura em andamento, ela começou antes da gravação e pode estar velha, então vem uma leitura nova logo depois
+ * (uma só, para todos que pediram nesse meio-tempo). Sem o argumento, reaproveita a leitura em andamento. */
+export function montar(atualizado = false) {
+  if (espelho.lendo) {
+    if (!atualizado) return espelho.lendo;
+    if (!espelho.proxima) {
+      espelho.proxima = espelho.lendo.catch(() => {}).then(() => { espelho.proxima = null; return montar(); });
+    }
+    return espelho.proxima;
+  }
   espelho.lendo = (async () => {
     await iniciar();
     if (!conta.sessao || !conta.membro || !conta.empresa) throw new Error('sem-conta');

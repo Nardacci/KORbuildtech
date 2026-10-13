@@ -77,6 +77,8 @@ await rest(ID.jose, '/rpc/registrar_batidas', { metodo: 'POST', corpo: { p: [
 // ---------- O navegador ----------
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const erros = [];
+const diag = [];   // o que o navegador viu de estranho: erros, pedidos que falharam, respostas 4xx/5xx
+const paginas = new Map();
 const PERTO = { latitude: 43.0041, longitude: -71.4635, accuracy: 8 };
 const LONGE = { latitude: 43.05, longitude: -71.4635, accuracy: 8 };
 async function aparelho(quem, largura, geo) {
@@ -91,6 +93,10 @@ async function aparelho(quem, largura, geo) {
   await ctx.route('https://cdn.jsdelivr.net/**', (r) => r.abort());
   const p = await ctx.newPage();
   p.on('pageerror', (e) => erros.push(quem + ': ' + e.message));
+  p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) diag.push(quem + ' [' + m.type() + '] ' + m.text().slice(0, 240)); });
+  p.on('requestfailed', (r) => { if (!/fonts|tile\.openstreetmap|open-meteo|osrm|nominatim|unpkg|jsdelivr/.test(r.url())) diag.push(quem + ' [falhou] ' + r.method() + ' ' + r.url().slice(0, 160) + ' ' + (r.failure() || {}).errorText); });
+  p.on('response', async (r) => { if (r.status() >= 400 && !/fonts|tile\.openstreetmap/.test(r.url())) diag.push(quem + ' [' + r.status() + '] ' + r.request().method() + ' ' + r.url().slice(0, 160) + ' ' + (await r.text().catch(() => '')).slice(0, 200)); });
+  paginas.set(quem, p);
   return { ctx, p };
 }
 // tudo escopado à empresa A: o banco local guarda as cenas de execuções anteriores
@@ -194,6 +200,7 @@ try {
   await a.p.fill('dialog input[name="hora"]', '17:00');
   await a.p.fill('dialog textarea[name="motivo"]', 'Esqueceu de bater a saída; confirmado com o encarregado.');
   await a.p.click('dialog button:has-text("Registrar ajuste")');
+  await a.p.waitForFunction(() => /Ajuste registrado/.test((document.querySelector('#toast') || {}).textContent || ''), null, { timeout: 30000 });   // o app já releu o banco
   verificar(await esperarAte(async () => (await batidas(`modo = 'ajuste'`)).length === 1), 'o ajuste entrou no banco como batida nova');
   const [aj] = await batidas(`modo = 'ajuste'`);
   verificar(aj.tipo === 'saida' && /Esqueceu/.test(aj.ajuste_motivo), 'ajuste: saída com o motivo', aj);
@@ -252,6 +259,11 @@ try {
   falhas++;
   console.log('FALHA inesperada: ' + (e && e.stack ? e.stack.split('\n').slice(0, 4).join(' | ') : e));
 } finally {
+  if (falhas) {   // para quem lê a saída sem ver a tela: o que cada aparelho mostrava
+    for (const [quem, p] of paginas) console.log('      [' + quem + '] ' + p.url() + ' · aviso: ' + ((await p.locator('#toast').textContent().catch(() => '')) || '').slice(0, 120));
+    for (const e of erros.slice(0, 5)) console.log('      [erro de JavaScript] ' + e);
+    for (const l of diag.slice(0, 25)) console.log('      ' + l);
+  }
   verificar(erros.length === 0, 'sem erros de JavaScript nas telas', erros.slice(0, 3));
   await browser.close();
   await limpar();
