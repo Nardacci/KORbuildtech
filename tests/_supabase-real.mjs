@@ -40,6 +40,24 @@ export async function criarUsuario(email, nomePessoa) {
   sessoes.set(u.id, { ...s, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) });
   return u.id;
 }
+/* Para a massa de demonstração (tools/massa-demo.mjs): cria o usuário (já confirmado) ou, se já existe, só entra. A senha vem de fora. */
+export async function garantirUsuario(email, nomePessoa, senha) {
+  const existe = await sql(`select id from auth.users where email = '${email.replace(/'/g, "''")}'`);
+  if (!existe.length) {
+    const r = await comServico('/auth/v1/admin/users', 'POST', { email, password: senha, email_confirm: true, user_metadata: { nome: nomePessoa, idioma: 'en' } });
+    if (!r.ok) throw new Error('criar usuário ' + email + ': ' + r.status + ' ' + (await r.text()).slice(0, 300));
+  }
+  let login, s;
+  for (let tentativa = 0; tentativa < 6; tentativa++) {   // o Auth limita as entradas por minuto: espera e tenta de novo
+    login = await fetch(URL_SB + '/auth/v1/token?grant_type=password', { method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: senha }) });
+    s = await login.json();
+    if (login.status !== 429) break;
+    await new Promise((ok) => setTimeout(ok, 20000));
+  }
+  if (!login.ok) throw new Error('entrar ' + email + ': ' + login.status + ' ' + JSON.stringify(s).slice(0, 200));
+  sessoes.set(s.user.id, { ...s, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) });
+  return s.user.id;
+}
 export async function sessao(id) { return JSON.stringify(sessoes.get(id)); }
 
 export async function rest(id, caminho, { metodo = 'GET', corpo } = {}) {

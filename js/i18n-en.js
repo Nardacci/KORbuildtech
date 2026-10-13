@@ -3153,4 +3153,5 @@ export const EN = {
   'Convite para entrar numa empresa': 'Invitation to join a company',
   'Convite para cotar': 'Invitation to bid',
   'Aviso de concorrência': 'Bid notice',
+  'Demonstração': 'Demo',
 };

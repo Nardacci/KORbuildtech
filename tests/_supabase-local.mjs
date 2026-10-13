@@ -79,6 +79,12 @@ export async function criarUsuario(email, nome) {
   return id;
 }
 
+/* Para a massa de demonstração: o usuário que já existe (pelo e-mail) ou um novo. A senha não vale no banco local. */
+export async function garantirUsuario(email, nome) {
+  const [u] = await sql(`select id from auth.users where email = '${email.replace(/'/g, "''")}'`);
+  return u ? u.id : criarUsuario(email, nome);
+}
+
 /* A sessão do supabase-js no aparelho (storageKey de js/conta.js). */
 export async function sessao(id, email, nome) {
   return JSON.stringify({

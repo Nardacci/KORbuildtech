@@ -53,7 +53,7 @@ function linhaDaEmpresa(e) {
   const dias = e.dias_de_teste;
   const teste = e.plano.status === 'teste' && dias != null
     ? (dias < 0 ? '<span class="etiqueta etiqueta-alerta">' + tr('venceu há {n} dias', { n: -dias }) + '</span>' : '<span class="mudo">' + tr('{n} dias', { n: dias }) + '</span>') : '<span class="mudo">—</span>';
-  return '<tr><td><a href="#empresa/' + e.id + '"><b>' + esc(e.nome) + '</b></a></td><td>' + esc(ATUACOES()[e.atuacao] || e.atuacao) + '</td>' +
+  return '<tr><td><a href="#empresa/' + e.id + '"><b>' + esc(e.nome) + '</b></a>' + (e.plano.demo ? ' <span class="etiqueta etiqueta-neutro">' + tr('Demonstração') + '</span>' : '') + '</td><td>' + esc(ATUACOES()[e.atuacao] || e.atuacao) + '</td>' +
     '<td><span class="etiqueta ' + (CLASSE[e.plano.status] || 'etiqueta-neutro') + '">' + esc(nomeDoStatus(e.plano.status)) + '</span>' + (e.plano.nome ? ' <span class="mudo pequeno">' + esc(nomeDoPlano(e.plano.nome)) + '</span>' : '') + '</td>' +
     '<td>' + teste + '</td><td class="num">' + e.usuarios + '</td><td class="num">' + e.obras + '</td><td>' + dataHora(e.ultimo_acesso) + '</td><td>' + dia(e.criada_em) + '</td></tr>';
 }
