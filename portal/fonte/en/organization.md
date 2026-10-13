@@ -63,5 +63,4 @@ On a job that the subcontractor has **directly with the owner** (no general cont
     The three companies live in the same browser, so you can sign in as each of them in turn. In the product, each company has its own account on the server, and the general contractor receives only what the rules above allow.
 
 !!! confirm "To be confirmed"
-    - How a general contractor invites a subcontractor and how the jobs get linked (today they come linked in the sample data). This comes with the bidding feature and the database.
     - Whether a subcontractor can choose to share less (for example, hours without names).

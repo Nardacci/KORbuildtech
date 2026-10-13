@@ -38,8 +38,51 @@
       <div class="doc-acoes"><a class="botao" href="../files/KORbuild Concorrências - Situação do protótipo.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
     </header>
     <article class="texto">
-<p>O que é simulado no protótipo hoje, e o que vem depois.</p>
-<h2 id="simulado-hoje">Simulado hoje</h2>
+<p>O protótipo (a demonstração com dados de exemplo) mostra o produto funcionando. Ao lado dele, a <strong>conta de verdade</strong> já roda as concorrências no banco de dados na nuvem e está em homologação. Esta página diz o que é real hoje e o que ainda é simulado na demonstração.</p>
+<h2 id="ja-funcionando-no-banco-de-dados-conta-de-verdade">Já funcionando no banco de dados (conta de verdade)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Como funciona hoje</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Onde ficam as concorrências</td>
+<td>No servidor, nas tabelas da contratante. Cada convidada recebe só o próprio convite, as próprias propostas e as mensagens que pode ver; nunca vê quem mais foi convidado nem os outros valores. Toda ação depois do envio (prorrogar, convidar mais, adendo, responder, proposta, fechar, cancelar) passa por uma função do banco que confere quem está chamando.</td>
+</tr>
+<tr>
+<td>Convites para empresas sem conta</td>
+<td>O link do convite é gerado pelo banco ao enviar (só o hash fica guardado) e aparece uma vez, para copiar; fica guardado no aparelho que enviou. O envio por e-mail é a próxima etapa.</td>
+</tr>
+<tr>
+<td>A página do link</td>
+<td>Abre sem login: a convidada vê o pacote e os desenhos, responde, pergunta e manda a proposta com o PDF. Quando ela cria a conta com o mesmo e-mail, o convite, as mensagens e as propostas vêm junto.</td>
+</tr>
+<tr>
+<td>Desenhos</td>
+<td>Os PDFs vão para a pasta da concorrência no armazenamento da empresa na nuvem. "Vou cotar" copia cada desenho para o projeto da convidada, folha a folha.</td>
+</tr>
+<tr>
+<td>PDF da proposta</td>
+<td>Guardado com a proposta, na pasta do convite, para a contratante baixar.</td>
+</tr>
+<tr>
+<td>Fechamento e a obra ligada</td>
+<td>Fechar marca o projeto da vencedora como ganho; "Criar obra a partir deste projeto" abre o cadastro preenchido e a obra nasce já ligada à obra da contratante, o que liga o diário, o cronograma e a presença no canteiro entre as duas empresas.</td>
+</tr>
+<tr>
+<td>Canal</td>
+<td>Perguntas, respostas (para todas ou só para quem perguntou), avisos a todos e o canal da obra depois do fechamento, tudo registrado e nunca editado.</td>
+</tr>
+<tr>
+<td>Quarteirização</td>
+<td>Concorrências abertas a partir de um projeto ou de uma obra ganha, com a política de quem está acima (permitida, com aprovação, não permitida); o pedido de aprovação mostra só a empresa escolhida, nunca o valor.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="simulado-hoje-na-demonstracao">Simulado hoje (na demonstração)</h2>
 <table>
 <thead>
 <tr>
@@ -52,22 +95,22 @@
 <tr>
 <td>Onde ficam as concorrências</td>
 <td>No navegador, num lugar comum às empresas de exemplo.</td>
-<td>No servidor, e cada empresa lê só o que pode ver.</td>
+<td>No servidor, e cada empresa lê só o que pode ver — <strong>já funciona</strong> na conta de verdade.</td>
 </tr>
 <tr>
 <td>Convites por e-mail</td>
 <td>Não são enviados. A contratante usa <strong>Copiar o link</strong> para quem não tem conta.</td>
-<td>Enviados por e-mail, com o link pessoal.</td>
+<td>Enviados por e-mail, com o link pessoal (próxima etapa; o link em si <strong>já funciona</strong>).</td>
 </tr>
 <tr>
 <td>Desenhos</td>
 <td>Guarda só o nome dos PDFs; o projeto da convidada começa sem folhas.</td>
-<td>Os PDFs vão com o convite e viram as folhas do projeto da convidada.</td>
+<td>Os PDFs vão com o convite e viram as folhas do projeto da convidada — <strong>já funciona</strong>.</td>
 </tr>
 <tr>
 <td>PDF da proposta</td>
 <td>Guarda só o nome do arquivo.</td>
-<td>Guardado com a proposta, para a contratante baixar.</td>
+<td>Guardado com a proposta — <strong>já funciona</strong>.</td>
 </tr>
 <tr>
 <td>Orçamento por etapa</td>
@@ -96,6 +139,10 @@
 </thead>
 <tbody>
 <tr>
+<td>Convites e avisos por e-mail</td>
+<td>A próxima etapa do trabalho no banco de dados.</td>
+</tr>
+<tr>
 <td>Envelope fechado</td>
 <td>A contratante só vê os valores depois do prazo (comum em obra pública).</td>
 </tr>
@@ -111,15 +158,11 @@
 <td>Convidar só pelo e-mail</td>
 <td>Convidar quem ainda não está nos Contatos.</td>
 </tr>
-<tr>
-<td>Conta a partir do link</td>
-<td>Quando a prestadora cria a conta com o e-mail do convite, o convite, as mensagens e as propostas passam para ela.</td>
-</tr>
 </tbody>
 </table>
     </article>
   </main>
-  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#simulado-hoje">Simulado hoje</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#ja-funcionando-no-banco-de-dados-conta-de-verdade">Já funcionando no banco de dados (conta de verdade)</a></li><li><a href="#simulado-hoje-na-demonstracao">Simulado hoje (na demonstração)</a></li><li><a href="#o-que-vem-depois">O que vem depois</a></li></ul></nav>
 </div>
 <footer class="rodape">
   <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 13 de outubro de 2026 · <a href="../../../">Entrada principal</a> · <a href="../../../?demo#/entrar">Protótipo</a></div>

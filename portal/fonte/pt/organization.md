@@ -63,5 +63,4 @@ Numa obra que a prestadora tem **direto com o dono** (sem construtora), a própr
     As três empresas ficam no mesmo navegador, para você entrar como cada uma, uma de cada vez. No produto, cada empresa tem a própria conta no servidor, e a construtora recebe só o que as regras acima permitem.
 
 !!! confirm "A confirmar"
-    - Como a construtora convida a prestadora e como as obras se ligam (hoje elas já vêm ligadas nos dados de exemplo). Isso vem com as concorrências e o banco de dados.
     - Se a prestadora pode escolher compartilhar menos (por exemplo, horas sem os nomes).
