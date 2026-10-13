@@ -127,7 +127,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 1 | `supabase/migrations/20261012_0001_contas_empresas.sql` (só cria): `empresas`, `membros`, `perfis_acesso`, `convites_usuario`, `admins_plataforma`, `criar_empresa()`, `convidar_usuario()`, `aceitar_convite()`, `auditoria` com `empresa_id` e motivo, aviso por e-mail lendo `membros`. Teste: `supabase/testes/0001_acesso.sql` (em transação, termina em rollback). Depois, a saída de `perfis`, `contatos` e `criar_conta()` em `20261012_0001b_remover_perfis_antigos.sql` (aprovada); `0002` (quem foi desativado lê o próprio cadastro) e `0003` (excluir a empresa em cascata, sem esbarrar nas travas nem na auditoria). Teste do app contra o banco: `tests/conta.test.mjs` (23/23) ✓ | Criar a conta, entrar (tela oficial), convidar usuários e editar perfis |
 | 2 | `supabase/migrations/20261013_0004_settings.sql` (só cria): `funcionarios` (com certificações), `funcionario_valores`, `encargos_versoes`, `regras_jornada_versoes`, `contatos`, `obras` (sem apagar; a ligação entre obras só pelas funções do banco), `alocacoes`, `modelos_cronograma`, `criar_funcionario()`, `atualizar_meu_perfil()`. Teste: `supabase/testes/0002_settings.sql` | Cadastrar tudo no banco; meu perfil (nome, idioma, e-mail, senha) |
 | 3 | `supabase/migrations/20261014_0005_daily.sql` (só cria): `rdos`, `rdo_fotos`, `rdo_historico`, bucket `diarios` com as políticas das fotos, `salvar_rdo()`, `enviar_rdo()`, `dia_sem_atividade()`, `aprovar_rdo()` (lacre no banco), `pedir_ajustes()`, `diarios_recebidos()`, `diario_por_codigo()`; função de borda `supabase/functions/diario-publico` (link do cliente, fotos por links temporários). Teste: `supabase/testes/0003_daily.sql` (desenho no §10) | Usar o diário de verdade, com e sem internet |
-| 4 | Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
+| 4 | `supabase/migrations/20261015_0006_crew.sql` (só cria; acrescenta `funcionarios.equipe_id`). Teste: `supabase/testes/0004_crew.sql`. Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
 | 5 | Cronograma: etapas, avanços, linhas de base, publicações | |
 | 6 | Measure: projetos, folhas (Storage), condições, medições, typicals, catálogo, preços, margens, propostas | |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
@@ -226,7 +226,15 @@ políticas do bucket `diarios` (só a própria empresa, só quem pode ver o pont
 | Presença para a contratante (HS-10) | `presenca_na_obra(obra_id, de, ate)` | A contratante, nas obras ligadas à dela (e na cadeia, até 3 níveis, CO-21), com `crew.acompanhar` ou `daily.acompanhar` |
 
 **Valor hora × semana aprovada (RN-13 / SET-014):** um gatilho em `funcionario_valores` recusa um `desde` que caia
-numa semana já aprovada daquele funcionário. É a regra que ficou pendente da fatia 2.
+numa semana já aprovada daquele funcionário, **ou antes dela** (o valor novo reescreveria a folha já enviada). É a
+regra que ficou pendente da fatia 2. A semana aprovada também não recebe batida atrasada nem ajuste.
+
+**Aviso de localização:** a própria pessoa aceita no app (`aceitar_aviso_gps()`, grava `funcionarios.aviso_gps_em`);
+sem o aviso aceito, o banco recusa os registros de localização dela.
+
+**Envio do aparelho:** `registrar_batidas` e `registrar_localizacoes` devolvem `{gravadas, recusadas}`; cada recusada
+vem com o motivo (`semana-aprovada`, `obra`, `permissao`, `ponto-fechado`, `intervalo`, `sem-aviso`…) e não derruba
+as outras do mesmo envio.
 
 **Presença para a contratante:** a função devolve, de cada prestadora ligada, nome, função e as batidas daquelas
 pessoas **naquela obra** (tipo, hora, dentro/fora da cerca); a batida em outra obra da prestadora vem só como
