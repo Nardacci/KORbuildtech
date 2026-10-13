@@ -131,7 +131,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 5 | `supabase/migrations/20261016_0007_cronograma.sql` (só cria; reescreve `aprovar_rdo`). Teste: `supabase/testes/0005_cronograma.sql`. Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
 | 6 | `supabase/migrations/20261017_0008_measure.sql` (só cria). Teste: `supabase/testes/0006_measure.sql`. Depois, `20261018_0009_cascata_auditoria.sql` (só reescreve funções): excluir empresas ligadas na mesma instrução não esbarra na auditoria nem nas travas "só insert" (teste `0007_cascata.sql`). Measure: projetos, folhas (Storage `plantas`), condições com as medições, typicals, catálogo, preços e margens (só `insert`), propostas emitidas (desenho no §13) | Medir, cotar e emitir propostas de verdade; consulta no celular |
 | 7 | `supabase/migrations/20261019_0010_concorrencias.sql` (só cria). Teste: `supabase/testes/0008_concorrencias.sql`. Concorrências: tudo por funções do banco, o link sem conta pela função de borda `convite-publico`, o canal, a quarteirização e `criar_obra_da_concorrencia` (sela o vínculo) (desenho no §14). Teste do app: `tests/concorrencias-oficial.test.mjs` ✓ | Convidar, cotar, comparar, fechar e conversar de verdade; a cadeia de obras liga-se sozinha |
-| 8 | `20261020_0011_avisos.sql`: avisos gravados pelas funções das fatias 3 a 7, `fila_email`, categorias novas, `plataforma`, funções `admin_*`, `empresa_ativa()`; função de borda `enviar-avisos` reescrita (remetente definitivo, dois idiomas); `admin.html` (desenho no §15) | Receber por e-mail o que acontece entre empresas; administrar empresas, planos e valores padrão |
+| 8 | `20261020_0011_avisos.sql` (8a: avisos gravados por gatilhos nas fatias 3 a 7, `fila_email`, categorias novas, jobs; teste `0009_avisos.sql`), depois a função de borda `enviar-avisos` reescrita (remetente definitivo, dois idiomas) e o sininho de verdade (8b), e `20261021_0012_plataforma.sql` + `admin.html` (8c) (desenho no §15) | Receber por e-mail o que acontece entre empresas; administrar empresas, planos e valores padrão |
 
 ## 10. Fatia 3 — o Daily no banco (desenho aprovado em outubro de 2026)
 
@@ -578,12 +578,12 @@ mesma de hoje (`#/convite/<token>`), lendo da função de borda em vez do aparel
   `tests/_supabase-local.mjs`, ou `--real`).
 - **Fica para a fatia 8:** o e-mail do convite (hoje o link é copiado) e os avisos por e-mail.
 
-## 15. Fatia 8 — avisos por e-mail e a administração da plataforma (desenho para aprovação)
+## 15. Fatia 8 — avisos por e-mail e a administração da plataforma (desenho aprovado em outubro de 2026)
 
 Duas coisas que o produto precisa para sair do teste: **avisar por e-mail** o que acontece entre empresas e entre
 pessoas (hoje tudo fica no sininho, que é calculado no aparelho) e **uma área da plataforma** para quem administra o
 KORbuild cuidar das empresas, dos planos e dos valores padrão. Remetente **definitivo** desde já (decisão de outubro
-de 2026): `KORbuild <no-reply@korbuildtech.com>`.
+de 2026): `KORbuild <no-reply@korbuildtech.com>` (confirmado pelo usuário).
 
 ### 15.1 O que já existe e fica
 
@@ -670,16 +670,29 @@ Enquanto não há pagamento (fica para o fim, com o preço), **o fim do teste n�
 situação que trava: as funções de gravação (`salvar_rdo`, `registrar_batidas`, `enviar_concorrencia`, `emitir_proposta`,
 `salvar_etapa`…) e as políticas de `insert`/`update` passam a conferir `empresa_ativa()`; a leitura continua.
 
-### 15.6 Migração e o que preciso de você
+### 15.6 Em três passos
 
-- `20261020_0011_avisos.sql` (só cria e altera restrições): categorias novas em `notificacoes` e `notificacao_prefs`
-  (troca da restrição `check`), `fila_email`, `plataforma` (uma linha), `notificar()` e `notificar_empresa()` novos,
-  `avisos_pendentes_email()` com idioma, as chamadas dentro das funções das fatias 3 a 7 (`create or replace`), as funções
-  `admin_*`, `empresa_ativa()` e `teste_ate` no `criar_empresa`; job `kor-prazos` (diário, 8h de Nova York).
-  Teste `0009_avisos.sql`. Depois: a função de borda `enviar-avisos` reescrita (remetente, modelo, `fila_email`) e
-  `admin.html` + `js/admin.js`; teste `tests/avisos-oficial.test.mjs` (com a função de borda imitada no local).
-- **De você:** (1) o ok a este desenho; (2) dizer onde está o domínio korbuildtech.com e criar a caixa
-  `no-reply@korbuildtech.com` (ou escolher o serviço de envio, 15.3); (3) a senha dessa caixa **só como variável de
-  ambiente na sua máquina** (nunca no chat): a sessão local publica os segredos com `supabase secrets set`.
-- **Da sessão local, antes da migração:** o comando do job `kor-enviar-avisos` (só leitura, valores secretos trocados por
-  `***`) para eu manter o jeito como o job chama a função com o `CRON_SECRET`.
+1. **8a, no banco (pronto):** `supabase/migrations/20261020_0011_avisos.sql` e `supabase/testes/0009_avisos.sql`.
+   - Os avisos nascem por **gatilhos** nas tabelas das fatias 3 a 7 (`rdos`, `publicacoes_cronograma`, `aprovacoes_semana`,
+     `concorrencia_historico`, `concorrencia_convites`, `concorrencia_propostas`, `concorrencia_mensagens`), sem reescrever
+     as funções já testadas. Cada aviso guarda a `chave` (o texto-modelo em português, com `{campos}`) e os `dados`: a
+     tela e o e-mail traduzem; o `titulo` fica renderizado em português como reserva.
+   - Quem tem permissão na empresa certa recebe (`notificar_empresa`), menos quem fez a ação. O mesmo tipo de aviso na
+     mesma tela, ainda não lido, vira um só (as perguntas do canal, o diário a aprovar). `imediato` = o e-mail não espera o
+     agrupamento (convite, prazo, proposta, vencedora, ajustes, teste a vencer). A semana do ponto é só sininho.
+   - A `fila_email` recebe o convite de usuário e o de concorrência junto com o token (as únicas funções que o conhecem:
+     `convidar_usuario` e `novo_token_do_convite` foram redefinidas) e os avisos sem link para a prestadora que está só
+     pelo link (prazo, adendo, mensagem, cancelamento, fechamento; quem disse que não vai não recebe mais nada).
+   - Job diário `kor-prazos` (12h UTC): prazo de concorrência vencido e teste a vencer (7 e 1 dia). O job
+     `kor-enviar-avisos` passa a rodar a cada 5 minutos.
+   - **Segurança:** `notificar`, `notificar_empresa`, `avisos_pendentes_email` e `marcar_avisos_enviados` não são mais
+     executáveis pelo app (só gatilhos e a chave de serviço). As versões do sistema antigo eram `security definer` e, se
+     as permissões padrão do Supabase valiam, qualquer usuário (até sem login) podia chamá-las; confira antes de aplicar.
+2. **8b, o envio e o sininho:** função de borda `enviar-avisos` reescrita (SMTP genérico, dois idiomas, `fila_email`,
+   token apagado depois de enviado), `js` lendo `notificacoes` no espelho, Meu perfil › Avisos por e-mail; teste do app.
+3. **8c, a administração:** `20261021_0012_plataforma.sql` (tabela `plataforma`, funções `admin_*`, `teste_ate` no
+   `criar_empresa`, `empresa_ativa()`) e `admin.html`.
+
+**De você, para o 8b:** a caixa `no-reply@korbuildtech.com` criada, o servidor SMTP, a porta e o usuário que o provedor
+mostra, e a senha **só** na variável `KOR_SMTP_PASS` da sua máquina (a sessão local publica os segredos
+`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`, `SITE_URL`; `CRON_SECRET` já existe).
