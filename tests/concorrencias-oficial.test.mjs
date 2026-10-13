@@ -119,7 +119,8 @@ try {
   const a = await aparelho('ana');
   await a.p.goto(BASE + '#/measure/convites');
   await a.p.waitForSelector('.tabela-convites a[href="#/measure/convite/' + c.id + '"]', { timeout: 30000 });
-  verificar((await a.p.locator('[data-acao="ler-notificacao"][href="#/measure/convite/' + c.id + '"]').count()) === 1, 'o convite também está no sininho da Ana');
+  // o aviso chega pela leitura do servidor depois de montar a tela: espera, em vez de contar de imediato
+  verificar(await esperarAte(async () => (await a.p.locator('[data-acao="ler-notificacao"][href="#/measure/convite/' + c.id + '"]').count()) === 1), 'o convite também está no sininho da Ana', await a.p.locator('.notif-lista').allTextContents().catch(() => ''));
   await a.p.click('.tabela-convites a[href="#/measure/convite/' + c.id + '"]');
   await a.p.waitForSelector('[data-acao="cv-vou"]', { timeout: 20000 });
   verificar((await a.p.textContent('main')).includes('Construtora Local ' + sufixo) && (await a.p.textContent('main')).includes('Edifício Local'), 'o convite mostra a contratante e a obra');

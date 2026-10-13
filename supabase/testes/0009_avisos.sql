@@ -32,7 +32,7 @@ create function pg_temp.n(p_email text, p_cat text default null) returns int lan
 create function pg_temp.ult(p_email text, p_cat text default null) returns jsonb language sql security definer as $$
   select to_jsonb(x) from public.notificacoes x join auth.users u on u.id = x.user_id where u.email = p_email and (p_cat is null or x.categoria = p_cat) order by x.id desc limit 1 $$;
 create function pg_temp.fila(p_modelo text default null) returns int language sql security definer as $$
-  select count(*)::int from public.fila_email where p_modelo is null or modelo = p_modelo $$;
+  select count(*)::int from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and (p_modelo is null or modelo = p_modelo) $$;
 create function pg_temp.tem(p_email text, p_titulo text) returns boolean language sql security definer as $$
   select exists (select 1 from public.notificacoes x join auth.users u on u.id = x.user_id where u.email = p_email and x.titulo like p_titulo) $$;
 create function pg_temp.dele(p_email text, p_chave_like text) returns jsonb language sql security definer as $$
@@ -49,7 +49,7 @@ do $$ declare f record; begin
 exception when insufficient_privilege then null; end $$;
 reset role;
 do $$ declare f public.fila_email; begin
-  select * into f from public.fila_email where modelo = 'convite-usuario';
+  select * into f from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'convite-usuario';
   if f.id is null or f.para_email <> 'kb-teste9-jose@example.com' or f.idioma <> 'pt' or f.dados ->> 'token' <> pg_temp.g('tj') or f.dados ->> 'empresa' <> 'Prestadora Teste A'
      or f.dados ->> 'perfil' <> 'Encarregado' or f.dados ->> 'por' <> 'Ana Teste' or f.empresa_id <> pg_temp.u('A') or f.enviado_em is not null then
     raise exception 'FALHOU: o convite de usuário na fila: %', to_jsonb(f);
@@ -173,7 +173,7 @@ do $$ declare v_id uuid; r jsonb; begin
 end $$;
 reset role;
 do $$ declare f public.fila_email; begin
-  select * into f from public.fila_email where modelo = 'convite-concorrencia';
+  select * into f from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'convite-concorrencia';
   if f.para_email <> 'kb-teste9-bay@example.com' or f.idioma <> 'en' or f.dados ->> 'token' <> pg_temp.g('token') or f.dados ->> 'servico' <> 'Framing e drywall' or f.dados ->> 'contratante' <> 'Construtora Teste B' or f.empresa_id <> pg_temp.u('B') then
     raise exception 'FALHOU: dados do e-mail do convite: %', to_jsonb(f); end if;
 end $$;
@@ -209,8 +209,8 @@ do $$ begin
   if not pg_temp.tem('kb-teste9-ana@example.com', 'Convite para cotar: Framing e drywall%') then raise exception 'FALHOU: a mensagem do canal apagou o aviso do convite'; end if;
   if not exists (select 1 from public.notificacoes where titulo = 'Aviso a todos: Framing e drywall' and texto like 'Adendo nº 1%') then raise exception 'FALHOU: adendo para a Ana'; end if;
   if not exists (select 1 from public.notificacoes where titulo = 'Prazo prorrogado: Framing e drywall') then raise exception 'FALHOU: prorrogação para a Ana'; end if;
-  if (select string_agg(dados ->> 'evento', ',' order by id) from public.fila_email where modelo = 'aviso-link') <> 'adendo,prazo' then raise exception 'FALHOU: avisos por e-mail à Bayside: %', (select string_agg(dados ->> 'evento', ',') from public.fila_email where modelo = 'aviso-link'); end if;
-  if exists (select 1 from public.fila_email where modelo = 'aviso-link' and dados ? 'token') then raise exception 'FALHOU: aviso sem link leva o token'; end if;
+  if (select string_agg(dados ->> 'evento', ',' order by id) from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'aviso-link') <> 'adendo,prazo' then raise exception 'FALHOU: avisos por e-mail à Bayside: %', (select string_agg(dados ->> 'evento', ',') from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'aviso-link'); end if;
+  if exists (select 1 from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'aviso-link' and dados ? 'token') then raise exception 'FALHOU: aviso sem link leva o token'; end if;
 end $$;
 
 -- Bayside diz que não vai (pelo link, sem usuário) → Tom é avisado; depois disso não recebe mais avisos
@@ -229,7 +229,7 @@ end $$;
 reset role;
 do $$ begin
   if not exists (select 1 from public.notificacoes x join auth.users u on u.id = x.user_id where u.email = 'kb-teste9-ana@example.com' and x.titulo = 'Você venceu: Framing e drywall · Construtora Teste B' and x.imediato) then raise exception 'FALHOU: aviso de vencedora'; end if;
-  if (select count(*) from public.fila_email where modelo = 'aviso-link') <> 2 then raise exception 'FALHOU: Bayside (não vai) recebeu o aviso de fechamento'; end if;
+  if (select count(*) from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'aviso-link') <> 2 then raise exception 'FALHOU: Bayside (não vai) recebeu o aviso de fechamento'; end if;
 end $$;
 
 -- Cancelar outra: as convidadas com conta e as do link são avisadas
@@ -243,8 +243,8 @@ end $$;
 reset role;
 do $$ begin
   if not exists (select 1 from public.notificacoes where titulo = 'Concorrência cancelada: Siding') then raise exception 'FALHOU: cancelamento para a Ana'; end if;
-  if (select count(*) from public.fila_email where modelo = 'aviso-link' and dados ->> 'evento' = 'cancelada') <> 1 then raise exception 'FALHOU: cancelamento por e-mail à Bayside'; end if;
-  if (select count(*) from public.fila_email where modelo = 'convite-concorrencia') <> 2 then raise exception 'FALHOU: o segundo convite da Bayside não entrou na fila'; end if;
+  if (select count(*) from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'aviso-link' and dados ->> 'evento' = 'cancelada') <> 1 then raise exception 'FALHOU: cancelamento por e-mail à Bayside'; end if;
+  if (select count(*) from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'convite-concorrencia') <> 2 then raise exception 'FALHOU: o segundo convite da Bayside não entrou na fila'; end if;
 end $$;
 
 -- ---------- O relógio (job diário): prazo vencido e teste a vencer, uma vez só ----------
@@ -284,7 +284,7 @@ do $$ declare r record; ids bigint[]; n int; begin
   if exists (select 1 from public.avisos_pendentes_email(50, 0) where email = 'kb-teste9-ana@example.com') then raise exception 'FALHOU: a Ana continua pendente depois de enviado'; end if;
   -- a fila: a função de borda lê, marca e apaga o token depois de enviar
   update public.fila_email set enviado_em = now(), dados = dados - 'token' where modelo = 'convite-concorrencia';
-  if exists (select 1 from public.fila_email where modelo = 'convite-concorrencia' and dados ? 'token') then raise exception 'FALHOU: o token ficou na fila'; end if;
+  if exists (select 1 from public.fila_email where empresa_id in (pg_temp.u('A'), pg_temp.u('B')) and modelo = 'convite-concorrencia' and dados ? 'token') then raise exception 'FALHOU: o token ficou na fila'; end if;
 end $$;
 reset role;
 
