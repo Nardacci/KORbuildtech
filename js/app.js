@@ -1206,7 +1206,7 @@ async function sincronizarOficial() {
   // relê o banco: numeração, aprovações e ajustes pedidos pelo escritório, diários e ponto de outros aparelhos
   await montarEspelho(true).catch(() => {});
   // quem está no meio de um formulário não perde o que digitou: a tela fica como está (o espelho novo entra no próximo desenho)
-  if ((location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew')) && !formularioEmEdicao()) desenhar(); else atualizarConexao();
+  if ((location.hash.startsWith('#/daily') || location.hash.startsWith('#/crew')) && !formularioEmEdicao() && !sinoAberto()) desenhar(); else atualizarConexao();
   if (subiram) toast(tn(subiram, '{n} diário enviado ao servidor.', '{n} diários enviados ao servidor.'));
   if (batidas) toast(tn(batidas, '{n} batida enviada ao servidor.', '{n} batidas enviadas ao servidor.'));
 }
@@ -1765,6 +1765,7 @@ app.addEventListener('submit', (ev) => {
 
 /* Um formulário em que a pessoa já mexeu (fora do RDO, que grava a cada tecla): a releitura do espelho não o redesenha. */
 const formularioEmEdicao = () => !!app.querySelector('form[data-sujo]');
+const sinoAberto = () => !!document.querySelector('details.sino[open]');   // quem lê os avisos não os vê sumir
 app.addEventListener('change', (ev) => { const f = ev.target.closest && ev.target.closest('form'); if (f && !ev.target.dataset.bind) f.dataset.sujo = '1'; });
 app.addEventListener('input', (ev) => {
   const el = ev.target;

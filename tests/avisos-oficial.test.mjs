@@ -44,11 +44,13 @@ try {
   p.on('pageerror', (e) => erros.push(e.message));
   p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) diag.push('[' + m.type() + '] ' + m.text().slice(0, 240)); });
   p.on('response', async (r) => { if (r.status() >= 400 && !/fonts|tile\.openstreetmap/.test(r.url())) diag.push('[' + r.status() + '] ' + r.request().method() + ' ' + r.url().slice(0, 160) + ' ' + (await r.text().catch(() => '')).slice(0, 200)); });
+  const esperaEspelho = () => p.waitForFunction(async () => { const m = await import('./js/espelho.js'); return m.espelho.pronto && !m.espelho.lendo; }, null, { timeout: 30000 }).then(() => p.waitForTimeout(500));
   const contador = async () => ((await p.locator('details.sino .sino-contador').textContent().catch(() => '')) || '').trim();
 
   console.log('O sininho');
   await p.goto(BASE + '#/daily/painel');
   verificar(await esperarAte(async () => (await contador()) === '1'), 'o aviso do servidor aparece no sininho (1 não lida)');
+  await esperaEspelho();
   await p.click('details.sino summary');
   const lista = await p.locator('.notif-lista').textContent();
   verificar(lista.includes('RDO nº 3 de Obra X aguardando aprovação'), 'o texto vem da chave e dos dados, no idioma da tela (pt)', lista.slice(0, 200));

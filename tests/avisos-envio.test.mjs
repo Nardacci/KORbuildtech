@@ -63,6 +63,7 @@ try {
   const A = await rest(ID.ana, '/rpc/criar_empresa', { metodo: 'POST', corpo: { p: { nome: 'Prestadora Local ' + sufixo, atuacao: 'prestadora' } } });
   const B = await rest(ID.tom, '/rpc/criar_empresa', { metodo: 'POST', corpo: { p: { nome: 'Construtora Local ' + sufixo, atuacao: 'construtora' } } });
   await sqlExec(`update auth.users set raw_user_meta_data = raw_user_meta_data || '{"idioma":"pt"}'::jsonb where id = '${ID.ana}'`);
+  await sqlExec(`update auth.users set raw_user_meta_data = raw_user_meta_data - 'idioma' where id = '${ID.tom}'`);   // quem não escolheu idioma recebe em inglês (o criarUsuario do banco de verdade grava pt para todos)
   const aviso1 = (user, emp, link, extra = '') => sqlExec(`select public.notificar('${user}', '${emp}', 'daily', 'RDO nº {numero} de {obra} aguardando aprovação', '{"numero":3,"obra":"Obra X"}'::jsonb, '${link}', null, false, true${extra})`);
   await aviso1(ID.ana, A, '#/daily/painel/rdo/1');
   await sqlExec(`select public.notificar('${ID.ana}', '${A}', 'concorrencia', 'Prazo prorrogado: {servico}', '{"servico":"Framing"}'::jsonb, '#/measure/convite/c1', 'novo prazo', false, true)`);
@@ -73,7 +74,7 @@ try {
   await fila('convite-concorrencia', EMAIL.tom, { token: 'd'.repeat(48), servico: 'Framing', contratante: 'Construtora B', prazo: '2026-10-18T21:00:00Z' }, 'en');
   await fila('aviso-link', EMAIL.tom, { evento: 'adendo', servico: 'Framing', contratante: 'Construtora B', texto: 'Folha A-102' }, 'en');
 
-  const ehDoTeste = (e) => /^kb-e2e-daily-.*@example\.com$/.test(e);   // no banco de verdade, nunca mexe no que é de outras pessoas
+  const ehDoTeste = (e) => e === EMAIL.ana || e === EMAIL.tom;   // só os destinatários desta execução: nunca mexe no que é de outras pessoas nem de rodadas anteriores
   const enviadas = []; let falha = null;
   const dependencias = {
     site: SITE,

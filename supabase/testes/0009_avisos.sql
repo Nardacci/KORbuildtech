@@ -267,7 +267,7 @@ end $$;
 select set_config('role', 'service_role', true);
 do $$ declare r record; ids bigint[]; n int; begin
   -- sem esperar (p_espera_min = 0): quem tem aviso não lido e sem e-mail enviado
-  select count(*) into n from public.avisos_pendentes_email(50, 0);
+  select count(*) into n from public.avisos_pendentes_email(50, 0) where email like 'kb-teste9-%';
   if n < 2 then raise exception 'FALHOU: poucos destinatários pendentes (%)', n; end if;
   select * into r from public.avisos_pendentes_email(50, 0) where email = 'kb-teste9-ana@example.com';
   if r.idioma <> 'pt' or r.nome <> 'Ana Teste' or jsonb_array_length(r.avisos) < 3 or not (r.avisos -> 0 ? 'chave') or not (r.avisos -> 0 ? 'dados') then raise exception 'FALHOU: pendentes da Ana: %', to_jsonb(r); end if;
@@ -276,7 +276,7 @@ do $$ declare r record; ids bigint[]; n int; begin
   -- o aviso do ponto (só sininho) não vai por e-mail
   if exists (select 1 from public.avisos_pendentes_email(50, 0) p where p.email = 'kb-teste9-jose@example.com' and exists (select 1 from jsonb_array_elements(p.avisos) a where a ->> 'categoria' = 'crew')) then raise exception 'FALHOU: aviso só de sininho foi para o e-mail'; end if;
   -- esperar 3 minutos: nada que não seja "na hora" (tudo nasceu agora)
-  select count(*), string_agg(a ->> 'chave', ' | ') into n, r.email from public.avisos_pendentes_email(50, 3) p, jsonb_array_elements(p.avisos) a where (a ->> 'criado_em')::timestamptz > now() - interval '3 minutes' and not (a ->> 'chave' like any (array['Convite para cotar%', 'Você venceu%', 'Prazo vencido%', 'Proposta de%', 'Prazo prorrogado%', 'Aviso a todos%', 'Concorrência cancelada%', 'O escritório pediu ajustes%', 'O período de teste%', '%não vai participar%']));
+  select count(*), string_agg(a ->> 'chave', ' | ') into n, r.email from public.avisos_pendentes_email(50, 3) p, jsonb_array_elements(p.avisos) a where p.email like 'kb-teste9-%' and (a ->> 'criado_em')::timestamptz > now() - interval '3 minutes' and not (a ->> 'chave' like any (array['Convite para cotar%', 'Você venceu%', 'Prazo vencido%', 'Proposta de%', 'Prazo prorrogado%', 'Aviso a todos%', 'Concorrência cancelada%', 'O escritório pediu ajustes%', 'O período de teste%', '%não vai participar%']));
   if n <> 0 then raise exception 'FALHOU: aviso agrupado saiu antes de esperar (%): %', n, r.email; end if;
   select array_agg((a ->> 'id')::bigint) into ids from public.avisos_pendentes_email(50, 0) p, jsonb_array_elements(p.avisos) a where p.email = 'kb-teste9-ana@example.com';
   if public.marcar_avisos_enviados(ids) <> array_length(ids, 1) then raise exception 'FALHOU: marcar como enviado'; end if;
