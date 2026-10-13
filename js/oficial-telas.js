@@ -3,7 +3,7 @@
  * e a área da conta: início, usuários (convites), perfis de acesso e empresa. Os módulos chegam nas próximas fatias. */
 
 import { esc, toast, confirmar, dataHora } from './util.js';
-import { tr, idioma, htmlSeletorIdioma } from './i18n.js';
+import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
 import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL } from './plataforma.js';
 import { icone, marca, logotipo } from './icones.js';
 import { PERMISSOES, permissao } from './settings.js';
@@ -177,7 +177,7 @@ function htmlInicio() {
   return '<section class="cartao"><h1 class="oficial-titulo">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
       '<dl class="lista-dados"><dt>' + tr('Empresa') + '</dt><dd>' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + '</dd>' +
       '<dt>' + tr('Seu acesso') + '</dt><dd>' + esc(nomeDoPerfil(conta.perfil)) + ' · ' + esc(emailAtual()) + '</dd>' +
-      '<dt>' + tr('Plano') + '</dt><dd>' + esc((conta.empresa.plano || {}).nome || '') + '</dd></dl></section>' +
+      '<dt>' + tr('Plano') + '</dt><dd>' + esc(nomeDoPlano((conta.empresa.plano || {}).nome)) + '</dd></dl></section>' +
     (pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar')
       ? '<section class="cartao"><h2 class="cartao-titulo">Daily</h2><p>' + tr('O diário de obra e o cronograma já funcionam com o banco de dados, com e sem internet: preencha no canteiro, envie, aprove, mande o link para o cliente e acompanhe as etapas da obra.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/daily">' + icone('daily', 18) + tr('Abrir o Daily') + '</a></div></section>'

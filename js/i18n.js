@@ -30,6 +30,9 @@ export function definirIdioma(i) {
 }
 if (typeof document !== 'undefined') document.documentElement.lang = atual === 'pt' ? 'pt-BR' : 'en';
 
+/* O nome do plano que o banco dá a toda empresa nova ('Teste') acompanha o idioma; os outros nomes são escolha do KORbuild. */
+export function nomeDoPlano(nome) { return nome === 'Teste' ? tr('Período de teste') : (nome || ''); }
+
 export function tr(texto, vars) {
   let s = texto;
   if (atual === 'en') {

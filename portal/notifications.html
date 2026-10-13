@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications and email · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="index.html#modules">Modules</a>
+    <a href="organization.html">How it is organized</a>
+    <a href="presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="pt/notifications.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Modules">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guide</div><ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="notifications.html" aria-current=page>Notifications and email</a></li><li><a href="platform-admin.html">Platform administration</a></li><li><a href="presenting.html">Presenter&#x27;s guide</a></li></ul>
+    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li><li><a href="bids/index.html">Bids</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
+    <header class="doc-cabecalho">
+      <h1>Notifications and email</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Notifications and email.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Everything that happens between people and companies in KORbuild reaches you in two places: the <strong>bell</strong> inside the app and, for some notices, an <strong>email</strong>. The notices are recorded by the database itself when the event happens, so they are the same on every device and never depend on one phone being open.</p>
+<h2 id="the-bell">The bell</h2>
+<p>The bell is at the top of every screen. A red number counts what you have not read. Tap a notice to open the screen it is about; it becomes read, on every device.</p>
+<figure><img src="img/notices-bell.png" alt="The bell with the latest notices: the newest first, unread ones highlighted" loading="lazy"><figcaption>The bell with the latest notices: the newest first, unread ones highlighted</figcaption></figure>
+<p>The bell also shows the <strong>reminders the phone works out by itself</strong> (the 4 pm daily report reminder, a late daily report, a late schedule stage, a punch with no clock-out). Those exist only on the device and are never emailed.</p>
+<h2 id="which-notices-exist">Which notices exist</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Notice</th>
+<th>Goes to</th>
+<th>Email</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily</td>
+<td>A daily report is waiting for approval</td>
+<td>People who approve</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>The office asked for changes</td>
+<td>Whoever filled the report</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>The daily report was approved</td>
+<td>Whoever filled the report</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Schedule</td>
+<td>A schedule was published by the subcontractor</td>
+<td>The general contractor</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Crew</td>
+<td>Your week was approved, or returned with a reason</td>
+<td>The employee</td>
+<td>Bell only</td>
+</tr>
+<tr>
+<td>Bids</td>
+<td>Invitation to bid, deadline extended, notice to all bidders, answers and messages</td>
+<td>The invited companies</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bids</td>
+<td>A bid was received, a company will not bid, a deadline passed</td>
+<td>The contracting company</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bids</td>
+<td>You won, the bid went to another company, the bid was canceled</td>
+<td>The invited companies</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Bids</td>
+<td>Sub-tier subcontracting: request to approve, approved, declined</td>
+<td>The company above and below</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Account</td>
+<td>The trial ends in 7 days, or tomorrow; the plan was changed by KORbuild</td>
+<td>People who manage the account</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h2 id="choosing-what-arrives-by-email">Choosing what arrives by email</h2>
+<p>In <strong>My profile › Email notices</strong> you turn each group on or off: daily reports, schedule, bids and the channel, and the account. Turning one off only stops the <strong>email</strong>; the bell keeps showing everything. Invitations to join a company or to bid always arrive by email.</p>
+<figure><img src="img/notices-email-preferences.png" alt="My profile: the four groups of email notices" loading="lazy"><figcaption>My profile: the four groups of email notices</figcaption></figure>
+<h2 id="what-the-email-looks-like">What the email looks like</h2>
+<p>Notices are not sent one by one. When several happen close together, KORbuild waits about <strong>3 minutes</strong> and sends <strong>one</strong> email that lists them all. Urgent ones (an invitation, for instance) go right away. Each email has a button that opens the exact screen in the app. The text follows the language of the person: Portuguese or English.</p>
+<figure><img src="img/notices-email.png" alt="An email with two notices, from KORbuild &lt;no-reply@korbuildtech.com&gt;" loading="lazy"><figcaption>An email with two notices, from KORbuild &lt;no-reply@korbuildtech.com&gt;</figcaption></figure>
+<p>People <strong>without a KORbuild account</strong> (a company invited to bid by email, for instance) receive the invitation with a personal link; the link opens the bid without signing in.</p>
+<h2 id="business-rules">Business rules</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NTF-001</td>
+<td>Notices are recorded by the database when the event happens, not by the app. They are the same on every device.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-002</td>
+<td>Each person reads only their own notices.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-003</td>
+<td>A notice shows in the language of the screen; the email uses the language saved in the person's account.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-004</td>
+<td>Notices of the same kind, to the same screen, that are still unread merge into one.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-005</td>
+<td>Emails wait about 3 minutes and group the notices of the same person; urgent ones go right away.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-006</td>
+<td>Each person chooses which groups of notices also arrive by email. The bell is never turned off.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-007</td>
+<td>A notice is marked as emailed only after the mail server accepted the message. If sending fails, it is tried again; after 5 tries it stops and shows in the platform administration.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-008</td>
+<td>Invitations to join a company or to bid always arrive by email.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>NTF-009</td>
+<td>The bell reminders worked out by the phone are never emailed.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-bell">The bell</a></li><li><a href="#which-notices-exist">Which notices exist</a></li><li><a href="#choosing-what-arrives-by-email">Choosing what arrives by email</a></li><li><a href="#what-the-email-looks-like">What the email looks like</a></li><li><a href="#business-rules">Business rules</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 13, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="assets/portal.js"></script>
+</body></html>

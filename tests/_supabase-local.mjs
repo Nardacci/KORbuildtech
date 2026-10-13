@@ -153,7 +153,8 @@ export async function rotear(contexto, urlProjeto) {
     if (caminho === '/auth/v1/user') {
       const token = (req.headers().authorization || '').replace('Bearer ', '');
       const sub = JSON.parse(Buffer.from(token.split('.')[1] || 'e30', 'base64url').toString()).sub;
-      return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ id: sub, aud: 'authenticated', role: 'authenticated', email: '', user_metadata: { idioma: 'pt' }, app_metadata: {} }) });
+      const [quem] = await sql(`select email from auth.users where id = '${sub}'`);
+      return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ id: sub, aud: 'authenticated', role: 'authenticated', email: (quem && quem.email) || '', user_metadata: { idioma: 'pt' }, app_metadata: {} }) });
     }
     // a função de borda do link do cliente
     if (caminho === '/functions/v1/diario-publico') {

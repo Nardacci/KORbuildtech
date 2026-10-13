@@ -7,6 +7,7 @@ O protótipo (a demonstração com dados de exemplo) mostra o produto funcionand
 | Item | Como funciona hoje |
 |---|---|
 | Ponto | O encarregado bate o ponto da equipe e o trabalhador bate o próprio ponto no celular, com ou sem internet: o celular guarda a batida e envia quando o sinal volta, **com a hora em que foi batida**. Batida nunca é editada nem apagada; o banco recusa. |
+| Foto da equipe | Na entrada da equipe, o campo **Foto da equipe** abre a câmera do celular; a foto é reduzida, carimbada com obra, hora e local, guardada no celular e enviada com a batida (também sem internet). O escritório vê a miniatura no dia da pessoa; a construtora não vê fotos. |
 | Cerca | Conferida pelo banco em cada batida; fora da cerca a batida é aceita, marcada e listada para o escritório conferir. |
 | Escritório | Conferir, ajustar (uma batida nova com o motivo), aprovar e devolver a semana, orçamento de mão de obra. Semana com dia sem saída não aprova; semana aprovada é fechada: sem batida atrasada, sem ajuste e sem valor hora novo dentro dela. |
 | Localização durante a jornada | Depois que o trabalhador aceita o **aviso de localização** no app, o celular registra a posição enquanto o app está aberto e o ponto, aberto: ao abrir o app e a cada 15 minutos na obra (5 em deslocamento). Nunca no intervalo nem com o ponto fechado — o banco recusa. O mapa do dia mostra os registros reais e avisa dos trechos sem registro (app fechado). |
@@ -29,7 +30,6 @@ O protótipo (a demonstração com dados de exemplo) mostra o produto funcionand
 
 | Item | Observações |
 |---|---|
-| Foto da equipe na batida | A conta de verdade registra que houve foto; capturar e guardar a foto vem a seguir. |
 | Lembrete de entrada pela cerca | Lembra o trabalhador quando ele chega na obra; nunca bate a entrada sozinho. |
 | Avanço físico vindo do Daily e do Measure | No lugar de digitar em Custos. |
 | Integrações com a folha e certified payroll | Fase 2. |

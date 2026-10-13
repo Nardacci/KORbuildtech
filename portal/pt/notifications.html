@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avisos e e-mails · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="Guia do produto KORbuild, início"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="index.html#modules">Módulos</a>
+    <a href="organization.html">Como se organiza</a>
+    <a href="presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../notifications.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Módulos">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guia</div><ul><li><a href="organization.html">Como o KORbuild se organiza</a></li><li><a href="notifications.html" aria-current=page>Avisos e e-mails</a></li><li><a href="platform-admin.html">Administração da plataforma</a></li><li><a href="presenting.html">Guia do apresentador</a></li></ul>
+    <div class="lat-titulo">Módulos</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li><li><a href="bids/index.html">Concorrências</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="index.html">Início</a> › Guia</nav>
+    <header class="doc-cabecalho">
+      <h1>Avisos e e-mails</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Avisos e e-mails.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Tudo o que acontece entre pessoas e empresas no KORbuild chega a você em dois lugares: o <strong>sininho</strong>, dentro do aplicativo, e, para alguns avisos, um <strong>e-mail</strong>. Os avisos são gravados pelo próprio banco de dados no momento do fato; por isso são os mesmos em todos os aparelhos e não dependem de um celular estar com o app aberto.</p>
+<h2 id="o-sininho">O sininho</h2>
+<p>O sininho fica no alto de todas as telas. Um número vermelho conta o que você ainda não leu. Toque num aviso para abrir a tela de que ele fala; ele passa a lido, em todos os aparelhos.</p>
+<figure><img src="img/notices-bell.png" alt="O sininho com os últimos avisos: o mais novo em cima, os não lidos destacados" loading="lazy"><figcaption>O sininho com os últimos avisos: o mais novo em cima, os não lidos destacados</figcaption></figure>
+<p>O sininho mostra também os <strong>lembretes que o próprio celular calcula</strong> (o lembrete do RDO às 16h, o RDO atrasado, a etapa atrasada no cronograma, o ponto sem saída). Esses existem só no aparelho e nunca viram e-mail.</p>
+<h2 id="quais-avisos-existem">Quais avisos existem</h2>
+<table>
+<thead>
+<tr>
+<th>Área</th>
+<th>Aviso</th>
+<th>Para quem</th>
+<th>E-mail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily</td>
+<td>Um RDO aguarda aprovação</td>
+<td>Quem aprova</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>O escritório pediu ajustes</td>
+<td>Quem preencheu o RDO</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Daily</td>
+<td>O RDO foi aprovado</td>
+<td>Quem preencheu o RDO</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Cronograma</td>
+<td>Um cronograma foi publicado pela prestadora</td>
+<td>A construtora</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Crew</td>
+<td>Sua semana foi aprovada, ou devolvida com o motivo</td>
+<td>O funcionário</td>
+<td>Só o sininho</td>
+</tr>
+<tr>
+<td>Concorrências</td>
+<td>Convite para cotar, prazo prorrogado, aviso a todos, respostas e mensagens</td>
+<td>As empresas convidadas</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Concorrências</td>
+<td>Chegou uma proposta, uma empresa não vai participar, o prazo venceu</td>
+<td>A contratante</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Concorrências</td>
+<td>Você venceu, a concorrência foi para outra empresa, foi cancelada</td>
+<td>As empresas convidadas</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Concorrências</td>
+<td>Quarteirização: pedido para aprovar, aprovada, recusada</td>
+<td>A empresa de cima e a de baixo</td>
+<td>Sim</td>
+</tr>
+<tr>
+<td>Conta</td>
+<td>O teste termina em 7 dias ou amanhã; o plano foi alterado pelo KORbuild</td>
+<td>Quem administra a conta</td>
+<td>Sim</td>
+</tr>
+</tbody>
+</table>
+<h2 id="escolher-o-que-chega-por-e-mail">Escolher o que chega por e-mail</h2>
+<p>Em <strong>Meu perfil › Avisos por e-mail</strong> você liga ou desliga cada grupo: diário de obra, cronograma, concorrências e o canal, e a conta. Desligar só para o <strong>e-mail</strong>; o sininho continua mostrando tudo. Os convites para entrar numa empresa ou numa concorrência sempre chegam por e-mail.</p>
+<figure><img src="img/notices-email-preferences.png" alt="Meu perfil: os quatro grupos de avisos por e-mail" loading="lazy"><figcaption>Meu perfil: os quatro grupos de avisos por e-mail</figcaption></figure>
+<h2 id="como-e-o-e-mail">Como é o e-mail</h2>
+<p>Os avisos não saem um a um. Quando vários acontecem perto uns dos outros, o KORbuild espera cerca de <strong>3 minutos</strong> e manda <strong>um</strong> e-mail que lista todos. Os urgentes (um convite, por exemplo) saem na hora. Cada e-mail tem um botão que abre a tela exata no aplicativo. O texto segue o idioma da pessoa: português ou inglês.</p>
+<figure><img src="img/notices-email.png" alt="Um e-mail com dois avisos, enviado por KORbuild &lt;no-reply@korbuildtech.com&gt;" loading="lazy"><figcaption>Um e-mail com dois avisos, enviado por KORbuild &lt;no-reply@korbuildtech.com&gt;</figcaption></figure>
+<p>Quem <strong>não tem conta no KORbuild</strong> (uma empresa convidada para cotar por e-mail, por exemplo) recebe o convite com um link pessoal; o link abre a concorrência sem precisar de login.</p>
+<h2 id="regras-de-negocio">Regras de negócio</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NTF-001</td>
+<td>Os avisos são gravados pelo banco de dados quando o fato acontece, não pelo aplicativo. São os mesmos em todos os aparelhos.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-002</td>
+<td>Cada pessoa lê só os próprios avisos.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-003</td>
+<td>O aviso aparece no idioma da tela; o e-mail usa o idioma gravado na conta da pessoa.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-004</td>
+<td>Avisos do mesmo tipo, para a mesma tela, ainda não lidos, viram um só.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-005</td>
+<td>Os e-mails esperam cerca de 3 minutos e juntam os avisos da mesma pessoa; os urgentes saem na hora.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-006</td>
+<td>Cada pessoa escolhe quais grupos de avisos também chegam por e-mail. O sininho nunca é desligado.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-007</td>
+<td>Um aviso só é marcado como enviado depois que o servidor de e-mail aceitou a mensagem. Se o envio falha, tenta de novo; depois de 5 tentativas para e aparece na administração da plataforma.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-008</td>
+<td>Os convites para entrar numa empresa ou numa concorrência sempre chegam por e-mail.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>NTF-009</td>
+<td>Os lembretes do sininho calculados pelo celular nunca viram e-mail.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#o-sininho">O sininho</a></li><li><a href="#quais-avisos-existem">Quais avisos existem</a></li><li><a href="#escolher-o-que-chega-por-e-mail">Escolher o que chega por e-mail</a></li><li><a href="#como-e-o-e-mail">Como é o e-mail</a></li><li><a href="#regras-de-negocio">Regras de negócio</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 13 de outubro de 2026 · <a href="../../">Entrada principal</a> · <a href="../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

@@ -7,7 +7,7 @@ O protótipo (a demonstração com dados de exemplo) mostra o produto funcionand
 | Item | Como funciona hoje |
 |---|---|
 | Onde ficam as concorrências | No servidor, nas tabelas da contratante. Cada convidada recebe só o próprio convite, as próprias propostas e as mensagens que pode ver; nunca vê quem mais foi convidado nem os outros valores. Toda ação depois do envio (prorrogar, convidar mais, adendo, responder, proposta, fechar, cancelar) passa por uma função do banco que confere quem está chamando. |
-| Convites para empresas sem conta | O link do convite é gerado pelo banco ao enviar (só o hash fica guardado) e aparece uma vez, para copiar; fica guardado no aparelho que enviou. O envio por e-mail é a próxima etapa. |
+| Convites para empresas sem conta | O link do convite é gerado pelo banco ao enviar (só o hash fica guardado) e aparece uma vez, para copiar; fica guardado no aparelho que enviou. O convite também é **enviado por e-mail** à convidada (veja Avisos e e-mails). |
 | A página do link | Abre sem login: a convidada vê o pacote e os desenhos, responde, pergunta e manda a proposta com o PDF. Quando ela cria a conta com o mesmo e-mail, o convite, as mensagens e as propostas vêm junto. |
 | Desenhos | Os PDFs vão para a pasta da concorrência no armazenamento da empresa na nuvem. "Vou cotar" copia cada desenho para o projeto da convidada, folha a folha. |
 | PDF da proposta | Guardado com a proposta, na pasta do convite, para a contratante baixar. |
@@ -20,7 +20,7 @@ O protótipo (a demonstração com dados de exemplo) mostra o produto funcionand
 | Item | No protótipo | No produto |
 |---|---|---|
 | Onde ficam as concorrências | No navegador, num lugar comum às empresas de exemplo. | No servidor, e cada empresa lê só o que pode ver — **já funciona** na conta de verdade. |
-| Convites por e-mail | Não são enviados. A contratante usa **Copiar o link** para quem não tem conta. | Enviados por e-mail, com o link pessoal (próxima etapa; o link em si **já funciona**). |
+| Convites por e-mail | Não são enviados. A contratante usa **Copiar o link** para quem não tem conta. | Enviados por e-mail, com o link pessoal — **já funciona** na conta de verdade. |
 | Desenhos | Guarda só o nome dos PDFs; o projeto da convidada começa sem folhas. | Os PDFs vão com o convite e viram as folhas do projeto da convidada — **já funciona**. |
 | PDF da proposta | Guarda só o nome do arquivo. | Guardado com a proposta — **já funciona**. |
 | Orçamento por etapa | Existe no motor; o formulário pede só o total. | Um campo de orçamento por etapa. |
@@ -31,7 +31,6 @@ O protótipo (a demonstração com dados de exemplo) mostra o produto funcionand
 
 | Item | Observações |
 |---|---|
-| Convites e avisos por e-mail | A próxima etapa do trabalho no banco de dados. |
 | Envelope fechado | A contratante só vê os valores depois do prazo (comum em obra pública). |
 | Aditivo a partir do canal | Uma mensagem vira um pedido de mudança formal (*change order*). |
 | Dividir o fechamento | Fechar etapas diferentes com prestadoras diferentes. |

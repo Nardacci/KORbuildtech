@@ -7,7 +7,7 @@
  * Fica numa chave própria de cada usuário: nunca mistura com a demonstração nem com outra conta no mesmo aparelho.
  * O que o aparelho mudou e ainda não subiu (js/sincronizacao.js) é preservado quando o espelho é relido. */
 
-import { tr } from './i18n.js';
+import { tr, nomeDoPlano } from './i18n.js';
 import { usarIdsUuid } from './util.js';
 import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatura, idDaFotoDePonto, estado } from './armazem.js';
 import { criarSettings } from './settings.js';
@@ -152,7 +152,7 @@ export function montar(atualizado = false) {
       id: e.id, nome: e.nome, razaoSocial: e.razao_social, sigla: e.sigla, ein: e.ein, atuacao: e.atuacao, especialidades: e.especialidades,
       endereco: e.endereco, cidade: e.cidade, estado: e.estado, zip: e.zip, telefone: e.telefone, email: e.email, site: e.site,
       licencas: e.licencas, seguros: e.seguros, termosProposta: e.termos_proposta, logo: null,
-      plano: { nome: (e.plano || {}).nome || '', status: (e.plano || {}).status || 'teste' },
+      plano: { nome: nomeDoPlano((e.plano || {}).nome), status: (e.plano || {}).status || 'teste' },
       modulos: ['daily', 'crew', 'measure'],   // fatias 3 a 6; as concorrências chegam na 7 (o plano de cada empresa vem no fim do projeto)
       desde: (e.criada_em || '').slice(0, 10),
     };

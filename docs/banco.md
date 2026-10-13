@@ -721,6 +721,8 @@ situação que trava: as funções de gravação (`salvar_rdo`, `registrar_batid
      valer com o preço.
    - A plataforma não remove o último administrador. Quem administra vê o link no Início da conta.
    - Testes: `supabase/testes/0010_plataforma.sql` e `tests/admin-oficial.test.mjs` (20).
+   - Portal: páginas "Notifications and email" e "Platform administration" (EN e PT) com capturas tiradas da conta de verdade
+     por `tools/capturas-conta.mjs` (cena de exemplo no banco local; ver o cabeçalho do script).
 
 **De você, para o 8b:** a caixa `no-reply@korbuildtech.com` criada, o servidor SMTP, a porta e o usuário que o provedor
 mostra, e a senha **só** na variável `KOR_SMTP_PASS` da sua máquina (a sessão local publica os segredos

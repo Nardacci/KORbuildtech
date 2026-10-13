@@ -7,6 +7,7 @@ The prototype (the demo with sample data) shows the product working. Beside it, 
 | Item | How it works today |
 |---|---|
 | Time clock | The foreman clocks in the crew and the worker clocks in and out on their own phone, online or offline: the phone keeps the punch and sends it when the signal is back, **with the time it was punched**. A punch is never edited or deleted; the database refuses it. |
+| Crew photo | At the foreman's clock-in the **Crew photo** field opens the phone camera; the photo is reduced, stamped with job, time and place, kept on the phone and sent with the punch (offline too). The office sees it as a thumbnail on the person's day; the general contractor does not see photos. |
 | Geofence | Checked by the database at every punch; outside the geofence the punch is accepted, flagged and listed for the office to review. |
 | Office | Review, adjust (a new punch with a reason), approve and return the week, labor budget. A week with a missing clock-out cannot be approved; an approved week is closed — no late punch, no adjustment, no new hourly rate inside it. |
 | Location during the workday | After the worker accepts the **location notice** in the app, the phone records its position while the app is open and the person is clocked in: when the app is opened and every 15 minutes on site (5 while traveling). Never during breaks or clocked out — the database refuses those. The day map shows the real records and flags stretches with no record (app closed). |
@@ -29,7 +30,6 @@ The prototype (the demo with sample data) shows the product working. Beside it, 
 
 | Item | Notes |
 |---|---|
-| Crew photo at the punch | The real account records that a photo was taken; capturing and storing the photo comes next. |
 | Geofence reminder to clock in | Reminds the worker at the job; never clocks in by itself. |
 | Percent complete from Daily and Measure | Instead of typing it in Costs. |
 | Payroll integrations and certified payroll | Phase 2. |

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Platform administration · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="index.html#modules">Modules</a>
+    <a href="organization.html">How it is organized</a>
+    <a href="presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="pt/platform-admin.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Modules">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guide</div><ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="notifications.html">Notifications and email</a></li><li><a href="platform-admin.html" aria-current=page>Platform administration</a></li><li><a href="presenting.html">Presenter&#x27;s guide</a></li></ul>
+    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li><li><a href="bids/index.html">Bids</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
+    <header class="doc-cabecalho">
+      <h1>Platform administration</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Platform administration.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>This page is for the <strong>KORbuild team</strong>, not for customers. It describes the control panel the team uses to look after the companies that have an account: see who is using what, change plans, suspend an account and watch the email queue. The panel is at <code>admin.html</code> and uses the same sign-in as the app; it only opens for people registered as platform administrators. Anyone else sees "No access".</p>
+<h2 id="companies">Companies</h2>
+<p>The first screen lists every company with its status, plan, how many trial days are left, users, jobs and last sign-in. Search by name, or show only the <strong>expired trials</strong>.</p>
+<figure><img src="img/platform-admin-companies.png" alt="The list of companies: status, plan, trial, users, jobs and last sign-in" loading="lazy"><figcaption>The list of companies: status, plan, trial, users, jobs and last sign-in</figcaption></figure>
+<h2 id="one-company">One company</h2>
+<p>Open a company to see and change its <strong>plan</strong> and <strong>modules</strong>, see its people and read what the platform has already done for it.</p>
+<figure><img src="img/platform-admin-company.png" alt="A company: plan, modules, people and the history of what the platform did" loading="lazy"><figcaption>A company: plan, modules, people and the history of what the platform did</figcaption></figure>
+<ul>
+<li><strong>Status:</strong> Trial, Active, Overdue, Canceled or Suspended.</li>
+<li><strong>Plan name, trial end, job limit and user limit.</strong> The limits are recorded; they only start to apply when pricing is set.</li>
+<li><strong>+7 trial days</strong> extends the trial in one tap.</li>
+<li><strong>Modules:</strong> Daily, Crew and Measure can be switched on or off per company (a general contractor only uses Daily).</li>
+<li>Every change needs a <strong>reason</strong>. It goes to the platform record and to the company's own audit trail, and whoever manages the company's account gets a notice (bell and email) with the reason.</li>
+</ul>
+<h3 id="suspending-a-company">Suspending a company</h3>
+<p>A suspended company can still sign in and see all its data, but <strong>cannot save anything</strong>: the database refuses every write. The app shows a notice at the top of the account until the platform reactivates it.</p>
+<figure><img src="img/platform-suspended-banner.png" alt="What the company sees while suspended" loading="lazy"><figcaption>What the company sees while suspended</figcaption></figure>
+<h2 id="emails">Emails</h2>
+<p>The queue shows invitations and notices for people <strong>without an account</strong>: what is waiting, what was sent and what failed. A message that failed or stopped after 5 tries has <strong>Try again</strong>.</p>
+<figure><img src="img/platform-admin-emails.png" alt="The email queue: waiting, sent and failed messages" loading="lazy"><figcaption>The email queue: waiting, sent and failed messages</figcaption></figure>
+<h2 id="default-values-and-administrators">Default values and administrators</h2>
+<ul>
+<li><strong>Default values:</strong> the number of trial days and the initial configuration given to <strong>new</strong> companies. Companies that already exist do not change.</li>
+<li><strong>Administrators:</strong> who can open this panel. The platform always keeps at least one administrator.</li>
+</ul>
+<h2 id="business-rules">Business rules</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Rule</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PLT-001</td>
+<td>Only people registered as platform administrators open the panel; every action is checked in the database, not only on the screen.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>PLT-002</td>
+<td>A company's data is never opened to the platform by a table permission: the panel uses database functions that answer only to administrators.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>PLT-003</td>
+<td>Changing a plan or the modules needs a reason, and is recorded in the platform record and in the company's audit trail.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>PLT-004</td>
+<td>A suspended company can sign in and read, but every save is refused.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>PLT-005</td>
+<td>The people who manage the company's account are notified of a plan change, with the reason.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>PLT-006</td>
+<td>The job and user limits are recorded but not enforced until pricing is set.</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>PLT-007</td>
+<td>The platform record can only grow: entries are never edited or deleted.</td>
+<td>Working</td>
+</tr>
+<tr>
+<td>PLT-008</td>
+<td>The last platform administrator cannot be removed.</td>
+<td>Working</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#companies">Companies</a></li><li><a href="#one-company">One company</a></li><li class="sub"><a href="#suspending-a-company">Suspending a company</a></li><li><a href="#emails">Emails</a></li><li><a href="#default-values-and-administrators">Default values and administrators</a></li><li><a href="#business-rules">Business rules</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 13, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="assets/portal.js"></script>
+</body></html>

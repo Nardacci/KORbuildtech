@@ -4,7 +4,7 @@
  * conferem isso (admin_empresas, admin_alterar_plano…); quem não é administrador não lê nem grava nada daqui.
  * Telas (pelo "#" da página): empresas, empresa/{id}, valores, emails, administradores. */
 
-import { tr, idioma, definirIdioma, htmlSeletorIdioma } from './i18n.js';
+import { tr, idioma, definirIdioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
 import { esc, toast } from './util.js';
 import { iniciar, conta, cliente, traduzir } from './conta.js';
 import { marca, logotipo } from './icones.js';
@@ -12,7 +12,9 @@ import { marca, logotipo } from './icones.js';
 const app = document.getElementById('app');
 const STATUS = { teste: 'Teste', ativa: 'Ativa', atraso: 'Em atraso', cancelada: 'Cancelada', suspensa: 'Suspensa' };
 const CLASSE = { teste: 'etiqueta-azul', ativa: 'etiqueta-verde', atraso: 'etiqueta-ambar', cancelada: 'etiqueta-neutro', suspensa: 'etiqueta-alerta' };
-const nomeDoStatus = (s) => ({ teste: tr('Teste'), ativa: tr('Ativa'), atraso: tr('Em atraso'), cancelada: tr('Cancelada'), suspensa: tr('Suspensa') }[s] || s);
+const nomeDoStatus = (s) => ({ teste: tr('Em teste'), ativa: tr('Ativa'), atraso: tr('Em atraso'), cancelada: tr('Cancelada'), suspensa: tr('Suspensa') }[s] || s);
+const nomeDaAcao = (a) => ({ plano: tr('Plano alterado'), modulos: tr('Módulos alterados'), administrador: tr('Administrador alterado'), reenvio: tr('E-mail reenviado'), valores: tr('Valores padrão alterados') }[a] || a);
+const nomeDoModelo = (m) => ({ 'convite-usuario': tr('Convite para entrar numa empresa'), 'convite-concorrencia': tr('Convite para cotar'), 'aviso-link': tr('Aviso de concorrência') }[m] || m);
 const ATUACOES = () => ({ prestadora: tr('Prestadora'), construtora: tr('Construtora'), ambas: tr('Prestadora e construtora') });
 const dataHora = (t) => (t ? new Date(t).toLocaleString(idioma() === 'pt' ? 'pt-BR' : 'en-US', { dateStyle: 'short', timeStyle: 'short' }) : '—');
 const dia = (t) => (t ? new Date(t).toLocaleDateString(idioma() === 'pt' ? 'pt-BR' : 'en-US') : '—');
@@ -52,7 +54,7 @@ function linhaDaEmpresa(e) {
   const teste = e.plano.status === 'teste' && dias != null
     ? (dias < 0 ? '<span class="etiqueta etiqueta-alerta">' + tr('venceu há {n} dias', { n: -dias }) + '</span>' : '<span class="mudo">' + tr('{n} dias', { n: dias }) + '</span>') : '<span class="mudo">—</span>';
   return '<tr><td><a href="#empresa/' + e.id + '"><b>' + esc(e.nome) + '</b></a></td><td>' + esc(ATUACOES()[e.atuacao] || e.atuacao) + '</td>' +
-    '<td><span class="etiqueta ' + (CLASSE[e.plano.status] || 'etiqueta-neutro') + '">' + esc(nomeDoStatus(e.plano.status)) + '</span>' + (e.plano.nome ? ' <span class="mudo pequeno">' + esc(e.plano.nome) + '</span>' : '') + '</td>' +
+    '<td><span class="etiqueta ' + (CLASSE[e.plano.status] || 'etiqueta-neutro') + '">' + esc(nomeDoStatus(e.plano.status)) + '</span>' + (e.plano.nome ? ' <span class="mudo pequeno">' + esc(nomeDoPlano(e.plano.nome)) + '</span>' : '') + '</td>' +
     '<td>' + teste + '</td><td class="num">' + e.usuarios + '</td><td class="num">' + e.obras + '</td><td>' + dataHora(e.ultimo_acesso) + '</td><td>' + dia(e.criada_em) + '</td></tr>';
 }
 async function telaEmpresas() {
@@ -63,7 +65,7 @@ async function telaEmpresas() {
     '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Empresas') + '</h2><span class="mudo pequeno">' + tn(lista.length) + '</span></div>' +
       '<div class="grade-campos">' + campo('ad-busca', tr('Buscar pelo nome'), '<input type="search" id="ad-busca" value="' + esc(busca) + '" autocomplete="off">') +
         '<label class="check"><input type="checkbox" id="ad-vencidos"' + (soVencidos ? ' checked' : '') + '> ' + tr('Só testes vencidos ({n})', { n: vencidos }) + '</label></div>' +
-      (lista.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Empresa') + '</th><th>' + tr('Atuação') + '</th><th>' + tr('Plano') + '</th><th>' + tr('Teste') + '</th><th class="num">' + tr('Usuários') + '</th><th class="num">' + tr('Obras') + '</th><th>' + tr('Último acesso') + '</th><th>' + tr('Criada em') + '</th></tr></thead><tbody>' +
+      (lista.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Empresa') + '</th><th>' + tr('Atuação') + '</th><th>' + tr('Plano') + '</th><th>' + tr('Período de teste') + '</th><th class="num">' + tr('Usuários') + '</th><th class="num">' + tr('Obras') + '</th><th>' + tr('Último acesso') + '</th><th>' + tr('Criada em') + '</th></tr></thead><tbody>' +
         lista.map(linhaDaEmpresa).join('') + '</tbody></table></div>' : '<p class="vazio">' + tr('Nenhuma empresa encontrada.') + '</p>') + '</section>');
 }
 const tn = (n) => tr('{n} empresas', { n });
@@ -74,7 +76,7 @@ async function telaEmpresa(id) {
   const d = await chamar('admin_empresa', { p_id: id });
   const e = d.empresa, p = e.plano || {};
   const modulos = ['daily', 'crew', 'measure'];
-  const log = d.log.length ? '<ul class="lista-simples">' + d.log.map((l) => '<li><b>' + esc(l.acao) + '</b> · ' + dataHora(l.em) + ' · ' + esc(l.quem) +
+  const log = d.log.length ? '<ul class="lista-simples">' + d.log.map((l) => '<li><b>' + esc(nomeDaAcao(l.acao)) + '</b> · ' + dataHora(l.em) + ' · ' + esc(l.quem) +
     (l.detalhe && l.detalhe.motivo ? '<span class="mudo pequeno bloco">' + esc(l.detalhe.motivo) + '</span>' : '') + '</li>').join('') + '</ul>' : '<p class="mudo">—</p>';
   return moldura('empresas',
     '<a class="voltar" href="#empresas">← ' + tr('Empresas') + '</a>' +
@@ -90,18 +92,18 @@ async function telaEmpresa(id) {
         campo('ap-usuarios', tr('Limite de usuários'), '<input type="number" min="0" step="1" id="ap-usuarios" name="limite_usuarios" value="' + (p.limite_usuarios ?? '') + '">') +
         campo('ap-motivo', tr('Motivo *'), '<input id="ap-motivo" name="motivo" placeholder="' + esc(tr('Ex.: assinou o plano Profissional')) + '">') +
       '</form>' +
-      '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="ad-salvar-plano">' + tr('Salvar o plano') + '</button>' +
+      '<div class="btn-linha" style="margin-top:12px"><button type="button" class="btn btn-primario" data-acao="ad-salvar-plano">' + tr('Salvar o plano') + '</button>' +
         '<button type="button" class="btn btn-contorno" data-acao="ad-mais-teste" data-empresa="' + e.id + '">' + tr('+7 dias de teste') + '</button>' +
         (p.status === 'suspensa' ? '<button type="button" class="btn btn-contorno" data-acao="ad-situacao" data-situacao="ativa">' + tr('Reativar') + '</button>' : '<button type="button" class="btn btn-contorno" data-acao="ad-situacao" data-situacao="suspensa">' + tr('Suspender') + '</button>') + '</div>' +
-      '<p class="mudo pequeno">' + tr('Suspensa: a empresa continua entrando e vendo seus dados, mas não grava nada. Quem administra a conta recebe um aviso (sininho e e-mail) com o motivo. Os limites ficam registrados; só passam a valer com o preço.') + '</p></section>' +
+      '<p class="mudo pequeno" style="margin-top:10px">' + tr('Suspensa: a empresa continua entrando e vendo seus dados, mas não grava nada. Quem administra a conta recebe um aviso (sininho e e-mail) com o motivo. Os limites ficam registrados; só passam a valer com o preço.') + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Módulos') + '</h2>' +
       '<form id="ad-modulos" novalidate onsubmit="return false" data-empresa="' + e.id + '">' +
         modulos.map((m) => '<label class="check"><input type="checkbox" name="modulos" value="' + m + '"' + ((e.modulos || []).includes(m) ? ' checked' : '') + (e.atuacao === 'construtora' && m !== 'daily' ? ' disabled' : '') + '> ' + m.charAt(0).toUpperCase() + m.slice(1) + '</label>').join('') +
         campo('am-motivo', tr('Motivo *'), '<input id="am-motivo" name="motivo">') +
-      '</form><div class="btn-linha"><button type="button" class="btn btn-contorno" data-acao="ad-salvar-modulos">' + tr('Salvar os módulos') + '</button></div>' +
-      '<dl class="lista-dados"><dt>' + tr('Obras') + '</dt><dd>' + d.obras + '</dd><dt>' + tr('Funcionários') + '</dt><dd>' + d.funcionarios + '</dd><dt>' + tr('Projetos no Measure') + '</dt><dd>' + d.projetos + '</dd><dt>' + tr('Concorrências') + '</dt><dd>' + d.concorrencias + '</dd></dl></section></div>' +
+      '</form><div class="btn-linha" style="margin-top:12px"><button type="button" class="btn btn-contorno" data-acao="ad-salvar-modulos">' + tr('Salvar os módulos') + '</button></div>' +
+      '<dl class="lista-dados" style="margin-top:16px"><dt>' + tr('Obras') + '</dt><dd>' + d.obras + '</dd><dt>' + tr('Funcionários') + '</dt><dd>' + d.funcionarios + '</dd><dt>' + tr('Projetos no Measure') + '</dt><dd>' + d.projetos + '</dd><dt>' + tr('Concorrências') + '</dt><dd>' + d.concorrencias + '</dd></dl></section></div>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Pessoas') + '</h2><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('E-mail') + '</th><th>' + tr('Perfil de acesso') + '</th><th>' + tr('Situação') + '</th><th>' + tr('Último acesso') + '</th></tr></thead><tbody>' +
-      d.pessoas.map((x) => '<tr><td><b>' + esc(x.nome) + '</b>' + (x.cargo ? '<span class="mudo pequeno bloco">' + esc(x.cargo) + '</span>' : '') + '</td><td>' + esc(x.email) + '</td><td>' + esc(x.perfil) + '</td><td>' + (x.ativo ? '<span class="etiqueta etiqueta-verde">' + tr('Ativo') + '</span>' : '<span class="etiqueta etiqueta-neutro">' + tr('Desativado') + '</span>') + '</td><td>' + dataHora(x.ultimo_acesso) + '</td></tr>').join('') + '</tbody></table></div></section>' +
+      d.pessoas.map((x) => '<tr><td><b>' + esc(x.nome) + '</b>' + (x.cargo ? '<span class="mudo pequeno bloco">' + esc(x.cargo) + '</span>' : '') + '</td><td>' + esc(x.email) + '</td><td>' + esc(tr(x.perfil)) + '</td><td>' + (x.ativo ? '<span class="etiqueta etiqueta-verde">' + tr('Ativo') + '</span>' : '<span class="etiqueta etiqueta-neutro">' + tr('Desativado') + '</span>') + '</td><td>' + dataHora(x.ultimo_acesso) + '</td></tr>').join('') + '</tbody></table></div></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('O que a plataforma já fez nesta empresa') + '</h2>' + log + '</section>');
 }
 
@@ -127,7 +129,7 @@ async function telaEmails() {
     '<div class="btn-linha" style="flex-wrap:wrap">' + card(resumo.fila_pendente, tr('na fila para sair'), false) + card(resumo.fila_com_erro, tr('com erro de envio'), true) + card(resumo.fila_parada, tr('paradas (5 tentativas)'), true) + card(resumo.avisos_pendentes, tr('avisos ainda não enviados'), false) + '</div>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Fila de e-mails (convites e avisos para quem não tem conta)') + '</h2>' +
       (fila.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Quando') + '</th><th>' + tr('Para') + '</th><th>' + tr('Empresa') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Situação') + '</th><th></th></tr></thead><tbody>' +
-        fila.map((f) => '<tr><td>' + dataHora(f.criado_em) + '</td><td>' + esc(f.para_email) + '</td><td>' + esc(f.empresa || '—') + '</td><td>' + esc(f.modelo) + '</td><td>' +
+        fila.map((f) => '<tr><td>' + dataHora(f.criado_em) + '</td><td>' + esc(f.para_email) + '</td><td>' + esc(f.empresa || '—') + '</td><td>' + esc(nomeDoModelo(f.modelo)) + '</td><td>' +
           (f.enviado_em ? '<span class="etiqueta etiqueta-verde">' + tr('Enviado') + '</span> <span class="mudo pequeno">' + dataHora(f.enviado_em) + '</span>' : f.erro ? '<span class="etiqueta etiqueta-alerta">' + tr('Erro') + '</span> <span class="mudo pequeno">' + esc(f.erro) + ' · ' + tr('{n} tentativas', { n: f.tentativas }) + '</span>' : '<span class="etiqueta etiqueta-ambar">' + tr('Na fila') + '</span>') + '</td>' +
           '<td>' + (!f.enviado_em && (f.erro || f.tentativas >= 5) ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="ad-reenviar" data-id="' + f.id + '">' + tr('Tentar de novo') + '</button>' : '') + '</td></tr>').join('') + '</tbody></table></div>'
         : '<p class="vazio">' + tr('Nenhum e-mail na fila.') + '</p>') + '</section>');
