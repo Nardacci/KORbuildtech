@@ -19,7 +19,7 @@ export const nome = 'Supabase do projeto ' + REF;
 export async function sql(consulta) {
   const r = await fetch('https://api.supabase.com/v1/projects/' + REF + '/database/query', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ query: consulta }) });
   const t = await r.text();
-  if (!r.ok) throw new Error('SQL ' + r.status + ': ' + t.slice(0, 300));
+  if (!r.ok) throw new Error('SQL ' + r.status + ': ' + t.slice(0, 1500));
   return JSON.parse(t);
 }
 export const sqlExec = sql;
