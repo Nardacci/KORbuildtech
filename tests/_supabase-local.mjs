@@ -7,6 +7,7 @@
 
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 
 export const SEGREDO = 'segredo-local-de-teste-com-mais-de-32-caracteres';
 /* LATENCIA_MS: espera antes de cada pedido ao REST, para reproduzir no banco local o que só aparece com a rede de verdade. */
@@ -79,6 +80,15 @@ export async function criarUsuario(email, nome) {
   return id;
 }
 
+/* A massa de demonstração local guarda os arquivos (fotos) numa pasta, e o Storage de mentira dos testes e das capturas os lê de lá. */
+const PASTA_ARQUIVOS = new URL('../tools/massa-demo/.cache/storage/', import.meta.url).pathname;
+const doDisco = (chave) => { const f = PASTA_ARQUIVOS + chave; return existsSync(f) ? { dados: readFileSync(f), tipo: f.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' } : null; };
+export async function subirArquivo(id, bucket, caminho, dados) {
+  const f = PASTA_ARQUIVOS + bucket + '/' + caminho;
+  mkdirSync(f.slice(0, f.lastIndexOf('/')), { recursive: true });
+  writeFileSync(f, dados);
+}
+
 /* Para a massa de demonstração: o usuário que já existe (pelo e-mail) ou um novo. A senha não vale no banco local. */
 export async function garantirUsuario(email, nome) {
   const [u] = await sql(`select id from auth.users where email = '${email.replace(/'/g, "''")}'`);
@@ -125,11 +135,11 @@ export async function rotear(contexto, urlProjeto) {
     let m = caminho.match(/^\/storage\/v1\/object\/sign\/([^/]+)\/(.+)$/);
     if (m && req.method() === 'POST') {
       const chave = m[1] + '/' + decodeURIComponent(m[2]);
-      if (!arquivos.has(chave)) return route.fulfill({ status: 400, headers: cors, body: JSON.stringify({ statusCode: '404', error: 'not_found', message: 'Object not found' }) });
+      if (!arquivos.has(chave) && !doDisco(chave)) return route.fulfill({ status: 400, headers: cors, body: JSON.stringify({ statusCode: '404', error: 'not_found', message: 'Object not found' }) });
       return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ signedURL: '/object/sign/' + m[1] + '/' + m[2] + '?token=local' }) });
     }
     if (m && req.method() === 'GET') {
-      const a = arquivos.get(m[1] + '/' + decodeURIComponent(m[2]));
+      const a = arquivos.get(m[1] + '/' + decodeURIComponent(m[2])) || doDisco(m[1] + '/' + decodeURIComponent(m[2]));
       return a ? route.fulfill({ status: 200, headers: { 'content-type': a.tipo, 'access-control-allow-origin': '*' }, body: a.dados }) : route.fulfill({ status: 404 });
     }
     m = caminho.match(/^\/storage\/v1\/object\/list\/([^/]+)$/);

@@ -15,12 +15,21 @@ Em cada empresa: logins por papel (Administrador, Gestor nas construtoras; Admin
 funcionários com valor hora e certificações (a pessoa do login é também funcionário), uma equipe, contatos e obras com cerca de GPS.
 As obras das prestadoras estão **ligadas** à obra da construtora (a construtora recebe e aprova os diários e vê o ponto, sem dinheiro).
 
-Movimento: **5 semanas de ponto** (entrada, intervalo, saída, com GPS; faltas, batidas fora da cerca, semanas aprovadas, uma devolvida e
-várias ainda por aprovar) e **3 semanas de diários** em todos os estados (aprovado, aguardando aprovação, ajustes pedidos, rascunho de hoje,
-dia sem atividade por chuva). Situações de plano para a administração: ativa, teste terminando em 6 dias, teste vencido há 4 dias e
-uma empresa **suspensa** (Keystone Masonry; a obra "Foundations" da Granite State está concluída).
+Movimento (feito pelas funções do app, cada uma como o dono do papel):
+- **Ponto:** 5 semanas, com a equipe dividida entre as duas obras ativas, GPS em todas as batidas, faltas, algumas batidas fora da cerca,
+  semanas aprovadas, uma devolvida e várias ainda por aprovar.
+- **Diários:** 3 semanas em todos os estados (aprovado, aguardando aprovação, ajustes pedidos, rascunho de hoje, dia sem atividade por chuva),
+  com **fotos** (as cenas desenhadas do protótipo, 2 ou 3 por diário nos últimos 10 dias) e uma obra de propósito sem relatório nos dois últimos dias.
+- **Cronograma:** 4 etapas por obra das prestadoras, avanços até hoje, três obras atrasadas contra a linha de base (uma com nova linha de base e motivo)
+  e publicação para a construtora (as atrasadas publicadas duas vezes).
+- **Concorrências** (só entre empresas ligadas): *Exterior windows and doors* (aberta, duas propostas, pergunta e resposta), *Exterior trim and
+  millwork* (fechada; a vencedora, Summit Framing, ainda não criou a obra: a tela dela mostra "Awarded"), *Gutters and downspouts* (aberta, uma
+  proposta pendente e uma recusa) e *Final cleaning* (rascunho).
+- **Planos:** ativa, teste terminando em 6 dias, teste vencido há 4 dias e uma empresa **suspensa** (Keystone Masonry). A obra "Foundations" da
+  Granite State está concluída.
 
-Fica para a fase 2: fotos nos diários, cronograma das obras, projetos do Measure, concorrências entre as empresas.
+Fica para depois: projetos do Measure (planta, escala, medição, proposta emitida). Será montado **pelas telas** (Playwright), como nos testes
+`measure-oficial`, porque o Measure grava desenhos que só o app sabe montar.
 
 ## Logins
 
@@ -41,20 +50,34 @@ A **senha é a mesma para todos e fica só na variável `KOR_DEMO_SENHA`** da m�
 ## Como rodar
 
 ```powershell
-$env:KOR_DEMO_SENHA = '<senha longa, só nesta janela>'          # nunca no chat nem em arquivo
-$env:SUPABASE_ACCESS_TOKEN = '<token pessoal>'                   # já usado nos testes
-node tools/massa-demo.mjs --real                                 # tudo
-node tools/massa-demo.mjs --real --fase=estrutura                # ou por fase: estrutura, ponto, diarios, planos
+$env:KOR_DEMO_SENHA = '<senha inventada, 12+ caracteres, só nesta janela>'   # nunca no chat nem em arquivo
+$env:SUPABASE_ACCESS_TOKEN = '<token pessoal>'                                # o mesmo dos testes
+node tools/massa-demo.mjs --real                                              # estrutura, ponto, diarios, cronograma, concorrencias, planos
+node tools/massa-demo.mjs --real --fase=estrutura,ponto,diarios,cronograma,concorrencias,retroagir,planos   # com os horários do passado
 ```
 
-Local (testa o script sem tocar no projeto): `tools/supabase-local.sh` e `node tools/massa-demo.mjs` (leva uns 20 s).
-Capturas do portal em cima desses dados: `docs/massa-demo.md` será atualizado quando o roteiro de telas existir.
+Fases: `estrutura`, `ponto`, `diarios`, `cronograma`, `concorrencias`, `retroagir`, `planos`. A fase `planos` sempre roda por último (e a empresa suspensa é
+liberada antes de qualquer gravação e suspensa de novo no fim). Local (testa o script sem tocar no projeto): `tools/supabase-local.sh` e
+`node tools/massa-demo.mjs` (cerca de 30 s; as fotos ficam em `tools/massa-demo/.cache/`, fora do repositório, e o Storage de mentira dos testes e das capturas
+as lê de lá).
+
+### A fase `retroagir` (só quando pedida)
+
+As funções do banco gravam "agora" no envio e na aprovação. Sem esta fase, todo diário de 3 semanas atrás aparece "enviado hoje, fora do prazo". Ela acerta, **só
+nas empresas de demonstração** (`plano.demo`), o envio (fim da tarde do próprio dia, uns poucos atrasados de propósito), a aprovação (manhã seguinte) e o histórico, e
+**refaz o selo** (hash e código) de cada diário aprovado com a mesma conta da função `aprovar_rdo`: a verificação do lacre continua passando (conferida: 150 de 150).
+Para isso desliga, dentro de uma única transação, as travas `rdos_guarda` e `rdo_historico_guarda` e as religa no fim. O SQL está em `tools/massa-demo.mjs`
+(`SQL_RETROAGIR`). Como contorna a trava de diário lacrado, **só rode no projeto depois de ler e aprovar o SQL**.
 
 ## Como tirar a massa (só com aprovação, mostrando o SQL antes)
 
 ```sql
 -- 1) ver o que seria apagado (só leitura)
 select id, nome from public.empresas where plano ->> 'demo' = 'true' order by nome;
--- 2) depois do OK: apagar as empresas (o resto cai em cascata) e, em seguida, os usuários example.com "demo.%" pela API de administração do Auth
--- delete from public.empresas where plano ->> 'demo' = 'true';
+-- 2) depois do OK: apagar as empresas de demonstração (o resto cai em cascata, inclusive diários lacrados e a empresa suspensa; testado no banco local)
+delete from public.empresas where plano ->> 'demo' = 'true';
 ```
+
+Os logins (`demo.…@example.com`) ficam e são reaproveitados numa nova carga. As fotos no Storage (bucket `diarios`, pastas das empresas apagadas) não caem sozinhas:
+listar com `select name from storage.objects where bucket_id = 'diarios' and name like '<empresa>/%'` e apagar **pela API do Storage**, como a limpeza dos testes faz.
+Para tirar também os logins: Admin API do Auth, `DELETE /auth/v1/admin/users/{id}` para cada `demo.%@example.com`.

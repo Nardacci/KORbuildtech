@@ -12,10 +12,11 @@
  *   --fase=estrutura,ponto,diarios,planos   (padrão: todas) */
 
 import { EMPRESAS, nomeNovo, emailDe, SENHA_VARIAVEL } from './massa-demo/dados.mjs';
+import { iniciarFotos } from './massa-demo/fotos.mjs';
 
 const REAL = process.argv.includes('--real');
-const FASES = ((process.argv.find((a) => a.startsWith('--fase=')) || '').slice(7) || 'estrutura,ponto,diarios,cronograma,planos').split(',');
-const { sql, sqlExec, rest, garantirUsuario } = await import(REAL ? '../tests/_supabase-real.mjs' : '../tests/_supabase-local.mjs');
+const FASES = ((process.argv.find((a) => a.startsWith('--fase=')) || '').slice(7) || 'estrutura,ponto,diarios,cronograma,concorrencias,planos').split(',');
+const { sql, sqlExec, rest, garantirUsuario, subirArquivo } = await import(REAL ? '../tests/_supabase-real.mjs' : '../tests/_supabase-local.mjs');
 const SENHA = process.env[SENHA_VARIAVEL] || '';
 if (REAL && SENHA.length < 12) { console.error('Defina ' + SENHA_VARIAVEL + ' (pelo menos 12 caracteres) na variável de ambiente; ela nunca vai para o repositório.'); process.exit(2); }
 console.log('Massa de demonstração contra: ' + (REAL ? 'Supabase do projeto' : 'Supabase local'));
@@ -60,6 +61,7 @@ async function estrutura() {
     if (ja.length) e.id = ja[0].id;
     else e.id = await rpc(admin.id, 'criar_empresa', { p: { nome: c.nome, atuacao: c.atuacao, nome_pessoa: admin.nome } });
     await rest(admin.id, '/empresas?id=eq.' + e.id, { metodo: 'PATCH', corpo: { razao_social: c.razao, sigla: c.sigla, endereco: c.endereco, cidade: c.cidade, estado: c.estado, zip: c.zip, telefone: c.tel, email: 'office@' + c.chave + '.example.com', especialidades: c.atuacao === 'construtora' ? 'General contracting' : (c.etapas || []).join(', ') } });
+    await sqlExec(`update public.empresas set plano = plano || '{"demo": true}'::jsonb where id = '${e.id}'`);   // a marca de demonstração vale desde o começo
     // os outros papéis entram direto como membros (o convite por e-mail mandaria mensagem de verdade)
     for (const [papel, p] of Object.entries(e.pessoas)) {
       if (papel === 'admin') continue;
@@ -218,9 +220,12 @@ async function presencaDoBanco(e) {
   return presenca;
 }
 const TEMPOS = ['sol', 'sol', 'sol', 'nublado', 'nublado', 'chuva'];
+const CENA = { s1: 'galpao', s2: 'estrutura', s3: 'concreto', s4: 'galpao', s5: 'estrutura', s6: 'estrutura', i1: 'galpao', i2: 'alvenaria', i3: 'estrutura' };
+const LEGENDAS = ['Overview of the work area', 'Detail of the finished work', 'Material delivery'];
 let obraGlobal = 0;
 async function diarios() {
-  console.log('\nDiários: 3 semanas, em vários estados');
+  console.log('\nDiários: 3 semanas, em vários estados (com fotos nos últimos 10 dias)');
+  const geradorDeFotos = await iniciarFotos();
   for (const e of Object.values(E)) {
     if (e.atuacao === 'construtora') continue;
     const foreman = e.pessoas.encarregado;
@@ -261,11 +266,25 @@ async function diarios() {
               ocorrencias: r() < 0.18 ? [{ id: crypto.randomUUID(), tipo: ['material', 'equipe', 'visita', 'projeto'][Math.floor(r() * 4)], descricao: ['Delivery arrived two hours late.', 'One crew member left early with a doctor appointment.', 'Owner walked the site with the architect.', 'RFI sent for a detail at the stair opening.'][Math.floor(r() * 4)] }] : [],
               observacoes: '',
             };
-            const s = await rpc(foreman.id, 'salvar_rdo', { p: { id, obra_id: o.id_, data: dia, versao: null, conteudo } });
+            // fotos dos últimos 10 dias: 2 por diário, 3 nos mais recentes
+            const fotos = [];
+            if (dia >= somar(e.hoje, -10)) {
+              const qtd = dia >= somar(e.hoje, -3) ? 3 : 2;
+              for (let k = 0; k < qtd; k++) {
+                const fid = crypto.randomUUID();
+                const quando = nyParaUTC(dia, hhmm(9 * 60 + 40 + k * 130));
+                const g = await geradorDeFotos.gerar({ cena: CENA[e.chave] || 'estrutura', obraNome: o.nome, lat: o.lat, lon: o.lon, quando: quando.getTime(), semente: semente(id + k) % 9000 + 1 });
+                const base = e.id + '/' + o.id_ + '/' + id + '/' + fid;
+                await subirArquivo(foreman.id, 'diarios', base + '.jpg', g.foto);
+                await subirArquivo(foreman.id, 'diarios', base + '-mini.jpg', g.mini);
+                fotos.push({ id: fid, path: base + '.jpg', path_mini: base + '-mini.jpg', legenda: LEGENDAS[k], tirada_em: quando.toISOString(), lat: o.lat, lon: o.lon, fonte_gps: 'gps', precisao: 6, largura: g.largura, altura: g.altura, tamanho: g.foto.length, hash_original: g.hash });
+              }
+            }
+            const s = await rpc(foreman.id, 'salvar_rdo', { p: { id, obra_id: o.id_, data: dia, versao: null, conteudo, fotos } });
             if (estado !== 'rascunho') await rpc(foreman.id, 'enviar_rdo', { p_id: id, p_versao: s.versao });
           }
           if (estado === 'aprovado' || (semAtividade && estado !== 'enviado' && estado !== 'ajustes')) { await rpc(aprovador.id, 'aprovar_rdo', { p_id: id }); estado = 'aprovado'; }
-          else if (estado === 'ajustes') await rpc(aprovador.id, 'pedir_ajustes', { p_id: id, p_motivo: 'Please add a photo of the finished area before approval.' });
+          else if (estado === 'ajustes') await rpc(aprovador.id, 'pedir_ajustes', { p_id: id, p_motivo: 'Please detail the quantities installed and the area completed.' });
           contagem[estado] = (contagem[estado] || 0) + 1;
         } catch (err) {
           contagem.erro = (contagem.erro || 0) + 1;
@@ -275,6 +294,7 @@ async function diarios() {
       console.log('  ' + o.nome + ': ' + JSON.stringify(contagem));
     }
   }
+  await geradorDeFotos.fechar();
 }
 
 // ---------------------------------------------------------------- o cronograma
@@ -328,6 +348,107 @@ async function cronograma() {
 }
 const diasEntre = (a, b) => Math.round((new Date(b + 'T12:00:00Z') - new Date(a + 'T12:00:00Z')) / 86400000);
 
+// ---------------------------------------------------------------- as concorrências
+/* Concorrências entre as construtoras e as prestadoras ligadas a elas, em quatro estados: aberta com propostas e perguntas, fechada com vencedora
+ * (a vencedora ainda não criou a obra: a tela dela mostra "Você venceu"), aberta aguardando respostas e rascunho. Só entre empresas com conta
+ * (nada vai por e-mail) e só entre as ligadas; as independentes ficam de fora, como o resto da massa. */
+const CONCORRENCIAS = [
+  { gc: 'gc1', obra: 'Riverside Medical Office', servico: 'Exterior windows and doors', etapas: ['08 51 13', '08 11 13'], incluso: ['Supply and install aluminum windows', 'Supply and install hollow metal doors', 'Flashing and sealants'], excluso: ['Interior finish trim', 'Glazing of the lobby storefront'],
+    obs: 'Install after the weather barrier inspection. Dumpster on site.', dias: 6, convites: ['s1', 's2'], mostrar: 'nao', estado: 'aberta',
+    propostas: { s1: { porEtapa: { '08 51 13': 31200, '08 11 13': 17300 }, dias: 18, excl: ['Painting of metal doors'] }, s2: { porEtapa: { '08 51 13': 34100, '08 11 13': 18800 }, dias: 21, excl: [] } },
+    pergunta: { de: 's1', texto: 'Are the door frames furnished by the owner or by the contractor?', resposta: 'Frames are furnished by the contractor; hardware is by the owner.' } },
+  { gc: 'gc2', obra: 'Seacoast Library Addition', servico: 'Exterior trim and millwork', etapas: ['06 20 00'], incluso: ['Cornice, rakes and fascia', 'Window and door casings', 'Primed cellular PVC trim'], excluso: ['Painting'],
+    obs: 'Coordinate with the roofer on drip edge before trim goes up.', dias: 9, convites: ['s2', 's1'], mostrar: 'total', estado: 'fechada', vencedora: 's2',
+    propostas: { s2: { porEtapa: { '06 20 00': 26400 }, dias: 14, excl: [] }, s1: { porEtapa: { '06 20 00': 28950 }, dias: 16, excl: ['Scaffold rental'] } } },
+  { gc: 'gc3', obra: 'Oak Hollow Residences', servico: 'Gutters and downspouts', etapas: ['07 71 23'], incluso: ['Seamless aluminum gutters', 'Downspouts and boots', 'Splash blocks'], excluso: ['Underground drainage'],
+    obs: '', dias: 1, convites: ['s4', 's6'], mostrar: 'nao', estado: 'aberta', recusa: { de: 's6', motivo: 'Outside our scope of work.' }, propostas: {} },
+  { gc: 'gc1', obra: 'Elm Street Townhomes', servico: 'Final cleaning', etapas: ['01 74 23'], incluso: ['Construction final clean, all units'], excluso: [], obs: '', dias: 20, convites: ['s5', 's6'], mostrar: 'nao', estado: 'rascunho', propostas: {} },
+];
+async function concorrencias() {
+  console.log('\nConcorrências: aberta com propostas, fechada com vencedora, aguardando respostas e rascunho');
+  for (const c of CONCORRENCIAS) {
+    const gc = E[c.gc], admin = gc.pessoas.admin;
+    const ja = await rest(admin.id, '/concorrencias?select=id&servico=eq.' + encodeURIComponent(c.servico));
+    if (ja.length) { console.log('  ' + c.servico + ': já existe, pulei'); continue; }
+    const obraId = gc.obrasPorNome[c.obra];
+    const prazo = new Date(Date.now() + c.dias * 86400000).toISOString();
+    const [conc] = await rest(admin.id, '/concorrencias', { metodo: 'POST', corpo: { obra_id: obraId, servico: c.servico, etapas: c.etapas, incluso: c.incluso, excluso: c.excluso, observacoes: c.obs, prazo, quarteirizacao: 'com-aprovacao', orcamento: { mostrar: c.mostrar, ...(c.mostrar === 'total' ? { valor: 30000 } : {}) } } });
+    const convites = {};
+    const contatos = await rest(admin.id, '/contatos?select=id,nome');
+    for (const k of c.convites) {
+      const sub = E[k];
+      let ct = contatos.find((x) => x.nome === sub.nome);
+      if (!ct) [ct] = await rest(admin.id, '/contatos', { metodo: 'POST', corpo: { nome: sub.nome, papeis: ['prestadora'], email: 'office@' + sub.chave + '.example.com', telefone: sub.tel, cidade: sub.cidade, estado: sub.estado } });
+      await sqlExec(`update public.contatos set conta_empresa_id = '${sub.id}' where id = '${ct.id}' and conta_empresa_id is null`);
+      const [cv] = await rest(admin.id, '/concorrencia_convites', { metodo: 'POST', corpo: { concorrencia_id: conc.id, contato_id: ct.id } });
+      convites[k] = cv.id;
+    }
+    if (c.estado === 'rascunho') { console.log('  ' + c.servico + ' (' + gc.nome + '): rascunho com ' + c.convites.length + ' convidadas'); continue; }
+    await rpc(admin.id, 'enviar_concorrencia', { p_id: conc.id });
+    for (const k of c.convites) {
+      const sub = E[k], subAdmin = sub.pessoas.admin;
+      const convite = (await sql(`select id from public.concorrencia_convites where concorrencia_id = '${conc.id}' and convidada_id = '${sub.id}'`))[0].id;
+      convites[k] = convite;
+      if (c.recusa && c.recusa.de === k) { await rpc(subAdmin.id, 'responder_convite', { p_convite: convite, p_vai: false, p_motivo: c.recusa.motivo }); continue; }
+      await rpc(subAdmin.id, 'marcar_visto', { p_convite: convite });
+      const prop = c.propostas[k];
+      if (!prop) continue;
+      await rpc(subAdmin.id, 'responder_convite', { p_convite: convite, p_vai: true, p_motivo: '' });
+      await rpc(subAdmin.id, 'enviar_proposta_concorrencia', { p_convite: convite, p: { porEtapa: prop.porEtapa, prazoExecucaoDias: prop.dias, exclusoes: prop.excl, numero: sub.sigla + '-' + (1000 + (semente(sub.chave + c.servico) % 900)) } });
+    }
+    if (c.pergunta) {
+      const subAdmin = E[c.pergunta.de].pessoas.admin;
+      await rpc(subAdmin.id, 'escrever_como_convidada', { p_convite: convites[c.pergunta.de], p_texto: c.pergunta.texto });
+      const msg = (await sql(`select id from public.concorrencia_mensagens where concorrencia_id = '${conc.id}' order by em desc limit 1`))[0].id;
+      await rpc(admin.id, 'escrever_como_contratante', { p_id: conc.id, p_convite: convites[c.pergunta.de], p_resposta_de: msg, p_para_todos: true, p_texto: c.pergunta.resposta });
+    }
+    if (c.estado === 'fechada') await rpc(admin.id, 'fechar_concorrencia', { p_id: conc.id, p_convite: convites[c.vencedora], p_observacao: 'Best price and the shortest schedule.' });
+    console.log('  ' + c.servico + ' (' + gc.nome + '): ' + c.estado + (c.vencedora ? ', vencedora ' + E[c.vencedora].nome : ''));
+  }
+}
+
+// ---------------------------------------------------------------- horários do passado (só a massa de demonstração)
+/* As funções do banco gravam "agora" em tudo (envio, aprovação). Numa massa que quer parecer 3 semanas de uso, todo diário antigo
+ * ficaria "enviado hoje, fora do prazo". Este passo, FEITO SÓ NAS EMPRESAS DE DEMONSTRAÇÃO (plano.demo), acerta os horários para o dia certo
+ * (envio no fim da tarde do próprio dia, aprovação na manhã seguinte; uns poucos atrasados de propósito) e REFAZ o selo (hash e código) de
+ * cada diário aprovado com a mesma conta da função aprovar_rdo, então a verificação do lacre continua passando.
+ * Para isso desliga, dentro de UMA transação, as travas que impedem mexer em diário lacrado, e religa no fim. Por isso só roda quando pedido
+ * (--fase=retroagir) e o SQL está aqui, à vista. */
+const SQL_RETROAGIR = `
+begin;
+alter table public.rdos disable trigger rdos_guarda;
+alter table public.rdo_historico disable trigger rdo_historico_guarda;
+create temp table _demo_rdos on commit drop as
+  select r.id, r.data, ((hashtext(r.id::text) & 2147483647) % 100) as sorte
+    from public.rdos r join public.empresas e on e.id = r.empresa_id where e.plano ->> 'demo' = 'true' and r.status <> 'rascunho';
+update public.rdos r set
+  criado_em = ((a.data + time '07:20') at time zone 'America/New_York'), criado_no_aparelho_em = ((a.data + time '07:20') at time zone 'America/New_York'),
+  primeiro_envio_em = x.env, enviado_em = x.env
+  from _demo_rdos a cross join lateral (select (((a.data + time '16:35') + make_interval(mins => a.sorte % 75)) at time zone 'America/New_York') + case when a.sorte >= 94 then interval '15 hours' else interval '0' end as env) x
+ where r.id = a.id;
+update public.rdos r set aprovado_em = greatest(r.enviado_em + interval '14 hours',
+    ((r.data + case extract(dow from r.data)::int when 5 then 3 when 6 then 2 else 1 end) + time '08:10' + make_interval(mins => (hashtext(r.id::text) & 2147483647) % 90)) at time zone 'America/New_York')
+ where r.id in (select id from _demo_rdos) and r.status = 'aprovado';
+update public.rdos r set hash_documento = h.v, codigo = upper(substr(h.v, 1, 4) || '-' || substr(h.v, 5, 4) || '-' || substr(h.v, 9, 4))
+  from (select rr.id, encode(extensions.digest(public.texto_do_lacre(rr), 'sha256'), 'hex') as v from public.rdos rr where rr.id in (select id from _demo_rdos) and rr.status = 'aprovado') h
+ where r.id = h.id;
+update public.rdo_historico h set em = r.enviado_em from public.rdos r where h.rdo_id = r.id and r.id in (select id from _demo_rdos) and h.acao = 'Enviou para aprovação';
+update public.rdo_historico h set em = r.aprovado_em, acao = 'Aprovou · código ' || r.codigo || coalesce(substring(h.acao from ' \\(.*\\)$'), '')
+  from public.rdos r where h.rdo_id = r.id and r.id in (select id from _demo_rdos) and h.acao like 'Aprovou · código %' and r.status = 'aprovado';
+update public.rdo_historico h set em = r.enviado_em + interval '17 hours' from public.rdos r where h.rdo_id = r.id and r.id in (select id from _demo_rdos) and h.acao like 'Pediu ajustes%';
+alter table public.rdos enable trigger rdos_guarda;
+alter table public.rdo_historico enable trigger rdo_historico_guarda;
+commit;
+`;
+async function retroagir() {
+  console.log('\nHorários do passado nos diários de demonstração (selo refeito)');
+  await sqlExec(SQL_RETROAGIR);
+  const r = await sql(`select count(*)::int as aprovados, count(*) filter (where public.lacre_confere(r.id))::int as conferem from public.rdos r join public.empresas e on e.id = r.empresa_id where e.plano ->> 'demo' = 'true' and r.status = 'aprovado'`);
+  console.log('  diários aprovados: ' + r[0].aprovados + ' · lacre confere: ' + r[0].conferem);
+  const t = await sql(`select count(*)::int n from pg_trigger where tgname in ('rdos_guarda', 'rdo_historico_guarda') and tgenabled = 'O'`);
+  console.log('  travas ligadas de novo: ' + t[0].n + ' de 2');
+}
+
 // ---------------------------------------------------------------- planos e acessos
 async function planos() {
   console.log('\nPlanos, marca de demonstração e últimos acessos');
@@ -345,12 +466,14 @@ async function planos() {
 const gravando = FASES.some((f) => f !== 'planos');
 if (gravando) await sqlExec(`update public.empresas set plano = jsonb_set(plano, '{status}', '"ativa"') where plano ->> 'demo' = 'true' and plano ->> 'status' = 'suspensa'`);
 if (gravando && !FASES.includes('planos')) FASES.push('planos');
-for (const f of ['estrutura', 'ponto', 'diarios', 'cronograma', 'planos']) {
+for (const f of ['estrutura', 'ponto', 'diarios', 'cronograma', 'concorrencias', 'retroagir', 'planos']) {
   if (!FASES.includes(f)) continue;
   if (f === 'estrutura') await estrutura(); else if (!E.gc1) await estrutura();
   if (f === 'ponto') await ponto();
   if (f === 'diarios') await diarios();
   if (f === 'cronograma') await cronograma();
+  if (f === 'concorrencias') await concorrencias();
+  if (f === 'retroagir') await retroagir();
   if (f === 'planos') await planos();
 }
 console.log('\nPronto. Logins: demo.<empresa>.<papel>@example.com (admin, gestor, encarregado, trabalhador); a senha é a de ' + SENHA_VARIAVEL + '.');

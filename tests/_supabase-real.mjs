@@ -58,6 +58,13 @@ export async function garantirUsuario(email, nomePessoa, senha) {
   sessoes.set(s.user.id, { ...s, expires_at: s.expires_at || Math.floor(Date.now() / 1000) + (s.expires_in || 3600) });
   return s.user.id;
 }
+/* Sobe um arquivo para o Storage como a pessoa (a massa de demonstração: fotos dos diários). */
+export async function subirArquivo(id, bucket, caminho, dados, tipo = 'image/jpeg') {
+  const r = await fetch(URL_SB + '/storage/v1/object/' + bucket + '/' + caminho.split('/').map(encodeURIComponent).join('/'), {
+    method: 'POST', headers: { apikey: ANON, Authorization: 'Bearer ' + sessoes.get(id).access_token, 'Content-Type': tipo, 'x-upsert': 'true' }, body: dados,
+  });
+  if (!r.ok) throw new Error('subir ' + caminho + ': ' + r.status + ' ' + (await r.text()).slice(0, 200));
+}
 export async function sessao(id) { return JSON.stringify(sessoes.get(id)); }
 
 export async function rest(id, caminho, { metodo = 'GET', corpo } = {}) {
