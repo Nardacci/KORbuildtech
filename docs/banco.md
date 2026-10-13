@@ -128,7 +128,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 2 | `supabase/migrations/20261013_0004_settings.sql` (só cria): `funcionarios` (com certificações), `funcionario_valores`, `encargos_versoes`, `regras_jornada_versoes`, `contatos`, `obras` (sem apagar; a ligação entre obras só pelas funções do banco), `alocacoes`, `modelos_cronograma`, `criar_funcionario()`, `atualizar_meu_perfil()`. Teste: `supabase/testes/0002_settings.sql` | Cadastrar tudo no banco; meu perfil (nome, idioma, e-mail, senha) |
 | 3 | `supabase/migrations/20261014_0005_daily.sql` (só cria): `rdos`, `rdo_fotos`, `rdo_historico`, bucket `diarios` com as políticas das fotos, `salvar_rdo()`, `enviar_rdo()`, `dia_sem_atividade()`, `aprovar_rdo()` (lacre no banco), `pedir_ajustes()`, `diarios_recebidos()`, `diario_por_codigo()`; função de borda `supabase/functions/diario-publico` (link do cliente, fotos por links temporários). Teste: `supabase/testes/0003_daily.sql` (desenho no §10) | Usar o diário de verdade, com e sem internet |
 | 4 | `supabase/migrations/20261015_0006_crew.sql` (só cria; acrescenta `funcionarios.equipe_id`). Teste: `supabase/testes/0004_crew.sql`. Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
-| 5 | Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
+| 5 | `supabase/migrations/20261016_0007_cronograma.sql` (só cria; reescreve `aprovar_rdo`). Teste: `supabase/testes/0005_cronograma.sql`. Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
 | 6 | Measure: projetos, folhas (Storage), condições, medições, typicals, catálogo, preços, margens, propostas | |
 | 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
 | 8 | Notificações por e-mail e a área de administração da plataforma | |
@@ -302,7 +302,7 @@ mostra os trechos sem registro como "sem registro (app fechado)", para ninguém 
   trabalha no mesmo fuso da empresa é igual.
 - **Quarteirização:** a presença de empresas abaixo da prestadora (nível 2 em diante) chega com a fatia 7 (ligação entre obras).
 
-## 12. Fatia 5 — o cronograma no banco (desenho para aprovação)
+## 12. Fatia 5 — o cronograma no banco (desenho aprovado em outubro de 2026)
 
 O cronograma é trabalho de escritório, com internet: montar as etapas, salvar a linha de base, ajustar o % à mão e
 publicar. O que chega ao campo (as próximas 3 semanas e a lista de etapas para o RDO apontar) vem pelo espelho e
@@ -313,7 +313,7 @@ situação, avanço e desvio continua em `js/cronograma.js`, sobre o espelho.
 
 | Tabela | Colunas | Regras |
 | --- | --- | --- |
-| `cronograma_etapas` | `id`, `empresa_id`, `obra_id`, `nome`, `inicio`, `fim`, `responsavel_id` (membro), `pct` (0–100), `ordem`, `criado_em`, `atualizado_em` | CR-01. Nome, datas, responsável e ordem mudam pelas funções; `pct` **só** pelos avanços (gatilho recusa `update` direto). Uma etapa que já recebeu avanço de RDO não pode ser excluída (BD-04). |
+| `cronograma_etapas` | `id`, `empresa_id`, `obra_id`, `nome`, `inicio`, `fim`, `responsavel_id` (membro), `pct` (0–100), `ordem`, `criado_em`, `atualizado_em` | CR-01. Nome, datas, responsável e ordem mudam pelas funções; `pct` **só** pelos avanços (gatilho recusa `update` direto). Uma etapa que já recebeu avanço de RDO aprovado **não pode ser excluída** e **só quem aprovou esse RDO** pode alterá-la (nome, datas, responsável, % à mão) — decisão de outubro de 2026. |
 | `etapa_avancos` | `id`, `empresa_id`, `etapa_id`, `data`, `antes`, `pct`, `fonte` (rdo · manual), `rdo_id`, `por`, `por_nome`, `em` | Só `insert` (SET-052, CR-04). O gatilho leva o `pct` para a etapa. |
 | `linhas_base` | `id`, `empresa_id`, `obra_id`, `motivo`, `etapas jsonb` ({etapa_id: {inicio, fim}}), `por`, `por_nome`, `em` | Só `insert` (CR-03). A primeira é gravada pela função ao entrar a primeira etapa; as outras, por decisão, com motivo. |
 | `publicacoes_cronograma` | `id`, `de_empresa_id`, `obra_id` (da prestadora), `para_empresa_id`, `para_obra_id`, `versao` (sequência por obra), `retrato jsonb` (etapas sem histórico, última linha de base, responsáveis por nome, dados da empresa), `por_nome`, `em` | Só `insert` (CR-09). A contratante lê pela função, nunca pela tabela (BD-03). |
@@ -322,7 +322,7 @@ situação, avanço e desvio continua em `js/cronograma.js`, sobre o espelho.
 
 | Ação | Função | Quem pode |
 | --- | --- | --- |
-| Criar, editar, excluir e reordenar etapas | `salvar_etapa(p)`, `excluir_etapa(id)`, `ordenar_etapas(obra, ids[])` | `daily.cronograma` (Administrador e Gestor, CR-02), na própria empresa |
+| Criar, editar, excluir e reordenar etapas | `salvar_etapa(p)`, `excluir_etapa(id)`, `ordenar_etapas(obra, ids[])` | Quem tem `daily.cronograma` ("Montar o cronograma da obra", CR-02), em qualquer perfil que a receba, na própria empresa. Etapa com andamento de RDO aprovado: só quem aprovou (ver 12.1); se foi a construtora, a etapa fica travada para a prestadora e o % continua entrando pelos próximos RDOs |
 | Começar com um modelo | `aplicar_modelo(obra, modelo_id)`: o banco distribui as etapas do modelo (`modelos_cronograma`, fatia 2) no período da obra, na proporção do modelo, e grava a primeira linha de base | Os mesmos; só numa obra sem etapas |
 | Ajustar o % à mão | `registrar_avanco(etapa, pct, data)` (fonte `manual`) | Os mesmos |
 | Nova linha de base | `nova_linha_base(obra, motivo)` | Os mesmos; motivo obrigatório |
@@ -330,6 +330,8 @@ situação, avanço e desvio continua em `js/cronograma.js`, sobre o espelho.
 | Ler o cronograma da própria empresa | RLS | Quem tem qualquer permissão do Daily (o encarregado vê as próximas 3 semanas e aponta a etapa no RDO) |
 | Cronogramas recebidos | `cronogramas_recebidos(obra)` | A contratante, com `daily.acompanhar`, nas obras ligadas à dela: a última versão de cada prestadora (e as anteriores, pela versão) |
 | **Andamento pelo RDO aprovado (CR-04)** | dentro de `aprovar_rdo(id)` (fatia 3) | Cada atividade do RDO que aponta `cronoEtapaId` + `cronoPct` vira um avanço com fonte `rdo`, na empresa que fez o diário — mesmo quando quem aprova é a construtora (a função roda com os direitos do banco, sem abrir a tabela de uma empresa para a outra). É o item que ficou da fatia 3 (§10.5). |
+
+**Publicações:** todas as versões ficam guardadas; nenhuma é apagada ou "despublicada" — para corrigir, publica-se outra (decisão de outubro de 2026).
 
 **Auditoria:** etapas (criar, alterar, excluir), avanço manual, linha de base e publicação vão para `auditoria` pelo gatilho.
 

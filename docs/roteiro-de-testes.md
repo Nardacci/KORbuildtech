@@ -50,6 +50,7 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `conta` | navegador + Supabase | O caminho real: entrar, criar empresa, perfis, Meu perfil, cadastros, convite, permissões, auditoria | ~2 min |
 | `sql 0003_daily` | Supabase | Regras do Daily: quem preenche, envia e aprova; lacre; fotos; link do cliente; sem internet | segundos |
 | `sql 0004_crew` | Supabase | Regras do Crew: batida que não se edita, cerca, semana aprovada fechada, dia sem saída, localização só com o ponto aberto, presença para a construtora sem dinheiro |
+| `sql 0005_cronograma` | Supabase | Regras do cronograma: quem monta, % só por avanço, etapa com andamento aprovado não sai e só quem aprovou altera, linha de base, publicação por versão, construtora lê só pela função, o RDO aprovado leva o andamento | segundos |
 | `crew-oficial` | navegador + Supabase | O Crew de ponta a ponta: o encarregado bate o ponto da equipe (dentro e fora da cerca), sem internet a batida sobe depois com a hora certa, o trabalhador bate o próprio ponto e a localização é gravada, o escritório confere, ajusta, aprova e devolve a semana, orçamento, mapa do dia e a visão da construtora | ~3 min |
 | `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
 
