@@ -22,6 +22,12 @@ export const DIAS_LOOKAHEAD = 21;
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
+/* Na conta de verdade, montar, ajustar o %, a linha de base e publicar vão ao banco (js/cronograma-oficial.js) e
+ * voltam { ok } ou { erro }; o espelho é relido em seguida. No protótipo não há servidor e tudo fica no aparelho. */
+let servidorCron = null;
+export function ligarServidorCronograma(s) { servidorCron = s; }
+export const servidorCronograma = () => servidorCron;
+
 /* ---------- Leitura ---------- */
 
 export function cronogramaDe(obraId, dados) {
@@ -106,6 +112,7 @@ function validar(dados) {
 export function salvarEtapa(obraId, id, dados, por) {
   const r = validar(dados);
   if (r.erro) return r;
+  if (servidorCron) return servidorCron.salvarEtapa(obraId, id, r.ok);
   const c = garantir(obraId);
   if (id) {
     const e = c.etapas.find((x) => x.id === id);
@@ -124,6 +131,7 @@ export function salvarEtapa(obraId, id, dados, por) {
 }
 
 export function excluirEtapa(obraId, id, por) {
+  if (servidorCron) return servidorCron.excluirEtapa(id);
   const c = garantir(obraId);
   const e = c.etapas.find((x) => x.id === id);
   if (!e) return { erro: tr('Etapa não encontrada.') };
@@ -137,9 +145,13 @@ export function moverEtapa(obraId, id, passo) {
   const c = garantir(obraId);
   const i = c.etapas.findIndex((x) => x.id === id);
   const j = i + passo;
-  if (i < 0 || j < 0 || j >= c.etapas.length) return;
+  if (i < 0 || j < 0 || j >= c.etapas.length) return { ok: true };
+  const ids = c.etapas.map((e) => e.id);
+  [ids[i], ids[j]] = [ids[j], ids[i]];
+  if (servidorCron) return servidorCron.ordenar(obraId, ids);
   [c.etapas[i], c.etapas[j]] = [c.etapas[j], c.etapas[i]];
   salvar();
+  return { ok: true };
 }
 
 /* % concluído, com histórico. fonte: 'rdo' (aprovado) ou 'manual' (escritório). */
@@ -149,6 +161,7 @@ export function registrarAvanco(obraId, etapaId, pct, { fonte, rdoId, rdoNumero,
   const v = Math.round(Number(pct));
   if (!e) return { erro: tr('Etapa não encontrada.') };
   if (!Number.isFinite(v) || v < 0 || v > 100) return { erro: tr('O % concluído vai de 0 a 100.') };
+  if (servidorCron && fonte === 'manual') return servidorCron.avanco(etapaId, v);
   e.historico = e.historico || [];
   e.historico.push({ em: Date.now(), data: data || hoje(), antes: e.pct || 0, pct: v, fonte, rdoId: rdoId || null, rdoNumero: rdoNumero || null, por });
   e.pct = v;
@@ -173,6 +186,7 @@ export function novaBase(obraId, motivo, por, automatica) {
   const m = String(motivo || '').trim();
   if (!m) return { erro: tr('O motivo é obrigatório: fica no histórico.') };
   if (!c.etapas.length) return { erro: tr('O cronograma ainda não tem etapas.') };
+  if (servidorCron && !automatica) return servidorCron.linhaBase(obraId, m);
   c.bases.push({ id: novoId('lb'), em: Date.now(), por, motivo: m, etapas: Object.fromEntries(c.etapas.map((e) => [e.id, { inicio: e.inicio, fim: e.fim }])) });
   if (!automatica) { auditar(tr('Cronograma'), tr('Nova linha de base'), '', '', m, por); salvar(); }
   return { ok: true };
@@ -201,6 +215,7 @@ export function publicar(obra, por) {
   const c = cronogramaDe(obra.id);
   if (!c || !c.etapas.length) return { erro: tr('O cronograma ainda não tem etapas.') };
   if (!podePublicar(obra)) return { erro: tr('Esta obra não está ligada a uma obra do contratante.') };
+  if (servidorCron) return servidorCron.publicar(obra.id);
   const versao = (c.publicacoes || []).length + 1;
   const pub = retrato(estado(), obra, por, Date.now(), versao);
   compartilhados().push(pub);

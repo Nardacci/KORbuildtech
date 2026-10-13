@@ -3000,4 +3000,18 @@ export const EN = {
   'Este registro não pode ser alterado nem apagado: corrigir é registrar de novo.': 'This record cannot be changed or deleted: to correct it, record it again.',
   'A semana de {a} já foi aprovada e enviada para a folha. Escolha uma data a partir de {b}.': 'The week of {a} was already approved and sent to payroll. Choose a date from {b}.',
   'Antes de aprovar, ajuste as batidas sem saída de: {nomes}.': 'Before approving, fix the missing clock-outs of: {nomes}.',
+
+  // ---------- Cronograma no banco (fatia 5) ----------
+  'Esta etapa já recebeu andamento de um diário aprovado: ela não pode ser excluída.': 'This stage already received progress from an approved report: it cannot be deleted.',
+  'Esta etapa já recebeu andamento de um diário aprovado: só quem aprovou pode alterá-la.': 'This stage already received progress from an approved report: only the person who approved it can change it.',
+  'A etapa só sai pelas funções do cronograma.': 'Stages are removed only through the schedule functions.',
+  'A etapa só muda pelas funções do cronograma.': 'Stages change only through the schedule functions.',
+  'O % concluído muda só por um avanço registrado.': 'Percent complete changes only through a recorded progress entry.',
+  'Sem permissão para montar o cronograma.': 'You don\'t have permission to build the schedule.',
+  'A lista de etapas não confere com a obra.': 'The list of stages does not match the job.',
+  'Este registro não pode ser alterado nem apagado.': 'This record cannot be changed or deleted.',
+
+  // ---------- Início da conta (fatia 5) ----------
+  'A conta, os cadastros, o Daily (com o cronograma da obra) e o Crew já estão no banco de dados. O Measure e as concorrências chegam nas próximas etapas.': 'Your account, company records, Daily (with the job schedule) and Crew are already on the database. Measure and bidding arrive in the next stages.',
+  'O diário de obra e o cronograma já funcionam com o banco de dados, com e sem internet: preencha no canteiro, envie, aprove, mande o link para o cliente e acompanhe as etapas da obra.': 'Daily reports and the schedule now run on the database, online and offline: fill out in the field, send, approve, share the client link and follow the job\'s stages.',
 };

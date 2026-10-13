@@ -208,8 +208,9 @@ export function telaCronogramaRecebido(moldura, obraId, pubId) {
 function opcoesResponsavel(atual) {
   const d = estado();
   const ops = [];
-  for (const u of d.usuarios.filter((x) => x.ativo && !x.funcionarioId)) ops.push([u.id, u.nome]);
-  for (const f of (d.funcionarios || []).filter((x) => x.situacao !== 'desligado')) ops.push([f.usuarioId || f.id, f.nome]);
+  for (const u of d.usuarios.filter((x) => x.ativo && (d.oficial || !x.funcionarioId))) ops.push([u.id, u.nome]);
+  // no protótipo, um funcionário sem login também pode ser o responsável; na conta de verdade, o responsável é um usuário
+  if (!d.oficial) for (const f of (d.funcionarios || []).filter((x) => x.situacao !== 'desligado')) ops.push([f.usuarioId || f.id, f.nome]);
   return '<option value="">' + tr('Sem responsável') + '</option>' + ops.map(([v, n]) => '<option value="' + v + '"' + (v === atual ? ' selected' : '') + '>' + esc(n) + '</option>').join('');
 }
 
@@ -230,12 +231,12 @@ async function dialogoEtapa(obraId, id) {
   if (!res || !res.valor) return;
   if (res.valor === 'excluir') {
     if (!(await confirmar(tr('Excluir "{nome}"?', { nome: e.nome }), tr('A etapa sai do cronograma. O histórico fica na auditoria.'), tr('Excluir'), 'btn-perigo'))) return;
-    const r = excluirEtapa(obraId, e.id, quem());
+    const r = await excluirEtapa(obraId, e.id, quem());
     toast(r.erro || tr('Etapa excluída.'));
     app.desenhar();
     return;
   }
-  const r = salvarEtapa(obraId, e ? e.id : null, res.campos, quem());
+  const r = await salvarEtapa(obraId, e ? e.id : null, res.campos, quem());
   toast(r.erro || (e ? tr('Etapa atualizada.') : tr('Etapa criada.')));
   if (r.ok) app.desenhar();
 }
@@ -252,7 +253,7 @@ async function dialogoAvanco(obraId, id) {
     acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Salvar'), valor: true, classe: 'btn-primario' }],
   });
   if (!res || !res.valor) return;
-  const r = registrarAvanco(obraId, id, res.campos.pct, { fonte: 'manual', por: quem() });
+  const r = await registrarAvanco(obraId, id, res.campos.pct, { fonte: 'manual', por: quem() });
   toast(r.erro || tr('% concluído atualizado.'));
   if (r.ok) app.desenhar();
 }
@@ -265,7 +266,7 @@ async function dialogoBase(obraId) {
     acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: tr('Salvar linha de base'), valor: true, classe: 'btn-primario' }],
   });
   if (!res || !res.valor) return;
-  const r = novaBase(obraId, res.campos.motivo, quem());
+  const r = await novaBase(obraId, res.campos.motivo, quem());
   toast(r.erro || tr('Nova linha de base salva.'));
   if (r.ok) app.desenhar();
 }
@@ -286,19 +287,19 @@ export const acoesCronograma = {
     });
     document.removeEventListener('change', trocar);
     if (!res || !res.valor) return;
-    const r = aplicarModelo(o.id, res.campos.modeloId, (usuarioAtual() || {}).nome);
+    const r = await aplicarModelo(o.id, res.campos.modeloId, (usuarioAtual() || {}).nome);
     if (r.erro) { toast(r.erro); return; }
     toast(tr('Etapas criadas a partir do modelo. A primeira linha de base foi salva.'));
     app.desenhar();
   },
   async 'cr-etapa'(el) { await dialogoEtapa(el.dataset.obra || document.getElementById('cronograma').dataset.obra, el.dataset.id || null); },
   async 'cr-avanco'(el) { await dialogoAvanco(document.getElementById('cronograma').dataset.obra, el.dataset.id); },
-  'cr-mover'(el) { moverEtapa(document.getElementById('cronograma').dataset.obra, el.dataset.id, Number(el.dataset.passo)); app.desenhar(); },
+  async 'cr-mover'(el) { const r = await moverEtapa(document.getElementById('cronograma').dataset.obra, el.dataset.id, Number(el.dataset.passo)); if (r && r.erro) toast(r.erro); app.desenhar(); },
   async 'cr-base'(el) { await dialogoBase(el.dataset.obra); },
   async 'cr-publicar'(el) {
     const o = acharObra(el.dataset.obra);
     if (!(await confirmar(tr('Publicar o cronograma para {empresa}?', { empresa: nomeDaEmpresaVinculada(o) }), tr('A construtora passa a ver esta versão (datas, andamento e desvios), sem poder editar. O que você mudar depois só aparece quando publicar de novo.'), tr('Publicar')))) return;
-    const r = publicar(o, quem());
+    const r = await publicar(o, quem());
     toast(r.erro || tr('Versão {n} publicada para o contratante.', { n: r.versao }));
     if (r.ok) app.desenhar();
   },

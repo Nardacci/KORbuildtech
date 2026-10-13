@@ -14,6 +14,7 @@ import { conta, cliente as clienteDaConta, traduzir } from './conta.js';
 import { espelho, montar as montarEspelho, usarOQueTemNoAparelho, espelhoDoLinkPublico } from './espelho.js';
 import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily, sincronizarPonto, pendentesDoPonto, MOTIVOS_DA_RECUSA } from './sincronizacao.js';
 import { ligarCrewOficial } from './crew-oficial.js';
+import { ligarCronogramaOficial } from './cronograma-oficial.js';
 import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
@@ -202,8 +203,8 @@ function desenhar() {
       if (!espelho.pronto || !estado() || !estado().oficial || estado().empresa.id !== conta.empresa.id) { app.innerHTML = carregando(); abrirDailyOficial(); return; }
       if (p0[0] === 'crew') return desenharPrototipo();
       const q0 = rotaDaily();
-      // concorrências e cronograma ainda não estão no banco (fatias 5 e 7)
-      if (q0[0] === 'concorrencias' || (q0[0] === 'obras' && q0[2] === 'cronograma')) return trocarRota('#/daily');
+      // concorrências ainda não estão no banco (fatia 7)
+      if (q0[0] === 'concorrencias') return trocarRota('#/daily');
       // diário aberto pelo endereço (link, notificação) que ainda não está no aparelho: relê o banco uma vez
       const idRdo = q0[1] === 'rdo' ? q0[2] : q0[0] === 'pdf' ? q0[1] : null;
       if (idRdo && !acharRdo(idRdo) && !relidoPorRdo.has(idRdo) && !semInternet()) {
@@ -1231,7 +1232,7 @@ const acoesDailyOficial = {
     if (error) { toast(traduzir(error)); return; }
     await montarEspelho(true).catch(() => {});
     desenhar();
-    toast((tr('RDO aprovado e lacrado. Código') + ' ') + data.codigo + '.');
+    toast((tr('RDO aprovado e lacrado. Código') + ' ') + data.codigo + '.' + (data.etapas ? ' ' + tn(data.etapas, 'O cronograma recebeu o andamento de {n} etapa.', 'O cronograma recebeu o andamento de {n} etapas.') : ''));
   },
   async 'pedir-ajustes'() {
     const r = rdoDaTela();
@@ -1866,6 +1867,7 @@ async function iniciar() {
   if (!MODO_DEMO) {
     Object.assign(acoes, acoesDailyOficial);
     ligarCrewOficial();
+    ligarCronogramaOficial();
     let envioDoPonto = null;
     aoRegistrarBatida(() => { clearTimeout(envioDoPonto); envioDoPonto = setTimeout(sincronizarOficial, 1200); });
     ligarOficial(desenhar);

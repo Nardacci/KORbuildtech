@@ -12,7 +12,7 @@ import { usarIdsUuid } from './util.js';
 import { usarArmazem, bancoDeDados, definirEstado, definirBuscaRemota, idMiniatura } from './armazem.js';
 import { criarSettings } from './settings.js';
 import { conta, cliente, iniciar, emailAtual } from './conta.js';
-import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca } from './espelho-crew.js';
+import { lerTudo, lerCrew, aplicarCrew, lerPresencaDasPrestadoras, aplicarPresenca, lerCronograma, aplicarCronograma } from './espelho-crew.js';
 
 export const espelho = { pronto: false, lendo: null, lidoEm: 0, erro: null };
 
@@ -126,10 +126,10 @@ export function montar(atualizado = false) {
     if (!conta.sessao || !conta.membro || !conta.empresa) throw new Error('sem-conta');
     prepararArmazem(conta.sessao.user.id);
     const e = conta.empresa;
-    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido] = await Promise.all([
+    const [obras, contatos, membros, rdos, fotos, historico, recebidos, crewLido, cronLido] = await Promise.all([
       ler('obras', 'nome'), ler('contatos', 'nome'), ler('membros', 'nome'), ler('rdos', 'data'), ler('rdo_fotos', 'ordem'), ler('rdo_historico', 'em'),
       cliente().rpc('diarios_recebidos', { p_obra: null }).then(({ data, error }) => { if (error) throw error; return data || []; }),
-      lerCrew(),
+      lerCrew(), lerCronograma(),
     ]);
     const empresa = {
       id: e.id, nome: e.nome, razaoSocial: e.razao_social, sigla: e.sigla, ein: e.ein, atuacao: e.atuacao, especialidades: e.especialidades,
@@ -152,6 +152,7 @@ export function montar(atualizado = false) {
     const antes = bancoDeDados();
     const minhaAntes = (antes && antes.empresas && antes.empresas[e.id]) || {};
     aplicarCrew(d, crewLido, d.usuarios, minhaAntes);
+    const compartilhados = aplicarCronograma(d, cronLido);
     const locais = minhaAntes.rdos || [];
     const pendentes = locais.filter(temPendencia);
     const ids = new Set(pendentes.map((r) => r.id));
@@ -179,7 +180,7 @@ export function montar(atualizado = false) {
       }
     }
 
-    definirEstado({ versao: 'oficial', oficial: true, padrao: e.id, empresas: { [e.id]: d, ...vizinhas }, compartilhados: [], concorrencias: [] });
+    definirEstado({ versao: 'oficial', oficial: true, padrao: e.id, empresas: { [e.id]: d, ...vizinhas }, compartilhados, concorrencias: [] });
     try { localStorage.setItem('kbt.oficial.sessao', conta.membro.id); } catch { /* sem armazenamento */ }
     espelho.pronto = true;
     espelho.lidoEm = Date.now();

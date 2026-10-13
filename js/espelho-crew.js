@@ -114,3 +114,33 @@ export function aplicarPresenca(vizinhas, presencas, novaEmpresa, obraDoBanco, m
     }
   }
 }
+
+/* ---------- Cronograma (fatia 5, docs/banco.md §12) ---------- */
+
+export function lerCronograma() {
+  return Promise.all([
+    lerTudo('cronograma_etapas', 'ordem'), lerTudo('etapa_avancos', 'em'), lerTudo('linhas_base', 'em'), lerTudo('publicacoes_cronograma', 'em'),
+    lerTudo('modelos_cronograma', 'nome'),
+    cliente().rpc('cronogramas_recebidos', { p_obra: null }).then(({ data, error }) => (error ? [] : data || [])),
+  ]).then(([etapas, avancos, bases, publicacoes, modelos, recebidos]) => ({ etapas, avancos, bases, publicacoes, modelos, recebidos }));
+}
+
+/* Monta d.cronogramas e d.modelosCronograma no formato de js/cronograma.js; devolve o que a empresa recebeu (compartilhados). */
+export function aplicarCronograma(d, lido) {
+  const histPor = new Map();
+  for (const a of lido.avancos) {
+    if (!histPor.has(a.etapa_id)) histPor.set(a.etapa_id, []);
+    histPor.get(a.etapa_id).push({ em: ms(a.em), data: a.data, antes: a.antes, pct: a.pct, fonte: a.fonte, rdoId: a.rdo_id, rdoNumero: a.rdo_numero, por: a.por_nome });
+  }
+  d.cronogramas = {};
+  const cron = (obraId) => (d.cronogramas[obraId] = d.cronogramas[obraId] || { etapas: [], bases: [], publicacoes: [] });
+  for (const e of lido.etapas) cron(e.obra_id).etapas.push({ id: e.id, nome: e.nome, inicio: e.inicio, fim: e.fim, responsavelId: e.responsavel_id || null, pct: e.pct, historico: histPor.get(e.id) || [] });
+  for (const b of lido.bases) cron(b.obra_id).bases.push({ id: b.id, em: ms(b.em), por: b.por_nome, motivo: b.motivo, etapas: b.etapas });
+  for (const p of lido.publicacoes) cron(p.obra_id).publicacoes.push({ id: p.id, versao: p.versao, em: ms(p.em), por: p.por_nome });
+  d.modelosCronograma = lido.modelos.map((m) => ({ id: m.id, nome: m.nome, etapas: m.etapas }));
+  return lido.recebidos.map((p) => ({
+    tipo: 'cronograma', id: p.id, versao: p.versao, em: ms(p.em), por: p.por_nome,
+    de: p.retrato.de, para: { empresaId: p.para_empresa_id, obraId: p.para_obra_id },
+    obraNome: p.retrato.obraNome, cronograma: p.retrato.cronograma, responsaveis: p.retrato.responsaveis || {},
+  }));
+}

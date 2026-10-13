@@ -11,6 +11,7 @@ O protótipo (a demonstração com dados de exemplo) mostra o produto funcionand
 | Aprovações | O escritório aprova ou pede ajustes; o diário da prestadora numa obra ligada é aprovado pela construtora, nunca pela prestadora. |
 | Lacre | O banco calcula o lacre (SHA-256) e o código de verificação na aprovação; depois disso nada muda. |
 | Link do cliente | Abre em qualquer lugar, sem login, com as fotos por links temporários; o banco confere o lacre a cada abertura. |
+| Cronograma da obra | Etapas com início e fim, linha de base, % concluído vindo do diário aprovado (ou à mão, com histórico) e publicação para a construtora por versão. Etapa que já recebeu andamento de um diário aprovado não pode ser excluída, e só quem aprovou pode alterá-la. |
 | Dois aparelhos, um diário | Se o mesmo diário mudou em outro aparelho sem sinal, o segundo é avisado e escolhe qual versão fica. |
 
 ## Simulado hoje (na demonstração)

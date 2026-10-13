@@ -11,6 +11,7 @@ The prototype (the demo with sample data) shows the product working. Beside it, 
 | Approvals | The office approves or asks for changes; a subcontractor's report on a linked job is approved by the general contractor, never by the sub. |
 | Seal | The database computes the seal (SHA-256) and the verification code at approval; nothing can change afterwards. |
 | Client link | Opens anywhere, no sign-in, with the photos by temporary links; the database checks the seal on every open. |
+| Job schedule | Stages with start and end, baseline, percent complete from the approved report (or by hand, with history) and publication to the general contractor by version. A stage that already received progress from an approved report cannot be deleted, and only the person who approved can change it. |
 | Two devices, one report | If the same report was changed on another device while offline, the second one is warned and chooses which version stays. |
 
 ## Simulated today (in the demo)

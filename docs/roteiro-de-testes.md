@@ -52,6 +52,7 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `sql 0004_crew` | Supabase | Regras do Crew: batida que não se edita, cerca, semana aprovada fechada, dia sem saída, localização só com o ponto aberto, presença para a construtora sem dinheiro |
 | `sql 0005_cronograma` | Supabase | Regras do cronograma: quem monta, % só por avanço, etapa com andamento aprovado não sai e só quem aprovou altera, linha de base, publicação por versão, construtora lê só pela função, o RDO aprovado leva o andamento | segundos |
 | `crew-oficial` | navegador + Supabase | O Crew de ponta a ponta: o encarregado bate o ponto da equipe (dentro e fora da cerca), sem internet a batida sobe depois com a hora certa, o trabalhador bate o próprio ponto e a localização é gravada, o escritório confere, ajusta, aprova e devolve a semana, orçamento, mapa do dia e a visão da construtora | ~3 min |
+| `cronograma-oficial` | navegador + Supabase | O cronograma de ponta a ponta: modelo, etapas, % à mão, linha de base, publicação; o encarregado aponta a etapa no RDO; a construtora aprova e o andamento entra; a etapa fica travada; a construtora vê a versão publicada só leitura | ~2 min |
 | `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
 
 O teste `daily` cria os usuários `kb-e2e-daily-…@example.com`, duas empresas, obras, diários e fotos, e apaga tudo
@@ -97,6 +98,13 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Timesheets: a semana com dia sem saída não aprova; "Ajustar" cria uma batida nova com o motivo; aprovar e devolver.
 - [ ] Custos: cadastre o orçamento de uma obra; o mapa do dia mostra os registros de localização reais.
 - [ ] Como Construtora, numa obra ligada: a página da obra mostra quem bateu o ponto, sem valores.
+
+### Cronograma (fatia 5)
+- [ ] Obras → uma obra → Cronograma → "Começar com um modelo": as etapas aparecem no Gantt com a primeira linha de base.
+- [ ] Nova etapa, editar datas (o desvio aparece), "Atualizar %" à mão, subir/descer, "Salvar nova linha de base" com motivo.
+- [ ] Numa obra ligada à construtora: "Publicar para o contratante"; como construtora, a obra dela lista "Cronogramas das prestadoras" e abre a versão só leitura.
+- [ ] No celular, como encarregado: a obra mostra "Próximas 3 semanas"; na atividade do RDO, escolha a etapa e o %; envie.
+- [ ] Aprovar o RDO: o aviso diz que o cronograma recebeu o andamento; a etapa não pode mais ser excluída e só quem aprovou a edita.
 
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).

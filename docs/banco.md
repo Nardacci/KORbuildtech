@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatias 1, 2, 3 e 4 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1 a 5 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. As outras fatias seguem (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -348,7 +348,20 @@ situação, avanço e desvio continua em `js/cronograma.js`, sobre o espelho.
 - **Sininho** de etapa atrasada e de publicação recebida: calculado no app; e-mail na fatia 8.
 - **Ligação entre obras** (`vinculo_*`): continua gravada à mão pela equipe do KORbuild até a fatia 7.
 
-### 12.5 Fica para depois
+### 12.5 No app (fatia 5 pronta)
+
+- **Espelho:** `js/espelho-crew.js` lê etapas, avanços, linhas de base, publicações próprias e modelos, e monta `cronogramas` e
+  `modelosCronograma` no formato do protótipo; os cronogramas recebidos (`cronogramas_recebidos`) entram em `compartilhados`,
+  como a construtora já esperava. A **Etapa atual** da obra, as **próximas 3 semanas** e o seletor de etapa no RDO saem daí,
+  com e sem internet.
+- **Escritório:** `js/cronograma-oficial.js` liga `salvar_etapa`, `excluir_etapa`, `ordenar_etapas`, `aplicar_modelo`,
+  `registrar_avanco`, `nova_linha_base` e `publicar_cronograma`; cada uma pede internet e relê o espelho. A tela repete
+  as mensagens do banco (etapa travada, obra sem vínculo…).
+- **Responsável da etapa:** na conta de verdade é sempre um usuário (o banco aponta para `membros`); no protótipo um
+  funcionário sem login também podia ser.
+- **Aprovação:** o aviso "RDO aprovado" diz quantas etapas receberam andamento (`aprovar_rdo` devolve `etapas`).
+
+### 12.6 Fica para depois
 
 - Dependência "começa depois de" entre etapas, metas vindas do Measure e horas do Crew por etapa (docs/cronograma.md §5).
 

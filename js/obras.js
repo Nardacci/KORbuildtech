@@ -9,7 +9,7 @@ import { auditar } from './settings.js';
 import { contato } from './contatos.js';
 import { RAIO_CERCA } from './crew.js';
 import { DIAS_TRABALHO } from './prazos.js';
-import { cronogramaDe, novaBase } from './cronograma.js';
+import { cronogramaDe, novaBase, servidorCronograma } from './cronograma.js';
 
 export const SITUACOES_OBRA = {
   andamento: { nome: tr('Em andamento'), classe: 'etiqueta-verde' },
@@ -162,6 +162,7 @@ export function aplicarModelo(obraId, modeloId, por) {
   if (!o || !m) return { erro: tr('Modelo não encontrado.') };
   const c = cronogramaDe(obraId);
   if (c && c.etapas.length) return { erro: tr('O cronograma desta obra já tem etapas.') };
+  if (servidorCronograma()) return servidorCronograma().aplicarModelo(obraId, modeloId);
   estado().cronogramas = estado().cronogramas || {};
   estado().cronogramas[obraId] = { etapas: [], bases: [], publicacoes: [] };
   estado().cronogramas[obraId].etapas = distribuir(m.etapas, o.inicio, o.prazo).map((e) => ({ id: novoId('et'), ...e, responsavelId: null, pct: 0, historico: [] }));
