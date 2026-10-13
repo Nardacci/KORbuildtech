@@ -2,7 +2,7 @@
 
 > Especificação de outubro de 2026. Projeto Supabase `gbdmtgephszxhaprpiss`. O banco foi limpo do sistema antigo (Match) em 12/10/2026: backup da estrutura em `supabase/backup/`, remoção em `supabase/remocao-match.sql`, ajuste do cadastro em `supabase/ajuste-criar-conta.sql`.
 >
-> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Faltam as concorrências (7) e as notificações (8) (§9). O protótipo (`?demo`) continua no navegador e não muda.
+> **Situação:** fatias 1 a 6 no banco. Fatia 1 (`0001`–`0003`): a conta, a empresa, usuários, perfis e convites. Fatia 2 (`0004`): Meu perfil e os cadastros do Settings (obras, funcionários, contatos, regras), em `js/cadastros.js` e `js/cadastros-telas.js`. Fatia 3 (`0005` e a função `diario-publico`): o Daily, com as telas do protótipo funcionando sobre um espelho do banco no aparelho (`js/espelho.js`) e a sincronização (`js/sincronizacao.js`), com e sem internet; aprovação entre empresas, lacre no banco e link do cliente. Testes: `tests/conta.test.mjs` e `tests/daily.test.mjs --real` (contra o Supabase), `tests/daily.test.mjs` (contra o Supabase local: `tools/supabase-local.sh`), `tests/oficial-simulado.test.mjs` e `supabase/testes/` (regras de acesso; `tools/banco-local.sh`). Fatia 4 (`0006`): o Crew — equipes, batidas (só `insert`), localizações com o app aberto, aprovação da semana, orçamento e a presença das prestadoras para a construtora; as telas do protótipo sobre o espelho (`js/espelho-crew.js`, `js/crew-oficial.js`, `js/localizacao.js`), com e sem internet; teste `tests/crew-oficial.test.mjs`. Fatia 5 (`0007`): o cronograma — etapas, avanços, linhas de base e publicações por versão; o RDO aprovado leva o andamento ao cronograma; telas do protótipo sobre o espelho (`js/cronograma-oficial.js`); teste `tests/cronograma-oficial.test.mjs`. Fatia 6 (`0008`): o Measure — projetos, plantas no Storage, condições com as medições, typicals, catálogo, preços, margens e propostas emitidas; as telas do protótipo gravam no espelho e `js/measure-oficial.js` leva cada mudança ao banco; teste `tests/measure-oficial.test.mjs`. Faltam as concorrências (7, desenho no §14, para aprovação) e as notificações (8) (§9). O protótipo (`?demo`) continua no navegador e não muda.
 
 ## 1. Princípios
 
@@ -130,7 +130,7 @@ Cada fatia é um arquivo em `supabase/migrations/`, com teste das regras de aces
 | 4 | `supabase/migrations/20261015_0006_crew.sql` (só cria; acrescenta `funcionarios.equipe_id`). Teste: `supabase/testes/0004_crew.sql`. Crew: equipes, batidas (só `insert`), localizações, conferências, aprovações da semana, orçamentos, bucket `ponto`; presença na obra para a contratante (desenho no §11) | Bater o ponto de verdade, com e sem internet |
 | 5 | `supabase/migrations/20261016_0007_cronograma.sql` (só cria; reescreve `aprovar_rdo`). Teste: `supabase/testes/0005_cronograma.sql`. Cronograma: etapas, avanços (só `insert`), linhas de base, publicações para a contratante; o andamento do RDO aprovado entra no cronograma (desenho no §12) | Montar o cronograma, publicar e receber de verdade |
 | 6 | `supabase/migrations/20261017_0008_measure.sql` (só cria). Teste: `supabase/testes/0006_measure.sql`. Depois, `20261018_0009_cascata_auditoria.sql` (só reescreve funções): excluir empresas ligadas na mesma instrução não esbarra na auditoria nem nas travas "só insert" (teste `0007_cascata.sql`). Measure: projetos, folhas (Storage `plantas`), condições com as medições, typicals, catálogo, preços e margens (só `insert`), propostas emitidas (desenho no §13) | Medir, cotar e emitir propostas de verdade; consulta no celular |
-| 7 | Concorrências: tudo do §6, com o link sem conta e o canal | |
+| 7 | `supabase/migrations/20261019_0010_concorrencias.sql` (só cria). Teste: `supabase/testes/0008_concorrencias.sql`. Concorrências: tudo por funções do banco, o link sem conta pela função de borda `convite-publico`, o canal, a quarteirização e `criar_obra_da_concorrencia` (sela o vínculo) (desenho no §14) | Convidar, cotar, comparar, fechar e conversar de verdade; a cadeia de obras liga-se sozinha |
 | 8 | Notificações por e-mail e a área de administração da plataforma | |
 
 ## 10. Fatia 3 — o Daily no banco (desenho aprovado em outubro de 2026)
@@ -445,3 +445,111 @@ Condições e medições não vão para a auditoria (são centenas de gravaçõe
 - Plantas de exemplo (`assets/plantas`) na conta de verdade: ficam só na demonstração.
 - Atrair o clique às linhas do desenho (docs/measure.md §5).
 
+
+## 14. Fatia 7 — as concorrências no banco (desenho para aprovação)
+
+As concorrências são o **único lugar onde duas empresas escrevem no mesmo registro**: a contratante monta e fecha,
+as convidadas respondem, perguntam e mandam proposta, e uma delas pode nem ter conta (o link, CO-07). Por isso aqui
+quase nada é gravação direta: **toda ação passa por função do banco**, que confere de que lado está quem chama e
+devolve só o combinado (BD-03, CO-04). O motor do protótipo (`js/concorrencias.js`) já tem as regras CO-01 a CO-25
+testadas; o banco repete as que protegem (quem vê, quem muda, prazo, revisões, fechamento) e o app continua
+desenhando as telas sobre o espelho. É trabalho de escritório, **com internet** (como o Measure): não há fila sem sinal.
+
+### 14.1 Tabelas
+
+| Tabela | Colunas | Regras |
+| --- | --- | --- |
+| `concorrencias` | `id`, `empresa_id` (a contratante), `origem_tipo` (obra · projeto), `obra_id`, `projeto_id`, `pai_id` (→ `concorrencias`: a de cima, na quarteirização), `servico`, `etapas text[]`, `incluso text[]`, `excluso text[]`, `observacoes`, `prazo timestamptz`, `inicio date`, `termino date`, `orcamento jsonb` ({valor, porEtapa, mostrar}), `exigencias jsonb`, `quarteirizacao` (permitida · com-aprovacao · nao-permitida), `situacao` (rascunho · aberta · fechada · cancelada), `enviada_em`, `fechamento jsonb`, `aprovacao jsonb` (CO-23), `cancelamento jsonb`, `criada_por`, `criada_por_nome`, `criada_em`, `atualizada_em` | Só a contratante lê a tabela (RLS por `empresa_id`). "Para fechar" **não é situação gravada**: é `aberta` com o prazo vencido, como no app. Rascunho: `insert`/`update`/`delete` direto por quem tem `concorrencias.gerir`; **depois de enviada, o gatilho recusa `update` direto** (só as funções mudam: prorrogar, fechar, cancelar, aprovação) e recusa `delete`. `obra_id` da própria empresa; `projeto_id` da própria empresa (quando a origem é o projeto, `obra_id` só entra ao fechar, CO-24). |
+| `concorrencia_desenhos` | `id`, `empresa_id`, `concorrencia_id`, `nome`, `arquivo_path` (Storage), `tamanho`, `em` | O PDF da contratante no bucket `concorrencias` (14.4). Entra no rascunho ou por **adendo** depois (CO-09). |
+| `concorrencia_convites` | `id`, `empresa_id` (a contratante), `concorrencia_id`, `contato_id` (→ `contatos` da contratante), `nome`, `email`, `convidada_id` (→ `empresas`: a convidada com conta, null pelo link), `token_hash` (único), `situacao` (enviado · visto · vai-cotar · nao-vai · proposta · vencedora · nao-escolhida · cancelado), `motivo`, `visto_em`, `respondido_em`, `projeto_id` (o projeto no Measure da convidada), `convidado_em` | Um convite por contato por concorrência (CO-16). A contratante lê a tabela; **a convidada nunca lê a tabela**: recebe a própria linha pela função. O token do link é gerado pelo banco e devolvido **uma vez** a quem enviou (só o hash fica, como em `convites_usuario`). `convidada_id` vem de `contatos.conta_empresa_id` no envio. |
+| `concorrencia_propostas` | `id`, `empresa_id` (a contratante), `convite_id`, `rev`, `numero` (o P-AAAA-NNN da convidada, se veio do Measure), `proposta_emitida_id` (→ `propostas_emitidas` da convidada, sem FK entre empresas), `enviada_em`, `por_nome`, `total`, `por_etapa jsonb`, `outros`, `prazo_execucao_dias`, `exclusoes text[]`, `pdf_path` | **Só `insert`** (CO-05); `rev` = contagem + 1, pela função. A contratante lê (quem tem `concorrencias.gerir`, CO-17); a convidada lê as próprias pela função. |
+| `concorrencia_mensagens` | `id`, `empresa_id` (a contratante), `concorrencia_id`, `convite_id` (null = aviso a todos), `de` (contratante · convidada), `autor`, `texto`, `publica`, `resposta_de`, `aviso`, `em` | **Só `insert`**; `publica` é a única coluna que muda (a função marca a pergunta respondida para todos). O canal da obra depois do fechamento é a mesma tabela (a conversa da vencedora). Anexos ficam para depois. |
+| `concorrencia_historico` | `id`, `empresa_id`, `concorrencia_id`, `em`, `por`, `por_nome`, `acao`, `detalhe` | Só `insert`, gravado pelas funções (prorrogação, convidados a mais, adendo, fechamento, cancelamento). A convidada vê só as prorrogações e os adendos (pela função). |
+
+Todas com `unique (empresa_id, id)` e chaves compostas para ficar na empresa da contratante. `obras.vinculo_*` e
+`obras.concorrencia_id` (fatia 2) passam a ser gravados **só por `criar_obra_da_concorrencia`** (14.3); `projetos`
+ganha `concorrencia jsonb` ({id, conviteId, contratanteId, vinculo}) gravado só pelas funções.
+
+### 14.2 Quem vê o quê (CO-04, CO-22)
+
+| Quem | Vê | Como |
+| --- | --- | --- |
+| Contratante, com `concorrencias.gerir` | Tudo das suas concorrências: convites, propostas (valores), mensagens, histórico | RLS nas tabelas (`empresa_id = minha_empresa()`) |
+| Contratante sem `concorrencias.gerir` | Nada (os valores são só de quem gere, CO-17) | RLS |
+| Convidada com conta, com `concorrencias.responder` | `concorrencias_recebidas()`: a concorrência (sem os outros convidados, sem o fechamento com outra, com o orçamento só se `mostrar` ≠ nao), **o próprio convite**, as próprias propostas, as mensagens da própria conversa e as públicas (pergunta de outra sem o nome), prorrogações e adendos | Função `security definer`, filtrando `convidada_id = minha_empresa()` e `situacao <> 'rascunho'` |
+| Pelo link (sem conta) | O mesmo que a convidada com conta, para **um convite** | `convite_por_token(token)` chamada pela função de borda `convite-publico` (14.5) |
+| Contratante de cima (CO-23) | O pedido de aprovação: serviço, quem pede e o **nome** da escolhida; nunca o valor | `pedidos_de_quarteirizacao()` |
+| Vizinhas no espelho | A contratante enxerga a convidada vencedora como "empresa vizinha" com a obra ligada (já é assim no Daily) | nada novo: `diarios_recebidos`, `cronogramas_recebidos`, `presenca_na_obra` já seguem o `vinculo` |
+
+### 14.3 Funções (toda ação)
+
+| Função | Quem chama | O que confere |
+| --- | --- | --- |
+| `enviar_concorrencia(id)` | contratante, `concorrencias.gerir` | CO-08 (obra ou projeto, serviço, etapa, incluso, prazo no futuro, convidado); CO-25 (prazo antes do prazo do projeto); CO-23 da concorrência de cima (não permitida bloqueia). Muda para `aberta`, gera os tokens dos convites sem conta e **devolve os links uma vez** (`[{convite_id, token}]`); grava o histórico. |
+| `prorrogar_concorrencia(id, prazo, motivo)` | contratante | Aberta; novo prazo depois do atual e no futuro (CO-09). |
+| `convidar_mais(id, contato_ids[])` | contratante | Aberta; sem repetir (CO-16); devolve os tokens dos novos sem conta. |
+| `adendo(id, texto, desenho_path)` | contratante | Aberta; grava o aviso a todos (mensagem `aviso`) e, se vier PDF, a linha em `concorrencia_desenhos`; histórico. |
+| `fechar_concorrencia(id, convite_id, observacao)` | contratante | Aberta (vencida ou não); convite com proposta; origem projeto exige projeto `ganha` com `obra_id` (CO-24) e copia o `obra_id`; CO-23: se a de cima pede aprovação, grava `aprovacao` pendente e devolve `{pendente: true}`; senão conclui: `fechamento`, situações dos convites (CO-13), na vencedora com conta: `projetos.situacao = 'ganha'` e `projetos.concorrencia` com o vínculo (CO-14). |
+| `decidir_quarteirizacao(id, aprovar, motivo)` | a contratante **de cima** (`pai_id.empresa_id = minha_empresa()`) | Pendente; aprovar conclui o fechamento em nome de quem pediu; recusar registra. Auditoria nas duas empresas. |
+| `cancelar_concorrencia(id, motivo)` | contratante | Motivo obrigatório (CO-15); rascunho sai (delete); aberta vira `cancelada` e os convites `cancelado`. |
+| `concorrencias_recebidas(id default null)` | convidada com conta | Visão do 14.2, como `setof jsonb`. |
+| `marcar_visto(convite_id)`, `responder_convite(convite_id, vai, motivo)`, `enviar_proposta_concorrencia(convite_id, dados jsonb)`, `escrever_como_convidada(convite_id, texto)` | convidada com conta (`convidada_id = minha_empresa()` e `concorrencias.responder`) **ou** o link (versão `_por_token(token, …)` chamada só pela função de borda) | Prazo (CO-10: só até o prazo; depois só se prorrogada), não participar sem proposta, `por_etapa` só com etapas da concorrência, total = soma (ou total informado sem etapas), `rev` seguinte; `proposta_emitida_id` precisa ser da convidada e do `projeto_id` do convite. Conversa: só na própria conversa; depois do fechamento só a vencedora (canal da obra). |
+| `vincular_projeto_ao_convite(convite_id, projeto_id)` | convidada com conta | O projeto é dela; grava `convites.projeto_id` e `projetos.concorrencia` ({id, conviteId, contratanteId}). |
+| `escrever_como_contratante(id, convite_id, resposta_de, para_todos, texto)` | contratante | Não em rascunho; aviso a todos só aberta; cancelada não; fechada só com a vencedora; resposta para todos marca a pergunta `publica`. |
+| `criar_obra_da_concorrencia(projeto_id, dados_da_obra)` | a vencedora, `settings.obras` | O projeto está `ganha` com `concorrencia.vinculo`; cria a obra (como o app faz hoje no `insert`) e grava `vinculo_empresa_id`, `vinculo_obra_id` e `concorrencia_id`, que o `insert` direto não aceita (fatia 2). É o que **sela o vínculo** (CO-06, CO-14) e liga a cadeia inteira: diários, cronograma e presença passam a funcionar sozinhos. |
+| `ligar_conta_aos_convites()` | quem acaba de criar a empresa (chamada por `criar_empresa`) | CO-07, segunda metade: convites por link cujo `email` é o do novo administrador ganham `convidada_id`; o histórico vem junto. Um convite `vencedora` passa a permitir `criar_obra_da_concorrencia` por um projeto criado depois. |
+| `pedidos_de_quarteirizacao()` | contratante de cima | Só nome e serviço. |
+| `concorrencias_vencidas()` (job diário, fatia 8) | — | Não muda nada: só gera o aviso "prazo vencido: compare e feche". |
+
+**Auditoria (CO-18):** cada função grava na auditoria da empresa que fez (a contratante nas dela; a convidada com
+conta nas dela, com `area = 'Concorrências'`); pelo link, sem auditoria (não há usuário), fica só o histórico.
+**Sininho:** continua calculado no app a partir do espelho (como hoje); os que viram e-mail entram na fatia 8.
+
+### 14.4 Storage
+
+Bucket privado **`concorrencias`**: `{contratante_id}/{concorrencia_id}/desenhos/{arquivo_id}.pdf` (os desenhos) e
+`{contratante_id}/{concorrencia_id}/propostas/{convite_id}/rev-{n}.pdf` (o PDF da proposta pelo link ou da
+convidada sem Measure). Só PDF, até 50 MB. Políticas: a contratante com `concorrencias.gerir` lê e grava na
+própria pasta; a convidada com conta lê os desenhos e grava na pasta de propostas do **seu** convite (função
+`posso_mexer_na_concorrencia(nome)` que olha o convite). Pelo link, a função de borda assina os desenhos para
+leitura e recebe o PDF da proposta e grava com a chave de serviço (14.5). **"Vou cotar" com conta:** as folhas do
+projeto no Measure apontam **cópias** dos desenhos no bucket `plantas` da convidada (a função de borda não entra:
+o app baixa o desenho por link assinado e sobe no `plantas`, como faz com qualquer PDF). Assim o projeto dela não
+depende da concorrência depois.
+
+### 14.5 Link sem conta (CO-07)
+
+Função de borda **`convite-publico`** (como `diario-publico`), `--no-verify-jwt`, com a chave de serviço só no
+servidor: `GET ?token=` devolve `convite_por_token(token)` com os desenhos assinados por 1 h; `POST` com
+`{token, acao, dados}` chama `responder_convite_por_token`, `enviar_proposta_por_token` (o PDF vem em `multipart`
+e vai ao Storage antes), `escrever_por_token` e `visto_por_token`. O token tem 24 bytes aleatórios (o mesmo
+`gen_random_bytes` dos convites de usuário), só o hash fica no banco, e **não vence** enquanto a concorrência está
+aberta ou fechada com esse convite (a conversa da obra continua pelo link até a prestadora criar a conta); cancelada,
+o link responde "encerrada". Limite de 60 chamadas por minuto por token na função de borda. A página do app é a
+mesma de hoje (`#/convite/<token>`), lendo da função de borda em vez do aparelho.
+
+### 14.6 No app
+
+- **Espelho:** `estado().concorrencias` deixa de ser `[]` e vem de duas leituras: as **enviadas** (tabelas, com
+  convites, propostas, mensagens, desenhos e histórico) e as **recebidas** (`concorrencias_recebidas()`), montadas na
+  forma que `js/concorrencias.js` já usa. A visão da convidada já chega filtrada do banco, então `recebidas()` do
+  motor passa a ser só leitura do espelho.
+- **Ações:** `js/concorrencias-oficial.js` liga um servidor nas funções do motor (como `ligarServidorCronograma`): cada
+  ação chama a função do banco e depois `montar(true)`. Rascunho: gravação direta agrupada (como o Measure).
+- **Links:** ao enviar, o app mostra os links dos convidados sem conta para copiar (o e-mail vem na fatia 8).
+- **Criar obra a partir do projeto ganho** passa a chamar `criar_obra_da_concorrencia` quando o projeto tem
+  `concorrencia.vinculo`; sem concorrência, continua o `insert` de hoje.
+- **Cotar com prestadoras** a partir do projeto, **Usar no meu orçamento** e a presença da cadeia (CO-21, já no banco
+  desde a fatia 4): como hoje, sobre o espelho.
+- Teste: `tests/concorrencias-oficial.test.mjs` com **três** empresas (construtora, prestadora, quarteirizada) e um
+  convite pelo link; SQL `supabase/testes/0008_concorrencias.sql` (isolamento entre convidadas, prazo, revisões,
+  fechamento, CO-23, token).
+
+### 14.7 Pontos para decidir
+
+1. **Token sem vencimento** enquanto a concorrência vive (14.5), ou vencer em 30 dias depois do fechamento?
+2. **Prestadora sem conta ganha:** o vínculo nasce quando ela cria a conta (CO-14). Até lá, a obra da construtora
+   mostra "Bayside Drywall (pelo link)" sem diário, cronograma nem presença. Ok?
+3. **Desenhos no "Vou cotar":** cópia no `plantas` da convidada (14.4) ou folha apontando o bucket da contratante
+   (menos espaço, mas o projeto dela fica preso à concorrência e à política do outro bucket)? Proposta: **cópia**.
+4. **Encarregado no canal da obra** (docs/concorrencias.md §11): proposta, só lê, com `daily.acompanhar`.
