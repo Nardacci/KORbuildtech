@@ -57,6 +57,7 @@ passou e 1 se algo falhou. A pasta `.testes\` não vai para o git.
 | `cronograma-oficial` | navegador + Supabase | O cronograma de ponta a ponta: modelo, etapas, % à mão, linha de base, publicação; o encarregado aponta a etapa no RDO; a construtora aprova e o andamento entra; a etapa fica travada; a construtora vê a versão publicada só leitura | ~2 min |
 | `measure-oficial` | navegador + Supabase | O Measure de ponta a ponta: item e assembly, projeto, PDF no Storage, escala, medição e recorte (versão da condição), preço e margens, proposta emitida e numerada; tudo volta ao recarregar; a gestora não vê dinheiro; excluir o projeto leva as plantas | ~2 min |
 | `avisos-envio` | Node + Supabase | A função de envio de e-mails (`supabase/functions/enviar-avisos`), sem mandar e-mail de verdade: os modelos em português e inglês, uma rodada lendo e marcando com a chave de serviço (fila de quem não tem conta e avisos agrupados), nada marcado quando o envio falha, o token apagado depois de enviado, o app sem acesso à fila, e o SMTP do nodemailer contra um servidor de mentira. Precisa de `npm install --no-save nodemailer@6.9.16` (sem ele, a parte do SMTP é pulada) | ~10 s |
+| `admin-oficial` | Playwright + Supabase | A administração da plataforma (`admin.html`): quem não administra vê "Sem acesso"; quem administra busca a empresa, muda o plano (só com motivo), suspende e reativa; suspensa, a empresa lê mas o banco recusa gravar e o app mostra o aviso; a mudança chega no sininho de quem administra a empresa; as abas Administradores e E-mails; inglês | ~30 s |
 | `concorrencias-oficial` | navegador + Supabase | As concorrências de ponta a ponta: a construtora monta (PDF no Storage), envia e recebe os links; a prestadora com conta vê o convite, "Vou cotar" copia os desenhos para o projeto, pergunta e manda a proposta emitida pela plataforma; a prestadora sem conta responde e manda a proposta em PDF pelo link (função de borda); a construtora responde para todos, avisa a todos, compara e fecha; a obra da vencedora nasce ligada | ~2 min |
 | `daily` | navegador + Supabase | O Daily de ponta a ponta: o encarregado preenche com foto, com e sem internet; a prestadora aprova a obra própria; a construtora aprova a obra ligada; pedido de ajustes; conflito entre dois aparelhos; o cliente abre o link | ~3 min |
 
@@ -132,6 +133,14 @@ Marque cada item; se algo estranhar, tire um print.
 - [ ] Concorrência: o convite chega no sininho da prestadora com conta; a pergunta e a proposta chegam no da construtora.
 - [ ] Meu perfil › Avisos por e-mail: desligar "Diário de obra" e recarregar: continua desligado; o sininho segue mostrando os avisos.
 - [ ] Depois de configurar o SMTP (docs/banco.md §15.6): convidar um usuário novo e conferir o e-mail "… convidou você para o KORbuild" na caixa; abrir o botão e aceitar. Convidar uma prestadora só por e-mail numa concorrência: o e-mail traz o link pessoal.
+
+### Administração da plataforma (fatia 8c; só para quem está em admins_plataforma)
+- [ ] Com uma conta que não administra a plataforma, abrir `admin.html`: aparece "Sem acesso". O Início da conta não mostra o link.
+- [ ] Com a conta de administrador: o Início mostra "Administração da plataforma"; a lista traz as empresas com plano, dias de teste, usuários e obras; a busca filtra pelo nome.
+- [ ] Abrir uma empresa: mudar o nome do plano sem motivo recusa; com motivo grava e aparece em "O que a plataforma já fez".
+- [ ] Suspender a empresa de teste: entrando com ela, o aviso "Esta conta está suspensa" aparece e qualquer gravação é recusada; reativar libera. Quem administra a empresa vê o aviso no sininho.
+- [ ] "+7 dias de teste" prorroga a data. Valores padrão: mudar os dias de teste e criar uma empresa nova com outra conta.
+- [ ] E-mails: a fila mostra o resumo; um e-mail com erro tem "Tentar de novo".
 
 ### Cadastros (fatia 2)
 - [ ] Contatos: criar uma construtora e um cliente; tentar repetir o nome (recusa).

@@ -703,8 +703,17 @@ situação que trava: as funções de gravação (`salvar_rdo`, `registrar_batid
      (`tr(chave, dados)`) e deixa de calcular no aparelho o que o servidor já avisa (diário a aprovar, ajustes, aprovado,
      concorrências); os lembretes do relógio (16h, RDO atrasado, etapa atrasada, sem saída) continuam no aparelho.
      Meu perfil › Avisos por e-mail liga e desliga por categoria em `notificacao_prefs`. Teste: `tests/avisos-oficial.test.mjs` (13).
-3. **8c, a administração:** `20261021_0012_plataforma.sql` (tabela `plataforma`, funções `admin_*`, `teste_ate` no
-   `criar_empresa`, `empresa_ativa()`) e `admin.html`.
+3. **8c, a administração (pronta nos arquivos; falta aplicar no Supabase):** `20261021_0012_plataforma.sql` (tabela
+   `plataforma` com os valores padrão, `admin_log`, funções `admin_*` que só respondem a quem está em `admins_plataforma`,
+   `teste_ate` no `criar_empresa`, `empresa_ativa()` e o gatilho `exigir_empresa_ativa` em toda tabela com `empresa_id`)
+   e `admin.html` + `js/admin.js` (Empresas, Valores padrão, E-mails, Administradores; a página usa o mesmo login do app).
+   - **Suspensa** = continua entrando e lendo, mas o banco recusa qualquer gravação ('Esta conta está suspensa. Fale com o
+     KORbuild.'). O app mostra o aviso no alto da conta; o mesmo aviso aparece quando o teste vence.
+   - **Mudar plano ou módulos** exige motivo; vai para `admin_log` (da plataforma) e para `auditoria` (da empresa), e quem
+     administra a empresa recebe o aviso (sininho e e-mail). Os limites de obras e de usuários só ficam registrados; passam a
+     valer com o preço.
+   - A plataforma não remove o último administrador. Quem administra vê o link no Início da conta.
+   - Testes: `supabase/testes/0010_plataforma.sql` e `tests/admin-oficial.test.mjs` (20).
 
 **De você, para o 8b:** a caixa `no-reply@korbuildtech.com` criada, o servidor SMTP, a porta e o usuário que o provedor
 mostra, e a senha **só** na variável `KOR_SMTP_PASS` da sua máquina (a sessão local publica os segredos

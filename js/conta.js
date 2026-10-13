@@ -65,7 +65,7 @@ function lembrarIdioma() {
 /* O membro (uma pessoa, uma empresa), a empresa, os perfis e — para quem cuida dos acessos — os usuários e convites.
  * Lê tudo antes e troca o estado de uma vez só. Se alguma leitura falhar (rede, troca de token no meio), mantém o que
  * já havia: senão, por um instante, a pessoa "perderia" as permissões e a tela voltaria para o Início sem motivo. */
-const SEM_EMPRESA = { membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] };
+const SEM_EMPRESA = { ehAdmin: false, membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] };
 /* A última leitura fica no aparelho: sem internet, o app abre com ela (o Daily funciona sem sinal). */
 const chaveDaConta = (uid) => 'kbt.oficial.conta.' + uid;
 function lembrarConta(uid) {
@@ -87,14 +87,15 @@ export async function carregarMinhaConta() {
   conta.semConexao = false;
   const membro = m.data;
   if (!membro) { Object.assign(conta, SEM_EMPRESA); return; }
-  const [e, p] = await Promise.all([
+  const [e, p, adm] = await Promise.all([
     sb.from('empresas').select('*').eq('id', membro.empresa_id).maybeSingle(),
     sb.from('perfis_acesso').select('*').order('criado_em'),
+    sb.rpc('eh_admin_plataforma'),
   ]);
   if (e.error || p.error) { semConexao(); return; }
   const perfis = p.data || [];
   const perfil = perfis.find((x) => x.id === membro.perfil_id) || null;
-  const novo = { membro, empresa: e.data || null, perfis, perfil, membros: [membro], convites: [] };
+  const novo = { ehAdmin: !adm.error && adm.data === true, membro, empresa: e.data || null, perfis, perfil, membros: [membro], convites: [] };
   if (perfil && perfil.permissoes.includes('settings.acesso')) {
     const [ms, cs] = await Promise.all([
       sb.from('membros').select('*').order('criado_em'),

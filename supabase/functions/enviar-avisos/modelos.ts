@@ -34,6 +34,7 @@ const EN: Record<string, string> = {
   'Prazo vencido: compare e feche · {servico}': 'Deadline passed: compare and award · {servico}',
   'O período de teste termina em {dias} dias': 'Your trial ends in {dias} days',
   'O período de teste termina amanhã': 'Your trial ends tomorrow',
+  'O plano da sua empresa foi alterado pelo KORbuild': 'Your company\'s plan was changed by KORbuild',
 };
 
 const idiomaDe = (i: unknown): Idioma => (i === 'pt' ? 'pt' : 'en');

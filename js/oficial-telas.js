@@ -162,7 +162,15 @@ function moldura(ativa, conteudo) {
       htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>' +
     '<main class="pagina pagina-larga oficial-pagina">' +
       '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + abas.map(([k, r]) => '<a href="#/conta' + (k === 'inicio' ? '' : '/' + k) + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
-      conteudo + '</main>';
+      htmlAvisoDoPlano() + conteudo + '</main>';
+}
+
+/** Conta suspensa (só lê) ou teste vencido: o aviso fica no alto de toda tela da conta (docs/banco.md §15.6). */
+function htmlAvisoDoPlano() {
+  const pl = (conta.empresa && conta.empresa.plano) || {};
+  const vencido = pl.status === 'teste' && /^\d{4}-\d{2}-\d{2}/.test(pl.teste_ate || '') && pl.teste_ate.slice(0, 10) < new Date().toISOString().slice(0, 10);
+  if (pl.status !== 'suspensa' && !vencido) return '';
+  return '<section class="aviso aviso-alerta aviso-plano" role="alert"><b>' + (pl.status === 'suspensa' ? tr('Esta conta está suspensa. Fale com o KORbuild.') : tr('Seu período de teste terminou: fale com o KORbuild.')) + '</b></section>';
 }
 
 function htmlInicio() {
@@ -185,6 +193,10 @@ function htmlInicio() {
     (pode('concorrencias.gerir')
       ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Concorrências') + '</h2><p>' + tr('As concorrências já funcionam com o banco de dados: convide prestadoras, receba propostas (pela plataforma ou por link), compare e feche; a obra da vencedora nasce ligada à sua.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/daily/concorrencias">' + icone('tabela', 18) + tr('Abrir as concorrências') + '</a></div></section>'
+      : '') +
+    (conta.ehAdmin
+      ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Administração da plataforma (KORbuild)') + '</h2>' +
+        '<div class="btn-linha"><a class="btn btn-contorno" href="admin.html">' + tr('Administração da plataforma') + '</a></div></section>'
       : '') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Os módulos chegam em etapas') + '</h2>' +
       '<p>' + tr('A conta, os cadastros, o Daily (com o cronograma da obra), o Crew, o Measure e as concorrências já estão no banco de dados. Os avisos por e-mail chegam na próxima etapa.') + '</p>' +
