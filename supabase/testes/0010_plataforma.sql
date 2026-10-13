@@ -31,6 +31,8 @@ create function pg_temp.nlog(p_empresa uuid, p_acao text) returns int language s
 create function pg_temp.naud(p_empresa uuid) returns int language sql security definer as $$
   select count(*)::int from public.auditoria where empresa_id = p_empresa and tabela = 'empresas' and acao = 'plano' and motivo like 'Plataforma: %' $$;
 grant execute on function pg_temp.n(text, text), pg_temp.nlog(uuid, text), pg_temp.naud(uuid) to authenticated;
+-- o banco de verdade guarda o registro de outras execuções (ele só aceita insert): conta-se a diferença, não o total
+select set_config('kb.plano_antes', pg_temp.nlog(null, 'plano')::text, false);
 
 -- só o Adm administra a plataforma neste teste (os outros administradores de verdade ficam como estavam: é tudo ROLLBACK)
 delete from public.admins_plataforma;
@@ -227,7 +229,7 @@ reset role;
 delete from public.empresas where id in (pg_temp.u('A'), pg_temp.u('B'), pg_temp.u('C'), pg_temp.u('E'));
 do $$ begin
   if exists (select 1 from public.admin_log where empresa_id in (pg_temp.u('A'), pg_temp.u('B'), pg_temp.u('C'), pg_temp.u('E'))) then raise exception 'FALHOU: o registro da plataforma ficou apontando empresa excluída'; end if;
-  if (select count(*) from public.admin_log where acao = 'plano') <> 4 then raise exception 'FALHOU: o registro da plataforma devia ficar (4 mudanças de plano)'; end if;
+  if pg_temp.nlog(null, 'plano') - current_setting('kb.plano_antes')::int <> 4 then raise exception 'FALHOU: o registro da plataforma devia ficar (4 mudanças de plano)'; end if;
 end $$;
 
 select 'fatia 8c: todas as verificações passaram' as resultado;
