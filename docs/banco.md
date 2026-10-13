@@ -593,6 +593,12 @@ categoria: push e e-mail), `notificar()`, `avisos_pendentes_email()`, `marcar_av
 O que muda: as **categorias** (as antigas eram do Match), o **remetente e o modelo** do e-mail (o layout de
 `supabase/email`, nos dois idiomas) e **quem chama `notificar()`**: as funções das fatias 3 a 7.
 
+**O que a conferência do projeto mostrou (outubro de 2026):** a `enviar-avisos` publicada é a do Match (marca "KORbuild
+Match", texto em português, site padrão do Match) e manda por **SMTP genérico**, lendo `SMTP_HOST`, `SMTP_PORT`,
+`SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM` e `SITE_URL`; **nenhum desses segredos está configurado** no projeto (só
+`CRON_SECRET` e os do próprio Supabase), então hoje nenhum aviso sai. O job `kor-enviar-avisos` roda a cada 10 minutos.
+A função será **reescrita do zero** (não se aproveita nada dela além do contrato com o banco).
+
 ### 15.2 Avisos: o que vira linha em `notificacoes` (sininho de verdade) e e-mail
 
 Só o que acontece **no servidor por ação de outra pessoa ou empresa** vira aviso gravado; o que o aparelho calcula
@@ -607,7 +613,7 @@ e-mail (docs/alertas.md). Categorias novas (as de `notificacoes` e de `notificac
 | `crew` | o funcionário com login · quem aprova | semana aprovada ou devolvida (`decidir_semana`) · batida recusada no envio | só sininho |
 | `conta` | quem administra a empresa (`settings.conta`) | teste a vencer (7 e 1 dia antes), plano alterado pela plataforma | sim, na hora |
 
-**Agrupado** = como hoje: a função de borda roda a cada 5 minutos, junta os avisos não lidos de cada pessoa com mais
+**Agrupado** = como hoje: a função de borda roda a cada 5 minutos (hoje são 10), junta os avisos não lidos de cada pessoa com mais
 de 3 minutos num e-mail só, respeitando `notificacao_prefs`. **Na hora** = `email_em` null e espera zero.
 
 **Quem não tem login** (a prestadora convidada só por e-mail; a pessoa convidada para entrar na empresa) não tem
@@ -620,9 +626,14 @@ registro, não o token). "Copiar o link" continua existindo para reenviar à mã
 
 ### 15.3 O e-mail
 
-- **Remetente:** `KORbuild <no-reply@korbuildtech.com>`. Para isso o domínio precisa estar verificado no provedor de
-  envio (os registros SPF e DKIM no DNS do korbuildtech.com): é uma tarefa sua, no painel do provedor; eu digo quais
-  registros assim que souber o provedor (a função de borda publicada é quem sabe: ver 15.6).
+- **Remetente:** `KORbuild <no-reply@korbuildtech.com>`. A função fala **SMTP genérico** (biblioteca `nodemailer`),
+  então o provedor é só configuração e se troca sem mexer no código: segredos `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+  `SMTP_PASS`, `EMAIL_FROM`, `SITE_URL` e `CRON_SECRET` (quem chama a função). Dois caminhos:
+  (a) **uma caixa `no-reply@korbuildtech.com` na hospedagem do domínio** (a Hostinger, se o domínio estiver lá; o padrão
+  do código antigo já era `smtp.hostinger.com`): não pede nenhum registro de DNS novo, serve para a homologação e o
+  começo do uso; (b) **um serviço de envio** (Resend, Amazon SES, Postmark), que pede SPF e DKIM no DNS do domínio e
+  aguenta volume maior. Recomendação: começar por (a) e passar para (b) quando o volume pedir; a troca é só trocar os
+  segredos.
 - **Modelo:** o mesmo layout de `supabase/email` (marca, botão, rodapé), gerado por `tools/gerar-emails.py`, com os
   dois idiomas: o da pessoa (`user_metadata.idioma`) ou o de `fila_email.idioma` (o da contratante que convidou).
 - **Conteúdo:** título, uma linha por aviso, um botão **Abrir no KORbuild** (o `link` do aviso, no endereço de
@@ -667,5 +678,8 @@ situação que trava: as funções de gravação (`salvar_rdo`, `registrar_batid
   `admin_*`, `empresa_ativa()` e `teste_ate` no `criar_empresa`; job `kor-prazos` (diário, 8h de Nova York).
   Teste `0009_avisos.sql`. Depois: a função de borda `enviar-avisos` reescrita (remetente, modelo, `fila_email`) e
   `admin.html` + `js/admin.js`; teste `tests/avisos-oficial.test.mjs` (com a função de borda imitada no local).
-- **De você:** (1) o ok a este desenho; (2) a sessão local baixar a função `enviar-avisos` publicada (só leitura) para
-  eu ver o provedor de envio e a frequência do job; (3) os registros de DNS do domínio no provedor, quando eu disser quais.
+- **De você:** (1) o ok a este desenho; (2) dizer onde está o domínio korbuildtech.com e criar a caixa
+  `no-reply@korbuildtech.com` (ou escolher o serviço de envio, 15.3); (3) a senha dessa caixa **só como variável de
+  ambiente na sua máquina** (nunca no chat): a sessão local publica os segredos com `supabase secrets set`.
+- **Da sessão local, antes da migração:** o comando do job `kor-enviar-avisos` (só leitura, valores secretos trocados por
+  `***`) para eu manter o jeito como o job chama a função com o `CRON_SECRET`.
