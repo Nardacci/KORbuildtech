@@ -14,7 +14,7 @@
 import { EMPRESAS, nomeNovo, emailDe, SENHA_VARIAVEL } from './massa-demo/dados.mjs';
 
 const REAL = process.argv.includes('--real');
-const FASES = ((process.argv.find((a) => a.startsWith('--fase=')) || '').slice(7) || 'estrutura,ponto,diarios,planos').split(',');
+const FASES = ((process.argv.find((a) => a.startsWith('--fase=')) || '').slice(7) || 'estrutura,ponto,diarios,cronograma,planos').split(',');
 const { sql, sqlExec, rest, garantirUsuario } = await import(REAL ? '../tests/_supabase-real.mjs' : '../tests/_supabase-local.mjs');
 const SENHA = process.env[SENHA_VARIAVEL] || '';
 if (REAL && SENHA.length < 12) { console.error('Defina ' + SENHA_VARIAVEL + ' (pelo menos 12 caracteres) na variável de ambiente; ela nunca vai para o repositório.'); process.exit(2); }
@@ -159,14 +159,16 @@ async function ponto() {
     for (let dia = inicioJanela; dia <= e.hoje; dia = somar(dia, 1)) {
       const dow = diaDaSemana(dia);
       if (dow === 0 || dow === 6) continue;
-      const obra = obraDoDia(e, dia, dow);
-      if (!obra) continue;
+      const ativas = obrasAtivas(e, dia);
+      if (!ativas.length) continue;
       const lote = [];
-      const presentes = [];
-      for (const f of e.funcionarios) {
+      const presentes = {};   // obra → quem foi para ela neste dia
+      for (const [fi, f] of e.funcionarios.entries()) {
         const r = sorteio(e.chave + dia + f.nome);
         if (r() < 0.05) continue;   // faltou
-        presentes.push(f);
+        // com duas obras no ar a equipe se divide: 3 de cada 5 ficam na primeira, o resto vai para a outra
+        const obra = ativas.length > 1 && fi % 5 >= 3 ? ativas[1] : ativas[0];
+        (presentes[obra.id_] = presentes[obra.id_] || []).push(f);
         const dentro = r() > 0.04;
         const pos = () => ({ lat: obra.lat + (dentro ? (r() - 0.5) * 0.0006 : 0.007), lon: obra.lon + (dentro ? (r() - 0.5) * 0.0006 : 0.004), precisao: 6 + Math.floor(r() * 12), fonte_gps: 'gps' });
         const entra = 7 * 60 - 10 + Math.floor(r() * 25), saiu = 15 * 60 + 30 + Math.floor(r() * 120);
@@ -177,7 +179,7 @@ async function ponto() {
           lote.push({ id: crypto.randomUUID(), funcionario_id: f.id, tipo, obra_id: obra.id_, etapa: ETAPA_DE(e, Math.floor((semente(dia) % 3))), em: em.toISOString(), ...pos() });
         }
       }
-      e.presenca[dia] = { obra: obra.id_, presentes };
+      for (const [oid, quem] of Object.entries(presentes)) e.presenca[dia + '|' + oid] = { obra: oid, presentes: quem };
       for (let i = 0; i < lote.length; i += 80) {
         const res = await rpc(foreman.id, 'registrar_batidas', { p: lote.slice(i, i + 80) });
         enviadas += res.gravadas.length; recusadas += res.recusadas.length;
@@ -201,11 +203,7 @@ async function ponto() {
     console.log('    semanas aprovadas: ' + aprovados);
   }
 }
-function obraDoDia(e, dia, dow) {
-  const ativas = e.obras.filter((o) => somar(e.hoje, o.inicio) <= dia && dia <= somar(e.hoje, o.inicio + o.prazo));
-  if (!ativas.length) return null;
-  return ativas.length > 1 && dow >= 4 ? ativas[1] : ativas[0];
-}
+const obrasAtivas = (e, dia) => e.obras.filter((o) => somar(e.hoje, o.inicio) <= dia && dia <= somar(e.hoje, o.inicio + o.prazo));
 
 // ---------------------------------------------------------------- os diários
 /* Quem bateu entrada em cada dia (para o diário falar das mesmas pessoas que o ponto). */
@@ -213,7 +211,7 @@ async function presencaDoBanco(e) {
   const linhas = await sql(`select b.funcionario_id, (b.em at time zone 'America/New_York')::date::text as dia, b.obra_id from public.batidas b where b.empresa_id = '${e.id}' and b.tipo = 'entrada'`);
   const presenca = {};
   for (const l of linhas) {
-    const p = presenca[l.dia] = presenca[l.dia] || { obra: l.obra_id, presentes: [] };
+    const p = presenca[l.dia + '|' + l.obra_id] = presenca[l.dia + '|' + l.obra_id] || { obra: l.obra_id, presentes: [] };
     const f = e.funcionarios.find((x) => x.id === l.funcionario_id);
     if (f) p.presentes.push(f);
   }
@@ -232,7 +230,7 @@ async function diarios() {
       const ja = await sql(`select count(*)::int n from public.rdos where obra_id = '${o.id_}'`);
       if (ja[0].n > 0) { console.log('  ' + o.nome + ': já tem diários, pulei'); continue; }
       const aprovador = o.para ? (E[o.para[0]].pessoas.gestor || E[o.para[0]].pessoas.admin) : e.pessoas.admin;
-      const dias = Object.keys(e.presenca).filter((d) => e.presenca[d].obra === o.id_ && d >= somar(e.hoje, -21)).sort();
+      const dias = Object.keys(e.presenca).filter((k) => e.presenca[k].obra === o.id_).map((k) => k.split('|')[0]).filter((d) => d >= somar(e.hoje, -21)).sort();
       const contagem = {};
       for (const [i, dia] of dias.entries()) {
         const passados = dias.filter((d) => d < e.hoje);
@@ -240,14 +238,16 @@ async function diarios() {
         const r = sorteio(e.chave + o.nome + dia);
         const manha = TEMPOS[Math.floor(r() * 6)], tarde = TEMPOS[Math.floor(r() * 6)];
         const hoje = dia === e.hoje;
+        if (oi % 7 === 3 && !hoje && falta <= 1) continue;   // uma obra de propósito sem relatório nos dois últimos dias (o painel mostra o atraso)
         let estado = hoje ? (oi % 2 === 0 ? 'rascunho' : null) : falta === 0 ? ((oi % 2 === 1 || oi % 5 === 2) ? 'enviado' : 'aprovado') : falta === 1 && oi % 3 === 0 ? 'ajustes' : 'aprovado';
         if (!estado) continue;
         const id = crypto.randomUUID();
-        const presentes = e.presenca[dia].presentes;
+        const presentes = e.presenca[dia + '|' + o.id_].presentes;
         const porFuncao = {};
         for (const f of presentes) porFuncao[f.funcao] = (porFuncao[f.funcao] || 0) + 1;
         const faltas = {};
-        for (const f of e.funcionarios) if (!presentes.includes(f)) faltas[f.funcao] = (faltas[f.funcao] || 0) + 1;
+        const doDia = new Set(Object.entries(e.presenca).filter(([k]) => k.startsWith(dia + '|')).flatMap(([, v]) => v.presentes));
+        if (o === obrasAtivas(e, dia)[0]) for (const f of e.funcionarios) if (!doDia.has(f)) faltas[f.funcao] = (faltas[f.funcao] || 0) + 1;   // quem faltou o dia todo entra no diário da primeira obra
         const semAtividade = manha === 'chuva' && tarde === 'chuva' && !hoje;
         try {
           if (semAtividade) {
@@ -277,6 +277,57 @@ async function diarios() {
   }
 }
 
+// ---------------------------------------------------------------- o cronograma
+let cronGlobal = 0;
+async function cronograma() {
+  console.log('\nCronograma: etapas, avanços, atrasos, linhas de base e publicação para as construtoras');
+  for (const e of Object.values(E)) {
+    if (e.atuacao === 'construtora') continue;
+    const admin = e.pessoas.admin;
+    for (const o of e.obras) {
+      const oi = cronGlobal++;
+      const ja = await sql(`select count(*)::int n from public.cronograma_etapas where obra_id = '${o.id_}'`);
+      if (ja[0].n > 0) { console.log('  ' + o.nome + ': já tem cronograma, pulei'); continue; }
+      const nomes = [...(e.etapas.length ? e.etapas : ['Work']), 'Punch list and closeout'];
+      const n = nomes.length, total = o.prazo;
+      const etapas = nomes.map((nome, k) => ({ nome, ini: Math.floor((k * total) / n), fim: Math.floor(((k + 1) * total) / n) - 1 }));
+      const ids = [];
+      for (const [k, et] of etapas.entries()) {
+        ids.push(await rpc(admin.id, 'salvar_etapa', { p: { obra_id: o.id_, nome: et.nome, inicio: somar(e.hoje, o.inicio + et.ini), fim: somar(e.hoje, o.inicio + et.fim), responsavel_id: e.pessoas.encarregado.membro } }));
+      }
+      // avanços até hoje (a obra atrasada, 1 em cada 3, anda 25 pontos abaixo do esperado)
+      const atrasada = oi % 3 === 1;
+      for (const [k, et] of etapas.entries()) {
+        const ini = somar(e.hoje, o.inicio + et.ini), fim = somar(e.hoje, o.inicio + et.fim), tam = et.fim - et.ini + 1;
+        const marcos = [];
+        if (fim < e.hoje || o.concluida) marcos.push([somar(ini, Math.floor(tam / 3)), 40], [somar(ini, Math.floor((2 * tam) / 3)), 80], [fim, 100]);
+        else if (ini <= e.hoje) {
+          const f = Math.min(0.9, (diasEntre(ini, e.hoje) + 1) / tam);
+          const alvo = Math.max(5, Math.round((f * 100 - (atrasada ? 25 : 0)) / 5) * 5);
+          marcos.push([somar(ini, Math.min(3, Math.floor(tam / 4))), Math.min(25, alvo)]);
+          if (alvo > 25) marcos.push([somar(e.hoje, -1), alvo]);
+        }
+        for (const [data, pct] of marcos) {
+          if (data > e.hoje) continue;
+          try { await rpc(admin.id, 'registrar_avanco', { p_etapa: ids[k], p_pct: pct, p_data: data }); } catch (err) { console.log('    avanço ' + et.nome + ': ' + String(err.message).slice(0, 120)); }
+        }
+      }
+      // atraso visível contra a linha de base: a etapa em andamento ganha dias e as seguintes andam junto
+      if (atrasada && !o.concluida) {
+        const atual = etapas.findIndex((et) => somar(e.hoje, o.inicio + et.fim) >= e.hoje);
+        if (atual >= 0) {
+          for (let k = atual; k < etapas.length; k++) await rpc(admin.id, 'salvar_etapa', { p: { id: ids[k], obra_id: o.id_, nome: etapas[k].nome, inicio: somar(e.hoje, o.inicio + etapas[k].ini + (k === atual ? 0 : 6)), fim: somar(e.hoje, o.inicio + etapas[k].fim + 6), responsavel_id: e.pessoas.encarregado.membro } });
+          if (oi % 2 === 1) await rpc(admin.id, 'nova_linha_base', { p_obra: o.id_, p_motivo: 'Material lead time pushed the remaining stages by six days.' });
+        }
+      }
+      let publicado = 0;
+      if (o.para) { await rpc(admin.id, 'publicar_cronograma', { p_obra: o.id_ }); publicado = 1; if (atrasada) { await rpc(admin.id, 'publicar_cronograma', { p_obra: o.id_ }); publicado = 2; } }
+      console.log('  ' + o.nome + ': ' + etapas.length + ' etapas' + (atrasada ? ', atrasada' : '') + (publicado ? ', publicada ' + publicado + 'x' : ''));
+    }
+  }
+}
+const diasEntre = (a, b) => Math.round((new Date(b + 'T12:00:00Z') - new Date(a + 'T12:00:00Z')) / 86400000);
+
 // ---------------------------------------------------------------- planos e acessos
 async function planos() {
   console.log('\nPlanos, marca de demonstração e últimos acessos');
@@ -289,11 +340,17 @@ async function planos() {
   }
 }
 
-for (const f of ['estrutura', 'ponto', 'diarios', 'planos']) {
+/* Empresa suspensa não grava (é o que a administração faz): para completar a massa numa conta que já passou pela fase "planos",
+ * libera as suspensas antes e a fase "planos" roda de novo no fim para suspender como antes. */
+const gravando = FASES.some((f) => f !== 'planos');
+if (gravando) await sqlExec(`update public.empresas set plano = jsonb_set(plano, '{status}', '"ativa"') where plano ->> 'demo' = 'true' and plano ->> 'status' = 'suspensa'`);
+if (gravando && !FASES.includes('planos')) FASES.push('planos');
+for (const f of ['estrutura', 'ponto', 'diarios', 'cronograma', 'planos']) {
   if (!FASES.includes(f)) continue;
   if (f === 'estrutura') await estrutura(); else if (!E.gc1) await estrutura();
   if (f === 'ponto') await ponto();
   if (f === 'diarios') await diarios();
+  if (f === 'cronograma') await cronograma();
   if (f === 'planos') await planos();
 }
 console.log('\nPronto. Logins: demo.<empresa>.<papel>@example.com (admin, gestor, encarregado, trabalhador); a senha é a de ' + SENHA_VARIAVEL + '.');
