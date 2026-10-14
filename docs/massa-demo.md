@@ -88,3 +88,9 @@ delete from public.empresas where plano ->> 'demo' = 'true';
 Os logins (`demo.…@example.com`) ficam e são reaproveitados numa nova carga. As fotos no Storage (bucket `diarios`, pastas das empresas apagadas) não caem sozinhas:
 listar com `select name from storage.objects where bucket_id = 'diarios' and name like '<empresa>/%'` e apagar **pela API do Storage**, como a limpeza dos testes faz.
 Para tirar também os logins: Admin API do Auth, `DELETE /auth/v1/admin/users/{id}` para cada `demo.%@example.com`.
+
+## Capturas do portal sobre a massa
+
+`tools/capturas-massa.mjs` tira as telas da conta de verdade com a massa (banco **local**, nunca o Supabase do projeto) e alimenta a página
+"A live account with sample data" do portal (`portal/fonte/{en,pt}/sample-data.md`). Ordem: `tools/supabase-local.sh`, `python3 -m http.server 8123 &`,
+`massa-demo.mjs` (todas as fases), `massa-measure.mjs`, depois `node --experimental-strip-types tools/capturas-massa.mjs` e `--idioma=pt`, e `python3 tools/gerar_portal.py`.

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A live account with sample data · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="KORbuild product guide, home"><img src="../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="index.html#modules">Modules</a>
+    <a href="organization.html">How it is organized</a>
+    <a href="presenting.html">Presenter's guide</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="pt/sample-data.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../?demo#/entrar">Open the prototype</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Modules">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guide</div><ul><li><a href="organization.html">How KORbuild is organized</a></li><li><a href="notifications.html">Notifications and email</a></li><li><a href="sample-data.html" aria-current=page>A live account with sample data</a></li><li><a href="platform-admin.html">Platform administration</a></li><li><a href="presenting.html">Presenter&#x27;s guide</a></li></ul>
+    <div class="lat-titulo">Modules</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li><li><a href="bids/index.html">Bids</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="index.html">Home</a> › Guide</nav>
+    <header class="doc-cabecalho">
+      <h1>A live account with sample data</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - A live account with sample data.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>KORbuild ships with a <strong>sample dataset</strong> in a real account: three general contractors, six subcontractors that work for them, and three independent subcontractors with no general contractor. Everything is fictional (names, addresses and <code>example.com</code> emails) and no email ever leaves. Use it to see the screens with real movement instead of empty lists. The pages below show what a customer sees on an ordinary Wednesday.</p>
+<h2 id="the-general-contractor-northfield-builders">The general contractor: Northfield Builders</h2>
+<p>The dashboard counts today's daily reports, the ones waiting for approval and the jobs that did not report. The red box names the job that is missing yesterday's report and who is responsible.</p>
+<figure><img src="img/live-gc-dashboard.png" alt="The general contractor&#x27;s dashboard: reports of the day, awaiting approval, late jobs" loading="lazy"><figcaption>The general contractor&#x27;s dashboard: reports of the day, awaiting approval, late jobs</figcaption></figure>
+<p>Reports from every subcontractor on the job land in <strong>Approvals</strong>.</p>
+<figure><img src="img/live-gc-approvals.png" alt="Approvals: reports waiting for the office" loading="lazy"><figcaption>Approvals: reports waiting for the office</figcaption></figure>
+<p>Opening a report shows the weather, the crew, the equipment, the work performed and the <strong>photo log</strong>. Each photo carries its time, GPS position and the fingerprint of the original file. Approving seals the report: it can no longer change.</p>
+<figure><img src="img/live-gc-review.png" alt="A report awaiting approval, with three photos" loading="lazy"><figcaption>A report awaiting approval, with three photos</figcaption></figure>
+<figure><img src="img/live-gc-jobs.png" alt="Jobs: each one with the subcontractors working on it" loading="lazy"><figcaption>Jobs: each one with the subcontractors working on it</figcaption></figure>
+<h2 id="bids-between-companies">Bids between companies</h2>
+<p>A bid with two proposals, leveled by cost code. The lowest value of each line is in green and a cost code a company did not bid is never counted as zero.</p>
+<figure><img src="img/live-gc-bid-leveling.png" alt="Leveling two bids side by side" loading="lazy"><figcaption>Leveling two bids side by side</figcaption></figure>
+<h2 id="the-subcontractor-summit-framing">The subcontractor: Summit Framing</h2>
+<p>The <strong>schedule</strong> has four tasks, a baseline, a forecast finish and the version the general contractor sees. Progress comes from the approved daily reports.</p>
+<figure><img src="img/live-schedule.png" alt="A job schedule with progress, baseline and forecast" loading="lazy"><figcaption>A job schedule with progress, baseline and forecast</figcaption></figure>
+<p><strong>Crew</strong> shows who is working now and which punches fell outside the job's fence. Each office-review item has the day open in one click.</p>
+<figure><img src="img/live-crew-now.png" alt="Who is working now, with off-site punches to review" loading="lazy"><figcaption>Who is working now, with off-site punches to review</figcaption></figure>
+<figure><img src="img/live-crew-timesheets.png" alt="Timesheets waiting for approval" loading="lazy"><figcaption>Timesheets waiting for approval</figcaption></figure>
+<h2 id="measure">Measure</h2>
+<p>A subcontractor of a general contractor and an independent one, each with projects at different stages: estimating, proposal sent.</p>
+<figure><img src="img/live-measure-projects.png" alt="Projects of a siding subcontractor" loading="lazy"><figcaption>Projects of a siding subcontractor</figcaption></figure>
+<figure><img src="img/live-measure-independent.png" alt="Projects of an independent painting company" loading="lazy"><figcaption>Projects of an independent painting company</figcaption></figure>
+<h2 id="the-korbuild-team-view">The KORbuild team view</h2>
+<p>In the platform administration the sample companies carry a <strong>Demo</strong> badge. The list also shows a company with an expired trial, one whose trial ends in 6 days and one that is suspended.</p>
+<figure><img src="img/live-platform-admin-companies.png" alt="Platform administration: twelve sample companies" loading="lazy"><figcaption>Platform administration: twelve sample companies</figcaption></figure>
+<h2 id="signing-in">Signing in</h2>
+<p>Sample users follow the pattern <code>demo.&lt;company&gt;.&lt;role&gt;@example.com</code>. The password is shared with the team privately; it is never published here. See <code>docs/massa-demo.md</code> in the repository for the full list and how to load or remove the data.</p>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#the-general-contractor-northfield-builders">The general contractor: Northfield Builders</a></li><li><a href="#bids-between-companies">Bids between companies</a></li><li><a href="#the-subcontractor-summit-framing">The subcontractor: Summit Framing</a></li><li><a href="#measure">Measure</a></li><li><a href="#the-korbuild-team-view">The KORbuild team view</a></li><li><a href="#signing-in">Signing in</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 14, 2026 · <a href="../">Main sign-in</a> · <a href="../?demo#/entrar">Prototype</a></div>
+  <div>Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="assets/portal.js"></script>
+</body></html>

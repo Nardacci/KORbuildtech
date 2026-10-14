@@ -119,6 +119,7 @@ PT = {
     'The documentation of this module is being written. Meanwhile, see it working in the': 'A documentação deste módulo está sendo escrita. Enquanto isso, veja-o funcionando no',
     'prototype': 'protótipo',
     'The bell, the emails KORbuild sends, how to choose what arrives by email and the rules behind it.': 'O sininho, os e-mails que o KORbuild envia, como escolher o que chega por e-mail e as regras por trás.',
+    'The sample dataset in a real account: general contractors, subcontractors and independents with reports, photos, schedules, bids and punches.': 'A massa de exemplo numa conta de verdade: construtoras, prestadoras e independentes com diários, fotos, cronogramas, concorrências e batidas de ponto.',
     'The KORbuild team panel: companies, plans, suspension, email queue and default values.': 'O painel da equipe do KORbuild: empresas, planos, suspensão, fila de e-mails e valores padrão.',
 }
 
@@ -183,6 +184,7 @@ GERAIS = [
     {'slug': 'organization', 'titulo': 'How KORbuild is organized', 'desc': 'Who the customers are (general contractors and subcontractors), '
                                                                       'who registers what and what each company sees of the others.'},
     {'slug': 'notifications', 'titulo': 'Notifications and email', 'desc': 'The bell, the emails KORbuild sends, how to choose what arrives by email and the rules behind it.'},
+    {'slug': 'sample-data', 'titulo': 'A live account with sample data', 'desc': 'The sample dataset in a real account: general contractors, subcontractors and independents with reports, photos, schedules, bids and punches.'},
     {'slug': 'platform-admin', 'titulo': 'Platform administration', 'desc': 'The KORbuild team panel: companies, plans, suspension, email queue and default values.'},
     {'slug': 'presenting', 'titulo': "Presenter's guide", 'desc': 'How to present KORbuild to a customer: the story, the order of the screens, '
                                                                  'which demo user to sign in with and what to say at each step.'},

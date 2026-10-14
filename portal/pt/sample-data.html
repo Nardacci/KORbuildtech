@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uma conta de verdade com dados de exemplo · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="">
+<header class="topo">
+  <a class="marca" href="index.html" aria-label="Guia do produto KORbuild, início"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="index.html#modules">Módulos</a>
+    <a href="organization.html">Como se organiza</a>
+    <a href="presenting.html">Guia do apresentador</a>
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../sample-data.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../?demo#/entrar">Abrir o protótipo</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-geral)">
+  <aside class="lateral" aria-label="Módulos">
+    <a class="lat-modulo" href="index.html"><span class="ico">K</span>KORbuild</a>
+    <div class="lat-titulo">Guia</div><ul><li><a href="organization.html">Como o KORbuild se organiza</a></li><li><a href="notifications.html">Avisos e e-mails</a></li><li><a href="sample-data.html" aria-current=page>Uma conta de verdade com dados de exemplo</a></li><li><a href="platform-admin.html">Administração da plataforma</a></li><li><a href="presenting.html">Guia do apresentador</a></li></ul>
+    <div class="lat-titulo">Módulos</div><ul><li><a href="daily/index.html">Daily</a></li><li><a href="crew/index.html">Crew</a></li><li><a href="measure/index.html">Measure</a></li><li><a href="settings/index.html">Settings</a></li><li><a href="bids/index.html">Concorrências</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="index.html">Início</a> › Guia</nav>
+    <header class="doc-cabecalho">
+      <h1>Uma conta de verdade com dados de exemplo</h1>
+      <div class="doc-acoes"><a class="botao" href="files/KORbuild - Uma conta de verdade com dados de exemplo.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O KORbuild tem uma <strong>massa de dados de exemplo</strong> numa conta de verdade: três construtoras, seis prestadoras que trabalham para elas e três prestadoras independentes, sem construtora. Tudo é fictício (nomes, endereços e e-mails <code>example.com</code>) e nenhum e-mail sai. Serve para ver as telas com movimento, e não listas vazias. As páginas abaixo mostram o que um cliente vê num dia comum de trabalho.</p>
+<h2 id="a-construtora-northfield-builders">A construtora: Northfield Builders</h2>
+<p>O painel conta os diários do dia, os que aguardam aprovação e as obras que não relataram. A caixa vermelha aponta a obra sem o diário do último dia útil e quem é o responsável.</p>
+<figure><img src="img/live-gc-dashboard.png" alt="O painel da construtora: diários do dia, aguardando aprovação, obras atrasadas" loading="lazy"><figcaption>O painel da construtora: diários do dia, aguardando aprovação, obras atrasadas</figcaption></figure>
+<p>Os diários de todas as prestadoras da obra chegam em <strong>Aprovações</strong>.</p>
+<figure><img src="img/live-gc-approvals.png" alt="Aprovações: diários esperando o escritório" loading="lazy"><figcaption>Aprovações: diários esperando o escritório</figcaption></figure>
+<p>Abrir um diário mostra o clima, a equipe, os equipamentos, o serviço executado e o <strong>registro de fotos</strong>. Cada foto leva o horário, a posição GPS e a impressão digital do arquivo original. Aprovar sela o diário: ele não muda mais.</p>
+<figure><img src="img/live-gc-review.png" alt="Um diário aguardando aprovação, com três fotos" loading="lazy"><figcaption>Um diário aguardando aprovação, com três fotos</figcaption></figure>
+<figure><img src="img/live-gc-jobs.png" alt="Obras: cada uma com as prestadoras que trabalham nela" loading="lazy"><figcaption>Obras: cada uma com as prestadoras que trabalham nela</figcaption></figure>
+<h2 id="concorrencias-entre-empresas">Concorrências entre empresas</h2>
+<p>Uma concorrência com duas propostas, niveladas por código de custo. O menor valor de cada linha fica em verde e um código não cotado nunca conta como zero.</p>
+<figure><img src="img/live-gc-bid-leveling.png" alt="Nivelamento de duas propostas lado a lado" loading="lazy"><figcaption>Nivelamento de duas propostas lado a lado</figcaption></figure>
+<h2 id="a-prestadora-summit-framing">A prestadora: Summit Framing</h2>
+<p>O <strong>cronograma</strong> tem quatro etapas, uma linha de base, a previsão de término e a versão que a construtora vê. O avanço vem dos diários aprovados.</p>
+<figure><img src="img/live-schedule.png" alt="O cronograma de uma obra com avanço, linha de base e previsão" loading="lazy"><figcaption>O cronograma de uma obra com avanço, linha de base e previsão</figcaption></figure>
+<p>O <strong>Crew</strong> mostra quem está trabalhando agora e as batidas fora da cerca da obra. Cada item de revisão abre o dia com um toque.</p>
+<figure><img src="img/live-crew-now.png" alt="Quem está trabalhando agora, com batidas fora da obra para revisar" loading="lazy"><figcaption>Quem está trabalhando agora, com batidas fora da obra para revisar</figcaption></figure>
+<figure><img src="img/live-crew-timesheets.png" alt="Folhas de ponto aguardando aprovação" loading="lazy"><figcaption>Folhas de ponto aguardando aprovação</figcaption></figure>
+<h2 id="measure">Measure</h2>
+<p>Uma prestadora de construtora e uma independente, cada uma com projetos em etapas diferentes: em orçamento, proposta enviada.</p>
+<figure><img src="img/live-measure-projects.png" alt="Projetos de uma prestadora de revestimento" loading="lazy"><figcaption>Projetos de uma prestadora de revestimento</figcaption></figure>
+<figure><img src="img/live-measure-independent.png" alt="Projetos de uma empresa de pintura independente" loading="lazy"><figcaption>Projetos de uma empresa de pintura independente</figcaption></figure>
+<h2 id="a-visao-da-equipe-do-korbuild">A visão da equipe do KORbuild</h2>
+<p>Na administração da plataforma as empresas de exemplo levam a etiqueta <strong>Demo</strong>. A lista também mostra uma empresa com teste vencido, uma com teste terminando em 6 dias e uma suspensa.</p>
+<figure><img src="img/live-platform-admin-companies.png" alt="Administração da plataforma: doze empresas de exemplo" loading="lazy"><figcaption>Administração da plataforma: doze empresas de exemplo</figcaption></figure>
+<h2 id="como-entrar">Como entrar</h2>
+<p>Os usuários de exemplo seguem o padrão <code>demo.&lt;empresa&gt;.&lt;papel&gt;@example.com</code>. A senha é combinada em particular com a equipe e nunca é publicada aqui. Veja <code>docs/massa-demo.md</code> no repositório para a lista completa e como carregar ou remover os dados.</p>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#a-construtora-northfield-builders">A construtora: Northfield Builders</a></li><li><a href="#concorrencias-entre-empresas">Concorrências entre empresas</a></li><li><a href="#a-prestadora-summit-framing">A prestadora: Summit Framing</a></li><li><a href="#measure">Measure</a></li><li><a href="#a-visao-da-equipe-do-korbuild">A visão da equipe do KORbuild</a></li><li><a href="#como-entrar">Como entrar</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 14 de outubro de 2026 · <a href="../../">Entrada principal</a> · <a href="../../?demo#/entrar">Protótipo</a></div>
+  <div>As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>
