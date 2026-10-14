@@ -280,9 +280,17 @@ else {
   const jpeg = Buffer.from('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/yQALCAABAAEBAREA/8wABgAQEAX/2gAIAQEAAD8A0s8g/9k=', 'base64');
   const subir = (token, bucket, caminho, dados, tipo = 'image/jpeg', extra = {}) =>
     api(token, '/object/' + bucket + '/' + caminho, { metodo: 'POST', base: ST, bruto: dados, cabecalhos: { 'Content-Type': tipo, ...extra } });
+  // quem preenche o diário é o Encarregado (o perfil Administrador é de escritório e não tem daily.preencher: o 403 dele é o certo)
+  const idD = await criarUsuario('kb-e2e-daily-sec-d@example.com', 'Dani Sec');
+  const tD = await tok(idD, 'kb-e2e-daily-sec-d@example.com');
+  const [perfEnc] = await rest(idA, '/perfis_acesso?select=id&chave=eq.encarregado&empresa_id=eq.' + empA);
+  const conviteD = await rest(idA, '/rpc/convidar_usuario', { metodo: 'POST', corpo: { p_email: 'kb-e2e-daily-sec-d@example.com', p_nome: 'Dani Sec', p_perfil: perfEnc.id } });
+  await rest(idD, '/rpc/aceitar_convite', { metodo: 'POST', corpo: { p_token: conviteD } });
   const propria = empA + '/seg/a.jpg';
-  const r1 = await subir(tA, 'diarios', propria, jpeg);
-  verificar(r1.status < 300, 'A sobe uma foto na pasta da própria empresa', r1);
+  const r0 = await subir(tA, 'diarios', empA + '/seg/admin.jpg', jpeg);
+  verificar(recusado(r0), 'a Administradora (sem daily.preencher) não sobe foto de diário: quem preenche é o Encarregado', r0);
+  const r1 = await subir(tD, 'diarios', propria, jpeg);
+  verificar(r1.status < 300, 'o Encarregado da A sobe uma foto na pasta da própria empresa', r1);
   const r2 = await subir(tB, 'diarios', empA + '/seg/b.jpg', jpeg);
   verificar(recusado(r2), 'B não sobe arquivo na pasta da empresa A', r2);
   const r3 = await subir(tB, 'diarios', propria, jpeg, 'image/jpeg', { 'x-upsert': 'true' });
@@ -308,15 +316,15 @@ else {
     const r12 = await api(tB, '/object/sign/' + alheio.bucket_id + '/' + alheio.name, { metodo: 'POST', base: ST, corpo: { expiresIn: 60 } });
     verificar(recusado(r11) && recusado(r12), 'B não alcança um arquivo real de outra empresa (' + alheio.bucket_id + ')', { baixar: r11.status, assinar: r12.status });
   }
-  const r13 = await subir(tA, 'diarios', empA + '/seg/pagina.html', Buffer.from('<script>alert(1)</script>'), 'text/html');
+  const r13 = await subir(tD, 'diarios', empA + '/seg/pagina.html', Buffer.from('<script>alert(1)</script>'), 'text/html');
   verificar(recusado(r13), 'um arquivo HTML não entra no bucket de fotos (tipo proibido)', r13);
-  const r14 = await subir(tA, 'diarios', empA + '/seg/grande.jpg', Buffer.concat([jpeg, Buffer.alloc(6 * 1024 * 1024)]));
+  const r14 = await subir(tD, 'diarios', empA + '/seg/grande.jpg', Buffer.concat([jpeg, Buffer.alloc(6 * 1024 * 1024)]));
   verificar(recusado(r14), 'uma foto maior que 5 MB não entra (limite do bucket)', r14);
   const r15 = await subir(tA, 'plantas', empA + '/seg/foto.jpg', jpeg);
   verificar(recusado(r15), 'imagem não entra no bucket de plantas (só PDF)', r15);
   const r16 = await subir(tA, 'curriculos', empA + '/seg/x.pdf', Buffer.from('%PDF-1.4'), 'application/pdf');
   verificar(recusado(r16), 'o bucket antigo de currículos não aceita arquivo de ninguém', r16);
-  const r17 = await subir(tA, 'diarios', '../' + empB + '/seg/fuga.jpg', jpeg);
+  const r17 = await subir(tD, 'diarios', '../' + empB + '/seg/fuga.jpg', jpeg);
   verificar(recusado(r17), 'caminho com ".." não escapa da pasta da empresa', r17);
 }
 
@@ -335,7 +343,8 @@ else {
   verificar(g.status === 405 || g.status === 401, 'enviar-avisos só aceita POST', g);
   for (const c of ["' or 1=1 --", '0000-0000', 'AAAA-BBBB-CCCC-DDDD', '%', 'a'.repeat(2000)]) {
     const r = await chamar('diario-publico', '?codigo=' + encodeURIComponent(c));
-    verificar(r.status === 400 || r.status === 404, 'diario-publico recusa o código «' + c.slice(0, 20) + '» sem erro de servidor', { status: r.status, corpo: r.corpo });
+    // 400/404 da função, ou 403 com página HTML: o bloqueio do WAF (Cloudflare) na frente do Supabase barrou o padrão de injeção antes da função
+    verificar(r.status === 400 || r.status === 404 || (r.status === 403 && typeof r.corpo === 'string'), 'diario-publico recusa o código «' + c.slice(0, 20) + '» sem erro de servidor', { status: r.status, corpo: String(r.corpo).slice(0, 80) });
   }
   for (const t of ["' or 1=1 --", 'abc', '0'.repeat(48), 'z'.repeat(48)]) {
     const r = await chamar('convite-publico', '?token=' + encodeURIComponent(t));
