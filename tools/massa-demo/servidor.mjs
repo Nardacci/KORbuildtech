@@ -2,8 +2,9 @@
 import { createServer } from 'node:http';
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const RAIZ = new URL('../../', import.meta.url).pathname;
+const RAIZ = fileURLToPath(new URL('../../', import.meta.url));   // não use .pathname: no Windows vira /C:/… e não existe
 const TIPOS = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml', '.pdf': 'application/pdf', '.woff2': 'font/woff2', '.wasm': 'application/wasm' };
 export async function servirProjeto() {
   const servidor = createServer((req, res) => {

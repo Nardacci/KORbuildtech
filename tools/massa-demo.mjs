@@ -15,6 +15,7 @@ import { EMPRESAS, nomeNovo, emailDe, SENHA_VARIAVEL } from './massa-demo/dados.
 import { iniciarFotos } from './massa-demo/fotos.mjs';
 
 const REAL = process.argv.includes('--real');
+const SEM_FOTOS = process.argv.includes('--sem-fotos');   // para testar o script sem o Chromium das fotos
 const FASES = ((process.argv.find((a) => a.startsWith('--fase=')) || '').slice(7) || 'estrutura,ponto,diarios,cronograma,concorrencias,planos').split(',');
 const { sql, sqlExec, rest, garantirUsuario, subirArquivo } = await import(REAL ? '../tests/_supabase-real.mjs' : '../tests/_supabase-local.mjs');
 const SENHA = process.env[SENHA_VARIAVEL] || '';
@@ -225,19 +226,21 @@ const LEGENDAS = ['Overview of the work area', 'Detail of the finished work', 'M
 let obraGlobal = 0;
 async function diarios() {
   console.log('\nDiários: 3 semanas, em vários estados (com fotos nos últimos 10 dias)');
-  const geradorDeFotos = await iniciarFotos();
+  const geradorDeFotos = SEM_FOTOS ? null : await iniciarFotos();
+  // antes de criar qualquer diário, prova que a foto sai: se não sair, para aqui (não deixa diário sem foto para trás)
+  if (geradorDeFotos) { const t = await geradorDeFotos.gerar({ cena: 'estrutura', obraNome: 'teste', lat: 43, lon: -71, quando: Date.now(), semente: 1 }); if (!t.foto.length) throw new Error('A foto de teste saiu vazia.'); }
   for (const e of Object.values(E)) {
     if (e.atuacao === 'construtora') continue;
     const foreman = e.pessoas.encarregado;
     if (!e.presenca) e.presenca = await presencaDoBanco(e);
     for (const o of e.obras) {
       const oi = obraGlobal++;
-      const ja = await sql(`select count(*)::int n from public.rdos where obra_id = '${o.id_}'`);
-      if (ja[0].n > 0) { console.log('  ' + o.nome + ': já tem diários, pulei'); continue; }
+      const jaDatas = new Set((await sql(`select data::text as d from public.rdos where obra_id = '${o.id_}'`)).map((x) => x.d));   // completa por dia: o que já existe fica
       const aprovador = o.para ? (E[o.para[0]].pessoas.gestor || E[o.para[0]].pessoas.admin) : e.pessoas.admin;
       const dias = Object.keys(e.presenca).filter((k) => e.presenca[k].obra === o.id_).map((k) => k.split('|')[0]).filter((d) => d >= somar(e.hoje, -21)).sort();
       const contagem = {};
       for (const [i, dia] of dias.entries()) {
+        if (jaDatas.has(dia)) continue;
         const passados = dias.filter((d) => d < e.hoje);
         const falta = passados.length - 1 - passados.indexOf(dia);   // 0 = o último dia de trabalho antes de hoje
         const r = sorteio(e.chave + o.nome + dia);
@@ -268,7 +271,7 @@ async function diarios() {
             };
             // fotos dos últimos 10 dias: 2 por diário, 3 nos mais recentes
             const fotos = [];
-            if (dia >= somar(e.hoje, -10)) {
+            if (geradorDeFotos && dia >= somar(e.hoje, -10)) {
               const qtd = dia >= somar(e.hoje, -3) ? 3 : 2;
               for (let k = 0; k < qtd; k++) {
                 const fid = crypto.randomUUID();
@@ -287,6 +290,7 @@ async function diarios() {
           else if (estado === 'ajustes') await rpc(aprovador.id, 'pedir_ajustes', { p_id: id, p_motivo: 'Please detail the quantities installed and the area completed.' });
           contagem[estado] = (contagem[estado] || 0) + 1;
         } catch (err) {
+          if (/Failed to fetch|fotos\.js|Target closed|browser has been closed/.test(String(err.message))) throw err;   // falha das fotos para a fase: não segue deixando buracos
           contagem.erro = (contagem.erro || 0) + 1;
           if (contagem.erro <= 2) console.log('    ' + dia + ' ' + o.nome + ': ' + String(err.message).slice(0, 200));
         }
@@ -294,7 +298,7 @@ async function diarios() {
       console.log('  ' + o.nome + ': ' + JSON.stringify(contagem));
     }
   }
-  await geradorDeFotos.fechar();
+  if (geradorDeFotos) await geradorDeFotos.fechar();
 }
 
 // ---------------------------------------------------------------- o cronograma

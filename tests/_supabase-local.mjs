@@ -8,6 +8,7 @@
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 export const SEGREDO = 'segredo-local-de-teste-com-mais-de-32-caracteres';
 /* LATENCIA_MS: espera antes de cada pedido ao REST, para reproduzir no banco local o que só aparece com a rede de verdade. */
@@ -81,7 +82,7 @@ export async function criarUsuario(email, nome) {
 }
 
 /* A massa de demonstração local guarda os arquivos (fotos) numa pasta, e o Storage de mentira dos testes e das capturas os lê de lá. */
-const PASTA_ARQUIVOS = new URL('../tools/massa-demo/.cache/storage/', import.meta.url).pathname;
+const PASTA_ARQUIVOS = fileURLToPath(new URL('../tools/massa-demo/.cache/storage/', import.meta.url));
 const doDisco = (chave) => { const f = PASTA_ARQUIVOS + chave; return existsSync(f) ? { dados: readFileSync(f), tipo: f.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' } : null; };
 export async function subirArquivo(id, bucket, caminho, dados) {
   const f = PASTA_ARQUIVOS + bucket + '/' + caminho;

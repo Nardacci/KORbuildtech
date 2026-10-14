@@ -1,29 +1,18 @@
 /* KORbuild — as fotos de exemplo da massa de demonstração: as mesmas cenas desenhadas do protótipo (js/fotos.js › fotoDeExemplo),
  * feitas no Chromium do Playwright (o Node puro não desenha imagens). Sobe um servidorzinho local só para servir os arquivos do projeto. */
 
-import { createServer } from 'node:http';
-import { readFileSync, existsSync, statSync } from 'node:fs';
-import { extname, join, normalize } from 'node:path';
 import { createHash } from 'node:crypto';
 import { chromium } from 'playwright';
-
-const RAIZ = new URL('../../', import.meta.url).pathname;
-const TIPOS = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.svg': 'image/svg+xml' };
+import { servirProjeto } from './servidor.mjs';
 
 export async function iniciarFotos() {
-  const servidor = createServer((req, res) => {
-    const caminho = normalize(join(RAIZ, decodeURIComponent(new URL(req.url, 'http://x').pathname)));
-    if (!caminho.startsWith(RAIZ) || !existsSync(caminho) || !statSync(caminho).isFile()) { res.writeHead(404); res.end(); return; }
-    res.writeHead(200, { 'content-type': TIPOS[extname(caminho)] || 'application/octet-stream' });
-    res.end(readFileSync(caminho));
-  });
-  await new Promise((ok) => servidor.listen(0, '127.0.0.1', ok));
-  const base = 'http://127.0.0.1:' + servidor.address().port + '/';
+  const servidor = await servirProjeto();
+  const base = servidor.base;
   const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
   const ctx = await browser.newContext();
   await ctx.addInitScript(() => { try { localStorage.setItem('kbt.idioma', 'en'); } catch { /* */ } });
   const pagina = await ctx.newPage();
-  await pagina.goto(base + 'manifest.json').catch(() => {});
+  await pagina.goto(base + 'js/config.js');   // uma página qualquer da mesma origem, para importar os módulos
   return {
     /** { cena, obraNome, lat, lon, quando (ms), semente } → { foto: Buffer, mini: Buffer, largura, altura, hash } */
     async gerar({ cena, obraNome, lat, lon, quando, semente }) {
@@ -36,6 +25,6 @@ export async function iniciarFotos() {
       const foto = Buffer.from(r.foto, 'base64');
       return { foto, mini: Buffer.from(r.mini, 'base64'), largura: r.largura, altura: r.altura, hash: createHash('sha256').update(foto).digest('hex') };
     },
-    async fechar() { await browser.close(); servidor.close(); },
+    async fechar() { await browser.close(); servidor.fechar(); },
   };
 }
