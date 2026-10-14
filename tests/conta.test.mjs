@@ -7,13 +7,14 @@
  * nunca é gravada nem impressa. */
 
 import { chromium } from 'playwright';
+import { randomBytes } from 'node:crypto';
 
 const BASE = process.argv[2] || 'http://localhost:8123/';
 const REF = process.env.SUPABASE_PROJECT_REF || 'gbdmtgephszxhaprpiss';
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 if (!TOKEN) { console.error('Defina SUPABASE_ACCESS_TOKEN.'); process.exit(1); }
 const URL_SB = 'https://' + REF + '.supabase.co';
-const SENHA = 'Teste-e2e-1234', SENHA2 = 'Teste-e2e-5678';
+const SENHA = 'Kb1!' + randomBytes(12).toString('base64url'), SENHA2 = 'Kb2!' + randomBytes(12).toString('base64url');   // novas a cada execução
 const ANA = 'kb-e2e-ana@example.com', BETO = 'kb-e2e-beto@example.com';
 
 let falhas = 0, passos = 0;

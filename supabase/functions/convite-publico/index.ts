@@ -67,7 +67,12 @@ Deno.serve(async (req) => {
   }
   if (!TOKEN.test(token)) return resposta({ erro: 'token' }, 400);
   if (!dentroDoLimite(token)) return resposta({ erro: 'limite' }, 429);
-  const erroDoBanco = (e: { message?: string } | null) => resposta({ erro: (e && e.message) || 'servidor' }, 400);
+  // só as mensagens escritas de propósito nas funções do banco (raise exception, código P0001) chegam a quem chamou;
+  // erro interno do Postgres (coluna, restrição, tipo) vira "servidor" e fica só no log da função
+  const erroDoBanco = (e: { message?: string; code?: string } | null) => {
+    if (e && e.code !== 'P0001') console.error('convite-publico', e.code, e.message);
+    return resposta({ erro: e && e.code === 'P0001' && e.message ? e.message : 'servidor' }, 400);
+  };
 
   if (acao === 'visto') { const { error } = await sb.rpc('visto_por_token', { p_token: token }); return error ? erroDoBanco(error) : resposta({ ok: true }); }
   if (acao === 'responder') {
@@ -87,7 +92,7 @@ Deno.serve(async (req) => {
       const rev = ((x.convite || {}).propostas || []).length + 1;
       const path = x.contratanteId + '/' + x.id + '/propostas/' + x.convite.id + '/rev-' + rev + '.pdf';
       const up = await sb.storage.from('concorrencias').upload(path, pdf, { contentType: 'application/pdf', upsert: true });
-      if (up.error) return resposta({ erro: up.error.message }, 400);
+      if (up.error) { console.error('convite-publico: envio do PDF', up.error.message); return resposta({ erro: 'Não foi possível guardar o PDF. Tente de novo.' }, 400); }
       p.pdfPath = path;
     }
     const { data, error } = await sb.rpc('proposta_por_token', { p_token: token, p });

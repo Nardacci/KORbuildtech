@@ -105,7 +105,7 @@ Enviar, responder, mandar proposta, fechar, aprovar quarteirização e escrever 
 | `notificacoes`, `notificacao_prefs`, `notificar()`, `avisos_pendentes_email()` (já lê o nome em `membros` desde a fatia 1), `marcar_avisos_enviados()`, a função de borda `enviar-avisos` e o job `kor-enviar-avisos` | **Ficam e ganham `empresa_id`.** No protótipo, o sininho é calculado; no produto, os avisos que viram e-mail (convite, aprovação pedida, prazo vencido) são gravados aqui. O e-mail troca o nome "KORbuild Match" pelo do KORbuild. |
 | `auditoria`, `auditar()` | **Ficam**, com `empresa_id` (§3). |
 | `tocar_atualizado_em()`, `eh_sistema()`, `ligar_sistema()`, `guarda_notificacao()` | Ficam enquanto servirem; revisadas na fatia em que forem usadas. |
-| A sua conta (`nardaccicoach@gmail.com`) | Fica. Vira o primeiro membro da primeira empresa e o primeiro `admins_plataforma`. |
+| A conta do dono do projeto | Fica. Vira o primeiro membro da primeira empresa e o primeiro `admins_plataforma`. |
 
 ## 8. Decisões (outubro de 2026)
 

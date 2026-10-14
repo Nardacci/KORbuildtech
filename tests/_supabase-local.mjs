@@ -77,7 +77,8 @@ export async function servicoRest(caminho, { metodo = 'GET', corpo } = {}) {
 
 export async function criarUsuario(email, nome) {
   const id = crypto.randomUUID();
-  sqlExec(`insert into auth.users (id, email, raw_user_meta_data, aud, role) values ('${id}', '${email}', '${JSON.stringify({ nome })}', 'authenticated', 'authenticated') on conflict (id) do nothing`);
+  const q = (t) => String(t).replace(/'/g, "''");   // o nome pode trazer aspas (o teste de XSS grava texto malicioso)
+  sqlExec(`insert into auth.users (id, email, raw_user_meta_data, aud, role) values ('${id}', '${q(email)}', '${q(JSON.stringify({ nome }))}', 'authenticated', 'authenticated') on conflict (id) do nothing`);
   return id;
 }
 

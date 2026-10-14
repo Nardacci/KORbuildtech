@@ -5,6 +5,7 @@
  * Storage, as empresas (em cascata) e os usuários desses e-mails. */
 
 import { readFileSync } from 'node:fs';
+import { randomBytes } from 'node:crypto';
 
 const config = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8');
 const URL_SB = config.match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1].replace(/\/$/, '');
@@ -12,7 +13,7 @@ const ANON = config.match(/SUPABASE_ANON_KEY\s*=\s*'([^']+)'/)[1];
 const REF = process.env.SUPABASE_PROJECT_REF || new URL(URL_SB).hostname.split('.')[0];
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 if (!TOKEN) { console.error('Defina SUPABASE_ACCESS_TOKEN para rodar contra o Supabase de verdade.'); process.exit(2); }
-const SENHA = 'Teste-e2e-daily-1234';
+const SENHA = 'Kb1!' + randomBytes(12).toString('base64url');   // nova a cada execução: os usuários de teste só existem durante o teste e nenhuma senha fica no repositório
 const PADRAO = 'kb-e2e-daily-%@example.com';
 export const nome = 'Supabase do projeto ' + REF;
 

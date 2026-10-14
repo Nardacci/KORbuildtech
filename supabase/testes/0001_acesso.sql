@@ -90,7 +90,10 @@ select set_config('role', 'anon', true);
 select set_config('request.jwt.claims', '{"role":"anon"}', true);
 select set_config('request.jwt.claim.sub', '', true);
 do $$ begin
-  if exists (select 1 from public.empresas) or exists (select 1 from public.membros) then raise exception 'FALHOU: anônimo leu dados'; end if;
+  -- desde a migração 13, anon nem tem privilégio nas tabelas: "permission denied" também é o resultado certo
+  begin
+    if exists (select 1 from public.empresas) or exists (select 1 from public.membros) then raise exception 'FALHOU: anônimo leu dados'; end if;
+  exception when insufficient_privilege then null; end;
 end $$;
 
 reset role;
