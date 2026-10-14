@@ -28,8 +28,9 @@ Movimento (feito pelas funções do app, cada uma como o dono do papel):
 - **Planos:** ativa, teste terminando em 6 dias, teste vencido há 4 dias e uma empresa **suspensa** (Keystone Masonry). A obra "Foundations" da
   Granite State está concluída.
 
-Fica para depois: projetos do Measure (planta, escala, medição, proposta emitida). Será montado **pelas telas** (Playwright), como nos testes
-`measure-oficial`, porque o Measure grava desenhos que só o app sabe montar.
+- **Measure** (`tools/massa-measure.mjs`, montado **pelas telas** com o Playwright, como nos testes `measure-oficial`, porque o Measure grava desenhos que só o app
+  sabe montar): em 5 empresas (Ridgeline Siding, Summit Framing, Granite State Concrete, Lakeside Painting, Merrimack Remodeling) o catálogo (itens com preço, um assembly,
+  margens) e 7 projetos com a planta de exemplo: 4 com escala conferida, medição e **proposta emitida**, 1 medido sem proposta e 2 só com a planta enviada.
 
 ## Logins
 
@@ -60,6 +61,12 @@ Fases: `estrutura`, `ponto`, `diarios`, `cronograma`, `concorrencias`, `retroagi
 liberada antes de qualquer gravação e suspensa de novo no fim). Local (testa o script sem tocar no projeto): `tools/supabase-local.sh` e
 `node tools/massa-demo.mjs` (cerca de 30 s; as fotos ficam em `tools/massa-demo/.cache/`, fora do repositório, e o Storage de mentira dos testes e das capturas
 as lê de lá).
+
+O Measure roda **depois**, num segundo comando (precisa do Playwright e da mesma `KOR_DEMO_SENHA`; sobe um servidorzinho local só para servir o app, que fala com o Supabase do `js/config.js`):
+
+```powershell
+node tools/massa-measure.mjs --real
+```
 
 ### A fase `retroagir` (só quando pedida)
 

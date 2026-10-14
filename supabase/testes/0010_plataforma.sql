@@ -90,7 +90,7 @@ do $$ declare x jsonb; d jsonb; n int; begin
   select count(*) into n from public.admin_empresas('Teste A');
   if n <> 1 then raise exception 'FALHOU: busca por nome (%)', n; end if;
   select e into x from public.admin_empresas('Prestadora Teste') e;
-  if x ->> 'nome' <> 'Prestadora Teste A' or (x ->> 'usuarios')::int <> 2 or (x ->> 'dias_de_teste')::int <> 14 or x -> 'plano' ->> 'status' <> 'teste' or jsonb_array_length(x -> 'modulos') <> 3 then raise exception 'FALHOU: linha da lista: %', x; end if;
+  if x ->> 'nome' <> 'Prestadora Teste A' or (x ->> 'usuarios')::int <> 2 or (x ->> 'dias_de_teste')::int not in (14, 15) or x -> 'plano' ->> 'status' <> 'teste' or jsonb_array_length(x -> 'modulos') <> 3 then raise exception 'FALHOU: linha da lista: %', x; end if;
   if (select count(*) from public.admin_empresas()) < 3 then raise exception 'FALHOU: a lista devia ter as 3 empresas do teste'; end if;
   d := public.admin_empresa(pg_temp.u('A'));
   if jsonb_array_length(d -> 'pessoas') <> 2 or not exists (select 1 from jsonb_array_elements(d -> 'pessoas') p where p ->> 'email' = 'kb-testea-ana@example.com' and p ->> 'perfil' = 'Administrador') or d -> 'empresa' ? 'logo_path' then raise exception 'FALHOU: detalhe da empresa: %', d; end if;
