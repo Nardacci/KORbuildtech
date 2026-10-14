@@ -100,14 +100,27 @@ console.log('\n4. Código do app');
   for (const [f, t] of app) for (const m of t.matchAll(/<a\b[^>]*target=["']?_blank[^>]*>/g)) if (!/rel=["'][^"']*noopener/.test(m[0])) semNoopener.push(f + ': ' + m[0].slice(0, 80));
   for (const [f, t] of app) for (const m of t.matchAll(/window\.open\(([^)]*)\)/g)) if (!/noopener/.test(m[1]) && /_blank|['"]https?:/.test(m[1])) semNoopener.push(f + ': window.open sem noopener');
   verificar(!semNoopener.length, 'links e janelas que abrem outra aba levam rel="noopener"', semNoopener.slice(0, 5));
+  // sem manipulador inline (onsubmit=, onclick=…) nem <script> inline: é o que deixa a política de conteúdo (CSP) ligável sem quebrar nada
+  const inline = [];
+  for (const [f, t] of app) {
+    if (f === 'sw.js') continue;
+    for (const m of t.matchAll(/\son(?:submit|click|dblclick|change|input|focus|blur|error|load|keydown|keyup|keypress|mouse\w+|touch\w+|pointer\w+)\s*=\s*["'\\]/g)) inline.push(f + ': ' + m[0].trim());
+    if (f.endsWith('.html')) for (const m of t.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>/g)) inline.push(f + ': <script> inline');
+  }
+  verificar(!inline.length, 'nenhum manipulador de evento inline (onsubmit=, onclick=…) nem <script> inline nas telas', inline.slice(0, 8));
   const htmls = ['index.html', 'admin.html'];
   const semMeta = htmls.filter((f) => !/<meta[^>]+name=["']viewport/.test(ler(f)));
   verificar(!semMeta.length, 'as páginas do app têm o meta viewport', semMeta);
   const http = [...lido].filter(([f, t]) => /^(js|index\.html|admin\.html|sw\.js|manifest)/.test(f) && /["'(]http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org)/.test(t)).map(([f]) => f);
   verificar(!http.length, 'o app não chama nenhum endereço http:// (só https://)', http);
+  // se a política de conteúdo estiver ligada nas páginas (tools/csp-meta.mjs --ligar), tem de ser exatamente a testada em tests/_csp.mjs
+  const { POLITICA } = await import('./_csp.mjs');
+  const ligadas = htmls.filter((f) => ler(f).includes('<!-- csp:inicio -->'));
+  const diferentes = ligadas.filter((f) => !ler(f).includes('content="' + POLITICA.replace(/"/g, '&quot;') + '"'));
+  verificar(!diferentes.length, 'a política de conteúdo ligada nas páginas é a mesma medida pelos testes (' + (ligadas.length ? ligadas.join(', ') : 'ainda desligada') + ')', diferentes);
   // aviso, não falha: a política de conteúdo (CSP) segura o estrago se algum texto de usuário escapar do esc()
   const csp = htmls.filter((f) => !/Content-Security-Policy/i.test(ler(f)));
-  if (csp.length) console.log('  AVISO  sem Content-Security-Policy em: ' + csp.join(', ') + ' (recomendado como cinto de segurança contra XSS; ver docs/seguranca.md)');
+  if (csp.length) console.log('  AVISO  sem Content-Security-Policy em: ' + csp.join(', ') + ' (pronta e medida com zero violações; liga com node tools/csp-meta.mjs --ligar, ver docs/seguranca.md)');
 }
 
 /* ---------- 5. Funções de borda ---------- */
@@ -120,6 +133,7 @@ console.log('\n5. Funções de borda');
   const diario = ler('supabase/functions/diario-publico/index.ts');
   verificar(/\^\[0-9A-F\]\{4\}-\[0-9A-F\]\{4\}-\[0-9A-F\]\{4\}\$/.test(diario), 'diario-publico só aceita o formato exato do código antes de tocar no banco');
   verificar(/delete diario\.empresa_id/.test(diario) && /empresa_id: _e/.test(diario), 'diario-publico não devolve o código da empresa nem os caminhos das fotos');
+  verificar(/dentro\(chamadas, ip, 60, true\)/.test(diario) && /dentro\(erros, ip, 12, true\)/.test(diario) && /return resposta\(\{ erro: 'limite' \}, 429\)/.test(diario), 'diario-publico limita as chamadas e os códigos errados por endereço (429)');
   const convite = ler('supabase/functions/convite-publico/index.ts');
   verificar(/\^\[0-9a-f\]\{48\}\$/.test(convite) && /dentroDoLimite/.test(convite), 'convite-publico valida o formato do token e limita as tentativas');
   // devolver ao chamador só as mensagens escritas de propósito no banco (código P0001); nada de erro interno do Postgres ou do Storage

@@ -123,7 +123,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   return moldura({
     ativo: 'concorrencias', largo: true, titulo: c ? tr('Rascunho: {nome}', { nome: c.servico || tr('(sem nome)') }) : tr('Nova concorrência'),
     subtitulo: tr('O pacote que as prestadoras recebem para cotar'), voltar,
-    conteudo: avisoPolitica + '<form id="form-concorrencia" class="form-settings" data-id="' + (c ? c.id : '') + '" onsubmit="return false">' +
+    conteudo: avisoPolitica + '<form id="form-concorrencia" class="form-settings" data-id="' + (c ? c.id : '') + '" data-sem-envio>' +
       '<input type="hidden" name="origemProjeto" value="' + (pj ? pj.id : '') + '">' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Serviço') + '</h2><div class="grade-campos">' +
         (pj ? campo('co-projeto', tr('Projeto'), '<input type="text" id="co-projeto" value="' + esc(pj.nome) + '" readonly>') : campo('co-obraId', tr('Obra *'), '<select id="co-obraId" name="obraId"><option value="">' + tr('Escolha…') + '</option>' + obras.map((o) => '<option value="' + o.id + '"' + (o.id === d.obraId ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') + '</select>')) +
@@ -554,7 +554,7 @@ async function mostrarLinks(links) {
   await abrirDialogo({
     titulo: tr('Links dos convidados sem conta'),
     corpo: '<p class="mudo pequeno">' + tr('Mande cada link para a prestadora (o envio por e-mail vem em seguida). O link é pessoal e só abre aquele convite.') + '</p>' +
-      links.map((l) => '<p><b>' + esc(l.nome) + '</b><input type="text" readonly value="' + esc(linkDoConvite(l.token)) + '" onclick="this.select()"></p>').join(''),
+      links.map((l) => '<p><b>' + esc(l.nome) + '</b><input type="text" readonly value="' + esc(linkDoConvite(l.token)) + '" data-selecionar></p>').join(''),
     acoes: [{ rotulo: tr('Fechar'), valor: true, classe: 'btn-primario' }],
   });
 }
@@ -580,7 +580,7 @@ export function telaConvitePublico(token, marca) {
   else situacao = '<div class="aviso aviso-verde"><b>' + (v.propostas.length ? tr('Proposta enviada (rev. {rev}).', { rev: v.propostas.length }) : tr('Você vai cotar.')) + '</b><span>' + tr('Mande a proposta abaixo, com o PDF. Dá para mandar revisões até o prazo.') + '</span></div>';
   const podeMandar = aberta && v.situacao !== 'nao-vai';
   const formProposta = podeMandar && !PENDENTES.includes(v.situacao) ? '<section class="cartao"><h2 class="cartao-titulo">' + (v.propostas.length ? tr('Mandar uma revisão') : tr('Mandar a proposta')) + '</h2>' +
-    '<form id="form-link" onsubmit="return false"><div class="grade-campos">' +
+    '<form id="form-link" data-sem-envio><div class="grade-campos">' +
       campo('lk-pdf', tr('Proposta em PDF'), '<input type="file" id="lk-pdf" name="pdf" accept="application/pdf">') +
       campo('lk-total', tr('Total (US$) *'), '<input type="text" inputmode="decimal" id="lk-total" name="total">') +
       campo('lk-prazo', tr('Prazo de execução (dias)'), '<input type="number" id="lk-prazo" name="prazo" min="1">') + '</div>' +

@@ -60,7 +60,7 @@ export function telaEmpresa(moldura) {
   const pre = 'em-';
   return moldura({
     ativo: 'empresa', titulo: tr('Empresa'), subtitulo: tr('Quem assina o KORbuild: estes dados e a logo saem na proposta, na lista de materiais e no diário de obra'),
-    conteudo: '<form id="form-empresa" class="form-settings" onsubmit="return false">' +
+    conteudo: '<form id="form-empresa" class="form-settings" data-sem-envio>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Logo') + '</h2><div class="logo-campo"><div class="logo-previa" id="logo-previa">') + htmlLogo('logo-empresa grande') + '</div>' +
         '<div class="logo-acoes"><label class="btn btn-contorno btn-pequeno">' + icone('camera', 16) + (e.logo ? tr('Trocar logo') : tr('Enviar logo')) + '<input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" id="empresa-logo" class="visualmente-oculto"></label>' +
           (e.logo ? ('<button type="button" class="link-botao pequeno" data-acao="empresa-tirar-logo">' + tr('Tirar a logo') + '</button>') : '') +
@@ -136,7 +136,7 @@ export function telaFormContato(moldura, id, papelInicial) {
   const etapas = Array.from(new Set(itens().map((i) => i.etapa).filter(Boolean))).sort();
   return moldura({
     ativo: 'contatos', titulo: id ? c.nome : tr('Novo contato'), voltar: { href: '#/settings/contatos', rotulo: tr('Contatos') },
-    conteudo: '<form id="form-contato" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    conteudo: '<form id="form-contato" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('É') + '</h2><div class="papeis-contato">') + Object.entries(PAPEIS).map(([k, p]) =>
         '<label class="opcao-perfil"><input type="checkbox" name="papeis" value="' + k + '"' + (c.papeis.includes(k) ? ' checked' : '') + '><span><b>' + p.nome + '</b><span class="mudo pequeno">' + esc(p.dica) + '</span></span></label>').join('') +
         ('</div><p class="mudo pequeno">' + tr('Pode ser mais de um: a mesma empresa contrata como construtora num projeto e é cliente em outro.') + '</p></section>') +

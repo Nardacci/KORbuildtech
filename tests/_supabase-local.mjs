@@ -5,6 +5,7 @@
  *   - função diario-publico: imita a de supabase/functions (diario_por_codigo + links assinados).
  * O Playwright intercepta o endereço do projeto (js/config.js) e manda para cá. */
 
+import { ativarCsp } from './_csp.mjs';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -113,6 +114,7 @@ export const nome = 'Supabase local (PostgREST na porta 3001)';
 
 /* Liga um contexto do Playwright ao Supabase local. */
 export async function rotear(contexto, urlProjeto) {
+  await ativarCsp(contexto);   // só com KOR_CSP (tests/_csp.mjs)
   const base = urlProjeto.replace(/\/$/, '');
   await contexto.route(base + '/**', async (route) => {
     const req = route.request();

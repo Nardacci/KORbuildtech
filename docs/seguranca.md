@@ -15,9 +15,11 @@ O que protegemos, como cada proteção é testada e o que o teste de segurança 
 | Função `SECURITY DEFINER` sequestrada por `search_path` | Todas fixam `search_path` | `0011` §1, `seguranca-estatica.test.mjs` §6 |
 | Fotos e plantas de outra empresa, upload de arquivo perigoso | Buckets privados com política por pasta da empresa, limite de tamanho e lista de tipos | `0011` §1, `seguranca.test.mjs` §6 (só `--real`) |
 | E-mails disparados por estranhos | `enviar-avisos` exige o segredo do cron (comparação em tempo constante, vazio recusado); fila de e-mails sem escrita para usuários | `seguranca-estatica` §5, `seguranca.test.mjs` §6b e §4 |
+| Tentativa em massa no link do diário | `diario-publico` limita por endereço: 60 chamadas e 12 códigos errados por minuto (429) | `seguranca-estatica.test.mjs` §5 |
 | Injeção (SQL, filtros do REST, código do link) | Parâmetros sempre por função/REST (nunca texto montado); formato exato do código e do token antes de tocar no banco | `seguranca.test.mjs` §5, §6b |
 | XSS armazenado | Todo texto de usuário passa por `esc()` antes de virar HTML | `seguranca-xss.test.mjs` (16 telas, duas empresas, com o texto malicioso gravado de verdade) |
 | Segredo no repositório | `.gitignore`, varredura de padrões, só a chave pública no navegador | `seguranca-estatica.test.mjs` §1 e §2 |
+| Código executado por texto malicioso (cinto de segurança) | CSP pronta em `tests/_csp.mjs`, medida com zero violações; `tools/csp-meta.mjs` liga e desliga | `seguranca-estatica.test.mjs` §4, medição `KOR_CSP=relatorio` |
 | Dados de empresa guardados no aparelho | O service worker não guarda nada da API | `seguranca-estatica.test.mjs` §3 |
 | Configuração do Auth fraca | Confirmação de e-mail, sem login anônimo, senha mínima de 8, rotação do token | `seguranca.test.mjs` §7 (só `--real`) |
 
@@ -46,10 +48,16 @@ Os testes que escrevem (`seguranca`, `seguranca-xss`) criam só usuários `kb-e2
 | 7 | Baixa | Senhas dos usuários de teste fixas no repositório. | Aleatórias a cada execução |
 | 8 | Baixa | O e-mail pessoal do dono do projeto estava em `docs/banco.md`. | Removido; a varredura estática agora barra |
 
+## Política de conteúdo (CSP) e limite no link do diário (preparados em 22/10/2026)
+
+- **Limite de tentativas no `diario-publico`:** 60 chamadas e 12 códigos inexistentes por minuto, por endereço; passou disso, responde 429. Coberto por `seguranca-estatica` e `seguranca` §6b. **Precisa publicar a função de novo** (`supabase functions deploy diario-publico --no-verify-jwt`).
+- **CSP, pronta e medida, ainda desligada.** O GitHub Pages não deixa mandar cabeçalho (nem `Report-Only`), então a política vai numa `<meta>`, e a medição foi feita com os testes: `KOR_CSP=relatorio` injeta a política como `Report-Only` e grava toda violação (`tests/_csp.mjs`; `tests/_csp-global.mjs` estende a medição aos testes do protótipo). Resultado: **zero violações** nas 8 suítes da conta de verdade e nas 10 do protótipo (mais de 800 verificações: fotos, mapas, PDF, Excel, bids, admin). O detector foi validado com uma política absurda (509 violações registradas). Para isso foi preciso trocar 33 manipuladores inline (`onsubmit="return false"`, `onfocus`, `onclick`) por `data-sem-envio` e `data-selecionar`, tratados por um ouvinte central em `js/util.js`.
+- **Ligar:** `node tools/csp-meta.mjs --ligar` (põe a meta em `index.html` e `admin.html` e sobe a versão do cache do service worker); **desligar:** `--desligar`; `--status` mostra. Com ela ligada, todas as suítes passam (conferido) e o teste estático exige que a meta seja exatamente a política medida. Recomendação: ligar depois dos testes no celular, abrindo as telas com câmera e mapa, que só a máquina real exercita.
+- Fora da política de propósito: `frame-ancestors` (a meta não aceita; o app não é embutido em outro site) e o portal (`portal/`, páginas de documentação estáticas).
+
 ## Ainda em aberto (decisões, não falhas)
 
-- **Content-Security-Policy:** as páginas não têm CSP. O `esc()` está correto em todas as telas testadas, mas a CSP seguraria o estrago se uma tela futura esquecer. Exige um ajuste fino (o app usa estilos e scripts inline em alguns pontos); proposta: modo `Report-Only` primeiro.
-- **Limite de tentativas no `diario-publico`:** o código do link tem 48 bits (inviável de adivinhar), mas só o `convite-publico` limita as tentativas por minuto. Vale o mesmo limite por IP.
+- **Ligar a CSP** (acima), depois dos testes no celular.
 - **CORS `*` nas funções públicas:** serve ao link público; depois do lançamento dá para limitar ao endereço do app.
 - **Pagamento e dados de cartão:** quando entrar, fica 100% no provedor (nunca no nosso banco); cada função de cobrança ganha teste aqui.
 - **Rotina periódica:** repetir `testar.ps1 -Parte banco -Somente seguranca` a cada migração nova e antes de cada lançamento.

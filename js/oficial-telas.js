@@ -224,7 +224,7 @@ function htmlUsuarios() {
       }).join('') + '</tbody></table></div>' +
       '<p class="mudo pequeno">' + tr('Ninguém altera o próprio acesso, e a empresa sempre mantém alguém ativo que cuide dos acessos.') + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Convidar alguém') + '</h2>' +
-      '<form id="form-convidar" class="grade-campos" novalidate onsubmit="return false">' +
+      '<form id="form-convidar" class="grade-campos" novalidate data-sem-envio>' +
         '<div class="campo"><label class="rotulo-pequeno" for="cv-email">' + tr('E-mail') + '</label><input id="cv-email" name="email" type="email" required></div>' +
         '<div class="campo"><label class="rotulo-pequeno" for="cv-nome">' + tr('Nome') + '</label><input id="cv-nome" name="nome"></div>' +
         '<div class="campo"><label class="rotulo-pequeno" for="cv-perfil">' + tr('Perfil de acesso') + '</label><select id="cv-perfil" name="perfil">' + opcoesPerfil((conta.perfis.find((p) => p.chave === 'gestor') || {}).id) + '</select></div>' +
@@ -249,7 +249,7 @@ function htmlPerfis() {
         (travado ? '' : '<div class="btn-linha"><button type="button" class="btn btn-primario btn-pequeno" data-acao="of-salvar-perfil" data-id="' + p.id + '">' + tr('Salvar permissões') + '</button>' +
           (p.chave ? '' : '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-excluir-perfil" data-id="' + p.id + '">' + tr('Excluir') + '</button>') + '</div>') + '</section>';
   }).join('') +
-  '<section class="cartao"><h2 class="cartao-titulo">' + tr('Novo perfil') + '</h2><form id="form-novo-perfil" class="grade-campos" novalidate onsubmit="return false">' +
+  '<section class="cartao"><h2 class="cartao-titulo">' + tr('Novo perfil') + '</h2><form id="form-novo-perfil" class="grade-campos" novalidate data-sem-envio>' +
     '<div class="campo"><label class="rotulo-pequeno" for="np-nome">' + tr('Nome') + '</label><input id="np-nome" name="nome" required></div>' +
     '<div class="campo"><label class="rotulo-pequeno" for="np-base">' + tr('A partir de') + '</label><select id="np-base" name="base">' + conta.perfis.map((p) => '<option value="' + p.id + '">' + esc(nomeDoPerfil(p)) + '</option>').join('') + '</select></div></form>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno" data-acao="of-novo-perfil">' + tr('Criar perfil') + '</button></div></section>';
@@ -259,7 +259,7 @@ const CAMPOS_EMPRESA = [['nome', 'Nome da empresa'], ['razao_social', 'Razão so
 function htmlEmpresa() {
   const e = conta.empresa;
   const edita = pode('settings.conta');
-  return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Empresa') + '</h2><form id="form-empresa" class="grade-campos" novalidate onsubmit="return false">' +
+  return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Empresa') + '</h2><form id="form-empresa" class="grade-campos" novalidate data-sem-envio>' +
     CAMPOS_EMPRESA.map(([k, r]) => '<div class="campo"><label class="rotulo-pequeno" for="em-' + k + '">' + tr(r) + '</label><input id="em-' + k + '" name="' + k + '" value="' + esc(e[k] || '') + '"' + (edita ? '' : ' readonly') + (k === 'estado' ? ' maxlength="2"' : '') + '></div>').join('') + '</form>' +
     (edita ? '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="of-salvar-empresa">' + tr('Salvar') + '</button></div>' : '<p class="mudo pequeno">' + tr('Só quem tem a permissão Empresa, conta e plano altera estes dados.') + '</p>') +
     '<p class="mudo pequeno">' + tr('Como a empresa atua: {atuacao}. Módulos: {modulos}.', { atuacao: esc(ATUACOES[e.atuacao] || ''), modulos: esc((e.modulos || []).join(', ')) }) + '</p></section>';
@@ -280,7 +280,7 @@ function htmlMeuPerfil() {
   const pendente = emailPendente();
   const linha = (id, rotulo, html) => '<div class="campo"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
   return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Seus dados') + '</h2>' +
-      '<form id="form-meu-perfil" class="grade-campos" novalidate onsubmit="return false">' +
+      '<form id="form-meu-perfil" class="grade-campos" novalidate data-sem-envio>' +
         linha('mp-nome', tr('Nome'), '<input id="mp-nome" name="nome" type="text" value="' + esc(m.nome) + '" autocomplete="name">') +
         linha('mp-telefone', tr('Telefone'), '<input id="mp-telefone" name="telefone" type="tel" value="' + esc(m.telefone || '') + '" autocomplete="tel">') +
       '</form>' +
@@ -292,13 +292,13 @@ function htmlMeuPerfil() {
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('E-mail de acesso') + '</h2>' +
       '<p>' + tr('Você entra com {email}.', { email: '<b>' + esc(emailAtual()) + '</b>' }) + '</p>' +
       (pendente ? '<div class="aviso aviso-ambar"><span>' + tr('Aguardando a confirmação de {email}: abra o link que enviamos para esse endereço.', { email: '<b>' + esc(pendente) + '</b>' }) + '</span></div>' : '') +
-      '<form id="form-trocar-email" class="grade-campos" novalidate onsubmit="return false">' +
+      '<form id="form-trocar-email" class="grade-campos" novalidate data-sem-envio>' +
         linha('mp-email', tr('E-mail novo'), '<input id="mp-email" name="email" type="email" autocomplete="email">') +
       '</form>' +
       '<div class="btn-linha"><button type="button" class="btn btn-contorno" data-acao="of-trocar-email">' + tr('Trocar o e-mail') + '</button></div>' +
       '<p class="mudo pequeno">' + tr('O e-mail só muda depois que você abrir o link enviado para o endereço novo. A empresa, o perfil e o histórico continuam os mesmos.') + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Senha') + '</h2>' +
-      '<form id="form-trocar-senha" class="grade-campos" novalidate onsubmit="return false">' +
+      '<form id="form-trocar-senha" class="grade-campos" novalidate data-sem-envio>' +
         linha('mp-senha', tr('Senha nova (pelo menos 8 caracteres)'), '<input id="mp-senha" name="senha" type="password" autocomplete="new-password" minlength="8">') +
         linha('mp-senha2', tr('Repita a senha nova'), '<input id="mp-senha2" name="senha2" type="password" autocomplete="new-password" minlength="8">') +
       '</form>' +

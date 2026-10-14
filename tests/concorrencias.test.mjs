@@ -15,7 +15,8 @@ function verificar(cond, texto) {
 }
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
-const context = await browser.newContext({ viewport: { width: 1366, height: 900 } });
+// bypassCSP: este teste roda funções do motor no navegador por eval (rodar(), abaixo); a política de conteúdo (tests/_csp.mjs) é medida nos testes de tela
+const context = await browser.newContext({ viewport: { width: 1366, height: 900 }, bypassCSP: true });
 await context.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); } catch { /* sem armazenamento */ } });
 await context.route('https://api.open-meteo.com/**', (r) => r.fulfill({ json: { hourly: { time: [], weather_code: [], precipitation: [], temperature_2m: [] } } }));
 await context.route(/fonts\.|tile\.openstreetmap/, (r) => r.abort());

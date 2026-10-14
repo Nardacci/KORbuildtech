@@ -1708,7 +1708,7 @@ const acoes = {
     } catch (e) {
       await abrirDialogo({
         titulo: tr('Link para o contratante'),
-        corpo: '<input type="text" readonly value="' + esc(link) + ('" aria-label="' + tr('Link para o contratante') + '" onfocus="this.select()">'),
+        corpo: '<input type="text" readonly value="' + esc(link) + ('" aria-label="' + tr('Link para o contratante') + '" data-selecionar>'),
         acoes: [{ rotulo: tr('Fechar'), valor: true, classe: 'btn-primario' }],
       });
     }

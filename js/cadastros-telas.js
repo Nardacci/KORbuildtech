@@ -141,7 +141,7 @@ function telaFuncionario(id) {
       '<div class="tabela-rolagem"><table class="tabela tabela-valores"><thead><tr><th>' + tr('Vigência') + '</th><th class="num">' + tr('Valor hora') + '</th><th>' + tr('Motivo') + '</th><th>' + tr('Registrado por') + '</th></tr></thead><tbody>' +
         hist.map((x) => '<tr' + (x === atual ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + etiquetaVigencia(x, atual) + '</td><td class="num"><b>' + dinheiro(Number(x.valor)) + '</b></td><td>' + esc(x.motivo) + '</td><td class="mudo pequeno">' + esc(autor(x.por)) + ' · ' + quando(x.em) + '</td></tr>').join('') +
       '</tbody></table></div>' +
-      (pode('settings.funcionarios') ? '<form id="form-valor-hora" class="grade-campos" data-id="' + f.id + '" onsubmit="return false">' +
+      (pode('settings.funcionarios') ? '<form id="form-valor-hora" class="grade-campos" data-id="' + f.id + '" data-sem-envio>' +
         campo('vh-valor', tr('Novo valor hora (US$)'), '<input type="number" id="vh-valor" name="valor" min="1" step="0.01" inputmode="decimal">') +
         campo('vh-desde', tr('A partir de'), data('vh-desde', 'desde', proximaSegunda())) +
         campo('vh-motivo', tr('Motivo'), texto('vh-motivo', 'motivo', '', ' placeholder="' + esc(tr('Ex.: reajuste anual')) + '"')) +
@@ -155,7 +155,7 @@ function telaFormFuncionario(id) {
   const funcoes = Array.from(new Set(cad.funcionarios.map((x) => x.funcao))).sort();
   const certs = (v.certificacoes || []).concat([{}, {}]);
   return cabeca(f ? tr('Editar') + ' ' + f.nome : tr('Novo funcionário'), '', f ? ['#/conta/funcionarios/' + f.id, f.nome] : ['#/conta/funcionarios', tr('Funcionários')]) +
-    '<form id="form-func" class="form-settings" data-id="' + (f ? f.id : '') + '" onsubmit="return false">' +
+    '<form id="form-func" class="form-settings" data-id="' + (f ? f.id : '') + '" data-sem-envio>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Identificação') + '</h2><div class="grade-campos">' +
       campo('ff-nome', tr('Nome completo'), texto('ff-nome', 'nome', v.nome, ' autocomplete="off"')) +
       campo('ff-codigo', tr('Código (employee ID)'), texto('ff-codigo', 'codigo', v.codigo), tr('O mesmo do sistema de folha')) +
@@ -222,7 +222,7 @@ function telaFormEncargos() {
   const v = encargosVigentes();
   const linhas = (v ? v.itens : ENCARGOS_INICIAIS).concat([{ nome: '', pct: '' }, { nome: '', pct: '' }]);
   return cabeca(tr('Nova versão dos encargos'), '', ['#/conta/regras', tr('Regras')]) +
-    '<form id="form-encargos" class="form-settings" onsubmit="return false"><section class="cartao">' +
+    '<form id="form-encargos" class="form-settings" data-sem-envio><section class="cartao">' +
       '<p class="mudo pequeno">' + tr('Os custos de antes da data continuam com os encargos da época. Para tirar um item, apague o nome.') + '</p>' +
       linhas.map((i, n) => '<div class="linha-encargo"><input type="text" name="nome-' + n + '" aria-label="' + tr('Encargo') + ' ' + (n + 1) + '" placeholder="' + tr('Novo encargo') + '" value="' + esc(i.nome) + '">' +
         '<span class="campo-pct"><input type="number" name="pct-' + n + '" aria-label="' + tr('Percentual do encargo') + ' ' + (n + 1) + '" min="0" max="100" step="0.01" value="' + esc(String(i.pct)) + '" inputmode="decimal">%</span></div>').join('') +
@@ -235,7 +235,7 @@ function telaFormRegra() {
   const r = vigente(cad.regras) || { ...MODELOS_REGRA.federal };
   const numero = (nome, valor, rot, passo) => campo('rg-' + nome, rot, '<input type="number" id="rg-' + nome + '" name="' + nome + '" value="' + valor + '" min="0" step="' + (passo || '0.5') + '" inputmode="decimal">');
   return cabeca(tr('Nova versão da regra de jornada'), '', ['#/conta/regras', tr('Regras')]) +
-    '<form id="form-regra" class="form-settings" onsubmit="return false">' +
+    '<form id="form-regra" class="form-settings" data-sem-envio>' +
     '<section class="cartao"><p class="mudo pequeno">' + tr('Preencher com um modelo (depois ajuste o que precisar):') + '</p><div class="btn-linha">' +
       Object.entries(MODELOS_REGRA).map(([id, m]) => '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="settings-modelo" data-modelo="' + id + '">' + esc(m.nome) + '</button>').join('') + '</div>' +
       campo('rg-nome', tr('Nome da regra'), texto('rg-nome', 'nome', r.nome)) + '</section>' +
@@ -273,7 +273,7 @@ function telaContatos() {
 function telaFormContato(id) {
   const c = id ? contato(id) : { papeis: [], etapas: [] };
   return cabeca(id ? c.nome : tr('Novo contato'), '', ['#/conta/contatos', tr('Contatos')]) +
-    '<form id="form-contato" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    '<form id="form-contato" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
     '<section class="cartao"><div class="grade-campos">' +
       campo('ct-nome', tr('Nome (empresa ou pessoa) *'), texto('ct-nome', 'nome', c.nome)) + campo('ct-pessoa', tr('Pessoa de contato'), texto('ct-pessoa', 'pessoa', c.pessoa)) +
       campo('ct-email', tr('E-mail'), '<input type="email" id="ct-email" name="email" value="' + esc(c.email || '') + '">') + campo('ct-telefone', tr('Telefone'), texto('ct-telefone', 'telefone', c.telefone, ' inputmode="tel"')) +
@@ -316,7 +316,7 @@ function telaFormObra(id, projetoId) {
   const preenchem = cad.membros.filter((m) => m.ativo && (perfilDoMembro(m) || { permissoes: [] }).permissoes.includes('daily.preencher'));
   const contratantes = cad.contatos.filter((c) => c.papeis.includes('construtora') || c.papeis.includes('cliente'));
   const html = cabeca(existente ? existente.nome : tr('Nova obra'), '', ['#/conta/obras', tr('Obras')]) +
-    '<form id="form-obra" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    '<form id="form-obra" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
     (pj ? '<input type="hidden" name="projetoId" value="' + esc(pj.id) + '"><p class="pequeno">' + tr('A partir do projeto {nome} (Measure)', { nome: esc(pj.nome) }) + (pj.concorrencia && pj.concorrencia.vinculo ? ' · ' + tr('ganho numa concorrência: a obra nasce ligada à obra da contratante') : '') + '</p>' : '') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Obra') + '</h2><div class="grade-campos">' +
       campo('ob-nome', tr('Nome da obra *'), texto('ob-nome', 'nome', o.nome, ' placeholder="' + esc(tr('Ex.: Residencial Thompson, Mezanino LogSul')) + '"')) +
@@ -360,7 +360,7 @@ function htmlEquipeDaObra(o) {
     '<p class="mudo pequeno">' + tr('Uma pessoa pode estar em várias obras. O encarregado vê só as obras dele.') + '</p>' +
     (atuais.length ? '<ul class="lista-simples">' + atuais.map((a) => '<li><b>' + esc(nome(a)) + '</b>' + (a.papel ? ' · ' + esc(a.papel) : '') + (a.desde ? ' <span class="mudo pequeno">' + tr('desde') + ' ' + dataCurta(a.desde) + '</span>' : '') + ' ' +
       '<button type="button" class="link" data-acao="cad-desalocar" data-id="' + a.id + '">' + tr('Tirar') + '</button></li>').join('') + '</ul>' : '<p class="vazio">' + tr('Ninguém ainda.') + '</p>') +
-    '<form id="form-alocar" class="grade-campos" data-obra="' + o.id + '" onsubmit="return false">' +
+    '<form id="form-alocar" class="grade-campos" data-obra="' + o.id + '" data-sem-envio>' +
       campo('al-quem', tr('Pessoa'), '<select id="al-quem" name="quem"><option value="">' + tr('Escolha…') + '</option>' + opcoes(escolhas, '') + '</select>') +
       campo('al-papel', tr('Papel na obra'), texto('al-papel', 'papel', '', ' placeholder="' + esc(tr('Ex.: encarregado, carpinteiro')) + '"')) +
     '</form><div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="cad-alocar">' + icone('mais', 14) + tr('Incluir na obra') + '</button></div></section>';
@@ -383,7 +383,7 @@ function telaFormModelo(id) {
   const m = id ? modelo(id) : { nome: '', etapas: [{ nome: '', pct: '' }] };
   if (!m) return { trocar: '#/conta/obras/modelos' };
   const html = cabeca(id ? m.nome : tr('Novo modelo'), '', ['#/conta/obras/modelos', tr('Modelos de etapas')]) +
-    '<form id="form-modelo" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false"><section class="cartao">' +
+    '<form id="form-modelo" class="form-settings" data-id="' + (id || '') + '" data-sem-envio><section class="cartao">' +
       campo('md-nome', tr('Nome do modelo *'), '<input type="text" id="md-nome" name="nome" value="' + esc(m.nome) + '" placeholder="' + esc(tr('Ex.: Framing + siding (casa)')) + '">') +
       '<div class="cabeca-modelo rotulo-pequeno"><span>' + tr('Etapa, na ordem') + '</span><span>' + tr('Parte do prazo (%)') + '</span></div>' +
       '<div id="md-linhas">' + m.etapas.map(linhaModelo).join('') + '</div>' +

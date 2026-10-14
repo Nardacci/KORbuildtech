@@ -199,3 +199,12 @@ export async function confirmar(titulo, texto, rotuloSim, classeSim) {
   });
   return !!(r && r.valor);
 }
+
+/* Nada de manipulador inline (onsubmit=, onclick=, onfocus=) no HTML das telas: a política de conteúdo (CSP) os bloqueia.
+ * Os formulários que não enviam nada levam data-sem-envio; os campos que se selecionam ao tocar levam data-selecionar. */
+if (typeof document !== 'undefined') {
+  document.addEventListener('submit', (ev) => { if (ev.target.matches && ev.target.matches('form[data-sem-envio]')) ev.preventDefault(); }, true);
+  const selecionar = (ev) => { if (ev.target.matches && ev.target.matches('input[data-selecionar]')) ev.target.select(); };
+  document.addEventListener('focusin', selecionar);
+  document.addEventListener('click', selecionar);
+}

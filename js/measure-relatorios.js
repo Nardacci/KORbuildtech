@@ -100,7 +100,7 @@ export function telaCotacao(id, moldura) {
     ativo: 'projetos', largura: 'larga', titulo: tr('Lista para cotação'), subtitulo: p.nome + (' ' + tr('· materiais na unidade de compra, sem preço, separados por fornecedor')),
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
     conteudo: (l.total ? '' : '<p class="aviso-info">' + icone('measure', 16) + (tr('Ainda não há materiais: meça as condições que têm assemblies.') + '</p>')) +
-      '<section class="cartao"><form id="form-cotacao" class="form-settings" data-projeto="' + id + '" onsubmit="return false"><div class="grade-campos">' +
+      '<section class="cartao"><form id="form-cotacao" class="form-settings" data-projeto="' + id + '" data-sem-envio><div class="grade-campos">' +
         ('<div class="campo"><label class="rotulo-pequeno" for="cot-ate">' + tr('Responder até') + '</label><input type="date" id="cot-ate" name="responderAte" value="') + prazoResposta(p) + '"></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="cot-entrega">' + tr('Entregar em') + '</label><input type="text" id="cot-entrega" value="') + esc(enderecoDoProjeto(p)) + '" disabled></div></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="cot-obs">' + tr('Observações para o fornecedor') + '</label><textarea id="cot-obs" name="observacoes" rows="2">') + esc(obsCotacao(p)) + '</textarea></div></form>' +
@@ -203,7 +203,7 @@ export function telaProposta(id, moldura) {
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
     acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/proposta/imprimir">' + icone('olho', 16) + (tr('Ver o documento') + '</a>') +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="prop-emitir" data-projeto="' + id + '">' + icone('aprovacoes', 16) + (tr('Emitir proposta') + '</button></div>'),
-    conteudo: '<form id="form-proposta" class="form-settings" data-projeto="' + id + '" onsubmit="return false">' +
+    conteudo: '<form id="form-proposta" class="form-settings" data-projeto="' + id + '" data-sem-envio>' +
       (ct ? '' : '<p class="aviso-info">' + icone('conta', 16) + (tr('O projeto ainda não tem contratante: escolha em Editar projeto.') + '</p>')) +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><textarea name="escopo" rows="2" aria-label="' + tr('Escopo') + '">') + esc(r.escopo) + '</textarea></section>' +
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Itens da proposta') + '</h2>') +

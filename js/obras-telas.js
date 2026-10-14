@@ -74,7 +74,7 @@ export function telaFormObra(moldura, id, projetoId) {
   const centro = Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : CENTRO_PADRAO;
   return moldura({
     ativo: 'obras', titulo: existente ? existente.nome : tr('Nova obra'), subtitulo: pj ? tr('A partir do projeto {nome} (Measure)', { nome: pj.nome }) : '', voltar,
-    conteudo: '<form id="form-obra" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    conteudo: '<form id="form-obra" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
       '<input type="hidden" name="projetoId" value="' + esc((pj && pj.id) || '') + '">' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Obra') + '</h2><div class="grade-campos">' +
         texto('nome', tr('Nome da obra *'), o.nome, ' placeholder="' + esc(tr('Ex.: Residencial Thompson, Mezanino LogSul')) + '"') +
@@ -196,7 +196,7 @@ export function telaFormModelo(moldura, id) {
   if (!m) return moldura({ ativo: 'obras', titulo: tr('Modelo não encontrado'), voltar: { href: '#/settings/modelos', rotulo: tr('Modelos de etapas') }, conteudo: '' });
   return moldura({
     ativo: 'obras', titulo: id ? m.nome : tr('Novo modelo'), voltar: { href: '#/settings/modelos', rotulo: tr('Modelos de etapas') },
-    conteudo: '<form id="form-modelo" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false"><section class="cartao">' +
+    conteudo: '<form id="form-modelo" class="form-settings" data-id="' + (id || '') + '" data-sem-envio><section class="cartao">' +
       campo('md-nome', tr('Nome do modelo *'), '<input type="text" id="md-nome" name="nome" value="' + esc(m.nome) + '" placeholder="' + esc(tr('Ex.: Framing + siding (casa)')) + '">') +
       '<div class="cabeca-modelo rotulo-pequeno"><span>' + tr('Etapa, na ordem') + '</span><span>' + tr('Parte do prazo (%)') + '</span></div>' +
       '<div id="md-linhas">' + m.etapas.map(linhaModelo).join('') + '</div>' +

@@ -184,7 +184,7 @@ function telaFormFuncionario(id) {
   return moldura({
     ativo: 'funcionarios', largo: false, titulo: f ? (tr('Editar') + ' ') + f.nome : tr('Novo funcionário'),
     voltar: f ? { href: '#/settings/funcionario/' + f.id, rotulo: f.nome } : { href: '#/settings/funcionarios', rotulo: tr('Funcionários') },
-    conteudo: '<form id="form-func" class="form-settings" data-id="' + (f ? f.id : '') + '" onsubmit="return false">' +
+    conteudo: '<form id="form-func" class="form-settings" data-id="' + (f ? f.id : '') + '" data-sem-envio>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Identificação') + '</h2><div class="grade-campos">') +
         '<div class="campo campo-largo"><span class="rotulo-pequeno">' + tr('Empresa (empregador)') + '</span><p class="valor-fixo">' + empregador() + '</p><span class="mudo pequeno">' + tr('O funcionário fica na conta da empresa que o emprega. Funcionário de prestadora é cadastrado pela própria prestadora.') + '</span></div>' +
         campo('nome', tr('Nome completo'), texto('nome', v.nome, ' autocomplete="off"')) +
@@ -243,7 +243,7 @@ function telaFormEncargos() {
   const linhas = v.itens.concat([{ nome: '', pct: '' }, { nome: '', pct: '' }]);
   return moldura({
     ativo: 'encargos', largo: false, titulo: tr('Nova versão dos encargos'), voltar: { href: '#/settings/encargos', rotulo: tr('Encargos') },
-    conteudo: '<form id="form-encargos" class="form-settings" onsubmit="return false"><section class="cartao">' +
+    conteudo: '<form id="form-encargos" class="form-settings" data-sem-envio><section class="cartao">' +
       ('<p class="mudo pequeno">' + tr('Os custos de antes da data continuam com os encargos da época. Para tirar um item, apague o nome.') + '</p>') +
       linhas.map((i, n) => '<div class="linha-encargo"><input type="text" name="nome-' + n + ('" aria-label="' + tr('Encargo') + ' ') + (n + 1) + ('" placeholder="' + tr('Novo encargo') + '" value="') + esc(i.nome) + '">' +
         '<span class="campo-pct"><input type="number" name="pct-' + n + ('" aria-label="' + tr('Percentual do encargo') + ' ') + (n + 1) + '" min="0" max="100" step="0.01" value="' + esc(String(i.pct)) + '" inputmode="decimal">%</span></div>').join('') +
@@ -283,7 +283,7 @@ function telaFormRegra() {
   const numero = (nome, valor, rot, passo) => '<div class="campo"><label class="rotulo-pequeno" for="rg-' + nome + '">' + rot + '</label><input type="number" id="rg-' + nome + '" name="' + nome + '" value="' + valor + '" min="0" step="' + (passo || '0.5') + '" inputmode="decimal"></div>';
   return moldura({
     ativo: 'regras', largo: false, titulo: tr('Nova versão da regra de jornada'), voltar: { href: '#/settings/regras', rotulo: tr('Regras de jornada') },
-    conteudo: '<form id="form-regra" class="form-settings" onsubmit="return false">' +
+    conteudo: '<form id="form-regra" class="form-settings" data-sem-envio>' +
       ('<section class="cartao"><p class="mudo pequeno">' + tr('Preencher com um modelo (depois ajuste o que precisar):') + '</p><div class="btn-linha">') +
         Object.entries(MODELOS_REGRA).map(([id, m]) => '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="settings-modelo" data-modelo="' + id + '">' + esc(m.nome) + '</button>').join('') + '</div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="rg-nome">' + tr('Nome da regra') + '</label><input type="text" id="rg-nome" name="nome" value="') + esc(r.nome) + '"></div></section>' +
@@ -339,7 +339,7 @@ function telaFormUsuario(id) {
   const livres = funcionarios().filter((f) => f.situacao !== 'desligado' && (!estado().usuarios.some((y) => y.funcionarioId === f.id) || f.id === v.funcionarioId));
   return moldura({
     ativo: 'usuarios', largo: false, titulo: x ? x.nome : tr('Novo usuário'), voltar: { href: '#/settings/usuarios', rotulo: tr('Usuários') },
-    conteudo: '<form id="form-usuario" class="form-settings" data-id="' + (x ? x.id : '') + '" onsubmit="return false"><section class="cartao"><div class="grade-campos">' +
+    conteudo: '<form id="form-usuario" class="form-settings" data-id="' + (x ? x.id : '') + '" data-sem-envio><section class="cartao"><div class="grade-campos">' +
         ('<div class="campo"><label class="rotulo-pequeno" for="us-nome">' + tr('Nome') + '</label><input type="text" id="us-nome" name="nome" value="') + esc(v.nome || '') + '"></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="us-email">' + tr('E-mail (login)') + '</label><input type="email" id="us-email" name="email" value="') + esc(v.email || '') + '"></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="us-cargo">' + tr('Cargo') + '</label><input type="text" id="us-cargo" name="cargo" value="') + esc(v.cargo || '') + '"></div>' +
@@ -371,7 +371,7 @@ function telaPerfis() {
     ativo: 'perfis', titulo: tr('Perfis de acesso'), subtitulo: tr('O que cada perfil pode fazer. Nada fica fixo no código: crie perfis e ajuste as permissões'),
     acoes: '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="settings-novo-perfil">' + icone('mais', 16) + (tr('Novo perfil') + '</button>') +
       ('<button type="button" class="btn btn-primario btn-pequeno" data-acao="settings-salvar-perfis">' + tr('Salvar permissões') + '</button></div>'),
-    conteudo: '<form id="form-perfis" onsubmit="return false"><section class="cartao"><div class="tabela-rolagem"><table class="tabela matriz-perfis"><thead>' + cab + '</thead><tbody>' + linhas + '</tbody></table></div></section></form>' +
+    conteudo: '<form id="form-perfis" data-sem-envio><section class="cartao"><div class="tabela-rolagem"><table class="tabela matriz-perfis"><thead>' + cab + '</thead><tbody>' + linhas + '</tbody></table></div></section></form>' +
       ('<p class="dica">' + tr('O perfil Administrador é fixo, para a empresa nunca ficar sem quem gerencie os acessos. Para um administrador que também preenche o RDO, crie um perfil novo a partir dele. Toda mudança vai para a auditoria.') + '</p>'),
   });
 }

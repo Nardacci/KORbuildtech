@@ -84,7 +84,7 @@ async function telaEmpresa(id) {
       '<span class="etiqueta ' + (CLASSE[p.status] || 'etiqueta-neutro') + '">' + esc(nomeDoStatus(p.status)) + '</span></div>' +
     '<div class="grade-2">' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Plano') + '</h2>' +
-      '<form id="ad-plano" class="grade-campos" novalidate onsubmit="return false" data-empresa="' + e.id + '">' +
+      '<form id="ad-plano" class="grade-campos" novalidate data-sem-envio data-empresa="' + e.id + '">' +
         campo('ap-status', tr('Situação'), '<select id="ap-status" name="status">' + Object.keys(STATUS).map((s) => '<option value="' + s + '"' + (p.status === s ? ' selected' : '') + '>' + esc(nomeDoStatus(s)) + '</option>').join('') + '</select>') +
         campo('ap-nome', tr('Nome do plano'), '<input id="ap-nome" name="nome" value="' + esc(p.nome || '') + '">') +
         campo('ap-teste', tr('Teste até'), '<input type="date" id="ap-teste" name="teste_ate" value="' + esc(String(p.teste_ate || '').slice(0, 10)) + '">') +
@@ -97,7 +97,7 @@ async function telaEmpresa(id) {
         (p.status === 'suspensa' ? '<button type="button" class="btn btn-contorno" data-acao="ad-situacao" data-situacao="ativa">' + tr('Reativar') + '</button>' : '<button type="button" class="btn btn-contorno" data-acao="ad-situacao" data-situacao="suspensa">' + tr('Suspender') + '</button>') + '</div>' +
       '<p class="mudo pequeno" style="margin-top:10px">' + tr('Suspensa: a empresa continua entrando e vendo seus dados, mas não grava nada. Quem administra a conta recebe um aviso (sininho e e-mail) com o motivo. Os limites ficam registrados; só passam a valer com o preço.') + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Módulos') + '</h2>' +
-      '<form id="ad-modulos" novalidate onsubmit="return false" data-empresa="' + e.id + '">' +
+      '<form id="ad-modulos" novalidate data-sem-envio data-empresa="' + e.id + '">' +
         modulos.map((m) => '<label class="check"><input type="checkbox" name="modulos" value="' + m + '"' + ((e.modulos || []).includes(m) ? ' checked' : '') + (e.atuacao === 'construtora' && m !== 'daily' ? ' disabled' : '') + '> ' + m.charAt(0).toUpperCase() + m.slice(1) + '</label>').join('') +
         campo('am-motivo', tr('Motivo *'), '<input id="am-motivo" name="motivo">') +
       '</form><div class="btn-linha" style="margin-top:12px"><button type="button" class="btn btn-contorno" data-acao="ad-salvar-modulos">' + tr('Salvar os módulos') + '</button></div>' +
@@ -113,7 +113,7 @@ async function telaValores() {
   const v = await chamar('admin_valores_padrao');
   return moldura('valores',
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Valores padrão das empresas novas') + '</h2>' +
-      '<form id="ad-valores" class="grade-campos" novalidate onsubmit="return false">' +
+      '<form id="ad-valores" class="grade-campos" novalidate data-sem-envio>' +
         campo('av-dias', tr('Dias de teste'), '<input type="number" min="1" max="365" step="1" id="av-dias" name="teste_dias" value="' + esc(v.teste_dias ?? 14) + '">') +
         campo('av-config', tr('Configuração inicial (JSON)'), '<textarea id="av-config" name="configuracao" rows="8" spellcheck="false">' + esc(JSON.stringify(v.configuracao || {}, null, 2)) + '</textarea>') +
       '</form><div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="ad-salvar-valores">' + tr('Salvar') + '</button></div>' +
@@ -145,7 +145,7 @@ async function telaAdministradores() {
       lista.map((a) => '<tr><td><b>' + esc(a.email) + '</b>' + (a.user_id === eu ? ' <span class="mudo pequeno">(' + tr('você') + ')</span>' : '') + '</td><td>' + dia(a.desde) + '</td><td><button type="button" class="btn btn-contorno btn-pequeno" data-acao="ad-tirar" data-email="' + esc(a.email) + '">' + tr('Tirar') + '</button></td></tr>').join('') + '</tbody></table></div>' +
       '<p class="mudo pequeno">' + tr('A plataforma sempre mantém pelo menos um administrador.') + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Incluir um administrador') + '</h2>' +
-      '<form id="ad-incluir" class="grade-campos" novalidate onsubmit="return false">' + campo('aa-email', tr('E-mail da conta (a pessoa já precisa ter entrado no KORbuild)'), '<input type="email" id="aa-email" name="email">') + '</form>' +
+      '<form id="ad-incluir" class="grade-campos" novalidate data-sem-envio>' + campo('aa-email', tr('E-mail da conta (a pessoa já precisa ter entrado no KORbuild)'), '<input type="email" id="aa-email" name="email">') + '</form>' +
       '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="ad-incluir">' + tr('Incluir') + '</button></div></section>');
 }
 

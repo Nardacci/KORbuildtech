@@ -5,6 +5,7 @@
  * Storage, as empresas (em cascata) e os usuários desses e-mails. */
 
 import { readFileSync } from 'node:fs';
+import { ativarCsp } from './_csp.mjs';
 import { randomBytes } from 'node:crypto';
 
 const config = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8');
@@ -86,7 +87,7 @@ export async function servicoRest(caminho, { metodo = 'GET', corpo } = {}) {
   return t ? JSON.parse(t) : null;
 }
 
-export async function rotear() { /* de verdade: nada a interceptar */ }
+export async function rotear(contexto) { if (contexto) await ativarCsp(contexto); /* de verdade: nada mais a interceptar */ }
 
 export async function arquivosDaPasta(prefixo, bucket = 'diarios') {
   return (await sql(`select '${bucket}/' || name as n from storage.objects where bucket_id = '${bucket}' and name like '${prefixo.replace(/'/g, "''")}%'`)).map((x) => x.n);

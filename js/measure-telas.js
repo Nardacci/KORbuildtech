@@ -147,7 +147,7 @@ function telaFormProjeto(id) {
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: id ? tr('Editar projeto') : tr('Novo projeto'),
     voltar: id ? { href: '#/measure/projeto/' + id, rotulo: p.nome } : { href: '#/measure', rotulo: tr('Projetos') },
-    conteudo: '<form id="form-projeto" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    conteudo: '<form id="form-projeto" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2><div class="grade-campos">') +
         texto('nome', tr('Nome do projeto *'), (' placeholder="' + tr('Ex.: Casa Thompson, Mezanino LogSul') + '"')) + '<div></div>' +
         campo('tipo', tr('Tipo de obra'), '<select id="pj-tipo" name="tipo">' + opcoes(Object.entries(TIPOS_PROJETO), p.tipo) + '</select>') +
@@ -318,7 +318,7 @@ function telaAssembly(id) {
   const linhas = a.linhas.length ? a.linhas : [{ perda: 0, passo: 1 }];
   return moldura({
     ativo: 'assemblies', largura: 'larga', titulo: id ? a.nome : tr('Novo assembly'), voltar: { href: '#/measure/assemblies', rotulo: tr('Assemblies') },
-    conteudo: '<form id="form-assembly" class="form-settings" data-id="' + (id || '') + '" onsubmit="return false">' +
+    conteudo: '<form id="form-assembly" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
       '<section class="cartao"><div class="grade-campos">' +
         ('<div class="campo"><label class="rotulo-pequeno" for="as-nome">' + tr('Nome') + '</label><input type="text" id="as-nome" name="nome" value="') + esc(a.nome) + '"' + (ed ? '' : ' disabled') + '></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="as-tipo">' + tr('Para condições do tipo') + '</label><select id="as-tipo" name="tipo"') + (id || !ed ? ' disabled' : '') + '>' + Object.entries(TIPOS).map(([t, x]) => '<option value="' + t + '"' + (t === a.tipo ? ' selected' : '') + '>' + x.nome + ' (' + x.unidade + ')</option>').join('') + '</select></div>' +
