@@ -47,6 +47,16 @@ async function clicar(p, pes) {
   const zoom = box.width / 1224;
   await p.mouse.click(box.x + (PLANTA.x0 + pes[0] * PLANTA.k) * zoom, box.y + (792 - (PLANTA.y0 + pes[1] * PLANTA.k)) * zoom);
 }
+/* Abre uma rota e espera um elemento. A rota só muda o "#" e, com a rede lenta, a tela às vezes não redesenha: recarrega e, por fim, passa pela lista. */
+async function abrir(p, hash, seletor) {
+  await p.goto(BASE + hash);
+  if (await p.waitForSelector(seletor, { timeout: 20000 }).catch(() => null)) return;
+  await p.reload();
+  if (await p.waitForSelector(seletor, { timeout: 40000 }).catch(() => null)) return;
+  await p.goto(BASE + '#/measure'); await p.waitForTimeout(2000);
+  await p.goto(BASE + hash); await p.reload();
+  await p.waitForSelector(seletor, { timeout: 60000 });
+}
 const esperaDesenho = (p) => p.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 40000 });
 
 for (const c of CONFIG) {
@@ -55,8 +65,8 @@ for (const c of CONFIG) {
   if (!emp) { console.log('  ' + c.chave + ': empresa não encontrada (rode tools/massa-demo.mjs antes)'); continue; }
   const jaP = await sql(`select nome from public.projetos where empresa_id = '${emp.id}'`);
   const faltam = c.projetos.filter((p) => !jaP.some((x) => x.nome === p.nome));
-  const temCatalogo = (await sql(`select count(*)::int n from public.itens where empresa_id = '${emp.id}'`))[0].n > 0;
-  if (!faltam.length && temCatalogo) { console.log('  ' + emp.nome + ': Measure já montado, pulei'); continue; }
+  const catalogoCompleto = (await sql(`select (select count(*) from public.itens where empresa_id = '${emp.id}')::int as i, (select count(*) from public.assemblies where empresa_id = '${emp.id}')::int as a, (select count(*) from public.margens_versoes where empresa_id = '${emp.id}')::int as m`))[0];
+  if (!faltam.length && catalogoCompleto.i >= c.itens.length && catalogoCompleto.a > 0 && catalogoCompleto.m > 0) { console.log('  ' + emp.nome + ': Measure já montado, pulei'); continue; }
   const uid = await garantirUsuario(email, c.pessoa, SENHA);
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
   await ctx.addInitScript(([s]) => { try { localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', 'en'); } catch { /* */ } }, [await sessao(uid, email, c.chave)]);
@@ -66,93 +76,112 @@ for (const c of CONFIG) {
   const erros = [];
   p.on('pageerror', (e) => erros.push(e.message));
   try {
-    // ---- catálogo ----
-    if (!temCatalogo) {
-      for (const [nome, codigo, unidade, etapa, preco] of c.itens) {
-        await p.goto(BASE + '#/measure/itens');
-        await p.waitForSelector('[data-acao="mz-item"][data-id=""]', { timeout: 40000 });
+    // ---- catálogo (cada peça só se ainda não existe, para poder repetir depois de uma falha no meio) ----
+    for (const [nome, codigo, unidade, etapa, preco] of c.itens) {
+      let item = (await sql(`select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`))[0];
+      if (!item) {
+        await abrir(p, '#/measure/itens', '[data-acao="mz-item"][data-id=""]');
         await p.click('[data-acao="mz-item"][data-id=""]');
         await p.fill('dialog input[name="nome"]', nome); await p.fill('dialog input[name="codigo"]', codigo);
         await p.fill('dialog input[name="unidade"]', unidade); await p.fill('dialog input[name="etapa"]', etapa);
         await noDialogo(p, 'Criar item');
-        await esperarAte(async () => (await sql(`select 1 from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`)).length === 1);
-        await p.goto(BASE + '#/measure/precos');
-        await p.waitForSelector('.tabela-precos', { timeout: 30000 });
-        const itemId0 = (await sql(`select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`))[0].id;
-        await p.waitForSelector('[data-acao="preco-novo"][data-id="' + itemId0 + '"]', { timeout: 30000 });
-        await p.click('[data-acao="preco-novo"][data-id="' + itemId0 + '"]');
+        if (!(await esperarAte(async () => (await sql(`select 1 from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`)).length === 1))) throw new Error('o item ' + codigo + ' não chegou ao banco');
+        item = (await sql(`select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`))[0];
+      }
+      if (!(await sql(`select 1 from public.item_precos where empresa_id = '${emp.id}' and item_id = '${item.id}'`)).length) {
+        await abrir(p, '#/measure/precos', '[data-acao="preco-novo"][data-id="' + item.id + '"]');
+        await p.click('[data-acao="preco-novo"][data-id="' + item.id + '"]');
         await p.fill('dialog input[name="valor"]', String(preco));
         await noDialogo(p, 'Salvar preço');
-        await esperarAte(async () => (await sql(`select 1 from public.item_precos where empresa_id = '${emp.id}' and item_id = (select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}')`)).length > 0);
+        await esperarAte(async () => (await sql(`select 1 from public.item_precos where empresa_id = '${emp.id}' and item_id = '${item.id}'`)).length > 0);
       }
+    }
+    if (!(await sql(`select 1 from public.assemblies where empresa_id = '${emp.id}'`)).length) {
       const [nomeAs, linhas] = c.assembly;
-      await p.goto(BASE + '#/measure/assembly/novo');
-      await p.waitForSelector('#form-assembly', { timeout: 30000 });
+      await abrir(p, '#/measure/assembly/novo', '#form-assembly');
       await p.fill('#as-nome', nomeAs);
       await p.selectOption('#as-tipo', 'area');
       for (const [i, [codigo, formula]] of linhas.entries()) {
         const itemId = (await sql(`select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`))[0].id;
         if (i > 0) await p.click('[data-acao="mz-nova-linha"]');
-        await p.waitForSelector('.mz-linha select[name="item"] option[value="' + itemId + '"]', { state: 'attached', timeout: 30000 });
+        await p.waitForSelector('.mz-linha select[name="item"] option[value="' + itemId + '"]', { state: 'attached', timeout: 60000 });
         await p.locator('.mz-linha select[name="item"]').nth(i).selectOption(itemId);
         await p.locator('.mz-linha input[name="formula"]').nth(i).fill(formula);
       }
       await p.click('[data-acao="mz-salvar-assembly"]');
-      await esperarAte(async () => (await sql(`select 1 from public.assemblies where empresa_id = '${emp.id}'`)).length > 0);
-      await p.goto(BASE + '#/measure/precos');
-      await p.waitForSelector('[data-acao="margens-nova"]', { timeout: 30000 });
+      if (!(await esperarAte(async () => (await sql(`select 1 from public.assemblies where empresa_id = '${emp.id}'`)).length > 0))) throw new Error('o assembly não chegou ao banco');
+    }
+    if (!(await sql(`select 1 from public.margens_versoes where empresa_id = '${emp.id}'`)).length) {
+      await abrir(p, '#/measure/precos', '[data-acao="margens-nova"]');
       await p.click('[data-acao="margens-nova"]');
       await p.fill('dialog input[name="overheadPct"]', String(c.margens[0]));
       await p.fill('dialog input[name="lucroPct"]', String(c.margens[1]));
       await p.fill('dialog input[name="motivo"]', 'Initial margins');
       await noDialogo(p, 'Salvar');
+      await esperarAte(async () => (await sql(`select 1 from public.margens_versoes where empresa_id = '${emp.id}'`)).length > 0);
     }
-    // ---- projetos ----
+    // ---- projetos (retomáveis: cada passo só se ainda não foi feito) ----
     const assemblyId = (await sql(`select id from public.assemblies where empresa_id = '${emp.id}' order by criado_em limit 1`))[0].id;
-    for (const pr of faltam) {
-      await p.goto(BASE + '#/measure/projeto/novo');
-      if (!(await p.waitForSelector('#form-projeto', { timeout: 15000 }).catch(() => null))) { await p.reload(); await p.waitForSelector('#form-projeto', { timeout: 30000 }); }   // a rota só muda o "#": às vezes a tela não redesenha
-      await p.fill('#pj-nome', pr.nome);
-      await p.selectOption('#pj-tipo', 'residencial-uni');
-      const contato = (await sql(`select id from public.contatos where empresa_id = '${emp.id}' and nome = '${pr.cliente.replace(/'/g, "''")}'`))[0];
-      if (contato) await p.selectOption('#pj-contratanteId', contato.id);
-      await p.fill('#pj-cidade', pr.cidade); await p.fill('#pj-estado', pr.estado);
-      await p.click('[data-acao="mz-salvar-projeto"]');
-      await esperarAte(async () => (await sql(`select 1 from public.projetos where empresa_id = '${emp.id}' and nome = '${pr.nome.replace(/'/g, "''")}'`)).length === 1);
-      const pj = (await sql(`select id from public.projetos where empresa_id = '${emp.id}' and nome = '${pr.nome.replace(/'/g, "''")}'`))[0];
-      await p.waitForSelector('#mz-enviar', { timeout: 30000 });
-      await p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
-      await p.waitForFunction(() => /3 sheets added/.test((document.getElementById('toast') || {}).textContent || ''), null, { timeout: 60000 });
-      await esperarAte(async () => (await sql(`select 1 from public.folhas where projeto_id = '${pj.id}'`)).length === 3);
-      if (!pr.condicao) { console.log('  ' + emp.nome + ': ' + pr.nome + ' (só a planta enviada)'); continue; }
-      const folha1 = (await sql(`select id from public.folhas where projeto_id = '${pj.id}' and pagina = 1`))[0].id;
-      await p.click('a[href="#/measure/folha/' + folha1 + '"]');
-      await esperaDesenho(p);
-      await p.click('[data-acao="mz-escala"]');
-      await p.selectOption('dialog select[name="razao"]', '48');
-      await noDialogo(p, 'Usar esta escala');
-      await clicar(p, [0, 31]); await clicar(p, [40, 31]);
-      await p.fill('dialog input[name="real"]', '40\'-0"');
-      await noDialogo(p, 'Conferir');
-      await esperarAte(async () => { const f = (await sql(`select escala from public.folhas where projeto_id = '${pj.id}' and pagina = 1`))[0]; return f.escala && f.escala.conferencia && f.escala.conferencia.ok; });
-      await p.click('[data-acao="mz-incluir-assembly"]');
-      await p.check('dialog input[name="assembly"][value="' + assemblyId + '"]');
-      await p.click('dialog button:has-text("Continue")');
-      await p.waitForSelector('dialog input[name="nome"]');
-      await p.fill('dialog input[name="nome"]', pr.condicao);
-      await noDialogo(p, 'Incluir no desenho');
-      for (const pt of [[0, 0], [40, 0], [40, 28], [0, 28]]) await clicar(p, pt);
-      await clicar(p, [0, 0]);
-      await esperarAte(async () => { const x = (await sql(`select medicoes from public.condicoes where projeto_id = '${pj.id}'`))[0]; return x && x.medicoes.length === 1; });
-      if (pr.emitir) {
-        await p.goto(BASE + '#/measure/projeto/' + pj.id + '/proposta');
-        await p.waitForSelector('#form-proposta', { timeout: 30000 });
-        await p.waitForFunction(() => document.querySelectorAll('.prop-linhas tbody tr').length >= 1, null, { timeout: 20000 });
+    for (const pr of c.projetos) {
+      const q = pr.nome.replace(/'/g, "''");
+      const estado = async () => (await sql(`select p.id, (select count(*) from public.folhas f where f.projeto_id = p.id)::int as folhas, (select count(*) from public.condicoes c where c.projeto_id = p.id)::int as condicoes, (select count(*) from public.propostas_emitidas e where e.projeto_id = p.id)::int as propostas from public.projetos p where p.empresa_id = '${emp.id}' and p.nome = '${q}'`))[0];
+      let st = await estado();
+      if (st && st.folhas === 3 && (!pr.condicao || st.condicoes > 0) && (!pr.emitir || st.propostas > 0)) continue;
+      if (!st) {
+        // com a rede lenta, uma releitura em andamento (da proposta anterior) pode redesenhar a tela e apagar o formulário: confere antes de salvar e refaz
+        for (let tentativa = 1; tentativa <= 4 && !st; tentativa++) {
+          await p.waitForTimeout(3000);
+          await abrir(p, '#/measure/projeto/novo', '#form-projeto');
+          await p.fill('#pj-nome', pr.nome);
+          await p.selectOption('#pj-tipo', 'residencial-uni');
+          const contato = (await sql(`select id from public.contatos where empresa_id = '${emp.id}' and nome = '${pr.cliente.replace(/'/g, "''")}'`))[0];
+          if (contato) await p.selectOption('#pj-contratanteId', contato.id);
+          await p.fill('#pj-cidade', pr.cidade); await p.fill('#pj-estado', pr.estado);
+          if ((await p.inputValue('#pj-nome').catch(() => '')) !== pr.nome) continue;   // a tela foi redesenhada no meio: de novo
+          await p.click('[data-acao="mz-salvar-projeto"]');
+          await esperarAte(async () => !!(await estado()), 20000);
+          st = await estado();
+        }
+        if (!st) throw new Error('o projeto ' + pr.nome + ' não chegou ao banco · aviso: ' + (((await p.locator('#toast').textContent().catch(() => '')) || '').slice(0, 120)));
+      }
+      const pjId = st.id;
+      if (st.folhas < 3) {
+        await abrir(p, '#/measure/projeto/' + pjId, '#mz-enviar');
+        await p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
+        await p.waitForFunction(() => /3 sheets added/.test((document.getElementById('toast') || {}).textContent || ''), null, { timeout: 90000 });
+        await esperarAte(async () => (await estado()).folhas === 3);
+      }
+      if (pr.condicao && st.condicoes === 0) {
+        const folha = (await sql(`select id, escala from public.folhas where projeto_id = '${pjId}' and pagina = 1`))[0];
+        await abrir(p, '#/measure/folha/' + folha.id, '#mz-desenho');
+        await esperaDesenho(p);
+        if (!(folha.escala && folha.escala.conferencia && folha.escala.conferencia.ok)) {
+          await p.click('[data-acao="mz-escala"]');
+          await p.selectOption('dialog select[name="razao"]', '48');
+          await noDialogo(p, 'Usar esta escala');
+          await clicar(p, [0, 31]); await clicar(p, [40, 31]);
+          await p.fill('dialog input[name="real"]', '40\'-0"');
+          await noDialogo(p, 'Conferir');
+          await esperarAte(async () => { const f = (await sql(`select escala from public.folhas where id = '${folha.id}'`))[0]; return f.escala && f.escala.conferencia && f.escala.conferencia.ok; });
+        }
+        await p.click('[data-acao="mz-incluir-assembly"]');
+        await p.check('dialog input[name="assembly"][value="' + assemblyId + '"]');
+        await p.click('dialog button:has-text("Continue")');
+        await p.waitForSelector('dialog input[name="nome"]');
+        await p.fill('dialog input[name="nome"]', pr.condicao);
+        await noDialogo(p, 'Incluir no desenho');
+        for (const pt of [[0, 0], [40, 0], [40, 28], [0, 28]]) await clicar(p, pt);
+        await clicar(p, [0, 0]);
+        if (!(await esperarAte(async () => { const x = (await sql(`select medicoes from public.condicoes where projeto_id = '${pjId}'`))[0]; return x && x.medicoes.length === 1; }))) throw new Error('a medição de ' + pr.nome + ' não chegou ao banco');
+      }
+      if (pr.emitir && (await estado()).propostas === 0) {
+        await abrir(p, '#/measure/projeto/' + pjId + '/proposta', '#form-proposta');
+        await p.waitForFunction(() => document.querySelectorAll('.prop-linhas tbody tr').length >= 1, null, { timeout: 60000 });
         await p.click('[data-acao="prop-emitir"]');
         await noDialogo(p, 'Emitir');
-        await esperarAte(async () => (await sql(`select 1 from public.propostas_emitidas where projeto_id = '${pj.id}'`)).length > 0);
+        if (!(await esperarAte(async () => (await estado()).propostas > 0))) throw new Error('a proposta de ' + pr.nome + ' não foi emitida');
       }
-      console.log('  ' + emp.nome + ': ' + pr.nome + (pr.emitir ? ' (proposta emitida)' : ' (medido, sem proposta)'));
+      console.log('  ' + emp.nome + ': ' + pr.nome + (pr.emitir ? ' (proposta emitida)' : pr.condicao ? ' (medido, sem proposta)' : ' (só a planta enviada)'));
     }
   } catch (e) {
     console.log('  FALHA em ' + emp.nome + ': ' + String(e.message).split('\n')[0].slice(0, 220) + ' · ' + p.url());
