@@ -25,6 +25,6 @@ cd "$R"
 for f in supabase/ajuste-criar-conta.sql supabase/migrations/*.sql supabase/testes/*.sql; do
   out=$($Q -f "$f" 2>&1); rc=$?
   if [ $rc -ne 0 ]; then echo "FALHOU  $f"; echo "$out" | tail -8; rm -rf "$TMP"; exit 1; fi
-  echo "ok      $f $(echo "$out" | grep -oE '(fatia .*|cascata: .*|segurança: .*)passaram')"
+  echo "ok      $f $(echo "$out" | grep -oE '(fatia .*|cascata: .*|segurança: .*|limite: .*)passaram')"
 done
 rm -rf "$TMP"

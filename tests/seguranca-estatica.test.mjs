@@ -133,9 +133,11 @@ console.log('\n5. Funções de borda');
   const diario = ler('supabase/functions/diario-publico/index.ts');
   verificar(/\^\[0-9A-F\]\{4\}-\[0-9A-F\]\{4\}-\[0-9A-F\]\{4\}\$/.test(diario), 'diario-publico só aceita o formato exato do código antes de tocar no banco');
   verificar(/delete diario\.empresa_id/.test(diario) && /empresa_id: _e/.test(diario), 'diario-publico não devolve o código da empresa nem os caminhos das fotos');
-  verificar(/dentro\(chamadas, ip, 60, true\)/.test(diario) && /dentro\(erros, ip, 12, true\)/.test(diario) && /return resposta\(\{ erro: 'limite' \}, 429\)/.test(diario), 'diario-publico limita as chamadas e os códigos errados por endereço (429)');
+  verificar(/contar_tentativa/.test(diario) && /dentro\(chave, 60, true\)/.test(diario) && /dentro\(chaveErros, 12, true\)/.test(diario) && /erro: 'limite' \}, 429/.test(diario), 'diario-publico limita as chamadas e os códigos errados por endereço (429), com o contador no banco');
+  verificar(!/new Map<string, number\[\]>/.test(diario), 'diario-publico não usa contador em memória (cada instância da função teria o seu)');
+  verificar(/crypto\.subtle\.digest\('SHA-256'/.test(diario), 'o endereço de quem abre o link nunca é guardado: só o hash');
   const convite = ler('supabase/functions/convite-publico/index.ts');
-  verificar(/\^\[0-9a-f\]\{48\}\$/.test(convite) && /dentroDoLimite/.test(convite), 'convite-publico valida o formato do token e limita as tentativas');
+  verificar(/\^\[0-9a-f\]\{48\}\$/.test(convite) && /contar_tentativa/.test(convite) && !/new Map<string, number\[\]>/.test(convite), 'convite-publico valida o formato do token e limita as tentativas pelo contador do banco');
   // devolver ao chamador só as mensagens escritas de propósito no banco (código P0001); nada de erro interno do Postgres ou do Storage
   const erros = ['enviar-avisos', 'diario-publico', 'convite-publico'].filter((n) => {
     const t = ler('supabase/functions/' + n + '/index.ts').replace(/\/\/.*$/gm, '');

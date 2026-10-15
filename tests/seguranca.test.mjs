@@ -38,7 +38,7 @@ async function api(token, caminho, { metodo = 'GET', corpo, base = REST, cabecal
   const r = await fetch(base + caminho, { method: metodo, headers: h, body: bruto !== undefined ? bruto : (corpo !== undefined ? JSON.stringify(corpo) : undefined) });
   const t = await r.text();
   let c = t; try { c = t ? JSON.parse(t) : null; } catch { /* texto */ }
-  return { status: r.status, corpo: c };
+  return { status: r.status, corpo: c, cab: r.headers };
 }
 const barrado = (r) => r.status >= 400 || (r.status >= 200 && r.status < 300 && (r.corpo === null || (Array.isArray(r.corpo) && r.corpo.length === 0)));
 const recusado = (r) => r.status >= 400;
@@ -359,13 +359,15 @@ else {
   // 40 códigos no formato certo que não existem, em sequência: a partir do 13º erro no mesmo minuto a função responde 429.
   // Se nunca vier 429, o limite não está valendo (a função pode estar rodando em várias instâncias, cada uma com o seu contador).
   const FN = URL_PROJETO + '/functions/v1';
-  const estados = [];
+  const estados = [], chaves = new Set();
   for (let i = 0; i < 40; i++) {
     const cod = (0xa000 + i).toString(16).toUpperCase() + '-' + (0xb000 + i).toString(16).toUpperCase() + '-' + (0xc000 + i).toString(16).toUpperCase();
     const r = await api(null, '/diario-publico?codigo=' + cod, { base: FN });
     estados.push(r.status);
+    chaves.add(r.cab.get('x-kb-limite') || '(sem cabeçalho)');
     if (r.status === 429) break;
   }
+  verificar(chaves.size === 1, 'a função enxerga sempre o mesmo endereço de chamador (o limite conta por ele)', [...chaves]);
   const primeiro429 = estados.indexOf(429);
   verificar(primeiro429 >= 0, 'depois de poucos códigos inexistentes seguidos o diario-publico passa a responder 429', estados.join(','));
   verificar(primeiro429 < 0 || (primeiro429 >= 10 && primeiro429 <= 14), 'o limite dispara perto do 13º erro no minuto (e não antes: quem erra um código não é bloqueado)', { primeiro429 });

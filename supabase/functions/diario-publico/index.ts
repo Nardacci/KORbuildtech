@@ -14,17 +14,12 @@ const CORS = {
 const resposta = (corpo: unknown, status = 200) =>
   new Response(JSON.stringify(corpo), { status, headers: { ...CORS, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
 
-// Limite de tentativas por endereço (IP), uma instância da função: 60 chamadas por minuto e 12 códigos que não existem por minuto.
-// O código do link tem 48 bits (inviável de adivinhar); o limite impede também a tentativa em massa e o uso da função como "furo" de carga.
-const chamadas = new Map<string, number[]>();
-const erros = new Map<string, number[]>();
-function dentro(mapa: Map<string, number[]>, chave: string, max: number, registrar: boolean): boolean {
-  const agora = Date.now();
-  const lista = (mapa.get(chave) || []).filter((t) => agora - t < 60_000);
-  if (registrar) lista.push(agora);
-  if (lista.length) mapa.set(chave, lista); else mapa.delete(chave);
-  if (mapa.size > 5000) for (const k of mapa.keys()) { mapa.delete(k); if (mapa.size <= 4000) break; }   // não cresce sem fim
-  return lista.length <= max;
+// Limite de tentativas por endereço (IP): 60 chamadas e 12 códigos inexistentes por minuto; passou disso, responde 429.
+// O contador fica no BANCO (contar_tentativa, migração 14): o contador em memória não vale, cada chamada pode cair numa instância diferente.
+// O endereço nunca é guardado: só o hash. O cabeçalho x-kb-limite (8 caracteres do hash) deixa o teste conferir que o endereço é estável.
+async function hash(prefixo: string, valor: string): Promise<string> {
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(valor));
+  return prefixo + Array.from(new Uint8Array(h)).slice(0, 16).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 const ipDe = (req: Request) =>
   (req.headers.get('cf-connecting-ip') || (req.headers.get('x-forwarded-for') || '').split(',')[0] || 'desconhecido').trim();
@@ -32,15 +27,28 @@ const ipDe = (req: Request) =>
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'GET') return resposta({ erro: 'metodo' }, 405);
-  const ip = ipDe(req);
-  if (!dentro(chamadas, ip, 60, true) || !dentro(erros, ip, 12, false)) return resposta({ erro: 'limite' }, 429);
-  const codigo = (new URL(req.url).searchParams.get('codigo') || '').trim().toUpperCase();
-  if (!/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(codigo)) { dentro(erros, ip, 12, true); return resposta({ erro: 'codigo' }, 400); }
-
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  const chave = await hash('d:', ipDe(req));
+  const marca = { 'x-kb-limite': chave.slice(2, 10) };
+  const resp = (corpo: unknown, status = 200) => {
+    const r = resposta(corpo, status);
+    for (const [k, v] of Object.entries(marca)) r.headers.set(k, v);
+    return r;
+  };
+  // se o banco não responder, deixa passar (o link continua abrindo); o erro vai para o log
+  const dentro = async (chaveX: string, max: number, registrar: boolean) => {
+    const { data, error } = await sb.rpc('contar_tentativa', { p_chave: chaveX, p_max: max, p_registrar: registrar });
+    if (error) { console.error('diario-publico: contador', error.code, error.message); return true; }
+    return data === true;
+  };
+  const chaveErros = await hash('e:', ipDe(req));
+  if (!(await dentro(chave, 60, true)) || !(await dentro(chaveErros, 12, false))) return resp({ erro: 'limite' }, 429);
+  const codigo = (new URL(req.url).searchParams.get('codigo') || '').trim().toUpperCase();
+  if (!/^[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/.test(codigo)) { await dentro(chaveErros, 12, true); return resp({ erro: 'codigo' }, 400); }
+
   const { data: diario, error } = await sb.rpc('diario_por_codigo', { p_codigo: codigo });
-  if (error) return resposta({ erro: 'servidor' }, 500);
-  if (!diario) { dentro(erros, ip, 12, true); return resposta({ erro: 'nao-encontrado' }, 404); }
+  if (error) return resp({ erro: 'servidor' }, 500);
+  if (!diario) { await dentro(chaveErros, 12, true); return resp({ erro: 'nao-encontrado' }, 404); }
 
   // fotos: troca o caminho no Storage por um link temporário (1 h); o caminho em si não sai
   const fotos = (diario.fotos || []) as Array<Record<string, unknown>>;
@@ -54,5 +62,5 @@ Deno.serve(async (req) => {
     ...resto, url: links.get(path as string) || null, url_mini: links.get(path_mini as string) || links.get(path as string) || null,
   }));
   delete diario.empresa_id;
-  return resposta(diario);
+  return resp(diario);
 });

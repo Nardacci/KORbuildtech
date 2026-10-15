@@ -17,14 +17,14 @@ const resposta = (corpo: unknown, status = 200) =>
   new Response(JSON.stringify(corpo), { status, headers: { ...CORS, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
 const TOKEN = /^[0-9a-f]{48}$/;
 
-// 60 chamadas por minuto por token (uma instância; suficiente contra tentativa e erro)
-const chamadas = new Map<string, number[]>();
-function dentroDoLimite(token: string) {
-  const agora = Date.now();
-  const lista = (chamadas.get(token) || []).filter((t) => agora - t < 60_000);
-  lista.push(agora);
-  chamadas.set(token, lista);
-  return lista.length <= 60;
+// 60 chamadas por minuto por token. O contador fica no BANCO (contar_tentativa, migração 14): em memória não vale, cada chamada pode cair numa
+// instância diferente e cada uma começa do zero. Guardamos só o hash do token. Se o banco não responder, deixa passar e registra no log.
+async function dentroDoLimite(sb: ReturnType<typeof createClient>, token: string): Promise<boolean> {
+  const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  const chave = 'c:' + Array.from(new Uint8Array(h)).slice(0, 16).map((b) => b.toString(16).padStart(2, '0')).join('');
+  const { data, error } = await sb.rpc('contar_tentativa', { p_chave: chave, p_max: 60, p_registrar: true });
+  if (error) { console.error('convite-publico: contador', error.code, error.message); return true; }
+  return data === true;
 }
 
 Deno.serve(async (req) => {
@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   if (req.method === 'GET') {
     const token = (new URL(req.url).searchParams.get('token') || '').trim();
     if (!TOKEN.test(token)) return resposta({ erro: 'token' }, 400);
-    if (!dentroDoLimite(token)) return resposta({ erro: 'limite' }, 429);
+    if (!(await dentroDoLimite(sb, token))) return resposta({ erro: 'limite' }, 429);
     await sb.rpc('visto_por_token', { p_token: token });   // "visto" no primeiro acesso; os erros aqui não importam
     const { data: x, error } = await sb.rpc('convite_por_token', { p_token: token });
     if (error) return resposta({ erro: 'servidor' }, 500);
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     token = String(corpo.token || ''); acao = String(corpo.acao || ''); dados = corpo.dados || {};
   }
   if (!TOKEN.test(token)) return resposta({ erro: 'token' }, 400);
-  if (!dentroDoLimite(token)) return resposta({ erro: 'limite' }, 429);
+  if (!(await dentroDoLimite(sb, token))) return resposta({ erro: 'limite' }, 429);
   // só as mensagens escritas de propósito nas funções do banco (raise exception, código P0001) chegam a quem chamou;
   // erro interno do Postgres (coluna, restrição, tipo) vira "servidor" e fica só no log da função
   const erroDoBanco = (e: { message?: string; code?: string } | null) => {
