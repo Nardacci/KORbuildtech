@@ -10,6 +10,7 @@ import { estado, todasAsEmpresas, salvar, chaveDaSessao } from './armazem.js';
 import { pode, perfilDe, modulosDe } from './settings.js';
 import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
 import { tr, tn, htmlSeletorIdioma } from './i18n.js';
+import { htmlAvisoInstalar } from './instalar.js';
 
 
 /* O que cada pessoa pode fazer vem do perfil de acesso (Settings › Perfis de acesso). */
@@ -200,6 +201,7 @@ export function casca(o) {
       '<main class="pagina pagina-' + (o.largura || 'larga') + '" id="conteudo">' +
         (o.voltar ? '<a class="voltar" href="' + o.voltar.href + '">' + icone('voltar', 18) + esc(o.voltar.rotulo) + '</a>' : '') +
         (o.titulo ? '<div class="pagina-cabeca"><div class="pagina-titulo"><h1>' + esc(o.titulo) + '</h1>' + (o.subtitulo ? '<p>' + esc(o.subtitulo) + '</p>' : '') + '</div>' + (o.acoes || '') + '</div>' : '') +
+        (estado().oficial ? htmlAvisoInstalar() : '') +
         o.conteudo +
       '</main>' +
     '</div>' +
@@ -215,6 +217,7 @@ function menuUsuario(u) {
       // na página oficial, "Minha conta" leva à área da conta (cadastros, usuários, meu perfil); não há demonstração para recomeçar
       (estado().oficial ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Minha conta') + '</a>')
         : pode(u, 'settings.conta') ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Conta da empresa') + '</a>') : '') +
+      (estado().oficial ? '<a class="menu-item" href="#/conta/diagnostico">' + icone('wifi', 18) + (tr('Diagnóstico do aparelho') + '</a>') : '') +
       (podeInstalar ? '<button type="button" class="menu-item" data-acao="instalar">' + icone('instalar', 18) + (tr('Instalar no celular') + '</button>') : '') +
       '<div class="menu-item menu-idioma">' + icone('idioma', 18) + '<span>' + tr('Idioma') + '</span>' + htmlSeletorIdioma() + '</div>' +
       (estado().oficial ? '' : '<button type="button" class="menu-item" data-acao="recomecar">' + icone('recomecar', 18) + (tr('Recomeçar demonstração') + '</button>')) +

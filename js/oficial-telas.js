@@ -15,6 +15,8 @@ import {
 import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
 import { esquecer as esquecerCadastros } from './cadastros.js';
 import { espelho } from './espelho.js';
+import { htmlAvisoInstalar } from './instalar.js';
+import { iniciarDiagnostico } from './diagnostico.js';
 import { CATEGORIAS_DE_EMAIL, textoDaCategoria, recebePorEmail, prefsLidas, lerPrefs, salvarPrefEmail } from './avisos-oficial.js';
 export { acoesCadastros };
 
@@ -82,6 +84,7 @@ export function telaOficial(p) {
   if (aba === 'perfis' && pode('settings.acesso')) return { html: moldura('perfis', htmlPerfis()) };
   if (aba === 'empresa') return { html: moldura('empresa', htmlEmpresa()) };
   if (aba === 'perfil') return { html: moldura('perfil', htmlMeuPerfil()) };
+  if (aba === 'diagnostico') return { html: moldura('perfil', htmlTelaDiagnostico()), depois: iniciarTelaDiagnostico };
   const cadastro = ABAS_CADASTROS.find(([k]) => k === aba);
   if (cadastro) {
     if (!pode(cadastro[2])) return { trocar: '#/conta' };
@@ -166,7 +169,7 @@ function moldura(ativa, conteudo) {
       htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>' +
     '<main class="pagina pagina-larga oficial-pagina">' +
       '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + abas.map(([k, r]) => '<a href="#/conta' + (k === 'inicio' ? '' : '/' + k) + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
-      htmlAvisoDoPlano() + conteudo + '</main>';
+      htmlAvisoDoPlano() + htmlAvisoInstalar() + conteudo + '</main>';
 }
 
 /** Conta suspensa (só lê) ou teste vencido: o aviso fica no alto de toda tela da conta (docs/banco.md §15.6). */
@@ -175,6 +178,18 @@ function htmlAvisoDoPlano() {
   const vencido = pl.status === 'teste' && /^\d{4}-\d{2}-\d{2}/.test(pl.teste_ate || '') && pl.teste_ate.slice(0, 10) < new Date().toISOString().slice(0, 10);
   if (pl.status !== 'suspensa' && !vencido) return '';
   return '<section class="aviso aviso-alerta aviso-plano" role="alert"><b>' + (pl.status === 'suspensa' ? tr('Esta conta está suspensa. Fale com o KORbuild.') : tr('Seu período de teste terminou: fale com o KORbuild.')) + '</b></section>';
+}
+
+/* Diagnóstico do aparelho (js/diagnostico.js): a mesma tela da página avulsa diagnostico.html, com o que só o app sabe (usuário e fila de envio). */
+function htmlTelaDiagnostico() {
+  return '<section class="cartao"><h1 class="oficial-titulo">' + tr('Diagnóstico do aparelho') + '</h1><p class="mudo">' + tr('Para quando algo não funciona neste celular: veja o que está errado e mande o relatório para quem está ajudando.') + '</p></section><div id="diag-raiz"></div>';
+}
+function iniciarTelaDiagnostico() {
+  iniciarDiagnostico(document.getElementById('diag-raiz'), async () => {
+    let pendentesDiario = null, pendentesPonto = null;
+    try { const m = await import('./sincronizacao.js'); pendentesDiario = m.pendentesNoAparelho(); pendentesPonto = m.pendentesDoPonto(); } catch { /* sem fila para mostrar */ }
+    return { usuario: String((conta.sessao && conta.sessao.user && conta.sessao.user.id) || '').slice(0, 8), perfil: nomeDoPerfil(conta.perfil), pendentesDiario, pendentesPonto };
+  });
 }
 
 function htmlInicio() {

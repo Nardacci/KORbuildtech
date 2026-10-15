@@ -1425,3 +1425,21 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .foto-batida { display: block; margin-top: 6px; padding: 0; border: 1px solid var(--borda); border-radius: var(--raio); overflow: hidden; background: var(--neutro-claro); cursor: zoom-in; width: 96px; height: 72px; }
 .foto-batida img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .foto-batida-grande { display: block; max-width: 100%; max-height: 70vh; margin: 0 auto; border-radius: var(--raio); }
+
+/* Diagnóstico do aparelho e aviso de instalação (js/diagnostico.js, js/instalar.js) */
+.aviso-instalar { margin: 0 0 14px; }
+.diag-resumo-ok { border-color: var(--verde-borda); background: var(--verde-claro); }
+.diag-resumo-atencao { border-color: var(--ambar-borda); background: var(--ambar-claro); }
+.diag-pontos { margin: 8px 0 12px; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+.diag-lista dt { display: flex; gap: 6px; align-items: baseline; }
+.diag-lista dd { overflow-wrap: anywhere; }
+.diag-ponto { display: inline-block; min-width: 1.2em; font-weight: 700; }
+.diag-ok { color: var(--verde); }
+.diag-atencao { color: var(--ambar); }
+.diag-erro { color: var(--vermelho); }
+.diag-info { color: var(--mudo); }
+.diag-pontos .diag-erro, .diag-pontos .diag-atencao { color: inherit; }
+.diag-foto { cursor: pointer; }
+.diag-texto { width: 100%; font: 12px/1.45 ui-monospace, Menlo, Consolas, monospace; margin-top: 10px; border: 1px solid var(--borda); border-radius: 10px; padding: 10px; background: var(--superficie); color: var(--texto); }
+.diag-agente summary { cursor: pointer; font-weight: 600; }
+.passos-teste { margin: 8px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; line-height: 1.5; }

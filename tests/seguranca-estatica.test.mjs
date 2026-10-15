@@ -69,7 +69,7 @@ console.log('\n2. A chave que vai para o navegador');
   const url = (cfg.match(/SUPABASE_URL\s*=\s*'([^']+)'/) || [])[1] || '';
   verificar(url.startsWith('https://'), 'o Supabase é chamado por HTTPS', url);
   const semComentario = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1').replace(/<!--[\s\S]*?-->/g, '');
-  const comService = [...lido].filter(([f, t]) => /service_role/.test(semComentario(t)) && /^(js|css|assets|index\.html|admin\.html|sw\.js)/.test(f)).map(([f]) => f);
+  const comService = [...lido].filter(([f, t]) => /service_role/.test(semComentario(t)) && /^(js|css|assets|index\.html|admin\.html|diagnostico\.html|teste-iphone\.html|sw\.js)/.test(f)).map(([f]) => f);
   verificar(!comService.length, 'nenhum arquivo do app (js, html, sw) cita service_role', comService);
 }
 
@@ -85,7 +85,7 @@ console.log('\n3. Service worker');
 /* ---------- 4. Código do app ---------- */
 console.log('\n4. Código do app');
 {
-  const app = [...lido].filter(([f]) => /^(js\/.*\.m?js|sw\.js|index\.html|admin\.html)$/.test(f));
+  const app = [...lido].filter(([f]) => /^(js\/.*\.m?js|sw\.js|index\.html|admin\.html|diagnostico\.html|teste-iphone\.html)$/.test(f));
   const perigosos = [];
   for (const [f, t] of app) {
     const limpo = t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
@@ -108,7 +108,7 @@ console.log('\n4. Código do app');
     if (f.endsWith('.html')) for (const m of t.matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>/g)) inline.push(f + ': <script> inline');
   }
   verificar(!inline.length, 'nenhum manipulador de evento inline (onsubmit=, onclick=…) nem <script> inline nas telas', inline.slice(0, 8));
-  const htmls = ['index.html', 'admin.html'];
+  const htmls = ['index.html', 'admin.html', 'diagnostico.html', 'teste-iphone.html'];
   const semMeta = htmls.filter((f) => !/<meta[^>]+name=["']viewport/.test(ler(f)));
   verificar(!semMeta.length, 'as páginas do app têm o meta viewport', semMeta);
   const http = [...lido].filter(([f, t]) => /^(js|index\.html|admin\.html|sw\.js|manifest)/.test(f) && /["'(]http:\/\/(?!localhost|127\.0\.0\.1|www\.w3\.org)/.test(t)).map(([f]) => f);

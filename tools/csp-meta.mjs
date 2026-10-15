@@ -1,4 +1,4 @@
-/* KORbuild — liga ou desliga a política de conteúdo (CSP) nas páginas do app (index.html e admin.html), com a política de tests/_csp.mjs.
+/* KORbuild — liga ou desliga a política de conteúdo (CSP) nas páginas do app (index.html, admin.html, diagnostico.html e teste-iphone.html), com a política de tests/_csp.mjs.
  * O GitHub Pages não deixa mandar cabeçalho (nem Report-Only), então a política vai numa <meta http-equiv="Content-Security-Policy">.
  * Antes de ligar: a medição KOR_CSP=relatorio (tests/_csp.mjs) precisa estar com zero violações; depois de ligar, rode os testes de navegador de novo.
  * Também sobe a versão do cache do service worker, para os aparelhos pegarem a página nova.
@@ -7,7 +7,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { POLITICA } from '../tests/_csp.mjs';
 
-const PAGINAS = ['index.html', 'admin.html'];
+const PAGINAS = ['index.html', 'admin.html', 'diagnostico.html', 'teste-iphone.html'];
 const INICIO = '<!-- csp:inicio -->', FIM = '<!-- csp:fim -->';
 const acao = process.argv[2];
 if (!['--ligar', '--desligar', '--status'].includes(acao)) { console.error('Uso: node tools/csp-meta.mjs --ligar | --desligar | --status'); process.exit(2); }
