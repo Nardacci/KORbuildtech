@@ -352,6 +352,29 @@ else {
   }
 }
 
+/* ---------- 6c. O limite de tentativas do link do diário ---------- */
+console.log('\n6c. Limite de tentativas (diario-publico)');
+if (!REAL) console.log('  (só com --real)');
+else {
+  // 40 códigos no formato certo que não existem, em sequência: a partir do 13º erro no mesmo minuto a função responde 429.
+  // Se nunca vier 429, o limite não está valendo (a função pode estar rodando em várias instâncias, cada uma com o seu contador).
+  const FN = URL_PROJETO + '/functions/v1';
+  const estados = [];
+  for (let i = 0; i < 40; i++) {
+    const cod = (0xa000 + i).toString(16).toUpperCase() + '-' + (0xb000 + i).toString(16).toUpperCase() + '-' + (0xc000 + i).toString(16).toUpperCase();
+    const r = await api(null, '/diario-publico?codigo=' + cod, { base: FN });
+    estados.push(r.status);
+    if (r.status === 429) break;
+  }
+  const primeiro429 = estados.indexOf(429);
+  verificar(primeiro429 >= 0, 'depois de poucos códigos inexistentes seguidos o diario-publico passa a responder 429', estados.join(','));
+  verificar(primeiro429 < 0 || (primeiro429 >= 10 && primeiro429 <= 14), 'o limite dispara perto do 13º erro no minuto (e não antes: quem erra um código não é bloqueado)', { primeiro429 });
+  console.log('  (esperando 65 s para o bloqueio deste endereço expirar e não atrapalhar os testes seguintes)');
+  await new Promise((ok) => setTimeout(ok, 65000));
+  const volta = await api(null, '/diario-publico?codigo=AAAA-0000-FFFF', { base: FN });
+  verificar(volta.status === 404 || volta.status === 400, 'passado o minuto, o endereço volta a ser atendido normalmente', volta.status);
+}
+
 /* ---------- 7. Configuração do Auth ---------- */
 console.log('\n7. Configuração do Auth');
 if (!REAL) console.log('  (só com --real)');
