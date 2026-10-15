@@ -22,7 +22,7 @@ const URL_PROJETO = CONFIG.match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1].replace(/\/$
 const ANON = CONFIG.match(/SUPABASE_ANON_KEY\s*=\s*'([^']+)'/)[1];
 const REST = REAL ? URL_PROJETO + '/rest/v1' : (process.env.POSTGREST_URL || 'http://localhost:3001');
 
-let falhas = 0, passos = 0;
+let falhas = 0, passos = 0, errosDoDiario = 0;
 function verificar(cond, texto, detalhe) {
   passos++;
   if (cond) console.log('  ok  ' + texto);
@@ -341,8 +341,10 @@ else {
   }
   const g = await chamar('enviar-avisos', '', { metodo: 'GET' });
   verificar(g.status === 405 || g.status === 401, 'enviar-avisos só aceita POST', g);
+  // errosDoDiario (no topo do arquivo) conta os códigos errados já mandados deste endereço neste minuto: a 6c os desconta
   for (const c of ["' or 1=1 --", '0000-0000', 'AAAA-BBBB-CCCC-DDDD', '%', 'a'.repeat(2000)]) {
     const r = await chamar('diario-publico', '?codigo=' + encodeURIComponent(c));
+    errosDoDiario++;
     // 400/404 da função, ou 403 com página HTML: o bloqueio do WAF (Cloudflare) na frente do Supabase barrou o padrão de injeção antes da função
     verificar(r.status === 400 || r.status === 404 || (r.status === 403 && typeof r.corpo === 'string'), 'diario-publico recusa o código «' + c.slice(0, 20) + '» sem erro de servidor', { status: r.status, corpo: String(r.corpo).slice(0, 80) });
   }
@@ -369,8 +371,12 @@ else {
   }
   verificar(chaves.size === 1, 'a função enxerga sempre o mesmo endereço de chamador (o limite conta por ele)', [...chaves]);
   const primeiro429 = estados.indexOf(429);
+  console.log('  respostas em sequência: ' + estados.join(',') + '   (endereço visto: ' + [...chaves].join(',') + '; erros anteriores neste minuto: ' + errosDoDiario + ')');
   verificar(primeiro429 >= 0, 'depois de poucos códigos inexistentes seguidos o diario-publico passa a responder 429', estados.join(','));
-  verificar(primeiro429 < 0 || (primeiro429 >= 10 && primeiro429 <= 14), 'o limite dispara perto do 13º erro no minuto (e não antes: quem erra um código não é bloqueado)', { primeiro429 });
+  // o limite é de 12 erros por minuto: a 6b já gastou errosDoDiario deles, então o 429 vem na (13 - errosDoDiario)-ésima chamada daqui;
+  // se o minuto virou no meio do caminho, o contador recomeça e o 429 vem até a 14ª. Nunca antes do esperado (quem erra pouco não é bloqueado).
+  const cedo = Math.max(0, 12 - errosDoDiario - 1);
+  verificar(primeiro429 < 0 || (primeiro429 >= cedo && primeiro429 <= 14), 'o limite dispara no ponto certo: perto do 13º erro no minuto (descontando os ' + errosDoDiario + ' que a seção 6b já mandou)', { primeiro429, esperado: cedo + ' a 14' });
   console.log('  (esperando 65 s para o bloqueio deste endereço expirar e não atrapalhar os testes seguintes)');
   await new Promise((ok) => setTimeout(ok, 65000));
   const volta = await api(null, '/diario-publico?codigo=AAAA-0000-FFFF', { base: FN });
