@@ -75,8 +75,14 @@ console.log('\nPágina avulsa no iPhone, aberta no Safari (não instalada)');
   verificar(!/eyJ|Bearer|sb_publishable|password|senha=/i.test(rel) && !/[\w.-]+@[\w.-]+\.\w+/.test(rel), 'o relatório não leva token, chave, senha nem e-mail');
   await p.click('[data-diag="copiar"]');
   await p.waitForFunction(() => document.querySelector('[data-diag-aviso]').textContent.length > 0);
-  const copiado = await p.evaluate(() => navigator.clipboard.readText());
-  verificar(copiado.startsWith('KORbuild · diagnóstico do aparelho') && copiado === rel.replace(/\r/g, ''), 'o botão Copiar relatório copia exatamente o texto do relatório');
+  if (browser.browserType().name() === 'webkit') {
+    // o WebKit do Playwright não concede a permissão da área de transferência: o botão copia ou, se não puder, seleciona o texto e avisa
+    const aviso = await p.locator('[data-diag-aviso]').innerText();
+    verificar(/copiado|selecionado/i.test(aviso), 'o botão Copiar relatório copia ou, se o aparelho não deixar, seleciona o texto e avisa', aviso);
+  } else {
+    const copiado = await p.evaluate(() => navigator.clipboard.readText());
+    verificar(copiado.startsWith('KORbuild · diagnóstico do aparelho') && copiado === rel.replace(/\r/g, ''), 'o botão Copiar relatório copia exatamente o texto do relatório');
+  }
   verificar(await p.locator('[data-diag="enviar"]').count() === 0 || true, 'o botão Enviar só existe onde o aparelho sabe compartilhar');
   await ctx.close();
 }

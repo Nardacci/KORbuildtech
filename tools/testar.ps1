@@ -5,6 +5,8 @@
 #   .\tools\testar.ps1 -Parte prototipo # só o que roda no navegador, sem banco (não precisa de token)
 #   .\tools\testar.ps1 -Parte banco     # só o que fala com o Supabase (precisa de $env:SUPABASE_ACCESS_TOKEN)
 #   .\tools\testar.ps1 -Somente crew,obras
+#   .\tools\testar.ps1 -Parte prototipo -Motor webkit   # os testes de navegador no WebKit (Safari); -Motor iphone = WebKit com iPhone 15 emulado
+#                                                          (instale uma vez: npx playwright install webkit)
 #
 # Nada aqui altera a estrutura do banco: os testes SQL terminam em ROLLBACK, e o teste da conta cria usuários
 # kb-e2e-…@example.com e apaga tudo no fim. Migrações NÃO são executadas por este script.
@@ -13,6 +15,7 @@
 param(
   [ValidateSet('tudo', 'prototipo', 'banco')] [string] $Parte = 'tudo',
   [string[]] $Somente = @(),
+  [ValidateSet('chromium', 'webkit', 'iphone')] [string] $Motor = 'chromium',
   [int] $Porta = 8123
 )
 
@@ -37,6 +40,16 @@ if ($LASTEXITCODE -ne 0) {
   Escrever '  npx playwright install chromium' White
   exit 2
 }
+if ($Motor -ne 'chromium') {
+  & node -e "import('playwright').then(async (p) => { const fs = await import('node:fs'); process.exit(fs.existsSync(p.webkit.executablePath()) ? 0 : 1) }, () => process.exit(1))" 2>$null
+  if ($LASTEXITCODE -ne 0) {
+    Escrever 'O WebKit não está instalado no Playwright desta pasta. Rode uma vez:' Yellow
+    Escrever '  npx playwright install webkit' White
+    exit 2
+  }
+  $env:KOR_MOTOR = $Motor
+  Escrever "Motor de navegador: WebKit ($Motor)" DarkGray
+} else { Remove-Item Env:KOR_MOTOR -ErrorAction SilentlyContinue }
 $temToken = [bool]$env:SUPABASE_ACCESS_TOKEN
 if ($Parte -ne 'prototipo' -and -not $temToken) {
   Escrever 'Sem $env:SUPABASE_ACCESS_TOKEN: os testes do banco ficam de fora (rode com -Parte prototipo para não ver este aviso).' Yellow
@@ -88,6 +101,7 @@ foreach ($t in $lista) {
   Escrever ('> ' + $t.nome) Cyan
   $inicio = Get-Date
   $argumentos = $t.cmd
+  if ($Motor -ne 'chromium' -and "$($argumentos[0])" -like '*.test.mjs') { $argumentos = @('--import', './tests/_motor-global.mjs') + $argumentos }   # só os testes de navegador
   $saida = & node @argumentos 2>&1 | ForEach-Object { "$_" }
   $codigo = $LASTEXITCODE
   $segundos = [math]::Round(((Get-Date) - $inicio).TotalSeconds)
@@ -104,7 +118,7 @@ if ($servidor) { Stop-Process -Id $servidor.Id -Force -ErrorAction SilentlyConti
 
 # ---------- Resumo ----------
 $falharam = @($resultados | Where-Object { $_.Resultado -ne 'ok' })
-$md = @("# KORbuild — resultado dos testes", '', "- Data: $(Get-Date -Format 'yyyy-MM-dd HH:mm')", "- Commit: $commit", "- Parte: $Parte", '',
+$md = @("# KORbuild — resultado dos testes", '', "- Data: $(Get-Date -Format 'yyyy-MM-dd HH:mm')", "- Commit: $commit", "- Parte: $Parte", "- Motor: $Motor", '',
   '| Teste | Tipo | Resultado | Verificações | Tempo |', '|---|---|---|---|---|')
 $md += $resultados | ForEach-Object { "| $($_.Teste) | $($_.Tipo) | $($_.Resultado) | $($_.Placar) | $($_.Segundos)s |" }
 if ($falharam.Count) {
