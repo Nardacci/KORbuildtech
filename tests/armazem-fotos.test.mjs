@@ -9,6 +9,8 @@
 import { chromium } from 'playwright';
 
 const BASE = process.argv.slice(2).find((a) => a.startsWith('http')) || 'http://localhost:8123/';
+// nenhum teste pode ficar preso: passou de 4 minutos, falha e sai (um passo que espera para sempre travava o navegador e a memória)
+setTimeout(() => { console.log('FALHA tempo máximo do teste esgotado (4 min): algum passo ficou esperando'); process.exit(3); }, 240000).unref();
 let falhas = 0, passos = 0;
 function verificar(cond, texto, detalhe) {
   passos++;
@@ -54,15 +56,19 @@ console.log('Normal');
     await a.guardarFoto('t-normal', jpeg, mini);
     const l = await a.lerFoto('t-normal'), lm = await a.lerFoto(a.idMiniatura('t-normal'));
     // o que está de fato no banco: bytes, não Blob
-    const cru = await new Promise((ok) => { const q = indexedDB.open('kbt-rdo-fotos', 1); q.onsuccess = () => { const g = q.result.transaction('fotos').objectStore('fotos').get('t-normal'); g.onsuccess = () => { ok({ ehBlob: g.result instanceof Blob, temBytes: g.result && g.result.bytes instanceof ArrayBuffer, tipo: g.result && g.result.tipo }); q.result.close(); }; }; });
-    // uma foto antiga, guardada como Blob (formato anterior)
-    await new Promise((ok) => { const q = indexedDB.open('kbt-rdo-fotos', 1); q.onsuccess = () => { const t = q.result.transaction('fotos', 'readwrite'); t.objectStore('fotos').put(new Blob(['antiga'], { type: 'image/png' }), 't-antiga'); t.oncomplete = () => { q.result.close(); ok(); }; }; });
+    const cru = await Promise.race([new Promise((ok) => { const q = indexedDB.open('kbt-rdo-fotos', 1); q.onerror = () => ok({}); q.onsuccess = () => { const g = q.result.transaction('fotos').objectStore('fotos').get('t-normal'); g.onsuccess = () => { ok({ ehBlob: g.result instanceof Blob, temBytes: g.result && g.result.bytes instanceof ArrayBuffer, tipo: g.result && g.result.tipo }); q.result.close(); }; g.onerror = () => ok({}); }; }), new Promise((ok) => setTimeout(() => ok({}), 8000))]);
+    // uma foto antiga, guardada como Blob (formato anterior); o WebKit efêmero e o Safari privado cancelam essa gravação, então não espera só o sucesso
+    const antigaGravou = await Promise.race([
+      new Promise((ok) => { const q = indexedDB.open('kbt-rdo-fotos', 1); q.onerror = () => ok(false); q.onsuccess = () => { const t = q.result.transaction('fotos', 'readwrite'); t.objectStore('fotos').put(new Blob(['antiga'], { type: 'image/png' }), 't-antiga'); t.oncomplete = () => { q.result.close(); ok(true); }; t.onabort = () => { q.result.close(); ok(false); }; t.onerror = () => ok(false); }; }),
+      new Promise((ok) => setTimeout(() => ok(false), 8000)),
+    ]);
     const antiga = await a.lerFoto('t-antiga');
-    return { cofre: a.cofreDasFotos(), eBlob: l instanceof Blob, tipo: l.type, tam: l.size, miniTam: lm.size, cru, antigaTipo: antiga && antiga.type, antigaTam: antiga && antiga.size };
+    return { cofre: a.cofreDasFotos(), eBlob: l instanceof Blob, tipo: l.type, tam: l.size, miniTam: lm.size, cru, antigaGravou, antigaTipo: antiga && antiga.type, antigaTam: antiga && antiga.size };
   });
   verificar(r.cofre === 'banco' && r.eBlob && r.tipo === 'image/jpeg' && r.tam === 8 && r.miniTam === 3, 'a foto e a miniatura gravam e voltam como Blob do mesmo tipo e tamanho', r);
   verificar(!r.cru.ehBlob && r.cru.temBytes && r.cru.tipo === 'image/jpeg', 'no banco a foto fica como bytes (e não como Blob)', r.cru);
-  verificar(r.antigaTipo === 'image/png' && r.antigaTam === 6, 'uma foto antiga, guardada como Blob, continua lendo', r);
+  if (r.antigaGravou) verificar(r.antigaTipo === 'image/png' && r.antigaTam === 6, 'uma foto antiga, guardada como Blob, continua lendo', r);
+  else console.log('  (este navegador não deixa nem criar a foto antiga como Blob: o passo de compatibilidade não se aplica)');
   await p.reload();
   await p.waitForSelector('#form-login', { timeout: 40000 });
   const depois = await arm(p, async (a) => { const l = await a.lerFoto('t-normal'); return l ? { tipo: l.type, tam: l.size } : null; });

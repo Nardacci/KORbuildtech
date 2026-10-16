@@ -9,6 +9,8 @@
 import { chromium, webkit, devices } from 'playwright';
 
 const motor = process.env.KOR_MOTOR || '';
+// trava de segurança: nenhum teste de navegador pode passar de KOR_LIMITE_S segundos (padrão 20 min); passou, falha e sai em vez de prender o navegador e a memória
+if (motor) setTimeout(() => { console.log('FALHA o teste passou de ' + (process.env.KOR_LIMITE_S || 1200) + ' s e foi interrompido (algum passo ficou esperando)'); process.exit(3); }, Number(process.env.KOR_LIMITE_S || 1200) * 1000).unref();
 if (motor === 'webkit' || motor === 'iphone') {
   const aparelho = motor === 'iphone' ? devices['iPhone 15'] : {};
   const PERMISSOES_DO_WEBKIT = new Set(['geolocation']);
