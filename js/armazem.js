@@ -153,7 +153,11 @@ export function registrar(r, quem, acao) {
   r.historico.push({ em: Date.now(), quem, acao });
 }
 
-/* ---------- Fotos no IndexedDB ---------- */
+/* ---------- Fotos no IndexedDB ----------
+ * O Safari em aba privada (e o WebKit dos testes, que abre cada contexto assim) aborta, sem dizer o motivo, a gravação de um Blob no IndexedDB; um iPhone sem
+ * espaço também pode recusar. Por isso a foto vai para o banco como bytes ({ tipo, bytes }) e volta como Blob na leitura (as fotos já guardadas como Blob
+ * continuam lendo). Se o banco do aparelho não gravar de jeito nenhum, o cofre cai para a memória da página: o app continua funcionando e as fotos só duram
+ * até fechar. cofreDasFotos() diz em qual dos dois está (o diagnóstico do aparelho mostra). */
 
 let conexao;
 function abrir() {
@@ -162,8 +166,9 @@ function abrir() {
       const req = indexedDB.open(BANCO, 1);
       req.onupgradeneeded = () => req.result.createObjectStore('fotos');
       req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
+      req.onerror = () => reject(req.error || new Error('O banco do aparelho não abriu.'));
     });
+    conexao.catch(() => { conexao = null; });   // tenta de novo na próxima vez
   }
   return conexao;
 }
@@ -174,9 +179,16 @@ async function operacao(modo, fn) {
     const tx = db.transaction('fotos', modo);
     const req = fn(tx.objectStore('fotos'));
     tx.oncomplete = () => resolve(req && req.result);
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(tx.error || new Error('O banco do aparelho recusou a gravação.'));
+    tx.onabort = () => reject(tx.error || new Error('O banco do aparelho cancelou a gravação.'));
   });
 }
+
+const memoria = new Map();
+let cofre = 'banco';
+export const cofreDasFotos = () => cofre;
+const viraBytes = async (b) => (typeof Blob !== 'undefined' && b instanceof Blob ? { tipo: b.type || '', bytes: await b.arrayBuffer() } : b);
+const viraBlob = (v) => (v && v.bytes instanceof ArrayBuffer ? new Blob([v.bytes], { type: v.tipo || '' }) : v);
 
 /* Cada foto tem duas versões: a do relatório (id) e a miniatura das listas (id + '-mini'). */
 export function idMiniatura(id) { return id + '-mini'; }
@@ -184,17 +196,27 @@ export function idMiniatura(id) { return id + '-mini'; }
 /* A foto de uma batida do ponto fica no mesmo cofre de fotos, com este prefixo (a do RDO usa o id puro). */
 export const idDaFotoDePonto = (id) => 'ponto:' + id;
 
-export function guardarFoto(id, blob, mini) {
-  return operacao('readwrite', (s) => { if (mini) s.put(mini, idMiniatura(id)); return s.put(blob, id); });
+export async function guardarFoto(id, blob, mini) {
+  const pares = [[id, await viraBytes(blob)]];
+  if (mini) pares.push([idMiniatura(id), await viraBytes(mini)]);
+  if (cofre === 'banco') {
+    try { await operacao('readwrite', (s) => { let r; for (const [k, v] of pares) r = s.put(v, k); return r; }); return; }
+    catch (e) { console.warn('O banco do aparelho não gravou a foto; o app guarda na memória até fechar.', e); cofre = 'memoria'; }
+  }
+  for (const [k, v] of pares) memoria.set(k, v);
 }
 
-export function apagarFoto(id) {
+export async function apagarFoto(id) {
   urls.delete(id);
   urls.delete(idMiniatura(id));
-  return operacao('readwrite', (s) => { s.delete(idMiniatura(id)); return s.delete(id); });
+  memoria.delete(id); memoria.delete(idMiniatura(id));
+  try { await operacao('readwrite', (s) => { s.delete(idMiniatura(id)); return s.delete(id); }); } catch { /* sem banco: já saiu da memória */ }
 }
 
-export function lerFoto(id) { return operacao('readonly', (s) => s.get(id)); }
+export async function lerFoto(id) {
+  if (memoria.has(id)) return viraBlob(memoria.get(id));
+  try { return viraBlob(await operacao('readonly', (s) => s.get(id))); } catch { return undefined; }
+}
 
 const urls = new Map();
 /* Foto que não está no aparelho (tirada em outro celular, ou de um diário recebido): a página oficial busca no
@@ -227,5 +249,6 @@ export async function apagarTudo() {
   localStorage.removeItem(CHAVE);
   banco = null;
   urls.clear();
-  await operacao('readwrite', (s) => s.clear());
+  memoria.clear();
+  try { await operacao('readwrite', (s) => s.clear()); } catch { /* sem banco: só a memória, já limpa */ }
 }

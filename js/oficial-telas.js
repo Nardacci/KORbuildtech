@@ -186,9 +186,10 @@ function htmlTelaDiagnostico() {
 }
 function iniciarTelaDiagnostico() {
   iniciarDiagnostico(document.getElementById('diag-raiz'), async () => {
-    let pendentesDiario = null, pendentesPonto = null;
+    let pendentesDiario = null, pendentesPonto = null, cofre = null;
+    try { cofre = (await import('./armazem.js')).cofreDasFotos(); } catch { /* sem armazém */ }
     try { const m = await import('./sincronizacao.js'); pendentesDiario = m.pendentesNoAparelho(); pendentesPonto = m.pendentesDoPonto(); } catch { /* sem fila para mostrar */ }
-    return { usuario: String((conta.sessao && conta.sessao.user && conta.sessao.user.id) || '').slice(0, 8), perfil: nomeDoPerfil(conta.perfil), pendentesDiario, pendentesPonto };
+    return { usuario: String((conta.sessao && conta.sessao.user && conta.sessao.user.id) || '').slice(0, 8), perfil: nomeDoPerfil(conta.perfil), pendentesDiario, pendentesPonto, cofre };
   });
 }
 

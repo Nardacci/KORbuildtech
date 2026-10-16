@@ -3252,4 +3252,15 @@ export const EN = {
   'ativo e controlando esta página': 'active and controlling this page',
   'registrado, ainda não controla esta página (feche e abra o app)': 'registered, not yet controlling this page (close and reopen the app)',
   'não respondeu': 'did not answer',
+
+  // ---------- Partida que falha e cofre de fotos ----------
+  'Não foi possível abrir o KORbuild neste aparelho.': 'KORbuild could not open on this device.',
+  'Feche e abra de novo. Se continuar, abra o diagnóstico do aparelho e mande o relatório para quem está ajudando.': 'Close it and open it again. If it keeps happening, open the device check and send the report to whoever is helping.',
+  'Foto como arquivo no banco do aparelho': 'Photo as a file in the device database',
+  'não grava': 'does not save',
+  'Costuma ser aba privada do Safari: o app já guarda as fotos de outro jeito, mas o que está em aba privada some ao fechar. Use fora da aba privada.': 'This is usually a Safari private tab: the app already stores photos another way, but anything in a private tab disappears when you close it. Use it outside a private tab.',
+  'Onde o app guarda as fotos agora': 'Where the app is keeping photos now',
+  'no banco do aparelho': 'in the device database',
+  'só na memória (somem ao fechar)': 'in memory only (lost when closed)',
+  'O aparelho não deixou gravar no banco. Use fora da aba privada e com espaço livre; envie o que está esperando antes de fechar o app.': 'The device would not let the app save to its database. Use it outside a private tab and with free space; send whatever is waiting before closing the app.',
 };

@@ -2,7 +2,7 @@
  * Guarda o app inteiro no aparelho na instalação, para abrir e funcionar no canteiro sem internet.
  * Arquivos do app: rede primeiro (pega a versão nova) e cópia guardada quando não há conexão.
  * O clima (Open-Meteo) nunca passa pelo cache: sem internet, o app pede para marcar à mão. */
-var CACHE = 'korbuild-v71';
+var CACHE = 'korbuild-v72';
 var APP = [
   './', 'index.html', 'diagnostico.html', 'teste-iphone.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/i18n.js', 'js/i18n-en.js', 'js/util.js', 'js/diagnostico.js', 'js/diagnostico-pagina.js', 'js/instalar.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',

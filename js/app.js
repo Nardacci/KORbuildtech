@@ -1930,4 +1930,15 @@ async function iniciar() {
   setInterval(conferirLembretes, 60000);
 }
 
-iniciar();
+/* Se a partida falhar por qualquer motivo, a pessoa vê o que fazer (e o diagnóstico) em vez de uma tela de "carregando" para sempre. */
+iniciar().catch((e) => {
+  console.error(e);
+  const msg = String((e && e.message) || e || '');
+  app.innerHTML = '<div class="carregando"><p><b>' + esc(tr('Não foi possível abrir o KORbuild neste aparelho.')) + '</b></p>' +
+    '<p class="mudo pequeno">' + esc(tr('Feche e abra de novo. Se continuar, abra o diagnóstico do aparelho e mande o relatório para quem está ajudando.')) + '</p>' +
+    (msg ? '<p class="mudo pequeno">' + esc(msg.slice(0, 160)) + '</p>' : '') +
+    '<div class="btn-linha"><button type="button" class="btn btn-primario" data-recarregar>' + esc(tr('Tentar de novo')) + '</button>' +
+    '<a class="btn btn-contorno" href="diagnostico.html">' + esc(tr('Diagnóstico do aparelho')) + '</a></div></div>';
+  const botao = app.querySelector('[data-recarregar]');
+  if (botao) botao.addEventListener('click', () => location.reload());
+});

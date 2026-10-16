@@ -14,6 +14,16 @@ O Daily e o Crew rodam no celular como **PWA**: o app é o site, instalado na Te
 | Sincronizar com o app fechado | Não existe | A fila (ponto, diário, fotos) sobe com o app aberto e com sinal |
 | Câmera | Campo de arquivo do sistema; o Safari converte HEIC em JPEG | O app usa o campo de arquivo (`capture`), sem permissão separada; o teste do diagnóstico confere o tipo da foto |
 
+## Aba privada do Safari e aparelho sem espaço (achado no WebKit, 16/10/2026)
+
+O Safari em **aba privada** (e o WebKit dos testes, que abre cada contexto assim) **cancela sem mensagem** a gravação de um `Blob` no IndexedDB. O app guardava as fotos como Blob; a criação da demonstração ficava presa em "Preparando a demonstração…" para sempre, e o ponto e as fotos offline não gravariam. Correção (`js/armazem.js`, `js/app.js`):
+
+- a foto vai para o banco como **bytes** (`{ tipo, bytes }`) e volta como Blob; fotos antigas, guardadas como Blob, continuam lendo;
+- se o banco do aparelho não gravar de jeito nenhum, o cofre cai para a **memória** da página (o app continua; as fotos só duram até fechar). `cofreDasFotos()` diz qual dos dois está valendo e o diagnóstico mostra;
+- se a partida falhar por qualquer motivo, a pessoa vê "Não foi possível abrir o KORbuild neste aparelho", com "Tentar de novo" e o caminho para o diagnóstico, em vez de "carregando" para sempre.
+
+Coberto por `tests/armazem-fotos.test.mjs` (simula os dois jeitos de falhar no Chromium; no WebKit efêmero acontecem de verdade).
+
 ## Como testamos sem um iPhone
 
 1. **Motor WebKit** (o do Safari) pelo Playwright, no Windows: `npx playwright install webkit` e rodar as suítes com `devices['iPhone 15']`. Pega diferenças de motor (formulário, data, CSS, IndexedDB, service worker). Não é um iOS de verdade.

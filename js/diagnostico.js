@@ -64,26 +64,39 @@ function insetsSeguros() {
   } catch { return '?'; }
 }
 
-async function sondarBancoDoAparelho() {
-  if (typeof indexedDB === 'undefined') return item('Armazenamento', 'Banco do aparelho (IndexedDB)', 'indisponível', 'erro', 'O ponto e as fotos guardados para enviar depois precisam dele.');
-  try {
-    const nomeBanco = 'kbt-diagnostico-teste';
-    await comTempo(new Promise((ok, no) => {
-      const r = indexedDB.open(nomeBanco, 1);
-      r.onupgradeneeded = () => r.result.createObjectStore('t');
-      r.onerror = () => no(r.error || new Error('erro ao abrir'));
-      r.onsuccess = () => {
-        const db = r.result;
+/* Grava e lê no IndexedDB do aparelho. `valor` é o que se guarda; o app guarda foto como bytes e, por isso, a falha só de Blob é um aviso, não um erro. */
+async function gravarNoBanco(valor) {
+  const nomeBanco = 'kbt-diagnostico-teste';
+  return comTempo(new Promise((ok, no) => {
+    const r = indexedDB.open(nomeBanco, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('t');
+    r.onerror = () => no(r.error || new Error('erro ao abrir'));
+    r.onsuccess = () => {
+      const db = r.result;
+      try {
         const tx = db.transaction('t', 'readwrite');
-        tx.objectStore('t').put(new Blob(['teste'], { type: 'text/plain' }), 'a');
+        tx.objectStore('t').put(valor, 'a');
         tx.oncomplete = () => { db.close(); indexedDB.deleteDatabase(nomeBanco); ok(); };
-        tx.onerror = () => { db.close(); no(tx.error || new Error('erro ao gravar')); };
-      };
-    }), 8000);
-    return item('Armazenamento', 'Banco do aparelho (IndexedDB)', 'grava e lê', 'ok');
-  } catch (e) {
-    return item('Armazenamento', 'Banco do aparelho (IndexedDB)', 'falhou: ' + (e && e.message || e), 'erro', 'O ponto e as fotos guardados para enviar depois precisam dele.');
+        tx.onerror = () => { db.close(); no((tx.error && tx.error.message) || new Error('erro ao gravar')); };
+        tx.onabort = () => { db.close(); no(new Error('gravação cancelada pelo aparelho')); };
+      } catch (e) { db.close(); no(e); }
+    };
+  }), 8000);
+}
+
+async function sondarBancoDoAparelho(cofre) {
+  if (typeof indexedDB === 'undefined') return [item('Armazenamento', 'Banco do aparelho (IndexedDB)', 'indisponível', 'erro', 'O ponto e as fotos guardados para enviar depois precisam dele.')];
+  const saida = [];
+  let bytesOk = false;
+  try { await gravarNoBanco(new Uint8Array([1, 2, 3]).buffer); bytesOk = true; saida.push(item('Armazenamento', 'Banco do aparelho (IndexedDB)', 'grava e lê', 'ok')); }
+  catch (e) { saida.push(item('Armazenamento', 'Banco do aparelho (IndexedDB)', 'falhou: ' + (e && e.message || e), 'erro', 'O ponto e as fotos guardados para enviar depois precisam dele.')); }
+  if (bytesOk && typeof Blob !== 'undefined') {
+    try { await gravarNoBanco(new Blob(['teste'], { type: 'image/jpeg' })); }
+    catch { saida.push(item('Armazenamento', 'Foto como arquivo no banco do aparelho', 'não grava', 'atencao', 'Costuma ser aba privada do Safari: o app já guarda as fotos de outro jeito, mas o que está em aba privada some ao fechar. Use fora da aba privada.')); }
   }
+  if (cofre) saida.push(item('Armazenamento', 'Onde o app guarda as fotos agora', cofre === 'banco' ? 'no banco do aparelho' : 'só na memória (somem ao fechar)', cofre === 'banco' ? 'ok' : 'atencao',
+    cofre === 'banco' ? '' : 'O aparelho não deixou gravar no banco. Use fora da aba privada e com espaço livre; envie o que está esperando antes de fechar o app.'));
+  return saida;
 }
 
 function sondarArmazenamentoLocal() {
@@ -104,7 +117,7 @@ function sondarSessao() {
 
 /* ---------- A coleta ---------- */
 
-/** Junta tudo o que dá para saber sem pedir nenhuma permissão. `conta` (opcional) traz o que só o app conhece: { usuario, perfil, pendentesDiario, pendentesPonto }. */
+/** Junta tudo o que dá para saber sem pedir nenhuma permissão. `conta` (opcional) traz o que só o app conhece: { usuario, perfil, pendentesDiario, pendentesPonto, cofre }. */
 export async function coletar(conta = null) {
   const itens = [];
   const add = (...a) => itens.push(item(...a));
@@ -137,7 +150,7 @@ export async function coletar(conta = null) {
 
   // Armazenamento
   itens.push(sondarArmazenamentoLocal());
-  itens.push(await sondarBancoDoAparelho());
+  itens.push(...(await sondarBancoDoAparelho(conta && conta.cofre)));
   try {
     const persistente = nav.storage && nav.storage.persisted ? await comTempo(nav.storage.persisted(), 4000) : null;
     add('Armazenamento', 'Armazenamento protegido contra limpeza', persistente === null ? 'o aparelho não informa' : persistente ? 'sim' : 'não',
