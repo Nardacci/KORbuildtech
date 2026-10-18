@@ -222,7 +222,7 @@ await page.waitForSelector('.kpi');
 verificar(await kpiNum('Total da semana') > antesAtual, 'novo valor hora aumenta o custo da semana aberta');
 await page.goto(BASE + '#/crew/custos/semana/2026-09-28');
 await page.waitForSelector('.kpi');
-verificar(await kpiNum('Total da semana') === antesAnterior, 'semana anterior mantém o custo (valor vigente no dia)');
+{ const agora = await kpiNum('Total da semana'); verificar(agora === antesAnterior, 'semana anterior mantém o custo (valor vigente no dia)'); if (agora !== antesAnterior) console.log('      [custo] antes=' + antesAnterior + ' agora=' + agora + ' · hora do navegador=' + await page.evaluate(() => new Date().toString())); }
 
 // Percurso: Lucas troca de obra (Jardim → Galpão) na terça da semana anterior
 await page.goto(BASE + '#/crew/dia/f-lucas/2026-09-29');

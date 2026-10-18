@@ -29,6 +29,7 @@ if (motor === 'webkit' || motor === 'iphone') {
       ctx.route = (alvo, tratador, op) => rota(alvo, (r, req) => {
         const cumprir = r.fulfill.bind(r);
         r.fulfill = (o = {}) => cumprir({ ...o, headers: { 'access-control-allow-origin': '*', ...(o.headers || {}) } });
+        if (process.env.KOR_ROTAS) console.log('      [webkit] rota simulada atendeu: ' + String(r.request().url()).slice(0, 100));
         return tratador(r, req);
       }, op);
       // diagnóstico: o que o navegador recusou ou reclamou (fica na saída do teste, para quem lê sem ver a tela)

@@ -83,7 +83,7 @@ async function preencherEEnviar(p, obraId, comFoto, semRede) {
   try {
     await p.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2, null, { timeout: 15000 });
   } catch (e) {   // para quem lê a saída sem ver a tela: o que o bloco do clima mostrava e o que o navegador avisou
-    const clima = await p.evaluate(() => { const c = document.getElementById('s-clima'); return c ? c.innerText.replace(/\s+/g, ' ').slice(0, 300) + ' · onLine=' + navigator.onLine + ' · marcados=' + document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length : 'sem #s-clima'; }).catch(() => '?');
+    const clima = await p.evaluate(() => { const c = document.getElementById('s-clima'); const corpo = document.body.innerText.replace(/\s+/g, ' ').slice(0, 260); return (c ? c.innerText.replace(/\s+/g, ' ').slice(0, 300) + ' · marcados=' + document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length : 'sem #s-clima') + ' · onLine=' + navigator.onLine + ' · url=' + location.hash.slice(0, 40) + ' · tela: «' + corpo + '»'; }).catch(() => '?');
     console.log('      [clima] ' + clima);
     throw e;
   }
