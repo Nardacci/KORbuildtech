@@ -72,8 +72,9 @@ if (-not (NoAr)) {
 
 # ---------- O que roda ----------
 # Protótipo e telas oficiais: no navegador, sem banco. Banco: SQL (com ROLLBACK) e a conta de verdade.
-$prototipo = Get-ChildItem tests -Filter '*.test.mjs' | Where-Object { $_.Name -notin @('conta.test.mjs', 'daily.test.mjs', 'crew-oficial.test.mjs', 'cronograma-oficial.test.mjs', 'measure-oficial.test.mjs', 'concorrencias-oficial.test.mjs', 'avisos-envio.test.mjs', 'avisos-oficial.test.mjs', 'admin-oficial.test.mjs', 'seguranca.test.mjs', 'seguranca-xss.test.mjs') } | Sort-Object Name |
+$prototipo = Get-ChildItem tests -Filter '*.test.mjs' | Where-Object { $_.Name -notin @('conta.test.mjs', 'daily.test.mjs', 'crew-oficial.test.mjs', 'cronograma-oficial.test.mjs', 'measure-oficial.test.mjs', 'concorrencias-oficial.test.mjs', 'avisos-envio.test.mjs', 'avisos-oficial.test.mjs', 'admin-oficial.test.mjs', 'seguranca.test.mjs', 'seguranca-xss.test.mjs', 'diagnostico.test.mjs') } | Sort-Object Name |
   ForEach-Object { @{ nome = $_.BaseName -replace '\.test$', ''; tipo = 'navegador'; cmd = @($_.FullName, $base) } }
+$prototipo += @{ nome = 'diagnostico'; tipo = 'navegador'; cmd = @('tests/diagnostico.test.mjs', $base, '--sem-conta') }
 $banco = @()
 if ($temToken) {
   $banco += Get-ChildItem supabase/testes -Filter '*.sql' | Sort-Object Name |
@@ -87,6 +88,7 @@ if ($temToken) {
   $banco += @{ nome = 'avisos-envio'; tipo = 'banco'; cmd = @('tests/avisos-envio.test.mjs', '--real') }
   $banco += @{ nome = 'avisos-oficial'; tipo = 'banco'; cmd = @('tests/avisos-oficial.test.mjs', $base, '--real') }
   $banco += @{ nome = 'admin-oficial'; tipo = 'banco'; cmd = @('tests/admin-oficial.test.mjs', $base, '--real') }
+  $banco += @{ nome = 'diagnostico'; tipo = 'banco'; cmd = @('tests/diagnostico.test.mjs', $base, '--real') }
   $banco += @{ nome = 'seguranca'; tipo = 'banco'; cmd = @('tests/seguranca.test.mjs', '--real') }
   $banco += @{ nome = 'seguranca-xss'; tipo = 'banco'; cmd = @('tests/seguranca-xss.test.mjs', $base, '--real') }
 }

@@ -23,8 +23,18 @@ if (motor === 'webkit' || motor === 'iphone') {
     const { executablePath, ...resto } = opcoes;   // o caminho do Chromium não serve ao WebKit
     const browser = await webkit.launch(resto);
     const novoContexto = browser.newContext.bind(browser);
-    browser.newContext = (o) => novoContexto(ajustar(o));
-    browser.newPage = async (o) => (await novoContexto(ajustar(o))).newPage();
+    // o Chromium acrescenta sozinho o CORS às respostas simuladas (route.fulfill); o WebKit não: sem isso a página recusa o clima/rota simulados
+    const comCors = (ctx) => {
+      const rota = ctx.route.bind(ctx);
+      ctx.route = (alvo, tratador, op) => rota(alvo, (r, req) => {
+        const cumprir = r.fulfill.bind(r);
+        r.fulfill = (o = {}) => cumprir({ ...o, headers: { 'access-control-allow-origin': '*', ...(o.headers || {}) } });
+        return tratador(r, req);
+      }, op);
+      return ctx;
+    };
+    browser.newContext = async (o) => comCors(await novoContexto(ajustar(o)));
+    browser.newPage = async (o) => (await comCors(await novoContexto(ajustar(o)))).newPage();
     console.log('Motor de navegador: WebKit' + (motor === 'iphone' ? ' (iPhone 15 emulado)' : ' (computador)'));
     return browser;
   };

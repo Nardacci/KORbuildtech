@@ -8,7 +8,8 @@ import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 
 const REAL = process.argv.includes('--real');
-const { sql, rest, criarUsuario, sessao, rotear, limpar, nome } = await import(REAL ? './_supabase-real.mjs' : './_supabase-local.mjs');
+const SEM_CONTA = process.argv.includes('--sem-conta');   // roda só o que não precisa de banco (o protótipo, inclusive no Windows)
+const { sql, rest, criarUsuario, sessao, rotear, limpar, nome } = SEM_CONTA ? { nome: 'nenhum (--sem-conta)' } : await import(REAL ? './_supabase-real.mjs' : './_supabase-local.mjs');
 const BASE = process.argv.slice(2).find((a) => a.startsWith('http')) || 'http://localhost:8123/';
 console.log('Diagnóstico contra: ' + nome);
 const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
@@ -190,7 +191,8 @@ console.log('\nRoteiro de teste (teste-iphone.html)');
 
 /* ---------- Dentro do app (conta de verdade) ---------- */
 console.log('\nDentro do app: aviso de instalação e tela do diagnóstico');
-{
+if (SEM_CONTA) console.log('  (pulado: precisa da conta de verdade; roda na rodada com banco)');
+else {
   await limpar();
   const EMAIL = 'kb-e2e-daily-diag@example.com';
   const id = await criarUsuario(EMAIL, 'Dani Diag');

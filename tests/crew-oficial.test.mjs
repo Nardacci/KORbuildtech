@@ -127,12 +127,18 @@ try {
   verificar(bp.dentro_cerca === false && bp.modo === 'equipe' && bp.registrado_por === mJose && bp.obra_id === obra1.id, 'fora da cerca, pela equipe, com quem registrou e a obra', bp);
 
   // Luis: celular perto → dentro da cerca
-  await j.ctx.setGeolocation(PERTO);
-  await j.p.reload();
-  await j.p.waitForSelector('.lista-equipe');
-  await j.p.click('.lista-equipe li:has-text("Luis Local") input');
-  await j.p.click('[data-acao="crew-entrada"]');
-  await j.p.waitForSelector('dialog #crew-local');
+  // o WebKit do Playwright às vezes demora a aplicar a nova posição: tenta de novo (cancelando o diálogo) em vez de bater fora da cerca
+  for (let t = 0; t < 5; t++) {
+    await j.ctx.setGeolocation(PERTO);
+    if (t) await j.p.waitForTimeout(1500);
+    await j.p.reload();
+    await j.p.waitForSelector('.lista-equipe');
+    await j.p.click('.lista-equipe li:has-text("Luis Local") input');
+    await j.p.click('[data-acao="crew-entrada"]');
+    await j.p.waitForSelector('dialog #crew-local');
+    if ((await j.p.textContent('dialog #crew-local')).includes('dentro da cerca')) break;
+    await j.p.click('dialog button:has-text("Cancelar")');
+  }
   verificar((await j.p.textContent('dialog #crew-local')).includes('dentro da cerca'), 'celular perto: dentro da cerca');
   await j.p.fill('dialog textarea[name="nota"]', 'Material atrasou');
   await j.p.setInputFiles('dialog input[name="fotoArq"]', { name: 'equipe.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mP8z8BQz0AEYBxVSF+FABJADveWkH6oAAAAAElFTkSuQmCC', 'base64') });
