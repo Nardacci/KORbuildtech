@@ -3267,4 +3267,9 @@ export const EN = {
   // ---------- Entrada ----------
   'Testando no iPhone ou no Android?': 'Testing on an iPhone or Android?',
   'Abrir o roteiro de teste': 'Open the test guide',
+
+  // ---------- Entrada ----------
+  'Testando no celular?': 'Testing on a phone?',
+  'Roteiro do iPhone': 'iPhone guide',
+  'Roteiro do Android': 'Android guide',
 };

@@ -259,7 +259,7 @@ export function htmlCaminhosEntrada() {
     '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário') + '</span></span>' + icone('seta', 18) + '</a>' +
     '<a class="login-caminho" href="' + URL_PROTOTIPO + '">' + icone('play', 20) + '<span><b>' + tr('Abrir o protótipo') + '</b><span class="mudo">' + tr('Com dados de exemplo, sem conta: para conhecer e apresentar') + '</span></span>' + icone('seta', 18) + '</a>' +
   '</div>' +
-    '<p class="login-teste">' + tr('Testando no iPhone ou no Android?') + ' <a class="link" href="teste-iphone.html">' + tr('Abrir o roteiro de teste') + '</a></p>';
+    '<p class="login-teste">' + tr('Testando no celular?') + ' <a class="link" href="teste-iphone.html">' + tr('Roteiro do iPhone') + '</a> · <a class="link" href="teste-android.html">' + tr('Roteiro do Android') + '</a></p>';
 }
 
 /* O formulário de entrar (contas reais; ações em oficial-telas.js). */

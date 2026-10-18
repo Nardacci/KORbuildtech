@@ -27,7 +27,7 @@ Coberto por `tests/armazem-fotos.test.mjs` (simula os dois jeitos de falhar no C
 ## Como testamos sem um iPhone
 
 1. **Motor WebKit** (o do Safari) pelo Playwright, no Windows: `npx playwright install webkit` e rodar as suítes com `devices['iPhone 15']`. Pega diferenças de motor (formulário, data, CSS, IndexedDB, service worker). Não é um iOS de verdade.
-2. **Pessoas com iPhone, à distância** (o caminho principal): a pessoa abre o roteiro `teste-iphone.html` no celular, segue 7 passos e manda o **relatório do aparelho**. Cada pessoa vira um aparelho de teste. Use só **logins demo**, nunca contas reais, e mande a senha em separado.
+2. **Pessoas com iPhone, à distância** (o caminho principal): a pessoa abre o roteiro do aparelho dela (`teste-iphone.html` no iPhone, `teste-android.html` no Android; os dois saem de `tools/gerar_roteiros.py`, e o link está na tela de entrada) no celular, segue 7 passos e manda o **relatório do aparelho**. Cada pessoa vira um aparelho de teste. Use só **logins demo**, nunca contas reais, e mande a senha em separado.
 3. **Aparelho real em nuvem** (BrowserStack, LambdaTest), por um mês, para fechar o que só o aparelho responde.
 
 ## O relatório do aparelho

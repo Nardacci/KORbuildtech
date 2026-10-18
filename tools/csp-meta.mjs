@@ -7,7 +7,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { POLITICA } from '../tests/_csp.mjs';
 
-const PAGINAS = ['index.html', 'admin.html', 'diagnostico.html', 'teste-iphone.html'];
+const PAGINAS = ['index.html', 'admin.html', 'diagnostico.html', 'teste-iphone.html', 'teste-android.html'];
 const INICIO = '<!-- csp:inicio -->', FIM = '<!-- csp:fim -->';
 const acao = process.argv[2];
 if (!['--ligar', '--desligar', '--status'].includes(acao)) { console.error('Uso: node tools/csp-meta.mjs --ligar | --desligar | --status'); process.exit(2); }
