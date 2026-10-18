@@ -30,10 +30,10 @@ CABECA = """<!doctype html>
 
 <section class="cartao">
   <h2 class="cartao-titulo">Seus logins de teste</h2>
-  <p>Empresa fictícia <b>Summit Framing</b>. Digite o e-mail e a senha exatamente como estão aqui.</p>
+  <p>Empresa fictícia <b>Summit Framing</b>. <b>Toque no e-mail ou na senha para copiar</b> e cole na tela de entrada (digitar no celular costuma errar uma letra).</p>
   <ul class="passos-teste">
-    <li><b>Crew (ponto):</b> <code>demo.s2.trabalhador@example.com</code></li>
-    <li><b>Daily (diário de obra):</b> <code>demo.s2.encarregado@example.com</code></li>
+    <li><b>Crew (ponto):</b> <code data-copiar>demo.s2.trabalhador@example.com</code></li>
+    <li><b>Daily (diário de obra):</b> <code data-copiar>demo.s2.encarregado@example.com</code></li>
     <li><b>Senha (a mesma nos dois):</b> <code id="senha-teste">veio na mensagem de quem te convidou</code></li>
   </ul>
   <p class="mudo pequeno">Se o link que você recebeu já terminava com a senha, ela aparece acima e some da barra de endereço. São contas de teste, sem dados de ninguém.</p>

@@ -1499,3 +1499,5 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .campo-senha input { width: 100%; padding-right: 84px; }
 .ver-senha { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--primario); font: inherit; font-size: 13px; font-weight: 600; padding: 8px 10px; cursor: pointer; border-radius: 6px; }
 .ver-senha:hover { background: var(--primario-claro); }
+
+[data-copiar], #senha-teste.com-senha { cursor: pointer; } [data-copiar][data-copiado]::after, #senha-teste[data-copiado]::after { content: ' ✓ copiado'; color: var(--sucesso, #1F8A4C); font-weight: 600; font-family: inherit; }

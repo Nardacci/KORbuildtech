@@ -3280,4 +3280,7 @@ export const EN = {
 
   // ---------- Entrada ----------
   'Há uma versão nova do KORbuild. Feche e abra o app para usar.': 'There is a new version of KORbuild. Close and reopen the app to use it.',
+
+  // ---------- Entrada ----------
+  'Não foi possível entrar agora. Confira a internet e tente de novo.': 'Could not sign in right now. Check your internet and try again.',
 };

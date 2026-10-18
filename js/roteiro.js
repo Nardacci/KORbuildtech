@@ -11,3 +11,10 @@ if (alvo) {
     try { history.replaceState(null, '', location.pathname + location.search); } catch { /* sem histórico: segue */ }   // tira a senha da barra de endereço
   }
 }
+
+/* Tocar no e-mail ou na senha copia: no celular, digitar o login é o passo que mais erra. */
+document.addEventListener('click', async (ev) => {
+  const el = ev.target.closest && ev.target.closest('[data-copiar], #senha-teste.com-senha');
+  if (!el) return;
+  try { await navigator.clipboard.writeText(el.textContent.trim()); el.dataset.copiado = '1'; setTimeout(() => { delete el.dataset.copiado; }, 1500); } catch { /* sem permissão: a pessoa seleciona e copia */ }
+});

@@ -138,10 +138,21 @@ const resultado = ({ error, data }) => (error ? { erro: traduzir(error) } : { ok
 /* ---------- Login ---------- */
 
 export async function entrar(email, senha) {
-  await iniciar();
-  const r = resultado(await sb.auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: senha }));
-  if (r.ok) { conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); lembrarIdioma(); }
-  return r;
+  // o motivo técnico vai entre parênteses na mensagem: quem testa no celular consegue mandar o que apareceu, sem abrir console
+  const detalhe = (e) => ' [' + [e && e.status, e && (e.code || e.name), e && e.message && e.message.length < 60 ? e.message : ''].filter(Boolean).join(' · ') + ']';
+  try {
+    await iniciar();
+    const entrarCom = (pw) => sb.auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: pw });
+    let resp = await entrarCom(senha);
+    // o teclado do celular costuma deixar um espaço no fim da senha (sugestão de palavra): tenta de novo sem ele
+    if (resp.error && senha !== senha.trim() && senha.trim()) resp = await entrarCom(senha.trim());
+    const r = resultado(resp);
+    if (r.erro) { r.erro += detalhe(resp.error); return r; }
+    conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); lembrarIdioma();
+    return r;
+  } catch (e) {
+    return { erro: tr('Não foi possível entrar agora. Confira a internet e tente de novo.') + detalhe(e) };
+  }
 }
 /* O idioma da tela vai junto: os e-mails do Auth saem em português ou em inglês (supabase/email/). */
 export async function cadastrar(nome, email, senha) {
