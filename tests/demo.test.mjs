@@ -22,12 +22,6 @@ const context = await browser.newContext({
 });
 // Os testes conferem os textos em português (o padrão do app é inglês).
 await context.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); } catch { /* sem armazenamento */ } });
-const page = await context.newPage();
-// Horário fixo (quarta-feira, 16h30): os alertas do prazo do RDO dependem do dia e da hora.
-await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
-const erros = [];
-page.on('pageerror', (e) => erros.push(e.message));
-page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.g|ERR_TUNNEL|Failed to load resource/.test(m.text())) erros.push(m.text()); });
 
 // Clima simulado: manhã de sol, tarde com chuva forte.
 await context.route('https://api.open-meteo.com/**', (route) => {
@@ -41,6 +35,13 @@ await context.route('https://api.open-meteo.com/**', (route) => {
   route.fulfill({ json: { hourly: { time, weather_code, precipitation, temperature_2m } } });
 });
 await context.route('https://fonts.**', (r) => r.abort());
+// a página nasce depois das rotas simuladas (no WebKit uma rota criada depois da página não pega as requisições dela)
+const page = await context.newPage();
+// Horário fixo (quarta-feira, 16h30): os alertas do prazo do RDO dependem do dia e da hora.
+await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
+const erros = [];
+page.on('pageerror', (e) => erros.push(e.message));
+page.on('console', (m) => { if (m.type() === 'error' && !/fonts\.g|ERR_TUNNEL|Failed to load resource/.test(m.text())) erros.push(m.text()); });
 
 // Troca de usuário sem passar pela tela de login (o login em si é testado no começo).
 const comoUsuario = async (id, hash) => {

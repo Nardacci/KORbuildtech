@@ -80,7 +80,13 @@ async function preencherEEnviar(p, obraId, comFoto, semRede) {
     await p.click('[data-acao="clima-tempo"][data-turno="manha"][data-valor="sol"]');
     await p.click('[data-acao="clima-tempo"][data-turno="tarde"][data-valor="sol"]');
   }
-  await p.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2, null, { timeout: 15000 });
+  try {
+    await p.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2, null, { timeout: 15000 });
+  } catch (e) {   // para quem lê a saída sem ver a tela: o que o bloco do clima mostrava e o que o navegador avisou
+    const clima = await p.evaluate(() => { const c = document.getElementById('s-clima'); return c ? c.innerText.replace(/\s+/g, ' ').slice(0, 300) + ' · onLine=' + navigator.onLine + ' · marcados=' + document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length : 'sem #s-clima'; }).catch(() => '?');
+    console.log('      [clima] ' + clima);
+    throw e;
+  }
   await p.locator('[data-acao="equipe-add"]').first().click();
   await p.locator('#s-atividades textarea').first().fill('Framing das paredes do 1º pavimento');
   await p.locator('#s-atividades textarea').first().blur();

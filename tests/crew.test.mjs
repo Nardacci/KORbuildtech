@@ -20,10 +20,6 @@ const context = await browser.newContext({
 });
 // Os testes conferem os textos em português (o padrão do app é inglês).
 await context.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); } catch { /* sem armazenamento */ } });
-const page = await context.newPage();
-await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
-const erros = [];
-page.on('pageerror', (e) => erros.push(e.message));
 await context.route('https://api.open-meteo.com/**', (r) => r.abort());
 await context.route('https://fonts.**', (r) => r.abort());
 // Blocos do mapa de ruas (OpenStreetMap): no teste, uma imagem cinza no lugar
@@ -38,6 +34,11 @@ await context.route('https://router.project-osrm.org/**', (r) => {
   r.fulfill({ json: { code: 'Ok', routes: [{ distance: 41800, duration: 2460, geometry: { type: 'LineString', coordinates: coords } }] } });
 });
 await context.route('https://nominatim.openstreetmap.org/**', (r) => r.fulfill({ json: { address: { road: 'Test St', house_number: '100', suburb: 'North End', city: 'Manchester' } } }));
+// a página nasce depois das rotas simuladas (no WebKit uma rota criada depois da página não pega as requisições dela)
+const page = await context.newPage();
+await page.clock.setFixedTime(new Date('2026-10-07T16:30:00'));
+const erros = [];
+page.on('pageerror', (e) => erros.push(e.message));
 const print = async (nome) => { if (SAIDA) await page.screenshot({ path: SAIDA + '/crew-' + nome + '.png', fullPage: true }); };
 const como = async (id, hash) => { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), id); await page.goto(BASE + hash); };
 const estadoDe = (nome) => page.locator('.lista-equipe li', { hasText: nome }).locator('.estado-ponto').textContent();
