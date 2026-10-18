@@ -556,6 +556,9 @@ function itemRdo(r, opcoes) {
 
 /* Cria o RDO de hoje, em branco ou copiando um RDO anterior escolhido (baseId). */
 function novoRdo(obraId, baseId, data) {
+  // já existe o diário deste dia nesta obra (no aparelho ou no espelho do servidor): abre esse, em vez de criar um segundo (o banco só aceita um por dia)
+  const jaExiste = estado().rdos.find((x) => x.obraId === obraId && x.data === (data || hoje()));
+  if (jaExiste) { ir('#/daily/campo/rdo/' + jaExiste.id); return; }
   const base = baseId ? acharRdo(baseId) : null;
   data = data || hoje();
   const numero = Math.max(0, ...estado().rdos.filter((r) => r.obraId === obraId).map((r) => r.numero)) + 1;
@@ -1222,10 +1225,10 @@ async function escolherVersao(r, doBanco) {
   if (!doBanco.fotos.length && !doBanco.atividades.some((x) => (x.descricao || '').trim()) && !(doBanco.ocorrencias || []).length && !(doBanco.observacoes || '').trim() && doBanco.status === 'rascunho') return 'meu';
   const resumo = (x) => tn(x.atividades.filter((a) => (a.descricao || '').trim()).length, '{n} atividade', '{n} atividades') + ' · ' + tn(x.fotos.length, '{n} foto', '{n} fotos');
   const res = await abrirDialogo({
-    titulo: tr('Este diário mudou em outro aparelho'),
-    corpo: '<p>' + tr('O RDO de {data} ({obra}) foi alterado em outro aparelho enquanto este estava sem internet. Escolha qual versão fica.', { data: dataCurta(r.data), obra: esc((acharObra(r.obraId) || {}).nome || '') }) + '</p>' +
-      '<ul class="lista-falta"><li><b>' + tr('Neste aparelho') + ':</b> ' + resumo(r) + '</li><li><b>' + tr('No outro aparelho') + ':</b> ' + resumo(doBanco) + '</li></ul>',
-    acoes: [{ rotulo: tr('Ficar com a do outro aparelho'), valor: 'banco' }, { rotulo: tr('Ficar com a deste aparelho'), valor: 'meu', classe: 'btn-primario' }],
+    titulo: tr('Este diário já tem outra versão no servidor'),
+    corpo: '<p>' + tr('O servidor já tem um RDO de {data} ({obra}) com conteúdo diferente do que está neste aparelho (enviado por outro aparelho, ou antes de os dados deste serem limpos). Escolha qual versão fica.', { data: dataCurta(r.data), obra: esc((acharObra(r.obraId) || {}).nome || '') }) + '</p>' +
+      '<ul class="lista-falta"><li><b>' + tr('Neste aparelho') + ':</b> ' + resumo(r) + '</li><li><b>' + tr('No servidor') + ':</b> ' + resumo(doBanco) + '</li></ul>',
+    acoes: [{ rotulo: tr('Ficar com a do servidor'), valor: 'banco' }, { rotulo: tr('Ficar com a deste aparelho'), valor: 'meu', classe: 'btn-primario' }],
   });
   return (res && res.valor) || 'banco';
 }

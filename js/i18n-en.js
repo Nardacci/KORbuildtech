@@ -3287,4 +3287,10 @@ export const EN = {
   // ---------- Crew ----------
   'A localização está bloqueada para o KORbuild: nas configurações do celular, permita a localização para o app (ou para o Chrome) e ligue a localização precisa.': 'Location is blocked for KORbuild: in your phone settings, allow location for the app (or for Chrome) and turn on precise location.',
   'O celular não respondeu com a posição. Ligue a localização (GPS) do celular e tente de novo, de preferência ao ar livre.': 'The phone did not return a position. Turn on the phone\'s location (GPS) and try again, preferably outdoors.',
+
+  // ---------- Daily ----------
+  'Este diário já tem outra versão no servidor': 'This report already has another version on the server',
+  'O servidor já tem um RDO de {data} ({obra}) com conteúdo diferente do que está neste aparelho (enviado por outro aparelho, ou antes de os dados deste serem limpos). Escolha qual versão fica.': 'The server already has a report for {data} ({obra}) with different content from this device (sent from another device, or before this device\'s data was cleared). Choose which version to keep.',
+  'No servidor': 'On the server',
+  'Ficar com a do servidor': 'Keep the server\'s version',
 };

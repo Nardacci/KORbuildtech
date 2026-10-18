@@ -197,7 +197,7 @@ try {
   await j.p.locator('#s-atividades textarea').first().fill('Versão do primeiro aparelho, corrigida');
   await j.p.locator('#s-atividades textarea').first().blur();
   await j.p.click('#conexao');
-  const dialogo = await j.p.waitForSelector('dialog:has-text("Este diário mudou em outro aparelho")', { timeout: 15000 }).catch(() => null);
+  const dialogo = await j.p.waitForSelector('dialog:has-text("Este diário já tem outra versão no servidor")', { timeout: 15000 }).catch(() => null);
   verificar(!!dialogo, 'o primeiro aparelho é avisado do conflito e escolhe');
   if (dialogo) await j.p.click('dialog button:has-text("Ficar com a deste aparelho")');
   verificar(await esperarAte(async () => (await sql(`select conteudo #>> '{atividades,0,descricao}' d from public.rdos where id = '${r4.id}'`))[0].d === 'Versão do primeiro aparelho, corrigida'), 'ficou a versão escolhida');
