@@ -127,6 +127,8 @@ await page.waitForSelector('#s-clima');
 verificar(await page.locator('.abas').count() === 0, 'editor do RDO sem abas (tela de foco)');
 verificar((await page.textContent('.voltar')).includes('Residencial Jardim das Flores'), 'editor volta para a obra');
 await page.waitForFunction(() => document.querySelectorAll('[data-acao="clima-tempo"][aria-pressed="true"]').length === 2);
+// o clima chega depois da cópia (busca pela rede simulada): espera a tarde de chuva em vez de olhar no primeiro instante (o WebKit é mais lento)
+await page.waitForSelector('[data-turno="tarde"][data-valor="chuva"][aria-pressed="true"]', { timeout: 15000 }).catch(() => null);
 verificar(await page.locator('[data-turno="manha"][data-valor="sol"][aria-pressed="true"]').count() === 1, 'clima automático: manhã de sol');
 verificar(await page.locator('[data-turno="tarde"][data-valor="chuva"][aria-pressed="true"]').count() === 1, 'clima automático: tarde de chuva');
 verificar(await page.locator('[data-turno="tarde"][data-acao="clima-prat"][data-valor="0"][aria-pressed="true"]').count() === 1, 'tarde impraticável (chuva > 2 mm)');

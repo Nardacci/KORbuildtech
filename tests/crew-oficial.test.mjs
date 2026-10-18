@@ -137,6 +137,7 @@ try {
     await j.p.click('[data-acao="crew-entrada"]');
     await j.p.waitForSelector('dialog #crew-local');
     if ((await j.p.textContent('dialog #crew-local')).includes('dentro da cerca')) break;
+    console.log('      tentativa ' + (t + 1) + ': diálogo mostra «' + ((await j.p.textContent('dialog #crew-local')) || '').replace(/\s+/g, ' ').slice(0, 140) + '» · GPS da página: ' + await j.p.evaluate(() => new Promise((ok) => navigator.geolocation.getCurrentPosition((x) => ok(x.coords.latitude.toFixed(4) + ',' + x.coords.longitude.toFixed(4)), (e) => ok('ERRO ' + e.code), { timeout: 5000, maximumAge: 0 }))));
     await j.p.click('dialog button:has-text("Cancelar")');
   }
   verificar((await j.p.textContent('dialog #crew-local')).includes('dentro da cerca'), 'celular perto: dentro da cerca');

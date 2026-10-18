@@ -31,6 +31,12 @@ if (motor === 'webkit' || motor === 'iphone') {
         r.fulfill = (o = {}) => cumprir({ ...o, headers: { 'access-control-allow-origin': '*', ...(o.headers || {}) } });
         return tratador(r, req);
       }, op);
+      // diagnóstico: o que o navegador recusou ou reclamou (fica na saída do teste, para quem lê sem ver a tela)
+      ctx.on('page', (pg) => {
+        const curto = (t) => String(t).replace(/\s+/g, ' ').slice(0, 220);
+        pg.on('requestfailed', (r) => { if (!/fonts\.|tile\.openstreetmap/.test(r.url())) console.log('      [webkit] requisição falhou: ' + r.method() + ' ' + curto(r.url()) + ' · ' + curto(r.failure() && r.failure().errorText)); });
+        pg.on('console', (m) => { if (m.type() === 'error' && !/fonts\.|Failed to load resource/.test(m.text())) console.log('      [webkit] console: ' + curto(m.text())); });
+      });
       return ctx;
     };
     browser.newContext = async (o) => comCors(await novoContexto(ajustar(o)));
