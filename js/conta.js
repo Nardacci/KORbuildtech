@@ -139,7 +139,7 @@ const resultado = ({ error, data }) => (error ? { erro: traduzir(error) } : { ok
 
 export async function entrar(email, senha) {
   await iniciar();
-  const r = resultado(await sb.auth.signInWithPassword({ email: String(email).trim(), password: senha }));
+  const r = resultado(await sb.auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: senha }));
   if (r.ok) { conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); lembrarIdioma(); }
   return r;
 }

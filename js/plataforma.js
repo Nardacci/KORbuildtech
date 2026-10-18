@@ -268,9 +268,9 @@ export function telaLoginOficial() {
       '<form class="login-form" id="form-login-oficial" novalidate>' +
         htmlSeletorIdioma('login-idioma') + '<h2>' + tr('Entrar') + '</h2><p class="mudo">' + tr('Use o e-mail da sua empresa.') + '</p>' +
         '<label for="oficial-email">' + tr('E-mail') + '</label>' +
-        '<input id="oficial-email" name="email" type="email" autocomplete="email" required>' +
+        '<input id="oficial-email" name="email" type="email" autocomplete="email" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" required>' +
         '<div class="login-linha"><label for="oficial-senha">' + tr('Senha') + '</label><a class="link" href="#/esqueci-senha">' + tr('Esqueci a senha') + '</a></div>' +
-        '<input id="oficial-senha" name="senha" type="password" autocomplete="current-password" required>' +
+        '<input id="oficial-senha" name="senha" type="password" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false" required>' +
         '<label class="lembrar"><input type="checkbox" checked> ' + tr('Manter conectado') + '</label>' +
         '<p class="login-erro" id="login-erro" role="alert" hidden></p>' +
         '<button type="submit" class="btn btn-primario btn-bloco btn-grande">' + tr('Entrar') + '</button>' +
