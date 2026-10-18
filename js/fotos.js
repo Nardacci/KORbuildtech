@@ -9,22 +9,31 @@ const ALVO_BYTES = 320 * 1024; // ~300 KB por foto
 /* ---------- GPS ---------- */
 
 let ultimaPosicao = null;
+let ultimaFalha = null;   // { motivo, em }: se o GPS acabou de falhar, as próximas fotos não esperam tudo de novo
 
 /* Devolve { lat, lon, precisao, fonte: 'gps' | 'obra' }. Se o GPS não responder,
  * usa o centro da obra e deixa isso claro no carimbo. */
 export function obterPosicao(obra) {
   if (ultimaPosicao && Date.now() - ultimaPosicao.em < 120000) return Promise.resolve(ultimaPosicao);
+  if (ultimaFalha && Date.now() - ultimaFalha.em < 60000) return Promise.resolve({ lat: obra.lat, lon: obra.lon, precisao: null, fonte: 'obra', motivo: ultimaFalha.motivo });
   return new Promise((resolve) => {
-    const reserva = () => resolve({ lat: obra.lat, lon: obra.lon, precisao: null, fonte: 'obra' });
-    if (!navigator.geolocation) return reserva();
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        ultimaPosicao = { lat: p.coords.latitude, lon: p.coords.longitude, precisao: Math.round(p.coords.accuracy), fonte: 'gps', em: Date.now() };
-        resolve(ultimaPosicao);
-      },
-      reserva,
-      { enableHighAccuracy: true, timeout: 7000, maximumAge: 60000 }
-    );
+    let feito = false;
+    const reserva = (motivo) => { if (feito) return; feito = true; clearTimeout(limite); ultimaFalha = { motivo, em: Date.now() }; resolve({ lat: obra.lat, lon: obra.lon, precisao: null, fonte: 'obra', motivo }); };
+    // o getCurrentPosition não responde nunca quando o aviso de permissão não chega a aparecer (app instalado, localização desligada): este limite é a rede de segurança
+    const limite = setTimeout(() => reserva('tempo'), 11000);
+    if (!navigator.geolocation) return reserva('indisponivel');
+    const deu = (p) => {
+      if (feito) return; feito = true; clearTimeout(limite);
+      ultimaFalha = null;
+      ultimaPosicao = { lat: p.coords.latitude, lon: p.coords.longitude, precisao: Math.round(p.coords.accuracy), fonte: 'gps', em: Date.now() };
+      resolve(ultimaPosicao);
+    };
+    // 1º GPS de alta precisão; se não vier (dentro de casa, sinal fraco), 2º posição aproximada pela rede
+    navigator.geolocation.getCurrentPosition(deu, (e1) => {
+      if (e1 && e1.code === 1) return reserva('negado');
+      navigator.geolocation.getCurrentPosition(deu, (e2) => reserva(e2 && e2.code === 1 ? 'negado' : 'tempo'),
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 });
+    }, { enableHighAccuracy: true, timeout: 6000, maximumAge: 60000 });
   });
 }
 

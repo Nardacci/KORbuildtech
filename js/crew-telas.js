@@ -224,7 +224,11 @@ async function localizar(obraId) {
 }
 
 function textoDistancia(loc) {
-  if (loc.fonte !== 'gps') return ('<span class="cerca-aviso ambar">' + tr('Não foi possível obter o GPS. A batida fica sem localização e vai para conferência.') + '</span>');
+  if (loc.fonte !== 'gps') {
+    const dica = loc.motivo === 'negado' ? (' ' + tr('A localização está bloqueada para o KORbuild: nas configurações do celular, permita a localização para o app (ou para o Chrome) e ligue a localização precisa.'))
+      : loc.motivo === 'tempo' ? (' ' + tr('O celular não respondeu com a posição. Ligue a localização (GPS) do celular e tente de novo, de preferência ao ar livre.')) : '';
+    return ('<span class="cerca-aviso ambar">' + tr('Não foi possível obter o GPS. A batida fica sem localização e vai para conferência.') + dica + '</span>');
+  }
   const d = distancia(loc.distancia);
   return loc.dentro
     ? '<span class="cerca-aviso verde">' + icone('pino', 16) + (tr('Você está a') + ' ') + d + (' ' + tr('da obra: dentro da cerca ✓') + '</span>')

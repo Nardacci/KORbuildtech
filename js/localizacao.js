@@ -24,9 +24,11 @@ const minutos = (chave, padrao) => {
 function posicaoDoGps() {
   return new Promise((resolve) => {
     if (!navigator.geolocation) return resolve(null);
+    // sem resposta do celular (aviso de permissão que não aparece) o getCurrentPosition não termina: o limite evita travar o registro
+    const limite = setTimeout(() => resolve(null), 12000);
     navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude, precisao: Math.round(p.coords.accuracy) }),
-      () => resolve(null),
+      (p) => { clearTimeout(limite); resolve({ lat: p.coords.latitude, lon: p.coords.longitude, precisao: Math.round(p.coords.accuracy) }); },
+      () => { clearTimeout(limite); resolve(null); },
       { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 },
     );
   });

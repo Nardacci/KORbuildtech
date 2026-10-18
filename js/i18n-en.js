@@ -3283,4 +3283,8 @@ export const EN = {
 
   // ---------- Entrada ----------
   'Não foi possível entrar agora. Confira a internet e tente de novo.': 'Could not sign in right now. Check your internet and try again.',
+
+  // ---------- Crew ----------
+  'A localização está bloqueada para o KORbuild: nas configurações do celular, permita a localização para o app (ou para o Chrome) e ligue a localização precisa.': 'Location is blocked for KORbuild: in your phone settings, allow location for the app (or for Chrome) and turn on precise location.',
+  'O celular não respondeu com a posição. Ligue a localização (GPS) do celular e tente de novo, de preferência ao ar livre.': 'The phone did not return a position. Turn on the phone\'s location (GPS) and try again, preferably outdoors.',
 };
