@@ -1485,3 +1485,10 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
   .login-caminhos { margin-top: 10px; padding-top: 10px; }
   .login-form > .mudo { margin-bottom: 2px; }
 }
+
+/* Link do roteiro de teste no celular, na tela de entrada */
+.login-teste { margin: 10px 0 0; font-size: 12.5px; color: var(--mudo, #6B7686); text-align: center; }
+@media (max-height: 700px) { .login-teste { margin-top: 4px; font-size: 12px; line-height: 1.2; } }
+@media (max-height: 660px) { .login-caminhos { margin-top: 6px; padding-top: 6px; gap: 6px; } }
+@media (max-height: 620px) { .login-caminho .mudo { display: none; } }
+@media (max-height: 620px) { .login-caminhos { grid-template-columns: 1fr 1fr; } }

@@ -3263,4 +3263,8 @@ export const EN = {
   'no banco do aparelho': 'in the device database',
   'só na memória (somem ao fechar)': 'in memory only (lost when closed)',
   'O aparelho não deixou gravar no banco. Use fora da aba privada e com espaço livre; envie o que está esperando antes de fechar o app.': 'The device would not let the app save to its database. Use it outside a private tab and with free space; send whatever is waiting before closing the app.',
+
+  // ---------- Entrada ----------
+  'Testando no iPhone ou no Android?': 'Testing on an iPhone or Android?',
+  'Abrir o roteiro de teste': 'Open the test guide',
 };
