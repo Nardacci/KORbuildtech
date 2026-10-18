@@ -3277,4 +3277,7 @@ export const EN = {
   'Ocultar': 'Hide',
   'Mostrar a senha': 'Show password',
   'Ocultar a senha': 'Hide password',
+
+  // ---------- Entrada ----------
+  'Há uma versão nova do KORbuild. Feche e abra o app para usar.': 'There is a new version of KORbuild. Close and reopen the app to use it.',
 };

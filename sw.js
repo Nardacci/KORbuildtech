@@ -1,8 +1,9 @@
 /* KORbuild — service worker.
  * Guarda o app inteiro no aparelho na instalação, para abrir e funcionar no canteiro sem internet.
  * Arquivos do app: rede primeiro (pega a versão nova) e cópia guardada quando não há conexão.
+ * Na instalação e em cada pedido o navegador revalida com o servidor (cache: reload/no-cache): sem isso a cópia do cache HTTP do GitHub Pages (10 min) entrava no cache do app e a versão nova demorava a aparecer.
  * O clima (Open-Meteo) nunca passa pelo cache: sem internet, o app pede para marcar à mão. */
-var CACHE = 'korbuild-v78';
+var CACHE = 'korbuild-v79';
 var APP = [
   './', 'index.html', 'diagnostico.html', 'teste-iphone.html', 'teste-android.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/i18n.js', 'js/i18n-en.js', 'js/util.js', 'js/diagnostico.js', 'js/diagnostico-pagina.js', 'js/roteiro.js', 'js/instalar.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',
@@ -11,7 +12,7 @@ var APP = [
 ];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(APP); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(APP.map(function (u) { return new Request(u, { cache: 'reload' }); })); }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener('activate', function (e) {
@@ -26,7 +27,7 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   var fonte = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
   if (url.origin !== self.location.origin && !fonte) return;
-  e.respondWith(fetch(req).then(function (resp) {
+  e.respondWith(fetch(req, { cache: 'no-cache' }).then(function (resp) {
     if (resp.ok || resp.type === 'opaque') {
       var copia = resp.clone();
       caches.open(CACHE).then(function (c) { c.put(req, copia); });

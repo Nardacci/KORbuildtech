@@ -1887,7 +1887,20 @@ async function iniciar() {
     return doAparelho.concat(concorrencias);
   });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+    const tinhaControle = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      // o app instalado fica aberto por dias: pergunta se há versão nova ao abrir e sempre que volta para a tela
+      reg.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+    }).catch(() => {});
+    // versão nova assumiu: recarrega sozinho, a menos que a pessoa esteja preenchendo algo (aí só avisa)
+    let recarregou = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!tinhaControle || recarregou) return;
+      if (formularioEmEdicao()) { toast(tr('Há uma versão nova do KORbuild. Feche e abra o app para usar.')); return; }
+      recarregou = true;
+      location.reload();
+    });
   }
   window.addEventListener('beforeinstallprompt', (ev) => {
     ev.preventDefault();
