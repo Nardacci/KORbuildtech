@@ -239,6 +239,7 @@ function desenharPrototipo() {
   }
   const chave = location.hash;
   const focoAntes = chaveDoFoco(document.activeElement);
+  const sinoEstavaAberto = sinoAberto();   // um redesenho no meio da leitura dos avisos não pode fechar o painel
   let html;
   let modo = p[0];
   if (p[0] === 'daily') {
@@ -300,6 +301,7 @@ function desenharPrototipo() {
   }
   else return trocarRota('#/inicio');
   app.innerHTML = html;
+  if (sinoEstavaAberto && chave === rotaAnterior) { const sino = document.querySelector('details.sino'); if (sino) sino.open = true; }
   document.body.dataset.modo = modo;
   if (chave !== rotaAnterior) {
     window.scrollTo(0, 0);
@@ -1357,6 +1359,7 @@ function mudar(fn) {
 async function climaAutomatico(r, silencioso) {
   const o = acharObra(r.obraId);
   if (semInternet()) {
+    console.error('clima automático: sem internet (onLine=' + navigator.onLine + ', simulado=' + !!(bancoDeDados() && bancoDeDados().offlineSimulado) + ')');
     if (!silencioso) toast(tr('Sem internet: marque o clima à mão.'));
     return;
   }
@@ -1368,6 +1371,7 @@ async function climaAutomatico(r, silencioso) {
     salvar();
     if (!silencioso) toast(tr('Clima atualizado pela localização da obra.'));
   } catch (e) {
+    console.error('clima automático falhou: ' + (e && e.name) + ': ' + (e && e.message));   // para quem lê a saída dos testes sem ver a tela
     toast(tr('Não foi possível buscar o clima agora. Marque à mão.'));
   }
   climaCarregando = false;

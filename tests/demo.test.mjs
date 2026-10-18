@@ -264,9 +264,11 @@ await page.waitForSelector('.modulos');
 await page.goto(BASE + '#/daily/pdf/' + id);
 await page.waitForSelector('.pdf-folha img[src^="blob:"]');
 await page.emulateMedia({ media: 'print' });
-const pdf = await page.pdf({ format: 'A4', printBackground: true });
-verificar(pdf.length > 50000, 'PDF gerado (' + Math.round(pdf.length / 1024) + ' KB)');
-if (SAIDA) (await import('node:fs')).writeFileSync(SAIDA + '/rdo.pdf', pdf);
+// o Playwright só gera PDF no Chromium (no WebKit a página do PDF acima já foi conferida)
+const pdf = browser.browserType().name() === 'chromium' ? await page.pdf({ format: 'A4', printBackground: true }) : null;
+if (pdf) verificar(pdf.length > 50000, 'PDF gerado (' + Math.round(pdf.length / 1024) + ' KB)');
+else console.log('  (PDF: o Playwright só gera no Chromium; pulado)');
+if (SAIDA && pdf) (await import('node:fs')).writeFileSync(SAIDA + '/rdo.pdf', pdf);
 await page.emulateMedia({ media: 'screen' });
 
 // Ajustes: escritório pede, canteiro corrige e reenvia
