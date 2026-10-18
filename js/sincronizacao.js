@@ -106,6 +106,9 @@ export async function versaoDoBanco(r) {
   return rdoDoBanco({ ...data, fotos: fotos || [], historico: historico || [] });
 }
 
+/* Quando o diário troca de id (o outro aparelho já tinha criado o dia): id antigo → id novo. A tela que estava aberta no id antigo segue para o novo, em vez de mostrar "não encontrado". */
+export const idsTrocados = new Map();
+
 /* Sobe o que o aparelho tem para subir. aoConflito(r, doBanco) devolve 'meu' (regravar por cima) ou 'banco'. */
 export function sincronizarDaily({ aoConflito, aoErro } = {}) {
   if (rodando) return rodando;
@@ -122,11 +125,12 @@ export function sincronizarDaily({ aoConflito, aoErro } = {}) {
           const doBanco = await versaoDoBanco(r);
           const escolha = doBanco ? await aoConflito(r, doBanco) : 'meu';
           if (escolha === 'banco' && doBanco) {
+            if (doBanco.id !== r.id) idsTrocados.set(r.id, doBanco.id);
             d.rdos.splice(d.rdos.indexOf(r), 1, doBanco);
           } else if (doBanco) {
             // a minha versão vai por cima da que está no banco; se o outro aparelho criou o dia com outro id,
             // o diário passa a usar o id do banco e as fotos sobem de novo na pasta dele
-            if (doBanco.id !== r.id) { r.id = doBanco.id; r.numero = doBanco.numero; r.fotos.forEach((f) => { f.path = null; f.pathMini = null; }); }
+            if (doBanco.id !== r.id) { idsTrocados.set(r.id, doBanco.id); r.id = doBanco.id; r.numero = doBanco.numero; r.fotos.forEach((f) => { f.path = null; f.pathMini = null; }); }
             r._banco = { ...doBanco._banco };
             r._sinc = null;
             try { await subirRdo(r, d.empresa.id); subiram++; } catch (e2) { if (aoErro) aoErro(r, e2); }

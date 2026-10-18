@@ -12,7 +12,7 @@ import {
 import { criarDemonstracao, VERSAO_DADOS } from './exemplo.js';
 import { conta, cliente as clienteDaConta, traduzir } from './conta.js';
 import { espelho, montar as montarEspelho, usarOQueTemNoAparelho, espelhoDoLinkPublico } from './espelho.js';
-import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily, sincronizarPonto, pendentesDoPonto, MOTIVOS_DA_RECUSA } from './sincronizacao.js';
+import { sincronizarDaily, pendentesNoAparelho, sincronizando as subindoDaily, sincronizarPonto, pendentesDoPonto, MOTIVOS_DA_RECUSA, idsTrocados } from './sincronizacao.js';
 import { ligarCrewOficial } from './crew-oficial.js';
 import { ligarCronogramaOficial } from './cronograma-oficial.js';
 import { ligarMeasureOficial } from './measure-oficial.js';
@@ -210,6 +210,8 @@ function desenhar() {
       const q0 = rotaDaily();
       // diário aberto pelo endereço (link, notificação) que ainda não está no aparelho: relê o banco uma vez
       const idRdo = q0[1] === 'rdo' ? q0[2] : q0[0] === 'pdf' ? q0[1] : null;
+      const idNovo = idRdo && idsTrocados.get(idRdo);
+      if (idNovo && acharRdo(idNovo)) return trocarRota(location.hash.replace(idRdo, idNovo));
       if (idRdo && !acharRdo(idRdo) && !relidoPorRdo.has(idRdo) && !semInternet()) {
         relidoPorRdo.add(idRdo);
         app.innerHTML = carregando();
@@ -1216,6 +1218,8 @@ async function sincronizarOficial() {
 
 /* Outro aparelho mudou o mesmo diário sem sinal (decisão de outubro de 2026): a pessoa escolhe a versão. */
 async function escolherVersao(r, doBanco) {
+  // o diário do outro aparelho está vazio (só o dia aberto, sem atividade nem foto): não há o que perder, fica o deste aparelho sem perguntar
+  if (!doBanco.fotos.length && !doBanco.atividades.some((x) => (x.descricao || '').trim()) && !(doBanco.ocorrencias || []).length && !(doBanco.observacoes || '').trim() && doBanco.status === 'rascunho') return 'meu';
   const resumo = (x) => tn(x.atividades.filter((a) => (a.descricao || '').trim()).length, '{n} atividade', '{n} atividades') + ' · ' + tn(x.fotos.length, '{n} foto', '{n} fotos');
   const res = await abrirDialogo({
     titulo: tr('Este diário mudou em outro aparelho'),
