@@ -1811,7 +1811,8 @@ app.addEventListener('change', async (ev) => {
       const { blob, mini, meta } = await processarFoto(arquivos[i], o, daCamera);
       const id = novoId('foto');
       await guardarFoto(id, blob, mini);
-      r.fotos.push({ id, legenda: '', ...meta });
+      // durante o carimbo (GPS, redução) a sincronização pode ter relido o banco e trocado o objeto do diário: a foto entra no diário que está no aparelho agora
+      (acharRdo(r.id) || r).fotos.push({ id, legenda: '', ...meta });
       salvarComAviso();
       ultimo = meta;
     } catch (e) {

@@ -202,6 +202,22 @@ try {
   if (dialogo) await j.p.click('dialog button:has-text("Ficar com a deste aparelho")');
   verificar(await esperarAte(async () => (await sql(`select conteudo #>> '{atividades,0,descricao}' d from public.rdos where id = '${r4.id}'`))[0].d === 'Versão do primeiro aparelho, corrigida'), 'ficou a versão escolhida');
 
+  console.log('A foto não se perde se a sincronização reler o banco enquanto ela é carimbada (GPS lento)');
+  {
+    const j3 = await aparelho('jose');
+    await j3.ctx.addInitScript(() => { const g = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation); navigator.geolocation.getCurrentPosition = (ok, err, op) => setTimeout(() => g(ok, err, op), 4000); });
+    await j3.p.goto(BASE + '#/daily/campo/rdo/' + r4.id);
+    await j3.p.waitForSelector('#s-fotos', { timeout: 20000 });
+    const jpeg3 = await j3.p.evaluate(() => { const c = document.createElement('canvas'); c.width = 800; c.height = 600; c.getContext('2d').fillRect(0, 0, 800, 600); return c.toDataURL('image/jpeg', 0.8).split(',')[1]; });
+    await j3.p.setInputFiles('input[data-fotos="camera"]', { name: 'IMG_3.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(jpeg3, 'base64') });
+    await j3.p.waitForTimeout(800);
+    await j3.p.click('#conexao').catch(() => null);   // a sincronização relê o banco no meio do carimbo
+    verificar(await esperarAte(async () => (await j3.p.locator('#s-fotos .foto img[src^="blob:"]').count()) === 1, 25000), 'a miniatura da foto aparece mesmo com a sincronização no meio');
+    await j3.p.waitForTimeout(3000);
+    verificar((await j3.p.locator('#s-fotos .foto img[src^="blob:"]').count()) === 1, 'e continua na tela depois');
+    await j3.ctx.close();
+  }
+
   console.log('Servidor fora do ar: o app abre com o que está no aparelho');
   await j.ctx.unrouteAll({ behavior: 'ignoreErrors' });
   await j.ctx.route(URL_PROJETO.replace(/\/$/, '') + '/**', (r) => r.abort('internetdisconnected'));
