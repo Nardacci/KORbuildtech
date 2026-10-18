@@ -3272,4 +3272,9 @@ export const EN = {
   'Testando no celular?': 'Testing on a phone?',
   'Roteiro do iPhone': 'iPhone guide',
   'Roteiro do Android': 'Android guide',
+
+  // ---------- Entrada ----------
+  'Ocultar': 'Hide',
+  'Mostrar a senha': 'Show password',
+  'Ocultar a senha': 'Hide password',
 };

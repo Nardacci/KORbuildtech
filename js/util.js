@@ -207,4 +207,37 @@ if (typeof document !== 'undefined') {
   const selecionar = (ev) => { if (ev.target.matches && ev.target.matches('input[data-selecionar]')) ev.target.select(); };
   document.addEventListener('focusin', selecionar);
   document.addEventListener('click', selecionar);
+
+  /* Todo campo de senha ganha o botão "Mostrar": quem digita no celular precisa conferir o que escreveu. As telas são redesenhadas
+   * (innerHTML), então um observador decora os campos novos; o botão é um <button type="button">, sem manipulador inline (CSP). */
+  const decorarSenhas = () => {
+    document.querySelectorAll('input[type="password"]:not([data-ver-senha])').forEach((campo) => {
+      campo.dataset.verSenha = '1';
+      if (!campo.parentNode) return;
+      const envolucro = document.createElement('span');
+      envolucro.className = 'campo-senha';
+      campo.parentNode.insertBefore(envolucro, campo);
+      envolucro.appendChild(campo);
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'ver-senha';
+      botao.setAttribute('data-ver-senha-botao', '');
+      botao.textContent = tr('Mostrar');
+      botao.setAttribute('aria-label', tr('Mostrar a senha'));
+      envolucro.appendChild(botao);
+    });
+  };
+  document.addEventListener('click', (ev) => {
+    const b = ev.target.closest && ev.target.closest('[data-ver-senha-botao]');
+    if (!b) return;
+    const campo = b.parentNode.querySelector('input');
+    if (!campo) return;
+    const mostrar = campo.type === 'password';
+    campo.type = mostrar ? 'text' : 'password';
+    b.textContent = mostrar ? tr('Ocultar') : tr('Mostrar');
+    b.setAttribute('aria-label', mostrar ? tr('Ocultar a senha') : tr('Mostrar a senha'));
+    campo.focus();
+  });
+  new MutationObserver(decorarSenhas).observe(document.documentElement, { childList: true, subtree: true });
+  decorarSenhas();
 }
