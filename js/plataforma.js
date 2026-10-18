@@ -4,6 +4,7 @@
  * módulos. No protótipo há uma empresa só e tudo fica no navegador; na versão real, o servidor
  * isola os dados de cada empresa. */
 
+import { PRIMEIRA_VERSAO, NO_DOMINIO, NOME_MEASURE } from './versao.js';
 import { DOMINIOS_EN } from './exemplo.js';
 import { esc, dataCurta, diasEntre, hoje, dataHora, isoDoDia, horaCurta } from './util.js';
 import { estado, todasAsEmpresas, salvar, chaveDaSessao } from './armazem.js';
@@ -34,7 +35,7 @@ export const MODULOS = [
   },
   {
     // o Measure é de quem executa o serviço: a construtora não abre os desenhos (no futuro, recebe os relatórios)
-    id: 'measure', nome: 'Measure', status: 'disponivel', prototipo: true, atuacoes: ['prestadora', 'ambas'],
+    id: 'measure', nome: NOME_MEASURE, status: 'disponivel', prototipo: true, atuacoes: ['prestadora', 'ambas'],
     resumo: tr('Medição de plantas (takeoff): abre o PDF, calibra a escala e mede em pés e polegadas: lin ft, sq ft, cu yd e unidades.'),
     oQueFaz: [
       tr('Abre a planta em PDF e mede na tela: comprimentos, áreas e contagens.'),
@@ -48,6 +49,9 @@ export const MODULOS = [
     resumo: tr('Configuração da empresa: funcionários, encargos, regras de jornada e auditoria. Vale para todos os módulos.'),
   },
 ];
+
+/* Na 1ª versão só o Measure Takeoff e o Settings existem para a pessoa. */
+export const moduloNaVersao = (id) => !PRIMEIRA_VERSAO || id === 'measure' || id === 'settings';
 
 export function modulo(id) { return MODULOS.find((m) => m.id === id); }
 
@@ -85,6 +89,7 @@ export function modulosLiberados(u) {
 /* Módulo oferecido para o tipo da empresa (ex.: o Measure é das prestadoras, não da construtora). */
 export function moduloParaEmpresa(id) {
   const m = MODULOS.find((x) => x.id === id);
+  if (PRIMEIRA_VERSAO && id === 'measure') return true;   // na 1ª versão o Measure Takeoff é de toda empresa
   return !m || !m.atuacoes || m.atuacoes.includes(estado().empresa.atuacao);
 }
 /* Para onde a pessoa vai ao entrar: com um módulo só (ex.: o trabalhador, só ponto), direto para ele. */
@@ -232,7 +237,7 @@ const identificador = (nome) => nome.normalize('NFD').replace(/[\u0300-\u036f]/g
  * A página oficial (sem "?demo" no endereço) é a entrada das contas reais, que vão usar o banco de dados.
  * O protótipo abre com "?demo": os dados de exemplo ficam no navegador, como sempre.
  * Os links internos são só o "#…", então o "?demo" acompanha a navegação inteira. */
-export const MODO_DEMO = (() => { try { return new URLSearchParams(location.search).has('demo'); } catch { return true; } })();
+export const MODO_DEMO = !NO_DOMINIO && (() => { try { return new URLSearchParams(location.search).has('demo'); } catch { return true; } })();   // no domínio de produção o protótipo não abre
 export const URL_PROTOTIPO = '?demo#/entrar';
 export const URL_OFICIAL = './';
 export const URL_PORTAL = 'portal/';
@@ -247,7 +252,7 @@ export function paginaEntrada(conteudo) {
         '<h1 class="login-logotipo">' + logotipo() + '</h1>' +
         '<span class="login-traco" aria-hidden="true"></span>' +
         '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
-        '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
+        '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso && moduloNaVersao(m.id)).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
     '</section>' +
     '<section class="login-lado">' + conteudo + '</section>' +
   '</div>';
@@ -255,8 +260,9 @@ export function paginaEntrada(conteudo) {
 
 /* Os dois caminhos sem conta: o portal e o protótipo. */
 export function htmlCaminhosEntrada() {
-  return '<div class="login-caminhos">' +
-    '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário') + '</span></span>' + icone('seta', 18) + '</a>' +
+  const portal = '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + (PRIMEIRA_VERSAO ? tr('O que o Measure Takeoff faz e o manual do usuário') : tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário')) + '</span></span>' + icone('seta', 18) + '</a>';
+  if (PRIMEIRA_VERSAO) return '<div class="login-caminhos">' + portal + '</div>';   // 1ª versão: sem protótipo e sem roteiros de teste no celular
+  return '<div class="login-caminhos">' + portal +
     '<a class="login-caminho" href="' + URL_PROTOTIPO + '">' + icone('play', 20) + '<span><b>' + tr('Abrir o protótipo') + '</b><span class="mudo">' + tr('Com dados de exemplo, sem conta: para conhecer e apresentar') + '</span></span>' + icone('seta', 18) + '</a>' +
   '</div>' +
     '<p class="login-teste">' + tr('Testando no celular?') + ' <a class="link" href="teste-iphone.html">' + tr('Roteiro do iPhone') + '</a> · <a class="link" href="teste-android.html">' + tr('Roteiro do Android') + '</a></p>';
@@ -293,7 +299,7 @@ export function telaLogin(grupos) {
         '<h1 class="login-logotipo">' + logotipo() + '</h1>' +
         '<span class="login-traco" aria-hidden="true"></span>' +
         '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
-        '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
+        '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso && moduloNaVersao(m.id)).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
       ('<p class="login-rodape">' + tr('Protótipo · dados fictícios') + '</p>') +
     '</section>' +
     '<section class="login-lado">' +
@@ -323,7 +329,7 @@ export function telaModulos(u, saudacao) {
   // Settings vem em todo plano, mas só aparece para quem pode configurar (escritório)
   // Só os módulos que o perfil abre; os "em breve" aparecem para quem usa mais de um módulo (escritório)
   const meus = modulosDe(u);
-  const cartoes = MODULOS.filter((m) => moduloParaEmpresa(m.id) && (m.status === 'em-breve' ? meus.length > 1 : meus.includes(m.id))).map((m) => {
+  const cartoes = MODULOS.filter((m) => moduloNaVersao(m.id) && moduloParaEmpresa(m.id) && (m.status === 'em-breve' ? meus.length > 1 : meus.includes(m.id))).map((m) => {
     const contratado = m.incluso || d.empresa.modulos.includes(m.id);
     const disponivel = m.status === 'disponivel';
     const etiqueta = disponivel
@@ -388,7 +394,7 @@ export function telaConta(u) {
           ('<button type="button" class="btn btn-primario btn-bloco" data-acao="em-breve" data-texto="' + tr('A contratação e o pagamento ainda não fazem parte do protótipo.') + '">' + tr('Assinar o plano') + '</button>') +
         '</section>' +
       '</div>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Módulos') + '</h2><ul class="fila fila-modulos">') + MODULOS.map((m) => {
+      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Módulos') + '</h2><ul class="fila fila-modulos">') + MODULOS.filter((m) => moduloNaVersao(m.id)).map((m) => {
         const contratado = m.incluso || d.empresa.modulos.includes(m.id);
         const qtd = interesses.filter((i) => i.modulo === m.id).length;
         return '<li><span class="modulo-icone pequeno modulo-' + m.id + '">' + icone(m.id, 20) + '</span><div class="fila-texto"><b>KORbuild ' + m.nome + '</b><span class="mudo">' + esc(m.resumo) + '</span></div>' +

@@ -1,5 +1,6 @@
 /* KORbuild — navegação da plataforma e telas do módulo Daily (diário de obra) e fila de envio. */
 
+import { PRIMEIRA_VERSAO } from './versao.js';
 import {
   esc, novoId, hoje, somarDias, diasEntre, dataCurta, dataLonga, dataRelativa, diaDaSemana, horaCurta, dataHora, tamanho,
   toast, abrirDialogo, confirmar, horaCheia, temperatura, chuva, diaMes, isoDoDia,
@@ -23,7 +24,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
 import { tr, tn, idioma, definirIdioma } from './i18n.js';
 import {
-  usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, registrarInteresse, modulo, definirPodeInstalar,
+  usuarioAtual, entrar, sair, usuarioPorEmail, pode, inicioDoUsuario, modulosLiberados, moduloNaVersao, registrarInteresse, modulo, definirPodeInstalar,
   casca, telaLogin, telaModulos, telaEmBreve, telaConta, definirFonteNotificacoes, marcarLidas, notificacoesDe,
   MODO_DEMO,
 } from './plataforma.js';
@@ -295,7 +296,8 @@ function desenharPrototipo() {
     if (r && r.trocar) return trocarRota(r.trocar);
     html = r;
     modo = 'settings';
-  } else if (modulo(p[0])) html = telaEmBreve(u, p[0]);
+  } else if (modulo(p[0]) && !moduloNaVersao(p[0])) return trocarRota(inicioDoUsuario(u));   // 1ª versão: os outros módulos não existem
+  else if (modulo(p[0])) html = telaEmBreve(u, p[0]);
   else if (p[0] === 'inicio') {
     // com um módulo só (ex.: trabalhador que só bate ponto), não há tela de módulos
     const destino = inicioDoUsuario(u);
@@ -307,7 +309,7 @@ function desenharPrototipo() {
   if (sinoEstavaAberto && chave === rotaAnterior) { const sino = document.querySelector('details.sino'); if (sino) sino.open = true; }
   document.body.dataset.modo = modo;
   // celular sem GPS (permissão negada ou sem resposta): recado no topo das telas que usam a localização, com o passo a passo
-  if (p[0] === 'crew' || p[0] === 'inicio' || (p[0] === 'daily' && rotaDaily()[0] === 'campo')) {
+  if (!PRIMEIRA_VERSAO && (p[0] === 'crew' || p[0] === 'inicio' || (p[0] === 'daily' && rotaDaily()[0] === 'campo'))) {
     const aviso = htmlAvisoGps();
     const principal = aviso && app.querySelector('main');
     if (principal) principal.insertAdjacentHTML('afterbegin', aviso);
@@ -1899,6 +1901,7 @@ async function iniciar() {
       .concat(podeResponder() ? avisosDaConvidada().map((n) => ({ ...n, modulo: 'measure' })) : []);
     const doAparelho = (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
     // conta de verdade: o que acontece entre pessoas e empresas vem do servidor (avisos-oficial.js); no aparelho ficam só os lembretes do relógio
+    if (PRIMEIRA_VERSAO) return estado().oficial ? avisosDoServidor().filter((n) => n.modulo === 'measure' || n.modulo === 'settings') : [];   // 1ª versão: só avisos do Measure Takeoff e do Settings
     if (estado().oficial) return doAparelho.filter((n) => !/^(d-recebido-|d-ajuste-|d-aprovado-)/.test(n.id)).concat(avisosDoServidor());
     return doAparelho.concat(concorrencias);
   });

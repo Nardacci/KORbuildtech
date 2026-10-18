@@ -3,10 +3,10 @@
  * Arquivos do app: rede primeiro (pega a versão nova) e cópia guardada quando não há conexão.
  * Na instalação e em cada pedido o navegador revalida com o servidor (cache: reload/no-cache): sem isso a cópia do cache HTTP do GitHub Pages (10 min) entrava no cache do app e a versão nova demorava a aparecer.
  * O clima (Open-Meteo) nunca passa pelo cache: sem internet, o app pede para marcar à mão. */
-var CACHE = 'korbuild-v87';
+var CACHE = 'korbuild-v88';
 var APP = [
   './', 'index.html', 'diagnostico.html', 'teste-iphone.html', 'teste-android.html', 'manifest.webmanifest', 'css/app.css',
-  'js/app.js', 'js/i18n.js', 'js/i18n-en.js', 'js/util.js', 'js/diagnostico.js', 'js/diagnostico-pagina.js', 'js/roteiro.js', 'js/instalar.js', 'js/gps.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',
+  'js/app.js', 'js/i18n.js', 'js/i18n-en.js', 'js/util.js', 'js/diagnostico.js', 'js/diagnostico-pagina.js', 'js/roteiro.js', 'js/instalar.js', 'js/versao.js', 'js/gps.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',
   'js/exemplo.js', 'js/lacre.js', 'js/relatorio.js', 'js/plataforma.js', 'js/icones.js', 'js/prazos.js', 'js/crew.js', 'js/crew-telas.js', 'js/settings.js', 'js/settings-telas.js', 'js/imperial.js', 'js/measure.js', 'js/measure-telas.js', 'js/formulas.js', 'js/contatos.js', 'js/contatos-telas.js', 'js/measure-relatorios.js', 'js/precos.js', 'js/precos-telas.js', 'js/cronograma.js', 'js/cronograma-telas.js', 'js/cronograma-excel.js', 'js/obras.js', 'js/obras-telas.js', 'js/concorrencias.js', 'js/concorrencias-telas.js', 'js/config.js', 'js/conta.js', 'js/oficial-telas.js', 'js/cadastros.js', 'js/cadastros-telas.js', 'js/espelho.js', 'js/espelho-crew.js', 'js/sincronizacao.js', 'js/crew-oficial.js', 'js/localizacao.js', 'js/cronograma-oficial.js', 'js/measure-oficial.js', 'js/espelho-concorrencias.js', 'js/concorrencias-oficial.js', 'js/avisos-oficial.js', 'vendor/supabase/supabase.js', 'vendor/supabase/591.supabase.js', 'manual/manual-de-teste.html', 'manual/KORbuild_Manual_de_teste.docx', 'vendor/leaflet/leaflet.js', 'vendor/leaflet/leaflet.css',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png',
 ];

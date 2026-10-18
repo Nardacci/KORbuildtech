@@ -3305,4 +3305,15 @@ export const EN = {
   'Clique no cadeado ao lado do endereço e permita a Localização para este site.': 'Click the padlock next to the address and allow Location for this site.',
   'GPS funcionando.': 'GPS is working.',
   'Ainda sem GPS. Siga os passos do aviso e tente de novo.': 'Still no GPS. Follow the steps in the notice and try again.',
+
+  // ---------- Entrada ----------
+  'O que o Measure Takeoff faz e o manual do usuário': 'What Measure Takeoff does and the user manual',
+
+  // ---------- Entrada ----------
+  'Manual do usuário': 'User manual',
+  'Abrir o Measure Takeoff': 'Open Measure Takeoff',
+
+  // ---------- Entrada ----------
+  'cadastrado.': 'yet.',
+  'Abra a planta em PDF, defina a escala, meça em pés e polegadas, monte as quantidades e emita a proposta. No computador.': 'Open the plan PDF, set the scale, measure in feet and inches, build the quantities and issue the proposal. On your computer.',
 };

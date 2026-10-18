@@ -4,6 +4,7 @@ Uso:
   pip install markdown python-docx
   node tools/capturas-portal.mjs          # (opcional) refaz as capturas das telas em portal/img/
   python3 tools/gerar_portal.py           # gera as páginas (inglês em portal/, português em portal/pt/), a busca, os Word e confere os links
+  python3 tools/gerar_portal.py --edicao=measure   # a edição da 1ª versão (só o Measure Takeoff e o Settings, sem protótipo): portal-measure/
 
 O texto é escrito uma vez só (portal/fonte/<idioma>/...). Daqui saem a página web e o Word de cada documento.
 Markdown aceito, além do comum (títulos, listas, tabelas, negrito, links):
@@ -30,6 +31,9 @@ FONTE = PORTAL / 'fonte'
 IDIOMAS = ['en', 'pt']
 IDIOMA = 'en'
 SAIDA = PORTAL      # onde as páginas do idioma são gravadas
+EDICAO = ''         # '' = o guia inteiro (homologação) · 'measure' = 1ª versão: só o Measure Takeoff e o Settings (domínio de produção)
+DESTINO = PORTAL    # a pasta do guia que está sendo gerado (portal/ ou portal-measure/)
+FONTE_EDICAO = PORTAL / 'fonte-measure'   # textos da edição que substituem os do guia inteiro
 TOPO = ''           # caminho de SAIDA até portal/ ('' no inglês, '../' no português)
 MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro']
 
@@ -42,7 +46,7 @@ def hoje():
 def definir_idioma(idioma):
     global IDIOMA, SAIDA, TOPO
     IDIOMA = idioma
-    SAIDA = PORTAL if idioma == 'en' else PORTAL / idioma
+    SAIDA = DESTINO if idioma == 'en' else DESTINO / idioma
     TOPO = '' if idioma == 'en' else '../'
 
 
@@ -94,6 +98,20 @@ PT = {
     'Modules': 'Módulos', 'How it is organized': 'Como se organiza', "Presenter's guide": 'Guia do apresentador',
     'Search rules, screens, tasks…': 'Buscar regras, telas, tarefas…', 'Search the guide': 'Buscar no guia',
     'Open the prototype': 'Abrir o protótipo', 'Menu and search': 'Menu e busca',
+    'Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.': 'As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.',
+    'Measure Takeoff user guide': 'Guia do usuário do Measure Takeoff',
+    'Plan takeoff in feet and inches, from the PDF to the proposal.': 'Medição de plantas em pés e polegadas, do PDF à proposta.',
+    'Measure Takeoff: open the plan PDF, set the scale, measure lines, areas and counts, price the materials and labor from your own assemblies, send quote lists to suppliers and issue the proposal. Settings holds your company, contacts, users and access roles.':
+        'Measure Takeoff: abra a planta em PDF, defina a escala, meça linhas, áreas e contagens, calcule materiais e mão de obra com os seus assemblies, mande listas de cotação aos fornecedores e emita a proposta. O Settings guarda a empresa, os contatos, os usuários e os perfis de acesso.',
+    'Measure Takeoff and Settings': 'Measure Takeoff e Settings', 'Measure Takeoff': 'Measure Takeoff',
+    'Open Measure Takeoff, then follow the user manual: one task at a time, with screenshots.': 'Abra o Measure Takeoff e siga o manual do usuário: uma tarefa por vez, com as telas.',
+    'Company setup: company profile, contacts, users and access roles.': 'Configuração da empresa: perfil da empresa, contatos, usuários e perfis de acesso.',
+    'What is in Settings and who uses it.': 'O que há no Settings e quem usa.',
+    'Company, contacts, users and roles — step by step.': 'Empresa, contatos, usuários e perfis — passo a passo.',
+    'The default roles and the permissions that matter in this release.': 'Os perfis padrão e as permissões que importam nesta versão.',
+    'Release status': 'Situação da versão',
+    'What works today and what comes next.': 'O que funciona hoje e o que vem depois.',
+    'Sign in': 'Entrar',
     'updated': 'atualizado em', 'Main sign-in': 'Entrada principal', 'Prototype': 'Protótipo',
     'Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.':
         'As telas vêm do protótipo, com dados de exemplo. Nomes, empresas e números são fictícios.',
@@ -180,6 +198,25 @@ MODULOS = [
          {'slug': 'prototype-status', 'titulo': 'Prototype status', 'grupo': 'Rules and access', 'desc': 'What is simulated today and what comes next.'},
      ]},
 ]
+EDICOES_MEASURE_MODULOS = [
+    {'id': 'measure', 'nome': 'Measure Takeoff', 'cor': 'var(--cor-measure)', 'ico': 'M',
+     'resumo': 'Plan takeoff in feet and inches, from the PDF to the proposal.',
+     'paginas': [
+         {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'What Measure Takeoff does, who uses it and how a takeoff becomes a proposal.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'From the PDF plan to the proposal, step by step, with screenshots.'},
+         {'slug': 'business-rules', 'titulo': 'Business rules', 'grupo': 'Rules and access', 'desc': 'Units, scale, measuring, formulas, pricing, reports and typicals, with IDs.'},
+         {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'Who can measure and who can change the catalog.'},
+         {'slug': 'release-status', 'titulo': 'Release status', 'grupo': 'Rules and access', 'desc': 'What works today and what comes next.'},
+     ]},
+    {'id': 'settings', 'nome': 'Settings', 'cor': 'var(--cor-settings)', 'ico': 'S',
+     'resumo': 'Company setup: company profile, contacts, users and access roles.',
+     'paginas': [
+         {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'What is in Settings and who uses it.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'Company, contacts, users and roles — step by step.'},
+         {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'The default roles and the permissions that matter in this release.'},
+     ]},
+]
+
 GERAIS = [
     {'slug': 'organization', 'titulo': 'How KORbuild is organized', 'desc': 'Who the customers are (general contractors and subcontractors), '
                                                                       'who registers what and what each company sees of the others.'},
@@ -190,6 +227,59 @@ GERAIS = [
                                                                  'which demo user to sign in with and what to say at each step.'},
 ]
 GRUPOS = ['Start here', 'Using it', 'Rules and access']
+
+
+def definir_edicao(edicao):
+    """1ª versão: só o Measure Takeoff e o Settings, sem protótipo, sem páginas dos outros módulos."""
+    global EDICAO, DESTINO, MODULOS, GERAIS
+    EDICAO = edicao
+    if edicao == 'measure':
+        DESTINO = RAIZ / 'portal-measure'
+        MODULOS = EDICOES_MEASURE_MODULOS
+        GERAIS = []
+
+
+# Ajustes de texto da edição Measure sobre os Markdown do guia inteiro: tira o que fala de outros módulos e do protótipo.
+def _sem_secao(md, titulo):
+    return re.sub(r'(?ms)^## ' + re.escape(titulo) + r'\n.*?(?=^## |\Z)', '', md)
+
+
+def adaptar_edicao(md, mod_id, slug, idioma):
+    if mod_id != 'measure':
+        return md
+    if idioma == 'en':
+        md = _sem_secao(md, 'Connected to the other modules')
+        md = re.sub(r'(?m)^Measure belongs to the companies that do the work.*$', 'Measure Takeoff is for the people who estimate: they open the plans, measure and issue the proposal that goes to the client.', md)
+        md = _sem_secao(md, 'In the prototype')
+        md = md.replace('A won project can become a job, ready for Daily, Crew and the schedule.', 'The project is closed as won (or lost).')
+        md = re.sub(r'(?m)^\| MSR-033 .*\n', '', md)
+        md = md.replace('typed in, Crew, a supplier quote', 'typed in, a supplier quote')
+        md = re.sub(r' A won project can create the job: \*\*Create job from this project\*\*, with the client and the address already filled in\.', '', md)
+        md = md.replace('The screenshots come from the prototype, signed in as', 'The screenshots come from a demo account with sample data, signed in as')
+        md = md.replace("works in the prototype today", "works today").replace("These rules come from the prototype's code and from the Measure specification in the project documentation.", 'These rules come from the product and from the Measure Takeoff specification.')
+        md = md.replace('(see Prototype status)', '(see Release status)')
+    else:
+        md = _sem_secao(md, 'Ligado aos outros módulos')
+        md = re.sub(r'(?m)^O Measure é das empresas que executam.*$', 'O Measure Takeoff é de quem faz o orçamento: abre as plantas, mede e emite a proposta que vai para o cliente.', md)
+        md = _sem_secao(md, 'No protótipo')
+        md = md.replace('O projeto ganho pode virar uma obra, pronta para o Daily, o Crew e o cronograma.', 'O projeto é fechado como ganho (ou perdido).')
+        md = re.sub(r'(?m)^\| MSR-033 .*\n', '', md)
+        md = md.replace('digitado, Crew, cotação de um fornecedor', 'digitado, cotação de um fornecedor')
+        md = re.sub(r' O projeto ganho pode criar a obra: \*\*Criar obra a partir deste projeto\*\*, com o cliente e o endereço já preenchidos\.', '', md)
+        md = md.replace('As telas são do protótipo, com o usuário', 'As telas são de uma conta de demonstração com dados de exemplo, com o usuário')
+        md = md.replace('se a regra já funciona no protótipo', 'se a regra já funciona').replace('Estas regras vêm do código do protótipo e da especificação do Measure na documentação do projeto.', 'Estas regras vêm do produto e da especificação do Measure Takeoff.')
+        md = md.replace('(veja Situação do protótipo)', '(veja Situação da versão)')
+    md = re.sub(r'\bMeasure\b(?! Takeoff)', 'Measure Takeoff', md)
+    md = md.replace('Measure Takeoff Takeoff', 'Measure Takeoff')
+    return md
+
+
+def fonte_do_idioma(idioma, mod_id, slug):
+    """O Markdown de uma página: o da edição (se existir) ou o do guia inteiro, já adaptado."""
+    rel = Path(mod_id) / f'{slug}.md' if mod_id else Path(f'{slug}.md')
+    if EDICAO and (FONTE_EDICAO / idioma / rel).exists():
+        return FONTE_EDICAO / idioma / rel, False
+    return FONTE / idioma / rel, bool(EDICAO)
 
 E = html.escape
 
@@ -246,13 +336,13 @@ def cabecalho(titulo, raiz, ativo='', caminho='index.html'):
   <a class="marca" href="{raiz}index.html" aria-label="{L('KORbuild product guide, home')}"><img src="{raiz}{TOPO}../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>{L('Guide')}</small></a>
   <nav class="topo-nav" aria-label="{L('Main')}">
     {nav('modulos', 'index.html#modules', L('Modules'))}
-    {nav('organization', 'organization.html', L('How it is organized'))}
-    {nav('presenting', 'presenting.html', L("Presenter's guide"))}
+    {'' if EDICAO else nav('organization', 'organization.html', L('How it is organized'))}
+    {'' if EDICAO else nav('presenting', 'presenting.html', L("Presenter's guide"))}
   </nav>
   <div class="topo-acoes">
     <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="{L('Search rules, screens, tasks…')}" aria-label="{L('Search the guide')}" autocomplete="off"></label>
     {idiomas}
-    <a class="btn-topo" href="{raiz}{TOPO}../?demo#/entrar">{L('Open the prototype')}</a>
+    {f'<a class="btn-topo" href="{raiz}{TOPO}../">{L("Sign in")}</a>' if EDICAO else f'<a class="btn-topo" href="{raiz}{TOPO}../?demo#/entrar">{L("Open the prototype")}</a>'}
     <button class="menu-celular" type="button" aria-label="{L('Menu and search')}">☰</button>
   </div>
   <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
@@ -262,8 +352,8 @@ def cabecalho(titulo, raiz, ativo='', caminho='index.html'):
 
 def rodape(raiz):
     return f"""<footer class="rodape">
-  <div><b>KORbuild</b> · {L('KORbuild product guide')} · {L('updated')} {hoje()} · <a href="{raiz}{TOPO}../">{L('Main sign-in')}</a> · <a href="{raiz}{TOPO}../?demo#/entrar">{L('Prototype')}</a></div>
-  <div>{L('Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.')}</div>
+  <div><b>KORbuild</b> · {L('KORbuild product guide')} · {L('updated')} {hoje()} · <a href="{raiz}{TOPO}../">{L('Main sign-in')}</a>{'' if EDICAO else f' · <a href="{raiz}{TOPO}../?demo#/entrar">{L("Prototype")}</a>'}</div>
+  <div>{L('Screenshots come from the prototype with sample data. Names, companies and numbers are fictitious.') if not EDICAO else L('Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.')}</div>
 </footer>
 <button class="voltar-topo" type="button" aria-label="{L('Back to top')}">↑</button>
 <script src="{raiz}{TOPO}assets/portal.js"></script>
@@ -356,7 +446,41 @@ def pagina_modulo(mod):
 """ + rodape(raiz)
 
 
+def pagina_inicial_edicao():
+    cartoes = ''.join(
+        f'<a class="cartao-mod" href="{m["id"]}/index.html" style="--cor:{m["cor"]}"><span class="ico">{m["ico"]}</span><b>{L(m["nome"])}</b><span>{E(L(m["resumo"]))}</span></a>'
+        for m in MODULOS)
+    lista = lambda pares: '<ul>' + ''.join(f'<li><a href="{h}">{t}</a></li>' for h, t in pares) + '</ul>'
+    return cabecalho(L('Measure Takeoff user guide'), '', 'inicio', 'index.html') + f"""
+<section class="heroi"><div class="heroi-dentro">
+  <p class="sobrescrito">{L('Measure Takeoff user guide')}</p>
+  <h1>{L('Plan takeoff in feet and inches, from the PDF to the proposal.')}</h1>
+  <p class="lead">{L('Measure Takeoff: open the plan PDF, set the scale, measure lines, areas and counts, price the materials and labor from your own assemblies, send quote lists to suppliers and issue the proposal. Settings holds your company, contacts, users and access roles.')}</p>
+  <div class="botoes">
+    <a class="botao" href="measure/user-manual.html">{L('Measure Takeoff')} — {L('user manual')}</a>
+    <a class="botao botao-secundario" href="settings/user-manual.html">Settings — {L('user manual')}</a>
+  </div>
+</div></section>
+<section class="faixa" id="modules">
+  <h2>{L('Modules')}</h2>
+  <div class="cartoes">{cartoes}</div>
+</section>
+<section class="faixa">
+  <h2>{L('Where to start')}</h2>
+  <div class="publicos">
+    <div class="publico"><h3>{L('I will use KORbuild every day')}</h3><p>{L('Open Measure Takeoff, then follow the user manual: one task at a time, with screenshots.')}</p>
+      {lista([(f"{m['id']}/user-manual.html", f"{L(m['nome'])} — {L('user manual')}") for m in MODULOS])}</div>
+    <div class="publico"><h3>{L('I need the rules and permissions')}</h3><p>{L('Each module lists its business rules with IDs and who can do what.')}</p>
+      {lista([(f"{m['id']}/{pg}.html", f"{L(m['nome'])} — {L(rot)}") for m in MODULOS for pg, rot in (('business-rules', 'business rules'), ('roles-and-permissions', 'roles and permissions')) if any(x['slug'] == pg for x in m['paginas'])])}</div>
+  </div>
+</section>
+<div style="height:40px"></div>
+""" + rodape('')
+
+
 def pagina_inicial():
+    if EDICAO:
+        return pagina_inicial_edicao()
     cartoes = ''.join(
         f'<a class="cartao-mod" href="{m["id"]}/index.html" style="--cor:{m["cor"]}"><span class="ico">{m["ico"]}</span><b>{L(m["nome"])}</b>'
         f'<span>{E(L(m["resumo"]))}</span>' + ('' if m['paginas'] else f'<span class="em-breve">{L("Documentation coming soon")}</span>') + '</a>'
@@ -586,7 +710,7 @@ def gerar_word(titulo, subtitulo, corpo_html, destino, raiz_img):
 
 def conferir_links():
     erros = []
-    for pagina in PORTAL.rglob('*.html'):
+    for pagina in DESTINO.rglob('*.html'):
         if 'fonte' in pagina.parts:
             continue
         txt = pagina.read_text(encoding='utf-8')
@@ -611,51 +735,87 @@ def conferir_links():
 
 # ---------------------------------------------------------------- principal
 
+def _ler(idioma, mod_id, slug):
+    arq, adaptar = fonte_do_idioma(idioma, mod_id, slug)
+    if not arq.exists():
+        return None, None, str(arq)
+    titulo, md = titulo_e_corpo(arq)
+    if adaptar:
+        md = adaptar_edicao(md, mod_id, slug, idioma)
+        titulo = adaptar_edicao('# ' + titulo + '\n', mod_id, slug, idioma).split('\n')[0].lstrip('# ').strip() if mod_id == 'measure' else titulo
+    return titulo, md, None
+
+
+def _img_origem(idioma):
+    return (PORTAL if idioma == 'en' else PORTAL / idioma) / 'img' if EDICAO else SAIDA / 'img'
+
+
+def _copiar_recursos(idioma):
+    """Na edição, a pasta é autônoma: copia as imagens usadas pelas páginas e o CSS/JS do guia."""
+    import shutil
+    if not EDICAO:
+        return
+    origem_raiz = PORTAL if idioma == 'en' else PORTAL / idioma
+    (SAIDA / 'img').mkdir(parents=True, exist_ok=True)
+    usadas = set()
+    for h in SAIDA.rglob('*.html'):
+        if idioma == 'en' and 'pt' in h.relative_to(SAIDA).parts:
+            continue
+        usadas |= set(re.findall(r'src="(?:\.\./)*img/([^"]+)"', h.read_text(encoding='utf-8')))
+    for nome in usadas:
+        orig = origem_raiz / 'img' / nome
+        if orig.exists():
+            shutil.copy2(orig, SAIDA / 'img' / nome)
+    if idioma == 'en':
+        shutil.copytree(PORTAL / 'assets', DESTINO / 'assets', dirs_exist_ok=True)
+
+
 def gerar_idioma(idioma):
     definir_idioma(idioma)
-    origem = FONTE / idioma
     (SAIDA / 'files').mkdir(parents=True, exist_ok=True)
     busca, faltando = [], []
     sub = L('KORbuild product guide')
     # os títulos de todas as páginas antes de desenhar (o menu lateral mostra os das outras páginas)
     for g in GERAIS:
-        arq = origem / f'{g["slug"]}.md'
-        if arq.exists():
-            g['titulo'] = titulo_e_corpo(arq)[0]
+        t, _, _ = _ler(idioma, '', g['slug'])
+        if t:
+            g['titulo'] = t
     for mod in MODULOS:
         for p in mod['paginas']:
-            arq = origem / mod['id'] / f'{p["slug"]}.md'
-            if arq.exists():
-                p['titulo'] = titulo_e_corpo(arq)[0]
+            t, _, _ = _ler(idioma, mod['id'], p['slug'])
+            if t:
+                p['titulo'] = t
     for g in GERAIS:
-        arq = origem / f'{g["slug"]}.md'
-        if not arq.exists():
-            faltando.append(str(arq)); continue
-        titulo, md = titulo_e_corpo(arq)
+        titulo, md, falta = _ler(idioma, '', g['slug'])
+        if falta:
+            faltando.append(falta); continue
         corpo, toc = converter(md, '')
         word = f'KORbuild - {titulo}.docx'.replace("'", '')
         (SAIDA / f'{g["slug"]}.html').write_text(pagina_geral(g, corpo, toc, word), encoding='utf-8')
-        gerar_word(titulo, sub, corpo, SAIDA / 'files' / word, SAIDA / 'img')
+        gerar_word(titulo, sub, corpo, SAIDA / 'files' / word, _img_origem(idioma))
         busca += entradas_de_busca(f'{g["slug"]}.html', titulo, corpo)
     for mod in MODULOS:
         pasta = SAIDA / mod['id']; pasta.mkdir(exist_ok=True)
         for p in mod['paginas']:
-            arq = origem / mod['id'] / f'{p["slug"]}.md'
-            if not arq.exists():
-                faltando.append(str(arq)); continue
-            titulo, md = titulo_e_corpo(arq)
+            titulo, md, falta = _ler(idioma, mod['id'], p['slug'])
+            if falta:
+                faltando.append(falta); continue
             corpo, toc = converter(md, '../')
             word = f'KORbuild {L(mod["nome"])} - {titulo}.docx'
             (pasta / f'{p["slug"]}.html').write_text(pagina_documento(mod, p, corpo, toc, word), encoding='utf-8')
-            gerar_word(f'{L(mod["nome"])} — {titulo}', sub, corpo, SAIDA / 'files' / word, SAIDA / 'img')
+            gerar_word(f'{L(mod["nome"])} — {titulo}', sub, corpo, SAIDA / 'files' / word, _img_origem(idioma))
             busca += entradas_de_busca(f'{mod["id"]}/{p["slug"]}.html', f'{L(mod["nome"])} · {titulo}', corpo)
         (pasta / 'index.html').write_text(pagina_modulo(mod), encoding='utf-8')
     (SAIDA / 'index.html').write_text(pagina_inicial(), encoding='utf-8')
     (SAIDA / 'search.json').write_text(json.dumps(busca, ensure_ascii=False), encoding='utf-8')
+    _copiar_recursos(idioma)
     return busca, faltando
 
 
 def main():
+    for a in sys.argv[1:]:
+        if a.startswith('--edicao='):
+            definir_edicao(a.split('=', 1)[1])
     so = [a.split('=', 1)[1] for a in sys.argv[1:] if a.startswith('--idioma=')]
     total, faltando = {}, []
     for idioma in (so or IDIOMAS):

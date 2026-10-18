@@ -114,7 +114,7 @@ Enviar, responder, mandar proposta, fechar, aprovar quarteirização e escrever 
 - **Região do projeto Supabase:** us-west-2 (EUA), conferida na fatia 1.
 - **Conflito no offline:** o diário é de quem o abriu; se outro aparelho alterou sem sinal, o segundo recebe o aviso e escolhe a versão.
 - **Pagamento dos planos** (Stripe) e o fim do teste: **a última coisa do projeto**, junto com o preço.
-- **Endereço oficial: https://korbuildtech.com/**, mas só **no fim da primeira versão**, testada e homologada com o banco. Até lá, a **homologação** é no GitHub Pages, `https://nardacci.github.io/KORbuildtech/` (Site URL do Auth), com `http://localhost:8123` também liberado para desenvolvimento; o korbuildtech.com vira a Site URL no lançamento. O app navega por `#/…`, então o login usa o fluxo **PKCE** do Supabase (volta com `?code=`, sem mexer no `#`).
+- **Endereço oficial: https://korbuildtech.com/**. **Mudança (outubro de 2026):** a **1ª versão** (só o Measure Takeoff e o Settings, para computador) vai para o domínio já, para não travar o time dos EUA; o app inteiro (Daily, Crew, concorrências, cronograma) segue na homologação até ficar pronto. Ver `docs/lancamento-measure.md`. Antes, a decisão era: só no fim da primeira versão, testada e homologada com o banco. Até lá, a **homologação** é no GitHub Pages, `https://nardacci.github.io/KORbuildtech/` (Site URL do Auth), com `http://localhost:8123` também liberado para desenvolvimento; o korbuildtech.com vira a Site URL no lançamento. O app navega por `#/…`, então o login usa o fluxo **PKCE** do Supabase (volta com `?code=`, sem mexer no `#`).
 
 ## 9. Migrações, em fatias
 

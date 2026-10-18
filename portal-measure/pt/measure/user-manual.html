@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do usuário · Measure Takeoff · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../measure/user-manual.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../">Entrar</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure Takeoff documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure Takeoff</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html" aria-current=page>Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="release-status.html">Situação da versão</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Measure Takeoff</a> › No dia a dia</nav>
+    <header class="doc-cabecalho">
+      <h1>Manual do usuário</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure Takeoff - Manual do usuário.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Passo a passo, do PDF da planta à proposta. As telas são de uma conta de demonstração com dados de exemplo, com o usuário <strong>Tom Reilly</strong> (administrador da Northfield Framing &amp; Siding) e o projeto de exemplo <strong>Casa modelo</strong>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Use o computador</p>
+<p>Medir exige mouse e tela grande. O Measure Takeoff foi feito para o computador; no celular, ele será só de consulta (veja Situação da versão).</p>
+</div>
+<h2 id="projetos">Projetos</h2>
+<p><strong>Para que serve:</strong> manter todos os orçamentos numa lista, com os prazos das propostas à vista.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Medir plantas (takeoff)</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>).</p>
+</div>
+<p>Abra o <strong>Measure Takeoff</strong>: a lista de <strong>Projetos</strong> mostra cada projeto com o cliente, o local, o tipo, o estimador, o prazo da proposta e a situação. As abas filtram por situação: <strong>Em orçamento</strong>, <strong>Proposta enviada</strong>, <strong>Ganha</strong>, <strong>Perdida</strong>. Enquanto o projeto está Em orçamento, o prazo da proposta fica destacado quando venceu, é hoje ou está a até 3 dias.</p>
+<figure><img src="../img/measure-projects.png" alt="A lista de projetos" loading="lazy"><figcaption>A lista de projetos</figcaption></figure>
+<h3 id="criar-um-projeto">Criar um projeto</h3>
+<ol>
+<li>Clique em <strong>Novo projeto</strong>.</li>
+<li>Preencha o projeto e o cliente (escolha entre os seus contatos ou crie um sem sair do formulário), o local da obra (endereço, cidade, estado, ZIP) e os dados da proposta (prazo, estimador e a obra a que ele pertence, para aditivo ou ampliação).</li>
+<li>Clique em <strong>Criar projeto</strong>.</li>
+</ol>
+<figure><img src="../img/measure-project-form.png" alt="O cadastro do projeto" loading="lazy"><figcaption>O cadastro do projeto</figcaption></figure>
+<p>Nome, cliente, cidade e estado são obrigatórios. Para mudar o projeto depois, abra e clique em <strong>Editar projeto</strong>; <strong>Excluir</strong> fica na edição.</p>
+<h2 id="enviar-as-plantas">Enviar as plantas</h2>
+<ol>
+<li>Abra o projeto.</li>
+<li>Clique em <strong>Enviar PDF</strong> e escolha o jogo de plantas. <strong>Cada página vira uma folha</strong> (A-101, A-201…).</li>
+</ol>
+<p>A tabela de <strong>Folhas</strong> mostra a escala de cada folha: <em>sem escala</em>, <em>conferida</em> ou <em>conferência com diferença</em>.</p>
+<figure><img src="../img/measure-project-empty.png" alt="Um projeto com as folhas" loading="lazy"><figcaption>Um projeto com as folhas</figcaption></figure>
+<h2 id="definir-e-conferir-a-escala">Definir e conferir a escala</h2>
+<p><strong>Por quê:</strong> toda medida depende da escala. Conferir numa segunda cota pega plantas impressas ou escaneadas fora de escala.</p>
+<ol>
+<li>Abra uma folha (<strong>Abrir</strong>). A planta ocupa a tela, com as condições à esquerda.</li>
+<li>Clique no botão da escala, na barra (<strong>Definir escala</strong>, em âmbar, enquanto a folha não tem escala).</li>
+<li>
+<p>Escolha a escala escrita na planta (por exemplo, <code>1/4" = 1'-0"</code>) e clique em <strong>Usar esta escala</strong>. Se a planta estiver fora de escala, use <strong>Calibrar por uma cota</strong>: clique nas duas pontas de uma cota conhecida e digite o comprimento.</p>
+<figure><img src="../img/measure-scale-dialog.png" alt="A escala da folha" loading="lazy"><figcaption>A escala da folha</figcaption></figure>
+</li>
+<li>
+<p>O KORbuild pede para <strong>conferir</strong>: clique nas duas pontas de outra cota conhecida e digite o comprimento como está escrito na planta (<code>40'-0"</code>, <code>40'</code>, <code>12'-6 1/2"</code>…).</p>
+<figure><img src="../img/measure-check-dialog.png" alt="Conferir a escala numa cota" loading="lazy"><figcaption>Conferir a escala numa cota</figcaption></figure>
+</li>
+<li>
+<p>A barra mostra o resultado: <strong>conferida</strong> em verde, ou <strong>diferença</strong> em vermelho quando passa de 1%.</p>
+</li>
+</ol>
+<figure><img src="../img/measure-viewer-empty.png" alt="O visor, pronto para medir" loading="lazy"><figcaption>O visor, pronto para medir</figcaption></figure>
+<h2 id="incluir-o-que-vai-medir-assemblies">Incluir o que vai medir (assemblies)</h2>
+<p>O desenho começa vazio. Você inclui um <strong>assembly</strong> para cada coisa que vai medir nesta folha: o assembly traz os materiais e a mão de obra que a medição vai gerar.</p>
+<ol>
+<li>No painel de condições, clique em <strong>Incluir assembly</strong>.</li>
+<li>
+<p>Escolha um assembly. A lista vem por tipo — <strong>Linear</strong> (paredes), <strong>Área</strong> (pisos, siding, lajes) e <strong>Contagem</strong> (portas, janelas) — com um resumo das linhas. Os assemblies que já estão no desenho vêm marcados. <strong>Só medir, sem assembly</strong> cria uma condição sem materiais (dá para aplicar um assembly depois).</p>
+<figure><img src="../img/measure-add-assembly.png" alt="Escolher um assembly" loading="lazy"><figcaption>Escolher um assembly</figcaption></figure>
+</li>
+<li>
+<p>Clique em <strong>Continuar</strong> e confirme:</p>
+<ul>
+<li>o <strong>nome no desenho</strong> (por exemplo, <em>Paredes externas</em>);</li>
+<li>a <strong>cor</strong> das marcações;</li>
+<li>as <strong>propriedades</strong>: altura da parede, inclinação, espessura da laje, o tamanho do vão de uma janela ou porta;</li>
+<li>para paredes e siding, <strong>Descontar os vãos de</strong>: as contagens de janelas e portas cujos vãos saem desta parede ou área.</li>
+</ul>
+<figure><img src="../img/measure-add-assembly-details.png" alt="Nome, cor e medidas" loading="lazy"><figcaption>Nome, cor e medidas</figcaption></figure>
+</li>
+<li>
+<p>Clique em <strong>Incluir no desenho</strong>. A condição aparece no painel, já escolhida para medir.</p>
+</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">A mesma condição em outra folha</p>
+<p>Em <strong>Incluir assembly</strong>, a seção <strong>Já medido em outras folhas deste projeto</strong> traz a mesma condição para esta folha (por exemplo, as paredes do 1º e do 2º pavimento): as medições somam num total só.</p>
+</div>
+<h2 id="medir">Medir</h2>
+<p>Escolha uma condição no painel; a ferramenta <strong>Medir</strong> fica ligada.</p>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Como medir</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Contagem</strong></td>
+<td>Um clique por item.</td>
+</tr>
+<tr>
+<td><strong>Linear</strong></td>
+<td>Clique em cada ponto. <strong>Duplo clique</strong> ou <strong>Enter</strong> termina, <strong>Esc</strong> cancela, <strong>Backspace</strong> tira o último ponto.</td>
+</tr>
+<tr>
+<td><strong>Área</strong></td>
+<td>Igual à linear; um clique no primeiro ponto também fecha a área.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Shift</strong> deixa a linha reta (horizontal ou vertical).</li>
+<li>Perto (6 px) de um ponto já medido, o clique <strong>gruda</strong> nele; <strong>Alt</strong> desliga isso.</li>
+<li>Segure a <strong>barra de espaço</strong> (ou use <strong>Mover</strong>) para arrastar a planta. <strong>Ctrl + rolagem do mouse</strong> dá zoom no cursor; <strong>Ajustar à tela</strong> mostra a folha inteira. O zoom nunca muda uma medida.</li>
+<li>Enquanto desenha, a linha tracejada mostra o comprimento ou a área ao vivo. A linha de baixo sempre diz o próximo passo.</li>
+</ul>
+<figure><img src="../img/measure-viewer-plan.png" alt="Medição de paredes, piso e portas na planta baixa" loading="lazy"><figcaption>Medição de paredes, piso e portas na planta baixa</figcaption></figure>
+<p>O painel agrupa as condições por tipo, com o <strong>total nesta folha</strong>. Abra uma condição (seta) para ver as quantidades derivadas (superfície da parede, volume…), os <strong>assemblies</strong> (aplicar ou tirar), as <strong>medições nesta folha</strong> (apagar uma a uma), e <strong>Editar</strong> ou <strong>Excluir</strong>. A caixa ao lado do nome <strong>mostra ou oculta</strong> as marcações no desenho, sem mudar nenhuma quantidade.</p>
+<figure><img src="../img/measure-panel.png" alt="O painel de condições" loading="lazy"><figcaption>O painel de condições</figcaption></figure>
+<h3 id="recortar-borracha">Recortar (borracha)</h3>
+<p>Numa área (um piso, por exemplo), escolha <strong>Recortar</strong> e desenhe o polígono que sai (escada, chaminé, um banheiro com outro acabamento). Ele aparece hachurado em vermelho, com "− X sq ft", e entra na lista como recorte.</p>
+<h3 id="janelas-e-portas-os-vaos">Janelas e portas: os vãos</h3>
+<p>Janelas e portas são <strong>contagens com o tamanho do vão</strong> (largura × altura). Paredes e siding que descontam esses vãos perdem a área sozinhos: conte mais uma janela e o OSB, o drywall e o siding já mudam.</p>
+<p>Na fachada, a ferramenta <strong>Vão</strong> vai além:</p>
+<ol>
+<li>Escolha <strong>Vão</strong> e clique em dois cantos opostos da janela ou da porta.</li>
+<li>Escolha qual contagem é (ela soma +1) e confirme as áreas por trás de onde descontar.</li>
+<li>Clique em <strong>Contar e recortar</strong>.</li>
+</ol>
+<figure><img src="../img/measure-opening-dialog.png" alt="Vão desenhado na fachada leste" loading="lazy"><figcaption>Vão desenhado na fachada leste</figcaption></figure>
+<figure><img src="../img/measure-viewer-elevations.png" alt="Siding medido nas fachadas, com janelas, porta e um vão desenhado" loading="lazy"><figcaption>Siding medido nas fachadas, com janelas, porta e um vão desenhado</figcaption></figure>
+<p>O vão já recortado pelo desenho não é descontado de novo pelo tamanho (sem desconto em dobro). Apagar a contagem ou o recorte apaga os dois.</p>
+<h2 id="unidades-repetidas-typicals">Unidades repetidas (typicals)</h2>
+<p><strong>Para que serve:</strong> medir uma vez o que se repete — o pavimento tipo, o apartamento tipo, a mesma casa construída seis vezes.</p>
+<ul>
+<li><strong>A folha inteira se repete:</strong> no painel, clique em <strong>Esta folha se repete (pavimento tipo, casa repetida)</strong> e informe as ocorrências (por exemplo, <em>Bloco A</em> × 3 e <em>Bloco B</em> × 3).</li>
+<li><strong>Só parte da folha se repete:</strong> escolha <strong>Typical</strong> na barra, clique em dois cantos da região e informe as ocorrências.</li>
+</ul>
+<p>Tudo o que for medido dentro vale × o total de ocorrências — quantidades, materiais, lista para cotação e proposta. O projeto mostra, para cada typical, a quantidade por unidade, por ocorrência e no total.</p>
+<figure><img src="../img/measure-typical-sheet.png" alt="Uma folha typical: medida uma vez, vale × 6" loading="lazy"><figcaption>Uma folha typical: medida uma vez, vale × 6</figcaption></figure>
+<figure><img src="../img/measure-typicals-project.png" alt="Os typicals no projeto" loading="lazy"><figcaption>Os typicals no projeto</figcaption></figure>
+<h2 id="conferir-quantidades-materiais-e-mao-de-obra">Conferir quantidades, materiais e mão de obra</h2>
+<p>De volta ao projeto (o nome do projeto, à esquerda na barra do visor):</p>
+<ul>
+<li>
+<p><strong>Quantidades:</strong> cada condição com o total medido, os valores derivados (por exemplo, a superfície × altura) e o número de medições.</p>
+<figure><img src="../img/measure-quantities.png" alt="Quantidades por condição" loading="lazy"><figcaption>Quantidades por condição</figcaption></figure>
+</li>
+<li>
+<p><strong>Materiais e mão de obra:</strong> cada item na unidade de compra (chapas, caixas, rolos, peças, horas), por categoria, com as <strong>horas estimadas de mão de obra</strong>. Clique num item para ver a conta: condição → variáveis → fórmula → perda → arredondamento.</p>
+<figure><img src="../img/measure-materials.png" alt="Materiais e mão de obra, com a conta de um item" loading="lazy"><figcaption>Materiais e mão de obra, com a conta de um item</figcaption></figure>
+</li>
+<li>
+<p><strong>Pendências:</strong> linhas que ainda não dá para calcular (por exemplo, um assembly que precisa de uma altura que a condição não tem, ou uma condição ainda não medida).</p>
+</li>
+<li><strong>Exportar CSV</strong> baixa as quantidades com a conta inteira.</li>
+</ul>
+<figure><img src="../img/measure-project.png" alt="O projeto depois da medição" loading="lazy"><figcaption>O projeto depois da medição</figcaption></figure>
+<h2 id="pedir-cotacao-aos-fornecedores">Pedir cotação aos fornecedores</h2>
+<ol>
+<li>No projeto, clique em <strong>Lista para cotação</strong>.</li>
+<li>Confira <strong>Responder até</strong>, <strong>Entregar em</strong> e as <strong>Observações para o fornecedor</strong>.</li>
+<li>Cada fornecedor recebe a própria lista — só os itens das etapas que ele fornece (Settings › Contatos) —, na unidade de compra, já com perda e arredondamento, <strong>sem preços e sem mão de obra</strong>.</li>
+<li>Para cada fornecedor:<ul>
+<li><strong>Enviar por e-mail</strong> abre o e-mail pronto, com a lista e o prazo de resposta;</li>
+<li><strong>PDF</strong> abre o pedido de cotação com o seu logo e as colunas de preço em branco;</li>
+<li><strong>Registrar preços recebidos</strong> guarda os preços que o fornecedor devolveu: eles viram o preço dos itens a partir daquela data.</li>
+</ul>
+</li>
+</ol>
+<figure><img src="../img/measure-quote-list.png" alt="Lista para cotação, separada por fornecedor" loading="lazy"><figcaption>Lista para cotação, separada por fornecedor</figcaption></figure>
+<figure><img src="../img/measure-quote-pdf.png" alt="O PDF do pedido de cotação" loading="lazy"><figcaption>O PDF do pedido de cotação</figcaption></figure>
+<h2 id="precos-e-margens">Preços e margens</h2>
+<p><strong>Para que serve:</strong> saber o custo de cada item e como ele vira preço de venda.</p>
+<p>Abra <strong>Preços</strong>:</p>
+<ul>
+<li><strong>Margens:</strong> overhead % e lucro, em <strong>markup</strong> (sobre o custo) ou em <strong>margem</strong> (parte do preço de venda), e o imposto sobre material. <strong>Nova versão</strong> cria margens novas a partir de uma data, com o motivo; as antigas ficam no histórico.</li>
+<li><strong>Itens:</strong> o preço atual de cada item, desde quando e de onde veio (tabela de exemplo, digitado, cotação de um fornecedor). <strong>Novo preço</strong> inclui um preço a partir de uma data; nada é sobrescrito.</li>
+</ul>
+<figure><img src="../img/measure-prices.png" alt="Preços: margens e preços atuais" loading="lazy"><figcaption>Preços: margens e preços atuais</figcaption></figure>
+<div class="admonition who">
+<p class="admonition-title">Quem pode mudar os preços</p>
+<p>Quem tem <strong>Itens e assemblies</strong> (perfil padrão: <strong>Administrador</strong>). Os outros veem só para consulta.</p>
+</div>
+<h2 id="montar-e-emitir-a-proposta">Montar e emitir a proposta</h2>
+<ol>
+<li>No projeto, clique em <strong>Proposta</strong>.</li>
+<li>Confira o <strong>Escopo</strong> (vem do projeto).</li>
+<li><strong>Itens da proposta:</strong> uma linha por etapa, material e mão de obra juntos. Cada linha mostra a base (quantidades e horas estimadas), o custo e o <strong>preço calculado</strong> (preços do catálogo + margens).<ul>
+<li>Digite outro valor quando quiser (um preço fechado); apague para voltar ao calculado.</li>
+<li>Desmarque uma linha para deixá-la de fora; inclua <strong>outros itens</strong> (mobilização, caçamba…).</li>
+<li><strong>Mostrar as quantidades de material no documento</strong> é opcional.</li>
+</ul>
+</li>
+<li>Confira a validade e os <strong>termos</strong> (vêm do perfil da empresa e podem ser ajustados).</li>
+<li><strong>Ver o documento</strong> mostra o PDF; <strong>Emitir proposta</strong> dá o número (<code>P-2026-001</code>…), congela e passa o projeto para <strong>Proposta enviada</strong>. Cada emissão é uma versão nova.</li>
+</ol>
+<figure><img src="../img/measure-proposal.png" alt="A proposta, com preço linha a linha" loading="lazy"><figcaption>A proposta, com preço linha a linha</figcaption></figure>
+<figure><img src="../img/measure-proposal-pdf.png" alt="O documento da proposta" loading="lazy"><figcaption>O documento da proposta</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">O que o cliente nunca vê</p>
+<p>O documento mostra só o preço de cada linha. Custo, overhead e lucro ficam dentro do KORbuild, guardados com a versão emitida.</p>
+</div>
+<p>Quando o cliente aceitar, passe o projeto para <strong>Ganha</strong> (Editar projeto).</p>
+<h2 id="o-catalogo-itens-e-assemblies">O catálogo: itens e assemblies</h2>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Itens e assemblies</strong> (perfil padrão: <strong>Administrador</strong>). Sem ela, itens e fórmulas ficam só para consulta.</p>
+</div>
+<p><strong>Itens</strong> (Measure Takeoff › Itens) são o que se compra ou se paga: código, nome, <strong>unidade de compra</strong>, categoria (material, mão de obra, equipamento, subempreiteiro), etapa e observações. Item usado num assembly não pode ser excluído.</p>
+<figure><img src="../img/measure-items.png" alt="O catálogo de itens" loading="lazy"><figcaption>O catálogo de itens</figcaption></figure>
+<p><strong>Assemblies</strong> (Measure Takeoff › Assemblies) são listas de linhas para um tipo de condição. Cada linha tem:</p>
+<table>
+<thead>
+<tr>
+<th>Coluna</th>
+<th>O que é</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Item</strong></td>
+<td>O que a linha gera, na unidade de compra.</td>
+</tr>
+<tr>
+<td><strong>Fórmula</strong></td>
+<td>A quantidade <strong>bruta</strong>, usando as variáveis da condição (por exemplo, <code>NetSurfaceArea / 32</code> chapas de OSB).</td>
+</tr>
+<tr>
+<td><strong>Perda</strong></td>
+<td>Um % somado à quantidade bruta.</td>
+</tr>
+<tr>
+<td><strong>Arredondamento</strong></td>
+<td>Nenhum, ou para cima de 1, 0,5 ou 0,25 (do jeito que o serviço compra).</td>
+</tr>
+<tr>
+<td><strong>Teste</strong></td>
+<td>O resultado, ao vivo, com valores de exemplo: bruta → com perda → arredondada.</td>
+</tr>
+</tbody>
+</table>
+<p>Abaixo das linhas, o editor lista as <strong>variáveis</strong> disponíveis para aquele tipo de condição. As fórmulas aceitam só números, + − × ÷ ^, parênteses, essas variáveis e <code>ceil floor round min max sqrt abs</code>; qualquer outra coisa é recusada ao digitar e ao salvar.</p>
+<figure><img src="../img/measure-assemblies.png" alt="Os assemblies" loading="lazy"><figcaption>Os assemblies</figcaption></figure>
+<figure><img src="../img/measure-assembly-editor.png" alt="Editar um assembly: fórmula, perda, arredondamento e o teste ao vivo" loading="lazy"><figcaption>Editar um assembly: fórmula, perda, arredondamento e o teste ao vivo</figcaption></figure>
+<h2 id="mensagens-e-alertas">Mensagens e alertas</h2>
+<table>
+<thead>
+<tr>
+<th>Mensagem</th>
+<th>O que significa</th>
+<th>O que fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>sem escala</strong> (folha)</td>
+<td>A folha ainda não tem escala; medir fica desligado.</td>
+<td>Defina e confira a escala.</td>
+</tr>
+<tr>
+<td><strong>diferença</strong> (escala)</td>
+<td>A cota de conferência difere mais de 1%.</td>
+<td>Calibre por uma cota, ou aumente o zoom e confira de novo.</td>
+</tr>
+<tr>
+<td><strong>Falta na condição: …</strong></td>
+<td>Uma linha do assembly precisa de uma propriedade que a condição não tem (altura, espessura, inclinação).</td>
+<td>Edite a condição e preencha.</td>
+</tr>
+<tr>
+<td><strong>nada medido ainda</strong></td>
+<td>O assembly está no desenho, mas não tem medição.</td>
+<td>Meça, ou exclua.</td>
+</tr>
+<tr>
+<td>Fórmula recusada</td>
+<td>A fórmula usa algo que não é permitido, divide por zero ou dá negativo.</td>
+<td>Corrija a fórmula; a mensagem diz a linha.</td>
+</tr>
+<tr>
+<td><strong>Sem fornecedor</strong> (lista para cotação)</td>
+<td>Nenhum contato fornece aquela etapa.</td>
+<td>Marque a etapa num fornecedor (Settings › Contatos).</td>
+</tr>
+<tr>
+<td><strong>Sem preço</strong> (proposta)</td>
+<td>Um item não tem preço no catálogo.</td>
+<td>Inclua um preço em Preços, ou digite o preço da linha.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#projetos">Projetos</a></li><li class="sub"><a href="#criar-um-projeto">Criar um projeto</a></li><li><a href="#enviar-as-plantas">Enviar as plantas</a></li><li><a href="#definir-e-conferir-a-escala">Definir e conferir a escala</a></li><li><a href="#incluir-o-que-vai-medir-assemblies">Incluir o que vai medir (assemblies)</a></li><li><a href="#medir">Medir</a></li><li class="sub"><a href="#recortar-borracha">Recortar (borracha)</a></li><li class="sub"><a href="#janelas-e-portas-os-vaos">Janelas e portas: os vãos</a></li><li><a href="#unidades-repetidas-typicals">Unidades repetidas (typicals)</a></li><li><a href="#conferir-quantidades-materiais-e-mao-de-obra">Conferir quantidades, materiais e mão de obra</a></li><li><a href="#pedir-cotacao-aos-fornecedores">Pedir cotação aos fornecedores</a></li><li><a href="#precos-e-margens">Preços e margens</a></li><li><a href="#montar-e-emitir-a-proposta">Montar e emitir a proposta</a></li><li><a href="#o-catalogo-itens-e-assemblies">O catálogo: itens e assemblies</a></li><li><a href="#mensagens-e-alertas">Mensagens e alertas</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 18 de outubro de 2026 · <a href="../../../">Entrada principal</a></div>
+  <div>As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

@@ -1,6 +1,7 @@
 /* KORbuild Settings — telas: funcionários, encargos, regras de jornada e auditoria.
  * Só o escritório (administrador) entra. */
 
+import { PRIMEIRA_VERSAO } from './versao.js';
 import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast, abrirDialogo, decimal, numTexto } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado } from './armazem.js';
@@ -23,14 +24,14 @@ export function ligarSettings(funcoes) { app = { ...app, ...funcoes }; }
 function nav() {
   const u = usuarioAtual();
   const itens = [];
-  if (pode(u, 'settings.funcionarios')) {
+  if (pode(u, 'settings.funcionarios') && !PRIMEIRA_VERSAO) {
     const alertas = funcionarios().filter((f) => f.situacao !== 'desligado' && certificacoesAVencer(f).length).length;
     itens.push({ id: 'funcionarios', href: '#/settings/funcionarios', rotulo: tr('Funcionários'), icone: 'crew', contador: alertas });
   }
   // encargos e jornada são do ponto (Crew): a construtora, que não bate ponto, não precisa (docs/saas.md HS-09)
   if (pode(u, 'settings.regras') && estado().empresa.modulos.includes('crew')) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: tr('Encargos'), icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: tr('Jornada'), icone: 'relogio' });
   if (pode(u, 'settings.conta')) itens.push({ id: 'empresa', href: '#/settings/empresa', rotulo: tr('Empresa'), icone: 'obras' });
-  if (pode(u, 'settings.obras')) itens.push({ id: 'obras', href: '#/settings/obras', rotulo: tr('Obras'), icone: 'obras' });
+  if (pode(u, 'settings.obras') && !PRIMEIRA_VERSAO) itens.push({ id: 'obras', href: '#/settings/obras', rotulo: tr('Obras'), icone: 'obras' });
   if (pode(u, 'settings.contatos')) itens.push({ id: 'contatos', href: '#/settings/contatos', rotulo: tr('Contatos'), icone: 'link' });
   if (pode(u, 'settings.acesso')) itens.push({ id: 'usuarios', href: '#/settings/usuarios', rotulo: tr('Usuários'), icone: 'conta' }, { id: 'perfis', href: '#/settings/perfis', rotulo: tr('Perfis'), icone: 'aprovacoes' }, { id: 'auditoria', href: '#/settings/auditoria', rotulo: tr('Auditoria'), icone: 'historico' });
   return itens;
@@ -51,6 +52,7 @@ export function telaSettings(q) {
   const primeira = nav()[0];
   if (!primeira) return { trocar: '#/inicio' };
   if (!q.length || (precisa[q[0]] && !pode(u, precisa[q[0]]))) return { trocar: primeira.href };
+  if (PRIMEIRA_VERSAO && ['funcionarios', 'funcionario', 'encargos', 'regras', 'obras', 'obra', 'modelos', 'modelo'].includes(q[0])) return { trocar: primeira.href };   // 1ª versão: só empresa, contatos, usuários e perfis
   if (q[0] === 'empresa') return telaEmpresa(moldura);
   if (q[0] === 'contatos') return telaContatos(moldura, q[1]);
   if (q[0] === 'contato' && q[1] === 'novo') return telaFormContato(moldura, null, q[2]);

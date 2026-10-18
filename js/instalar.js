@@ -3,6 +3,7 @@
  * (ponto e fotos que ainda não subiram). Por isso, quem abre pelo celular sem instalar vê este aviso, com o passo a passo certo para o aparelho.
  * "Agora não" esconde por 14 dias. Quem já instalou nunca vê. */
 
+import { PRIMEIRA_VERSAO } from './versao.js';
 import { esc } from './util.js';
 import { tr } from './i18n.js';
 import { plataformaDoAparelho, navegadorDoAparelho, instalado } from './diagnostico.js';
@@ -17,6 +18,7 @@ export function dispensarAviso() { try { localStorage.setItem(CHAVE, String(Date
 
 /** O que mostrar a este aparelho: 'ios' (Safari/Chrome), 'embutido' (navegador de dentro de outro app), 'android' ou '' (nada: já instalado, computador ou dispensado). */
 export function situacaoDeInstalacao() {
+  if (PRIMEIRA_VERSAO) return '';   // 1ª versão: versão para computador, sem aviso de instalar no celular
   if (instalado() || dispensado()) return '';
   const plat = plataformaDoAparelho();
   if (plat === 'outro') return '';

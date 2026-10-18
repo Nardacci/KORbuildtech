@@ -2,6 +2,7 @@
  * entrar, criar conta, esqueci a senha / nova senha, aceitar convite, criar a empresa no primeiro acesso,
  * e a área da conta: início, usuários (convites), perfis de acesso e empresa. Os módulos chegam nas próximas fatias. */
 
+import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
 import { esc, toast, confirmar, dataHora } from './util.js';
 import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
 import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL } from './plataforma.js';
@@ -87,7 +88,7 @@ export function telaOficial(p) {
   if (aba === 'diagnostico') return { html: moldura('perfil', htmlTelaDiagnostico()), depois: iniciarTelaDiagnostico };
   const cadastro = ABAS_CADASTROS.find(([k]) => k === aba);
   if (cadastro) {
-    if (!pode(cadastro[2])) return { trocar: '#/conta' };
+    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && cadastro[0] !== 'contatos')) return { trocar: '#/conta' };
     const r = telaCadastro(aba, p.slice(2));
     return r.trocar ? r : { html: moldura(aba, r.html), depois: r.depois };
   }
@@ -162,9 +163,9 @@ function telaNovaEmpresa() {
 /* ---------- Área da conta ---------- */
 
 function moldura(ativa, conteudo) {
-  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([, , perm]) => pode(perm)).map(([k, nome]) => [k, tr(nome)]))
+  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos')).map(([k, nome]) => [k, tr(nome)]))
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
-  return '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' +
+  return '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ Settings</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
       htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>' +
     '<main class="pagina pagina-larga oficial-pagina">' +
@@ -198,19 +199,19 @@ function htmlInicio() {
       '<dl class="lista-dados"><dt>' + tr('Empresa') + '</dt><dd>' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + '</dd>' +
       '<dt>' + tr('Seu acesso') + '</dt><dd>' + esc(nomeDoPerfil(conta.perfil)) + ' · ' + esc(emailAtual()) + '</dd>' +
       '<dt>' + tr('Plano') + '</dt><dd>' + esc(nomeDoPlano((conta.empresa.plano || {}).nome)) + '</dd></dl></section>' +
-    (pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar')
+    (!PRIMEIRA_VERSAO && (pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar'))
       ? '<section class="cartao"><h2 class="cartao-titulo">Daily</h2><p>' + tr('O diário de obra e o cronograma já funcionam com o banco de dados, com e sem internet: preencha no canteiro, envie, aprove, mande o link para o cliente e acompanhe as etapas da obra.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/daily">' + icone('daily', 18) + tr('Abrir o Daily') + '</a></div></section>'
       : '') +
-    (conta.empresa.atuacao !== 'construtora' && ['crew.ponto.proprio', 'crew.ponto.equipe', 'crew.acompanhar'].some((x) => pode(x))
+    (!PRIMEIRA_VERSAO && conta.empresa.atuacao !== 'construtora' && ['crew.ponto.proprio', 'crew.ponto.equipe', 'crew.acompanhar'].some((x) => pode(x))
       ? '<section class="cartao"><h2 class="cartao-titulo">Crew</h2><p>' + tr('O ponto da equipe já funciona com o banco de dados, com e sem internet: bata a entrada, o intervalo e a saída no celular; o escritório confere, ajusta e aprova a semana.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/crew">' + icone('relogio', 18) + tr('Abrir o Crew') + '</a></div></section>'
       : '') +
-    (conta.empresa.atuacao !== 'construtora' && pode('measure.medir')
-      ? '<section class="cartao"><h2 class="cartao-titulo">Measure</h2><p>' + tr('A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.') + '</p>' +
-        '<div class="btn-linha"><a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + tr('Abrir o Measure') + '</a></div></section>'
+    ((conta.empresa.atuacao !== 'construtora' || PRIMEIRA_VERSAO) && pode('measure.medir')
+      ? '<section class="cartao"><h2 class="cartao-titulo">' + NOME_MEASURE + '</h2><p>' + (PRIMEIRA_VERSAO ? tr('Abra a planta em PDF, defina a escala, meça em pés e polegadas, monte as quantidades e emita a proposta. No computador.') : tr('A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.')) + '</p>' +
+        '<div class="btn-linha"><a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + (PRIMEIRA_VERSAO ? tr('Abrir o Measure Takeoff') : tr('Abrir o Measure')) + '</a></div></section>'
       : '') +
-    (pode('concorrencias.gerir')
+    (!PRIMEIRA_VERSAO && pode('concorrencias.gerir')
       ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Concorrências') + '</h2><p>' + tr('As concorrências já funcionam com o banco de dados: convide prestadoras, receba propostas (pela plataforma ou por link), compare e feche; a obra da vencedora nasce ligada à sua.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/daily/concorrencias">' + icone('tabela', 18) + tr('Abrir as concorrências') + '</a></div></section>'
       : '') +
@@ -218,10 +219,12 @@ function htmlInicio() {
       ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Administração da plataforma (KORbuild)') + '</h2>' +
         '<div class="btn-linha"><a class="btn btn-contorno" href="admin.html">' + tr('Administração da plataforma') + '</a></div></section>'
       : '') +
-    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Os módulos chegam em etapas') + '</h2>' +
+    (PRIMEIRA_VERSAO ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Manual do usuário') + '</h2><div class="btn-linha"><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>' : ''
+    ) +
+    (PRIMEIRA_VERSAO ? '' : '<section class="cartao"><h2 class="cartao-titulo">' + tr('Os módulos chegam em etapas') + '</h2>' +
       '<p>' + tr('A conta, os cadastros, o Daily (com o cronograma da obra), o Crew, o Measure e as concorrências já estão no banco de dados. Os avisos por e-mail chegam na próxima etapa.') + '</p>' +
       '<p>' + tr('Enquanto isso, conheça cada módulo no protótipo, com dados de exemplo.') + '</p>' +
-      '<div class="btn-linha"><a class="btn btn-primario" href="' + URL_PROTOTIPO + '">' + icone('play', 18) + tr('Abrir o protótipo') + '</a><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>';
+      '<div class="btn-linha"><a class="btn btn-primario" href="' + URL_PROTOTIPO + '">' + icone('play', 18) + tr('Abrir o protótipo') + '</a><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>');
 }
 
 function htmlUsuarios() {

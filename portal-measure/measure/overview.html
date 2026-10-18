@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overview · Measure Takeoff · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/measure/overview.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../">Sign in</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure Takeoff documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure Takeoff</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html" aria-current=page>Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="release-status.html">Release status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Measure Takeoff</a> › Start here</nav>
+    <header class="doc-cabecalho">
+      <h1>Overview</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure Takeoff - Overview.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p><strong>Measure Takeoff</strong> is plan takeoff for trade contractors: open the PDF plans in the browser, set the scale, measure walls, floors, siding, windows and doors with the mouse, and KORbuild turns the measurements into <strong>materials and labor hours</strong> through assemblies. From there it builds the <strong>material list for supplier quotes</strong> and the <strong>proposal</strong> for the client.</p>
+<p>Measure Takeoff is for the people who estimate: they open the plans, measure and issue the proposal that goes to the client.</p>
+<h2 id="why-it-matters">Why it matters</h2>
+<ul>
+<li><strong>Feet and inches, the way estimators work.</strong> Every length is shown as <code>12'-6 1/2"</code> and every area in sq ft; you can type dimensions the same way. Behind the scenes, KORbuild keeps exact numbers, so zoom and screen size never change a measurement.</li>
+<li><strong>Measure Takeoff once, get everything.</strong> A wall measured once produces studs, plates, sheathing, house wrap, insulation, drywall and the carpenter hours. Count one more window and the sheathing, drywall and siding already account for it.</li>
+<li><strong>Every number can be explained.</strong> Each material shows the math behind it: which condition, which formula, the waste % and the rounding. No hidden numbers.</li>
+<li><strong>From takeoff to proposal in the same place.</strong> Quantities become a supplier quote list (without prices) and a proposal priced from your catalog and your markups.</li>
+</ul>
+<h2 id="who-uses-it">Who uses it</h2>
+<table>
+<thead>
+<tr>
+<th>Who</th>
+<th>Where</th>
+<th>What they do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Estimator</strong> (admin, project manager)</td>
+<td>Computer</td>
+<td>Creates projects, uploads plans, measures, reviews materials and hours, sends quote requests, builds and issues proposals.</td>
+</tr>
+<tr>
+<td><strong>Owner / admin</strong></td>
+<td>Computer</td>
+<td>Also maintains the catalog: items, assemblies with formulas, prices and markups.</td>
+</tr>
+<tr>
+<td><strong>Supplier</strong></td>
+<td>Email</td>
+<td>Receives the material list for quotes (no prices, no labor) and replies with prices. Not a user.</td>
+</tr>
+<tr>
+<td><strong>Client</strong> (general contractor or owner)</td>
+<td>Email / PDF</td>
+<td>Receives the proposal. Not a user.</td>
+</tr>
+</tbody>
+</table>
+<p>Measuring needs a mouse and a large screen: Measure Takeoff is used on a computer.</p>
+<h2 id="the-main-screens">The main screens</h2>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>What it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Projects</strong></td>
+<td>Every estimate with client, location, type, estimator, bid due date (with alerts) and status: Estimating, Proposal sent, Won, Lost.</td>
+</tr>
+<tr>
+<td><strong>Project</strong></td>
+<td>The project data, the <strong>sheets</strong> (with scale status), the <strong>quantities</strong> per condition, the <strong>typicals</strong> and the <strong>materials and labor</strong>. Links to the material list and the proposal.</td>
+</tr>
+<tr>
+<td><strong>Sheet</strong> (viewer)</td>
+<td>The plan full screen, the conditions on the left, the toolbar (Pan, Measure Takeoff, Deduct, Opening, Typical, scale, zoom).</td>
+</tr>
+<tr>
+<td><strong>Items</strong></td>
+<td>The catalog of what you buy or pay for, in purchase units, with cost code.</td>
+</tr>
+<tr>
+<td><strong>Assemblies</strong></td>
+<td>Groups of items with formulas, applied to what you measure.</td>
+</tr>
+<tr>
+<td><strong>Pricing</strong></td>
+<td>The current cost of each item with effective dates, and the markups (overhead and profit).</td>
+</tr>
+<tr>
+<td><strong>Material list for quotes</strong></td>
+<td>Materials per supplier, in purchase units, ready to email.</td>
+</tr>
+<tr>
+<td><strong>Proposal</strong></td>
+<td>One line per cost code, priced from the catalog and markups, issued as a numbered PDF.</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="../img/measure-projects.png" alt="The project list" loading="lazy"><figcaption>The project list</figcaption></figure>
+<figure><img src="../img/measure-viewer-plan.png" alt="Measuring the first floor plan" loading="lazy"><figcaption>Measuring the first floor plan</figcaption></figure>
+<h2 id="how-a-takeoff-moves">How a takeoff moves</h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. <strong>Project</strong></td>
+<td>Create it with client, location and bid due date.</td>
+</tr>
+<tr>
+<td>2. <strong>Plans</strong></td>
+<td>Upload the PDF: each page becomes a sheet.</td>
+</tr>
+<tr>
+<td>3. <strong>Scale</strong></td>
+<td>Pick the scale from the list (or calibrate from a dimension) and <strong>check</strong> it on another dimension.</td>
+</tr>
+<tr>
+<td>4. <strong>Add assemblies</strong></td>
+<td>Choose what you will measure on this sheet (exterior walls, flooring, siding, windows…).</td>
+</tr>
+<tr>
+<td>5. <strong>Measure Takeoff</strong></td>
+<td>Click on the plan: lines, areas, counts. Deduct openings and cut-outs.</td>
+</tr>
+<tr>
+<td>6. <strong>Materials and labor</strong></td>
+<td>Calculated from the assemblies, with the math visible.</td>
+</tr>
+<tr>
+<td>7. <strong>Quotes</strong></td>
+<td>Send each supplier its list; enter the prices they send back.</td>
+</tr>
+<tr>
+<td>8. <strong>Proposal</strong></td>
+<td>Priced line by line; issue it, numbered and frozen; the project becomes <strong>Proposal sent</strong>.</td>
+</tr>
+<tr>
+<td>9. <strong>Won</strong></td>
+<td>The project is closed as won (or lost).</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#why-it-matters">Why it matters</a></li><li><a href="#who-uses-it">Who uses it</a></li><li><a href="#the-main-screens">The main screens</a></li><li><a href="#how-a-takeoff-moves">How a takeoff moves</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 18, 2026 · <a href="../../">Main sign-in</a></div>
+  <div>Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

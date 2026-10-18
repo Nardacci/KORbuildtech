@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regras de negócio · Measure Takeoff · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../measure/business-rules.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../">Entrar</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure Takeoff documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure Takeoff</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html" aria-current=page>Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="release-status.html">Situação da versão</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Measure Takeoff</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Regras de negócio</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure Takeoff - Regras de negócio.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Cada regra tem um código (<code>MSR-nnn</code>) para ser citada em reuniões, testes e pedidos de mudança. A coluna <strong>Situação</strong> diz se a regra já funciona.</p>
+<div class="admonition note">
+<p class="admonition-title">Origem</p>
+<p>Estas regras vêm do produto e da especificação do Measure Takeoff. Os pontos em aberto estão marcados como <strong>A confirmar</strong> no fim.</p>
+</div>
+<h2 id="unidades-e-medicao">Unidades e medição</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-001</td>
+<td><strong>Nada de fração nem de texto na conta.</strong> Comprimentos ficam guardados em polegadas, áreas em polegadas quadradas, volumes em polegadas cúbicas. Pés e polegadas aparecem só na tela.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-002</td>
+<td><strong>Os pontos ficam nas coordenadas da página do PDF</strong>, nunca em pixels da tela. O zoom e a resolução nunca mudam uma medida.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-003</td>
+<td><strong>A escala é da folha.</strong> Vem da lista (escalas de arquitetura e de engenharia) ou da calibração por uma cota conhecida. Cada folha tem a sua escala.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-004</td>
+<td><strong>Conferência da escala:</strong> depois de definir a escala, mede-se outra cota conhecida. Diferença acima de 1% fica marcada.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-005</td>
+<td><strong>A medida é sempre calculada do desenho</strong>, nunca digitada, para toda quantidade poder ser rastreada até a planta.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-006</td>
+<td><strong>Arredondamento só na tela:</strong> pés e polegadas até 1/16", pés quadrados inteiros. O valor guardado não muda.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-007</td>
+<td>Entradas aceitas: <code>12'-6 1/2"</code>, <code>12' 6.5"</code>, <code>12'6"</code>, <code>12'</code>, <code>6"</code>, <code>150"</code>, <code>12.54'</code>, <code>12-6</code>, <code>12-6-1/2</code>. Número sem unidade vale como pés. <code>12'-14"</code> é recusado (com pés, as polegadas precisam ser menos de 12).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-008</td>
+<td>A inclinação do telhado é digitada como <code>6/12</code>, <code>6:12</code> ou <code>6</code>; o fator é √(1 + (6/12)²) = 1,118.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="condicoes">Condições</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-010</td>
+<td>Uma <strong>condição</strong> é o que se mede (paredes externas, piso LVP, siding, janelas W1). Tem nome, tipo, cor e propriedades, e medições em uma ou mais folhas.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-011</td>
+<td><strong>Três tipos:</strong> linear (com altura → superfície; com inclinação → comprimento inclinado), área (com inclinação → área do telhado; com espessura → volume) e contagem.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-012</td>
+<td><strong>Vãos:</strong> uma contagem (janela, porta) pode ter largura e altura. Uma parede ou uma área pode <strong>descontar os vãos</strong> das contagens escolhidas, de qualquer folha do projeto. Contar mais uma janela atualiza o OSB, o drywall e o siding.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-013</td>
+<td><strong>Recortar (borracha):</strong> numa área, um polígono desenhado sai do total (escada, chaminé, recorte).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-014</td>
+<td><strong>Vão desenhado:</strong> a ferramenta Vão desenha o retângulo da janela ou da porta, soma 1 na contagem escolhida e recorta a mesma área das áreas que estão por trás. O vão já recortado não é descontado de novo (sem desconto em dobro). Apagar um apaga o outro.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-015</td>
+<td><strong>Condições por folha:</strong> cada folha mostra só as condições incluídas nela. Uma condição pode ser reaproveitada em outra folha; as medições somam no mesmo total.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-016</td>
+<td>O desenho <strong>começa vazio</strong>: as condições nascem quando se inclui um assembly do catálogo (ou "Só medir, sem assembly").</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-017</td>
+<td><strong>Mostrar no desenho:</strong> ocultar uma condição é só visual; quantidades e materiais não mudam.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="itens-assemblies-e-formulas">Itens, assemblies e fórmulas</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-020</td>
+<td>Um <strong>item</strong> é o que se compra ou se paga, na <strong>unidade de compra</strong> (chapa, caixa, rolo, peça, cu yd, hora), com categoria (material, mão de obra, equipamento, subempreiteiro) e etapa (cost code, CSI MasterFormat).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-021</td>
+<td>Um <strong>assembly</strong> é um conjunto de linhas para um tipo de condição. Uma medição alimenta vários itens.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-022</td>
+<td>Uma <strong>fórmula</strong> só calcula a quantidade <strong>bruta</strong>. <strong>Perda (%)</strong> e <strong>arredondamento</strong> (nenhum, ou para cima de 1, 0,5 ou 0,25) são colunas próprias, nunca números escondidos na fórmula.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-023</td>
+<td><strong>Variáveis em unidades do ofício</strong>, com os nomes que o orçamentista americano usa: <code>MeasuredLinear</code>, <code>MeasuredArea</code>, <code>MeasuredCount</code>, <code>WallHeight</code>, <code>SurfaceArea</code>, <code>NetSurfaceArea</code>, <code>NetArea</code>, <code>OpeningArea</code>, <code>OpeningPerimeter</code>, <code>VolumeCY</code>, <code>PitchedArea</code>…</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-024</td>
+<td><strong>Fórmulas seguras:</strong> só números, + − × ÷ ^, parênteses, as variáveis do tipo e <code>ceil floor round min max sqrt abs</code>. Qualquer outra coisa é recusada ao digitar e ao salvar; as fórmulas nunca são executadas como código.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-025</td>
+<td>A fórmula é testada com valores de exemplo ao salvar; divisão por zero e resultado negativo são recusados, e o erro diz a linha.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-026</td>
+<td><strong>Falta de propriedade não quebra a medição:</strong> se um assembly precisa de <code>SurfaceArea</code> e a condição não tem altura, a linha vira <strong>pendência</strong> ("Falta na condição: altura").</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-027</td>
+<td>O arredondamento é <strong>por linha</strong> (do jeito que cada serviço compra); o total do item soma as linhas.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-028</td>
+<td><strong>Rastro completo:</strong> cada material mostra condição · assembly → fórmula = bruta → + perda → arredondado, com os valores das variáveis. O CSV exportado leva o mesmo rastro.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="projetos">Projetos</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-030</td>
+<td>Nome, cliente, cidade e estado são obrigatórios; estado com 2 letras, ZIP com 5 dígitos (ou 5+4).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-031</td>
+<td><strong>Situação:</strong> Em orçamento → Proposta enviada → Ganha ou Perdida. O prazo da proposta só alerta (vencido, hoje, em até 3 dias) enquanto está Em orçamento.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-032</td>
+<td>Excluir um projeto apaga as folhas e as condições dele, depois de confirmar.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="typicals-o-que-se-repete">Typicals (o que se repete)</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-040</td>
+<td>Um <strong>typical</strong> tem um nome, uma região da folha (ou a folha inteira) e as <strong>ocorrências</strong>: onde se repete e quantas vezes, contando a que está desenhada (ex.: Bloco A 3 + Bloco B 3 = × 6).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-041</td>
+<td>Uma medição pertence ao typical quando o <strong>centro</strong> dela cai dentro da região; ela vale × o total de ocorrências.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-042</td>
+<td>A multiplicação vale <strong>em tudo</strong>: totais das condições, vãos, variáveis das fórmulas, materiais, lista para cotação e proposta.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-043</td>
+<td>Typicals não se sobrepõem, e o typical da folha inteira não convive com regiões na mesma folha (multiplicaria duas vezes).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-044</td>
+<td>Mudar as ocorrências recalcula na hora; excluir o typical faz as medições voltarem a valer uma vez.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cotacoes-e-propostas">Cotações e propostas</h2>
+<table>
+<thead>
+<tr>
+<th>Código</th>
+<th>Regra</th>
+<th>Situação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MSR-050</td>
+<td>A <strong>lista para cotação</strong> tem só materiais (sem mão de obra), na unidade de compra, com perda e arredondamento, <strong>separada por fornecedor</strong>: cada fornecedor recebe só as etapas que ele fornece (Settings › Contatos). Itens que ninguém fornece vão para "Sem fornecedor".</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-051</td>
+<td>O fornecedor nunca vê preço de venda, mão de obra nem fórmula.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-052</td>
+<td>Os preços que um fornecedor devolve podem ser registrados na lista; viram o preço do item a partir daquela data, com a origem "Cotação · fornecedor".</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-053</td>
+<td><strong>Preços têm vigência:</strong> um preço novo vale a partir de uma data; os antigos ficam no histórico. A proposta usa o preço vigente no dia.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-054</td>
+<td><strong>Margens têm vigência:</strong> overhead % sobre o custo; lucro em <strong>markup</strong> (% sobre custo + overhead) ou em <strong>margem</strong> (% do preço de venda); imposto sobre material (uma configuração; 0 no exemplo de New Hampshire).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-055</td>
+<td><strong>Preço calculado da linha</strong> = (materiais × (1 + imposto) + mão de obra + outros) × (1 + overhead), depois + lucro (markup: × (1 + lucro); margem: ÷ (1 − lucro)).</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-056</td>
+<td>A proposta tem <strong>uma linha por etapa</strong>, material e mão de obra juntos. Qualquer preço de linha pode ser digitado no lugar do calculado; apagar volta ao calculado. Linhas podem ficar de fora, e outros itens (mobilização, caçamba…) podem ser incluídos.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-057</td>
+<td><strong>Emitir</strong> exige um contratante, pelo menos uma linha e preço em todas as linhas incluídas. A proposta emitida ganha um <strong>número</strong> (<code>P-AAAA-NNN</code>) e fica <strong>congelada</strong>: mudanças depois não afetam o que foi enviado. Cada emissão é uma versão nova.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-058</td>
+<td>Emitir muda o projeto de Em orçamento para <strong>Proposta enviada</strong>.</td>
+<td>Funcionando</td>
+</tr>
+<tr>
+<td>MSR-059</td>
+<td>O documento da proposta mostra só o preço de cada linha: <strong>custo, overhead e lucro nunca vão para o cliente</strong>; ficam guardados na versão emitida, para consulta interna.</td>
+<td>Funcionando</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition confirm">
+<p class="admonition-title">A confirmar</p>
+<ul>
+<li>Se o cliente vê as quantidades de material na proposta por padrão (hoje: uma opção em cada proposta).</li>
+<li>Mudar a situação do projeto e registrar os preços dos fornecedores pelo celular.</li>
+<li>Atrair o clique para as linhas dos PDFs vetoriais, para mais precisão.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#unidades-e-medicao">Unidades e medição</a></li><li><a href="#condicoes">Condições</a></li><li><a href="#itens-assemblies-e-formulas">Itens, assemblies e fórmulas</a></li><li><a href="#projetos">Projetos</a></li><li><a href="#typicals-o-que-se-repete">Typicals (o que se repete)</a></li><li><a href="#cotacoes-e-propostas">Cotações e propostas</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 18 de outubro de 2026 · <a href="../../../">Entrada principal</a></div>
+  <div>As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

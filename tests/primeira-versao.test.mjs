@@ -1,0 +1,104 @@
+/* KORbuild — a 1ª versão (lançamento): só o Measure Takeoff e o Settings (js/versao.js), contra o Supabase local.
+ * Daily, Crew, concorrências, cronograma, obras, funcionários e o protótipo ficam ocultos: nem nos menus, nem na tela de módulos, nem por endereço.
+ * Uso: python3 -m http.server 8123 & bash tools/supabase-local.sh  →  node tests/primeira-versao.test.mjs [http://localhost:8123/] */
+
+import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
+
+const { sql, rest, criarUsuario, sessao, rotear, limpar, nome } = await import('./_supabase-local.mjs');
+const BASE = process.argv.slice(2).find((a) => a.startsWith('http')) || 'http://localhost:8123/';
+console.log('1ª versão contra: ' + nome);
+const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
+let falhas = 0, passos = 0;
+function verificar(cond, texto, detalhe) {
+  passos++;
+  if (cond) console.log('  ok  ' + texto);
+  else { falhas++; console.log('FALHA ' + texto + (detalhe !== undefined ? '\n      encontrado: ' + (typeof detalhe === 'string' ? detalhe : JSON.stringify(detalhe).slice(0, 400)) : '')); }
+}
+
+const sufixo = Date.now().toString(36);
+await limpar();
+const EMAIL = { ana: 'kb-e2e-daily-ana-' + sufixo + '@example.com', tom: 'kb-e2e-daily-tom-' + sufixo + '@example.com' };
+const ID = { ana: await criarUsuario(EMAIL.ana, 'Ana Local'), tom: await criarUsuario(EMAIL.tom, 'Tom Local') };
+await rest(ID.ana, '/rpc/criar_empresa', { metodo: 'POST', corpo: { p: { nome: 'Prestadora Local ' + sufixo, atuacao: 'prestadora' } } });
+await rest(ID.tom, '/rpc/criar_empresa', { metodo: 'POST', corpo: { p: { nome: 'Construtora Local ' + sufixo, atuacao: 'construtora' } } });
+
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
+const erros = [];
+async function aparelho(quem, versao) {
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await ctx.addInitScript(([s, v]) => { try { localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', 'en'); if (v) localStorage.setItem('kbt.versao', v); } catch { /* */ } }, [await sessao(ID[quem], EMAIL[quem], quem), versao]);
+  await rotear(ctx, URL_PROJETO);
+  await ctx.route('https://fonts.**', (r) => r.abort());
+  await ctx.route('https://api.open-meteo.com/**', (r) => r.abort());
+  const p = await ctx.newPage();
+  p.on('pageerror', (e) => erros.push(quem + ': ' + e.message));
+  return { ctx, p };
+}
+const texto = async (p) => (await p.locator('body').innerText()).replace(/\s+/g, ' ');
+
+try {
+  console.log('A tela de entrada');
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await ctx.route('https://fonts.**', (r) => r.abort());
+    const p = await ctx.newPage();
+    await p.goto(BASE + '?versao=primeira');
+    await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
+    const t = await texto(p);
+    verificar(/Measure Takeoff/.test(t) && !/Daily|Crew/.test(t), 'a entrada fala do Measure Takeoff e não do Daily nem do Crew', t.slice(0, 300));
+    verificar(await p.locator('a[href*="demo"]').count() === 0 && await p.locator('a[href*="teste-"]').count() === 0, 'sem link do protótipo nem dos roteiros de teste no celular');
+    verificar(await p.evaluate(() => localStorage.getItem('kbt.versao')) === 'primeira', 'o ?versao=primeira fica guardado neste navegador');
+    await p.goto(BASE + '?versao=completa');
+    await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
+    verificar(/Daily/.test(await texto(p)) && await p.locator('a[href*="demo"]').count() >= 1, '?versao=completa volta ao app inteiro (com o protótipo)');
+    await ctx.close();
+  }
+
+  for (const quem of ['ana', 'tom']) {
+    console.log('\nConta ' + (quem === 'ana' ? 'prestadora' : 'construtora') + ' na 1ª versão');
+    const a = await aparelho(quem, 'primeira');
+    await a.p.goto(BASE + '#/conta');
+    await a.p.waitForSelector('.oficial-titulo', { timeout: 30000 });
+    const t = await texto(a.p);
+    verificar(/Measure Takeoff/.test(t) && !/Daily|Crew|Concorr|Bids/.test(t.replace(/Dados/g, '')), 'a área da conta oferece só o Measure Takeoff', t.slice(0, 400));
+    const abas = (await a.p.locator('.abas-segmento a').allInnerTexts()).map((x) => x.trim());
+    verificar(!abas.some((x) => /Jobs|Employees|Rules|Obras|Funcion/.test(x)) && abas.some((x) => /Contacts|Contatos/.test(x)), 'as abas da conta não têm obras, funcionários nem regras', abas);
+    await a.p.goto(BASE + '#/inicio');
+    await a.p.waitForSelector('.modulos, .oficial-titulo, .pagina', { timeout: 30000 });
+    await a.p.waitForTimeout(1500);
+    const ti = await texto(a.p);
+    verificar(!/Daily|Crew|Concorr|Bids|Em breve|Coming soon/.test(ti.replace(/Dados/g, '')), 'o início não mostra nenhum outro módulo', (await a.p.evaluate(() => location.hash)) + ' · ' + ti.slice(0, 200));
+    for (const rota of ['#/daily', '#/crew', '#/daily/concorrencias', '#/settings/funcionarios', '#/settings/obras', '#/conta/obras', '#/conta/funcionarios']) {
+      await a.p.goto(BASE + rota);
+      await a.p.waitForTimeout(1200);
+      const tr = await texto(a.p);
+      verificar(!/Daily|Crew|Time clock|Employees|Concorr|Bids|Em breve|Coming soon/.test(tr.replace(/Dados/g, '')) && !/^#\/(daily|crew)/.test(await a.p.evaluate(() => location.hash)), rota + ' não abre: volta para o que existe', (await a.p.evaluate(() => location.hash)) + ' · ' + tr.slice(0, 160));
+    }
+    await a.p.goto(BASE + '#/measure');
+    await a.p.waitForSelector('h1', { timeout: 30000 });
+    const m = await texto(a.p);
+    verificar(/Measure Takeoff/.test(m), 'o Measure abre e se chama Measure Takeoff', m.slice(0, 200));
+    verificar(await a.p.locator('.sino summary').count() === 1, 'o sininho segue funcionando (sem avisos de outros módulos)');
+    await a.ctx.close();
+  }
+
+  console.log('\nVersão completa intacta (homologação)');
+  {
+    const a = await aparelho('ana', null);
+    await a.p.goto(BASE + '#/conta');
+    await a.p.waitForSelector('.oficial-titulo', { timeout: 30000 });
+    const t = await texto(a.p);
+    verificar(/Daily/.test(t) && /Crew/.test(t) && !/Measure Takeoff/.test(t), 'sem a 1ª versão, a conta continua com Daily, Crew e Measure', t.slice(0, 300));
+    await a.ctx.close();
+  }
+  verificar(!erros.length, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
+} catch (e) {
+  falhas++;
+  console.log('FALHA inesperada: ' + (e && e.message ? e.message.split('\n')[0] : e));
+} finally {
+  await browser.close();
+  await limpar();
+}
+console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');
+process.exit(falhas ? 1 : 0);

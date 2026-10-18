@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/settings/user-manual.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../">Sign in</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html" aria-current=page>User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="roles-and-permissions.html">Roles and permissions</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Using it</nav>
+    <header class="doc-cabecalho">
+      <h1>User manual</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - User manual.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Step by step, one task at a time. Settings is under the <strong>Settings</strong> tab of your account (the page you land on after signing in).</p>
+<h2 id="set-up-the-company">Set up the company</h2>
+<ol>
+<li>Open <strong>Company</strong>.</li>
+<li>Fill in the name, legal name, address, phone and email. These details appear on your proposals.</li>
+<li>Add the logo (optional) and save.</li>
+</ol>
+<h2 id="add-a-contact-client-or-supplier">Add a contact (client or supplier)</h2>
+<ol>
+<li>Open <strong>Contacts</strong> and choose <strong>New contact</strong>.</li>
+<li>Type the name, the person, the email and the phone. Mark what it is: <strong>client</strong>, <strong>supplier</strong>, <strong>general contractor</strong>.</li>
+<li>For a <strong>supplier</strong>, mark the <strong>cost codes it supplies</strong> (for example, siding, trim, insulation). The quote list of a project is split by supplier using these marks.</li>
+<li>Save. The contact is now available in every project.</li>
+</ol>
+<h2 id="invite-a-user">Invite a user</h2>
+<ol>
+<li>Open <strong>Users</strong> and choose <strong>Invite</strong>.</li>
+<li>Type the email and the name, and choose the <strong>access role</strong> (see Roles and permissions).</li>
+<li>The person receives an email with a link, sets a password and signs in. The invitation expires after a few days; you can send it again.</li>
+<li>To remove access, <strong>deactivate</strong> the user. Nothing they did is deleted.</li>
+</ol>
+<h2 id="adjust-what-each-role-can-do">Adjust what each role can do</h2>
+<ol>
+<li>Open <strong>Access roles</strong> and pick a role.</li>
+<li>Check or uncheck the permissions. For example, an estimator can <strong>measure</strong> but not <strong>change the catalog</strong> and not <strong>see costs</strong>.</li>
+<li>Save. The change applies the next time each person opens the system.</li>
+</ol>
+<h2 id="my-profile">My profile</h2>
+<p>Open <strong>My profile</strong> to change your name, language, email or password.</p>
+<h2 id="if-something-goes-wrong">If something goes wrong</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A person cannot see Measure Takeoff</td>
+<td>Their role does not have the permission to measure.</td>
+<td>Open Access roles and turn on <strong>Measure</strong>.</td>
+</tr>
+<tr>
+<td>A person does not see prices</td>
+<td>Dollar amounts need a separate permission.</td>
+<td>Turn on the catalog or cost visibility permission for the role.</td>
+</tr>
+<tr>
+<td>The invitation email did not arrive</td>
+<td>Wrong address or spam folder.</td>
+<td>Check the address and the spam folder, then send the invitation again.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#set-up-the-company">Set up the company</a></li><li><a href="#add-a-contact-client-or-supplier">Add a contact (client or supplier)</a></li><li><a href="#invite-a-user">Invite a user</a></li><li><a href="#adjust-what-each-role-can-do">Adjust what each role can do</a></li><li><a href="#my-profile">My profile</a></li><li><a href="#if-something-goes-wrong">If something goes wrong</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 18, 2026 · <a href="../../">Main sign-in</a></div>
+  <div>Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

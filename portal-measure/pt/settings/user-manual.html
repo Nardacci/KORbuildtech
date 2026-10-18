@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do usuário · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/user-manual.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../">Entrar</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html" aria-current=page>Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="roles-and-permissions.html">Perfis e permissões</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › No dia a dia</nav>
+    <header class="doc-cabecalho">
+      <h1>Manual do usuário</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Manual do usuário.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Passo a passo, uma tarefa por vez. O Settings fica na aba <strong>Settings</strong> da sua conta (a página em que você entra depois de fazer login).</p>
+<h2 id="configurar-a-empresa">Configurar a empresa</h2>
+<ol>
+<li>Abra <strong>Empresa</strong>.</li>
+<li>Preencha o nome, a razão social, o endereço, o telefone e o e-mail. Esses dados aparecem nas suas propostas.</li>
+<li>Coloque o logo (opcional) e salve.</li>
+</ol>
+<h2 id="cadastrar-um-contato-cliente-ou-fornecedor">Cadastrar um contato (cliente ou fornecedor)</h2>
+<ol>
+<li>Abra <strong>Contatos</strong> e escolha <strong>Novo contato</strong>.</li>
+<li>Digite o nome, a pessoa, o e-mail e o telefone. Marque o que é: <strong>cliente</strong>, <strong>fornecedor</strong>, <strong>construtora</strong>.</li>
+<li>Para um <strong>fornecedor</strong>, marque as <strong>etapas (cost codes) que ele fornece</strong> (por exemplo, siding, acabamentos, isolamento). A lista de cotação do projeto é separada por fornecedor com essas marcas.</li>
+<li>Salve. O contato fica disponível em todos os projetos.</li>
+</ol>
+<h2 id="convidar-um-usuario">Convidar um usuário</h2>
+<ol>
+<li>Abra <strong>Usuários</strong> e escolha <strong>Convidar</strong>.</li>
+<li>Digite o e-mail e o nome, e escolha o <strong>perfil de acesso</strong> (veja Perfis e permissões).</li>
+<li>A pessoa recebe um e-mail com um link, define a senha e entra. O convite vale por alguns dias; dá para enviar de novo.</li>
+<li>Para tirar o acesso, <strong>desative</strong> o usuário. Nada do que ele fez é apagado.</li>
+</ol>
+<h2 id="ajustar-o-que-cada-perfil-pode-fazer">Ajustar o que cada perfil pode fazer</h2>
+<ol>
+<li>Abra <strong>Perfis de acesso</strong> e escolha um perfil.</li>
+<li>Marque ou desmarque as permissões. Por exemplo, um orçamentista pode <strong>medir</strong>, mas não <strong>mudar o catálogo</strong> nem <strong>ver custos</strong>.</li>
+<li>Salve. A mudança vale na próxima vez que cada pessoa abrir o sistema.</li>
+</ol>
+<h2 id="meu-perfil">Meu perfil</h2>
+<p>Abra <strong>Meu perfil</strong> para mudar seu nome, idioma, e-mail ou senha.</p>
+<h2 id="se-algo-der-errado">Se algo der errado</h2>
+<table>
+<thead>
+<tr>
+<th>Sintoma</th>
+<th>Causa</th>
+<th>O que fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Uma pessoa não vê o Measure Takeoff</td>
+<td>O perfil dela não tem a permissão de medir.</td>
+<td>Abra Perfis de acesso e ligue <strong>Measure</strong>.</td>
+</tr>
+<tr>
+<td>Uma pessoa não vê preços</td>
+<td>Valores em dólar têm uma permissão separada.</td>
+<td>Ligue a permissão do catálogo ou de ver custos para o perfil.</td>
+</tr>
+<tr>
+<td>O e-mail do convite não chegou</td>
+<td>Endereço errado ou caixa de spam.</td>
+<td>Confira o endereço e a caixa de spam, e envie o convite de novo.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#configurar-a-empresa">Configurar a empresa</a></li><li><a href="#cadastrar-um-contato-cliente-ou-fornecedor">Cadastrar um contato (cliente ou fornecedor)</a></li><li><a href="#convidar-um-usuario">Convidar um usuário</a></li><li><a href="#ajustar-o-que-cada-perfil-pode-fazer">Ajustar o que cada perfil pode fazer</a></li><li><a href="#meu-perfil">Meu perfil</a></li><li><a href="#se-algo-der-errado">Se algo der errado</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 18 de outubro de 2026 · <a href="../../../">Entrada principal</a></div>
+  <div>As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

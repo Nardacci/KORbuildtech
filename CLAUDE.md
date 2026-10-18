@@ -62,3 +62,11 @@ node tests/demo.test.mjs http://localhost:8123/
 
 Ao mudar arquivos do app, suba a versão do cache em `sw.js` (`korbuild-rdo-vN`).
 - **Banco de dados (Supabase `gbdmtgephszxhaprpiss`)**: o desenho está em `docs/banco.md` (uma empresa por conta, RLS em tudo, entre empresas só por funções do banco). Migrações em `supabase/migrations/`, uma fatia por vez. Nunca apague nada no banco sem mostrar o SQL e ter o ok do usuário; o acesso é pelo token `SUPABASE_ACCESS_TOKEN` (API de gerenciamento), nunca no código nem no chat. `tools/supabase-estrutura.mjs` refaz o backup da estrutura.
+
+
+## 1ª versão (lançamento): só o Measure Takeoff e o Settings (outubro de 2026)
+
+- No domínio de produção (korbuildtech.com) o app abre como **1ª versão**: só o **Measure Takeoff** (o Measure, com este nome) e o **Settings**, para computador. Daily, Crew, concorrências, cronograma, Obras, Funcionários, o protótipo (`?demo`) e os roteiros de celular ficam **ocultos**. É o mesmo código da homologação (GitHub Pages), que segue com o app inteiro para continuar testando.
+- O que decide é `js/versao.js`: valem o domínio de produção ou `?versao=primeira` no endereço (fora do domínio; `?versao=completa` volta ao app inteiro). Só esconde telas; banco, regras de acesso e testes são os mesmos. O protótipo não foi alterado.
+- Documentação da 1ª versão: `python3 tools/gerar_portal.py --edicao=measure` gera `portal-measure/` (só Measure Takeoff e Settings; textos próprios em `portal/fonte-measure/`). `node tools/gerar-producao.mjs` monta `producao/` (o que vai para o domínio). Passo a passo e pendências: `docs/lancamento-measure.md`.
+- Testes: `tests/primeira-versao.test.mjs` (banco local) e `tests/producao.test.mjs` (a pasta `producao/`).

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roles and permissions · Settings · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/settings/roles-and-permissions.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../">Sign in</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="roles-and-permissions.html" aria-current=page>Roles and permissions</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Settings</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Roles and permissions</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Roles and permissions.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>What each person can do comes from their <strong>access role</strong>. The company can adjust the default roles or create new ones (Settings › Access roles).</p>
+<h2 id="default-roles">Default roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Typical person</th>
+<th>In Measure Takeoff</th>
+<th>In Settings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Admin</strong></td>
+<td>Owner or office manager</td>
+<td>Everything: measure, catalog, prices, proposals</td>
+<td>Everything: company, contacts, users, roles</td>
+</tr>
+<tr>
+<td><strong>Manager</strong></td>
+<td>Estimating manager</td>
+<td>Measures and issues proposals; sees prices if the role allows</td>
+<td>Contacts</td>
+</tr>
+<tr>
+<td><strong>Estimator</strong></td>
+<td>Person who does the takeoff</td>
+<td>Measures; catalog and prices only if the role allows</td>
+<td>Own profile</td>
+</tr>
+</tbody>
+</table>
+<h2 id="permissions-that-matter-in-this-release">Permissions that matter in this release</h2>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>What it allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Measure</strong></td>
+<td>Open Measure Takeoff, create projects, upload plans, measure, issue proposals.</td>
+</tr>
+<tr>
+<td><strong>Catalog</strong></td>
+<td>Create and edit items and assemblies; see and change prices and markups.</td>
+</tr>
+<tr>
+<td><strong>See costs</strong></td>
+<td>See dollar amounts (cost and price) in lists and reports.</td>
+</tr>
+<tr>
+<td><strong>Contacts</strong></td>
+<td>Create and edit clients and suppliers.</td>
+</tr>
+<tr>
+<td><strong>Users and roles</strong></td>
+<td>Invite users, deactivate them and edit roles.</td>
+</tr>
+<tr>
+<td><strong>Company</strong></td>
+<td>Edit the company profile.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="good-to-know">Good to know</h2>
+<ul>
+<li>Typing the address of a screen does not get around the permissions: the system checks again when it saves.</li>
+<li>Each company only ever sees its own data.</li>
+<li>Suppliers and clients are <strong>contacts</strong>, not users: they need no account.</li>
+</ul>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#default-roles">Default roles</a></li><li><a href="#permissions-that-matter-in-this-release">Permissions that matter in this release</a></li><li><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 18, 2026 · <a href="../../">Main sign-in</a></div>
+  <div>Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

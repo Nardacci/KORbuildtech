@@ -1503,3 +1503,5 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 [data-copiar], #senha-teste.com-senha { cursor: pointer; } [data-copiar][data-copiado]::after, #senha-teste[data-copiado]::after { content: ' ✓ copiado'; color: var(--sucesso, #1F8A4C); font-weight: 600; font-family: inherit; }
 
 .aviso-gps b { display: block; } .passos-gps { margin: 6px 0 8px; padding-left: 20px; font-size: 13.5px; } .passos-gps li { margin: 3px 0; }
+
+.oficial-secao { color: var(--mudo, #6B7686); font-weight: 600; margin-left: -6px; margin-right: 8px; }

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · Measure Takeoff · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/measure/user-manual.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../">Sign in</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure Takeoff documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure Takeoff</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html" aria-current=page>User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html">Roles and permissions</a></li><li><a href="release-status.html">Release status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Measure Takeoff</a> › Using it</nav>
+    <header class="doc-cabecalho">
+      <h1>User manual</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure Takeoff - User manual.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Step by step, from the PDF plan to the proposal. The screenshots come from a demo account with sample data, signed in as <strong>Tom Reilly</strong> (Admin at Northfield Framing &amp; Siding), with the sample project <strong>Model home</strong>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Use a computer</p>
+<p>Measuring needs a mouse and a large screen. Measure Takeoff is designed for a computer; on a phone, it will be read-only (see Release status).</p>
+</div>
+<h2 id="projects">Projects</h2>
+<p><strong>What it is for:</strong> keeping every estimate in one list, with the bid due dates in sight.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Measure Takeoff plans</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<p>Open <strong>Measure Takeoff</strong>: the <strong>Projects</strong> list shows each project with its client, location, type, estimator, bid due date and status. The tabs filter by status: <strong>Estimating</strong>, <strong>Proposal sent</strong>, <strong>Won</strong>, <strong>Lost</strong>. While a project is Estimating, the bid due date is highlighted when it is overdue, today or within 3 days.</p>
+<figure><img src="../img/measure-projects.png" alt="The project list" loading="lazy"><figcaption>The project list</figcaption></figure>
+<h3 id="create-a-project">Create a project</h3>
+<ol>
+<li>Click <strong>New project</strong>.</li>
+<li>Fill in the project and the client (choose from your contacts, or create one without leaving the form), the job location (address, city, state, ZIP) and the proposal data (bid due date, estimator, and the job it belongs to, for change orders or additions).</li>
+<li>Click <strong>Create project</strong>.</li>
+</ol>
+<figure><img src="../img/measure-project-form.png" alt="The project form" loading="lazy"><figcaption>The project form</figcaption></figure>
+<p>Name, client, city and state are required. To change the project later, open it and click <strong>Edit project</strong>; <strong>Delete</strong> is in the edit form.</p>
+<h2 id="upload-the-plans">Upload the plans</h2>
+<ol>
+<li>Open the project.</li>
+<li>Click <strong>Upload PDF</strong> and choose the plan set. <strong>Each page becomes a sheet</strong> (A-101, A-201…).</li>
+</ol>
+<p>The <strong>Sheets</strong> table shows each sheet's scale: <em>no scale</em>, <em>checked</em> or <em>scale check off</em>.</p>
+<figure><img src="../img/measure-project-empty.png" alt="A project with its sheets" loading="lazy"><figcaption>A project with its sheets</figcaption></figure>
+<h2 id="set-and-check-the-scale">Set and check the scale</h2>
+<p><strong>Why:</strong> every measurement depends on the scale. Checking it on a second dimension catches plans printed or scanned off scale.</p>
+<ol>
+<li>Open a sheet (<strong>Open</strong>). The plan fills the screen, with the conditions on the left.</li>
+<li>Click the scale button on the toolbar (<strong>Set scale</strong>, in amber, while the sheet has none).</li>
+<li>
+<p>Pick the scale written on the plan (for example, <code>1/4" = 1'-0"</code>) and click <strong>Use this scale</strong>. If the plan is off scale, use <strong>Calibrate from a dimension</strong>: click both ends of a known dimension and type its length.</p>
+<figure><img src="../img/measure-scale-dialog.png" alt="Choosing the sheet scale" loading="lazy"><figcaption>Choosing the sheet scale</figcaption></figure>
+</li>
+<li>
+<p>KORbuild asks you to <strong>check</strong>: click both ends of another known dimension and type its length as written on the plan (<code>40'-0"</code>, <code>40'</code>, <code>12'-6 1/2"</code>…).</p>
+<figure><img src="../img/measure-check-dialog.png" alt="Checking the scale on a dimension" loading="lazy"><figcaption>Checking the scale on a dimension</figcaption></figure>
+</li>
+<li>
+<p>The toolbar shows the result: <strong>checked</strong> in green, or <strong>off</strong> in red when the difference is above 1%.</p>
+</li>
+</ol>
+<figure><img src="../img/measure-viewer-empty.png" alt="The viewer, ready to measure" loading="lazy"><figcaption>The viewer, ready to measure</figcaption></figure>
+<h2 id="add-what-you-will-measure-assemblies">Add what you will measure (assemblies)</h2>
+<p>The drawing starts empty. You add one <strong>assembly</strong> for each thing you will measure on this sheet: the assembly brings the materials and labor that the measurement will produce.</p>
+<ol>
+<li>In the conditions panel, click <strong>Add assembly</strong>.</li>
+<li>
+<p>Choose an assembly. The list is grouped by type — <strong>Linear</strong> (walls), <strong>Area</strong> (floors, siding, slabs) and <strong>Count</strong> (doors, windows) — with a summary of its lines. Assemblies already on the drawing are marked. <strong>Just measure, no assembly</strong> creates a condition without materials (you can apply an assembly later).</p>
+<figure><img src="../img/measure-add-assembly.png" alt="Choosing an assembly" loading="lazy"><figcaption>Choosing an assembly</figcaption></figure>
+</li>
+<li>
+<p>Click <strong>Continue</strong> and confirm:</p>
+<ul>
+<li>the <strong>name on the drawing</strong> (for example, <em>Exterior walls</em>);</li>
+<li>the <strong>color</strong> of its marks;</li>
+<li>its <strong>properties</strong>: wall height, pitch, slab thickness, the opening size of a window or door;</li>
+<li>for walls and siding, <strong>Deduct openings from</strong>: the window and door counts whose openings come out of this wall or area.</li>
+</ul>
+<figure><img src="../img/measure-add-assembly-details.png" alt="Name, color and dimensions" loading="lazy"><figcaption>Name, color and dimensions</figcaption></figure>
+</li>
+<li>
+<p>Click <strong>Add to drawing</strong>. The condition appears in the panel, already selected for measuring.</p>
+</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Same condition on another sheet</p>
+<p>In <strong>Add assembly</strong>, the section <strong>Already measured on other sheets in this project</strong> brings the same condition to this sheet (for example, the walls of the 1st and 2nd floor): the measurements add up to one total.</p>
+</div>
+<h2 id="measure-takeoff">Measure Takeoff</h2>
+<p>Select a condition in the panel; the <strong>Measure Takeoff</strong> tool is on.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>How to measure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Count</strong></td>
+<td>One click per item.</td>
+</tr>
+<tr>
+<td><strong>Linear</strong></td>
+<td>Click each point. <strong>Double-click</strong> or <strong>Enter</strong> finishes, <strong>Esc</strong> cancels, <strong>Backspace</strong> removes the last point.</td>
+</tr>
+<tr>
+<td><strong>Area</strong></td>
+<td>Same as linear; a click on the first point also closes the area.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Shift</strong> keeps the line straight (horizontal or vertical).</li>
+<li>Near (6 px) an existing point, the click <strong>snaps</strong> to it; <strong>Alt</strong> turns snapping off.</li>
+<li>Hold the <strong>space bar</strong> (or use <strong>Pan</strong>) to drag the plan. <strong>Ctrl + mouse wheel</strong> zooms at the cursor; <strong>Fit</strong> shows the whole sheet. Zoom never changes a measurement.</li>
+<li>While drawing, the dashed line shows the length or area live. The line at the bottom always says what to do next.</li>
+</ul>
+<figure><img src="../img/measure-viewer-plan.png" alt="Measuring walls, floor and doors on the first floor plan" loading="lazy"><figcaption>Measuring walls, floor and doors on the first floor plan</figcaption></figure>
+<p>The panel groups the conditions by type, with the <strong>total on this sheet</strong>. Open a condition (arrow) to see its derived quantities (wall surface, volume…), its <strong>assemblies</strong> (apply or remove), its <strong>measurements on this sheet</strong> (delete one by one), and <strong>Edit</strong> or <strong>Delete</strong>. The check box next to the name <strong>shows or hides</strong> its marks on the drawing, without changing any quantity.</p>
+<figure><img src="../img/measure-panel.png" alt="The conditions panel" loading="lazy"><figcaption>The conditions panel</figcaption></figure>
+<h3 id="deduct-a-cut-out-eraser">Deduct a cut-out (eraser)</h3>
+<p>On an area (a floor, for example), choose <strong>Deduct</strong> and draw the polygon to take out (stairs, a chimney, a bathroom with another finish). It appears hatched in red, with "− X sq ft", and is listed as a cut-out.</p>
+<h3 id="windows-and-doors-openings">Windows and doors: openings</h3>
+<p>Windows and doors are <strong>counts with an opening size</strong> (width × height). Walls and siding that deduct them lose that area automatically: count one more window and the sheathing, drywall and siding already change.</p>
+<p>On an elevation, the <strong>Opening</strong> tool goes further:</p>
+<ol>
+<li>Choose <strong>Opening</strong> and click two opposite corners of the window or door.</li>
+<li>Choose which count it is (it adds +1) and confirm the areas behind it to deduct from.</li>
+<li>Click <strong>Count and deduct</strong>.</li>
+</ol>
+<figure><img src="../img/measure-opening-dialog.png" alt="Opening drawn on the east elevation" loading="lazy"><figcaption>Opening drawn on the east elevation</figcaption></figure>
+<figure><img src="../img/measure-viewer-elevations.png" alt="Siding measured on the elevations, with windows, door and a drawn opening" loading="lazy"><figcaption>Siding measured on the elevations, with windows, door and a drawn opening</figcaption></figure>
+<p>An opening already cut out by drawing is not deducted again by its size (no double deduction). Deleting the count or the cut-out deletes both.</p>
+<h2 id="repeated-units-typicals">Repeated units (typicals)</h2>
+<p><strong>What it is for:</strong> measuring once what repeats — the typical floor, the typical apartment, the same house built six times.</p>
+<ul>
+<li><strong>The whole sheet repeats:</strong> in the panel, click <strong>This sheet repeats (typical floor, repeated house)</strong> and enter the occurrences (for example, <em>Building A</em> × 3 and <em>Building B</em> × 3).</li>
+<li><strong>Only part of the sheet repeats:</strong> choose <strong>Typical</strong> on the toolbar, click two corners of the region and enter the occurrences.</li>
+</ul>
+<p>Everything measured inside counts × the total of occurrences — quantities, materials, quote lists and the proposal. The project shows, for each typical, the quantity per unit, per occurrence and in total.</p>
+<figure><img src="../img/measure-typical-sheet.png" alt="A typical sheet: measured once, counts × 6" loading="lazy"><figcaption>A typical sheet: measured once, counts × 6</figcaption></figure>
+<figure><img src="../img/measure-typicals-project.png" alt="The typicals on the project" loading="lazy"><figcaption>The typicals on the project</figcaption></figure>
+<h2 id="review-quantities-materials-and-labor">Review quantities, materials and labor</h2>
+<p>Back on the project (the project name, at the left of the viewer's toolbar):</p>
+<ul>
+<li>
+<p><strong>Quantities:</strong> each condition with its measured total, its derived values (for example, <em>Surface (× height)</em>) and the number of measurements.</p>
+<figure><img src="../img/measure-quantities.png" alt="Quantities per condition" loading="lazy"><figcaption>Quantities per condition</figcaption></figure>
+</li>
+<li>
+<p><strong>Materials and labor:</strong> every item in its purchase unit (sheets, boxes, rolls, pieces, hours), grouped by category, with the <strong>estimated labor hours</strong>. Click an item to see the math: condition → variables → formula → waste → rounding.</p>
+<figure><img src="../img/measure-materials.png" alt="Materials and labor, with the math of one item" loading="lazy"><figcaption>Materials and labor, with the math of one item</figcaption></figure>
+</li>
+<li>
+<p><strong>To do:</strong> lines that cannot be calculated yet (for example, an assembly that needs a height the condition does not have, or a condition not measured yet).</p>
+</li>
+<li><strong>Export CSV</strong> downloads the quantities with the whole calculation.</li>
+</ul>
+<figure><img src="../img/measure-project.png" alt="The project after measuring" loading="lazy"><figcaption>The project after measuring</figcaption></figure>
+<h2 id="request-quotes-from-suppliers">Request quotes from suppliers</h2>
+<ol>
+<li>On the project, click <strong>Material list for quotes</strong>.</li>
+<li>Check <strong>Reply by</strong>, <strong>Deliver to</strong> and the <strong>Notes for the supplier</strong>.</li>
+<li>Each supplier gets its own list — only the items in the cost codes it supplies (Settings › Contacts) — in purchase units, already with waste and rounding, <strong>without prices and without labor</strong>.</li>
+<li>For each supplier:<ul>
+<li><strong>Send by email</strong> opens the email ready, with the list and the reply-by date;</li>
+<li><strong>PDF</strong> opens the quote request with your logo and blank price columns;</li>
+<li><strong>Enter prices received</strong> records the prices the supplier sent back: they become the items' prices from that date.</li>
+</ul>
+</li>
+</ol>
+<figure><img src="../img/measure-quote-list.png" alt="Material list for quotes, split by supplier" loading="lazy"><figcaption>Material list for quotes, split by supplier</figcaption></figure>
+<figure><img src="../img/measure-quote-pdf.png" alt="The quote request PDF" loading="lazy"><figcaption>The quote request PDF</figcaption></figure>
+<h2 id="prices-and-markups">Prices and markups</h2>
+<p><strong>What it is for:</strong> knowing the cost of every item and how it becomes a selling price.</p>
+<p>Open <strong>Pricing</strong>:</p>
+<ul>
+<li><strong>Markups:</strong> overhead % and profit, as <strong>markup</strong> (on cost) or <strong>margin</strong> (share of the selling price), and sales tax on materials. <strong>New version</strong> creates new markups from a date, with a reason; the old ones stay in the history.</li>
+<li><strong>Items:</strong> the current price of each item, since when and where it came from (sample price list, typed in, a supplier quote). <strong>New price</strong> adds a price from a date; nothing is overwritten.</li>
+</ul>
+<figure><img src="../img/measure-prices.png" alt="Pricing: markups and current prices" loading="lazy"><figcaption>Pricing: markups and current prices</figcaption></figure>
+<div class="admonition who">
+<p class="admonition-title">Who can change prices</p>
+<p>Anyone with <strong>Items and assemblies</strong> (default role: <strong>Admin</strong>). Others see them read-only.</p>
+</div>
+<h2 id="build-and-issue-the-proposal">Build and issue the proposal</h2>
+<ol>
+<li>On the project, click <strong>Proposal</strong>.</li>
+<li>Review the <strong>Scope</strong> (it comes from the project).</li>
+<li><strong>Proposal items:</strong> one line per cost code, materials and labor together. Each line shows the basis (quantities and estimated hours), the cost, and the <strong>calculated price</strong> (catalog prices + markups).<ul>
+<li>Type a different amount whenever you want (a closed price); clear it to go back to the calculated price.</li>
+<li>Uncheck a line to leave it out; add <strong>other items</strong> (mobilization, dumpster…).</li>
+<li><strong>Show material quantities on the document</strong> is optional.</li>
+</ul>
+</li>
+<li>Check the validity and the <strong>terms</strong> (they come from the company profile and can be adjusted).</li>
+<li><strong>View document</strong> shows the PDF; <strong>Issue proposal</strong> numbers it (<code>P-2026-001</code>…), freezes it and moves the project to <strong>Proposal sent</strong>. Each issue is a new version.</li>
+</ol>
+<figure><img src="../img/measure-proposal.png" alt="The proposal, priced line by line" loading="lazy"><figcaption>The proposal, priced line by line</figcaption></figure>
+<figure><img src="../img/measure-proposal-pdf.png" alt="The proposal document" loading="lazy"><figcaption>The proposal document</figcaption></figure>
+<div class="admonition note">
+<p class="admonition-title">What the client never sees</p>
+<p>The document shows only the price of each line. Cost, overhead and profit stay inside KORbuild, saved with the issued version.</p>
+</div>
+<p>When the client accepts, set the project to <strong>Won</strong> (Edit project).</p>
+<h2 id="the-catalog-items-and-assemblies">The catalog: items and assemblies</h2>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Items and assemblies</strong> (default role: <strong>Admin</strong>). Without it, items and formulas are read-only.</p>
+</div>
+<p><strong>Items</strong> (Measure Takeoff › Items) are what you buy or pay for: code, name, <strong>purchase unit</strong>, category (material, labor, equipment, subcontractor), cost code and notes. An item used in an assembly cannot be deleted.</p>
+<figure><img src="../img/measure-items.png" alt="The item catalog" loading="lazy"><figcaption>The item catalog</figcaption></figure>
+<p><strong>Assemblies</strong> (Measure Takeoff › Assemblies) are lists of lines for a type of condition. Each line has:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Item</strong></td>
+<td>What the line produces, in its purchase unit.</td>
+</tr>
+<tr>
+<td><strong>Formula</strong></td>
+<td>The <strong>raw</strong> quantity, using the condition's variables (for example, <code>NetSurfaceArea / 32</code> sheets of OSB).</td>
+</tr>
+<tr>
+<td><strong>Waste</strong></td>
+<td>A % added to the raw quantity.</td>
+</tr>
+<tr>
+<td><strong>Rounding</strong></td>
+<td>None, or up to 1, 0.5 or 0.25 (how the trade buys it).</td>
+</tr>
+<tr>
+<td><strong>Test</strong></td>
+<td>The result, live, with sample values: raw → with waste → rounded.</td>
+</tr>
+</tbody>
+</table>
+<p>Below the lines, the editor lists the <strong>variables</strong> available for that type of condition. Formulas accept only numbers, + − × ÷ ^, parentheses, those variables and <code>ceil floor round min max sqrt abs</code>; anything else is refused while typing and when saving.</p>
+<figure><img src="../img/measure-assemblies.png" alt="The assemblies" loading="lazy"><figcaption>The assemblies</figcaption></figure>
+<figure><img src="../img/measure-assembly-editor.png" alt="Editing an assembly: formula, waste, rounding and the live test" loading="lazy"><figcaption>Editing an assembly: formula, waste, rounding and the live test</figcaption></figure>
+<h2 id="messages-and-alerts">Messages and alerts</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>What it means</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>no scale</strong> (sheet)</td>
+<td>The sheet has no scale yet; measuring is disabled.</td>
+<td>Set and check the scale.</td>
+</tr>
+<tr>
+<td><strong>off</strong> (scale)</td>
+<td>The check dimension differs by more than 1%.</td>
+<td>Calibrate from a dimension, or zoom in and check again.</td>
+</tr>
+<tr>
+<td><strong>Missing on the condition: …</strong></td>
+<td>An assembly line needs a property the condition does not have (height, thickness, pitch).</td>
+<td>Edit the condition and add it.</td>
+</tr>
+<tr>
+<td><strong>nothing measured yet</strong></td>
+<td>An assembly is on the drawing but has no measurements.</td>
+<td>Measure Takeoff it, or delete it.</td>
+</tr>
+<tr>
+<td>Formula refused</td>
+<td>The formula uses something not allowed, divides by zero or gives a negative result.</td>
+<td>Fix the formula; the message names the line.</td>
+</tr>
+<tr>
+<td><strong>No supplier</strong> (quote list)</td>
+<td>No contact supplies that cost code.</td>
+<td>Mark the cost code on a supplier (Settings › Contacts).</td>
+</tr>
+<tr>
+<td><strong>No price</strong> (proposal)</td>
+<td>An item has no price in the catalog.</td>
+<td>Add a price in Pricing, or type the line price.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#projects">Projects</a></li><li class="sub"><a href="#create-a-project">Create a project</a></li><li><a href="#upload-the-plans">Upload the plans</a></li><li><a href="#set-and-check-the-scale">Set and check the scale</a></li><li><a href="#add-what-you-will-measure-assemblies">Add what you will measure (assemblies)</a></li><li><a href="#measure-takeoff">Measure Takeoff</a></li><li class="sub"><a href="#deduct-a-cut-out-eraser">Deduct a cut-out (eraser)</a></li><li class="sub"><a href="#windows-and-doors-openings">Windows and doors: openings</a></li><li><a href="#repeated-units-typicals">Repeated units (typicals)</a></li><li><a href="#review-quantities-materials-and-labor">Review quantities, materials and labor</a></li><li><a href="#request-quotes-from-suppliers">Request quotes from suppliers</a></li><li><a href="#prices-and-markups">Prices and markups</a></li><li><a href="#build-and-issue-the-proposal">Build and issue the proposal</a></li><li><a href="#the-catalog-items-and-assemblies">The catalog: items and assemblies</a></li><li><a href="#messages-and-alerts">Messages and alerts</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 18, 2026 · <a href="../../">Main sign-in</a></div>
+  <div>Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

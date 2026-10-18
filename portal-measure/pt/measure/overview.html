@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visão geral · Measure Takeoff · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../measure/overview.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../">Entrar</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure Takeoff documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure Takeoff</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html" aria-current=page>Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="business-rules.html">Regras de negócio</a></li><li><a href="roles-and-permissions.html">Perfis e permissões</a></li><li><a href="release-status.html">Situação da versão</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Measure Takeoff</a> › Comece aqui</nav>
+    <header class="doc-cabecalho">
+      <h1>Visão geral</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure Takeoff - Visão geral.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O <strong>Measure Takeoff</strong> é a medição de plantas (<em>takeoff</em>) da prestadora: abra as plantas em PDF no navegador, defina a escala, meça paredes, pisos, siding, janelas e portas com o mouse, e o KORbuild transforma as medições em <strong>materiais e horas de mão de obra</strong> pelos assemblies. A partir daí, ele monta a <strong>lista para cotação</strong> dos fornecedores e a <strong>proposta</strong> para o cliente.</p>
+<p>O Measure Takeoff é de quem faz o orçamento: abre as plantas, mede e emite a proposta que vai para o cliente.</p>
+<h2 id="por-que-importa">Por que importa</h2>
+<ul>
+<li><strong>Pés e polegadas, do jeito que o orçamentista trabalha.</strong> Todo comprimento aparece como <code>12'-6 1/2"</code> e toda área em sq ft; dá para digitar as medidas do mesmo jeito. Por trás, o KORbuild guarda números exatos, então o zoom e o tamanho da tela nunca mudam uma medida.</li>
+<li><strong>Mede uma vez, sai tudo.</strong> Uma parede medida uma vez gera montantes, guias, OSB, house wrap, isolamento, drywall e as horas de carpinteiro. Conte mais uma janela e o OSB, o drywall e o siding já levam isso em conta.</li>
+<li><strong>Todo número se explica.</strong> Cada material mostra a conta por trás: qual condição, qual fórmula, a perda e o arredondamento. Nenhum número escondido.</li>
+<li><strong>Da medição à proposta, no mesmo lugar.</strong> As quantidades viram a lista para cotação (sem preços) e a proposta, com o preço do seu catálogo e das suas margens.</li>
+</ul>
+<h2 id="quem-usa">Quem usa</h2>
+<table>
+<thead>
+<tr>
+<th>Quem</th>
+<th>Onde</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Orçamentista</strong> (administrador, gestor de obras)</td>
+<td>Computador</td>
+<td>Cria projetos, envia plantas, mede, confere materiais e horas, pede cotações, monta e emite propostas.</td>
+</tr>
+<tr>
+<td><strong>Dono / administrador</strong></td>
+<td>Computador</td>
+<td>Também cuida do catálogo: itens, assemblies com fórmulas, preços e margens.</td>
+</tr>
+<tr>
+<td><strong>Fornecedor</strong></td>
+<td>E-mail</td>
+<td>Recebe a lista para cotação (sem preços, sem mão de obra) e responde com os preços. Não é usuário.</td>
+</tr>
+<tr>
+<td><strong>Cliente</strong> (construtora ou dono)</td>
+<td>E-mail / PDF</td>
+<td>Recebe a proposta. Não é usuário.</td>
+</tr>
+</tbody>
+</table>
+<p>Medir exige mouse e tela grande: o Measure Takeoff é usado no computador.</p>
+<h2 id="as-telas-principais">As telas principais</h2>
+<table>
+<thead>
+<tr>
+<th>Tela</th>
+<th>O que mostra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Projetos</strong></td>
+<td>Cada orçamento com cliente, local, tipo, estimador, prazo da proposta (com alertas) e situação: Em orçamento, Proposta enviada, Ganha, Perdida.</td>
+</tr>
+<tr>
+<td><strong>Projeto</strong></td>
+<td>Os dados do projeto, as <strong>folhas</strong> (com a situação da escala), as <strong>quantidades</strong> por condição, os <strong>typicals</strong> e os <strong>materiais e mão de obra</strong>. Links para a lista para cotação e a proposta.</td>
+</tr>
+<tr>
+<td><strong>Folha</strong> (visor)</td>
+<td>A planta em tela cheia, as condições à esquerda, a barra de ferramentas (Mover, Medir, Recortar, Vão, Typical, escala, zoom).</td>
+</tr>
+<tr>
+<td><strong>Itens</strong></td>
+<td>O catálogo do que se compra ou se paga, na unidade de compra, com a etapa (cost code).</td>
+</tr>
+<tr>
+<td><strong>Assemblies</strong></td>
+<td>Grupos de itens com fórmulas, aplicados ao que é medido.</td>
+</tr>
+<tr>
+<td><strong>Preços</strong></td>
+<td>O custo atual de cada item, com vigência, e as margens (overhead e lucro).</td>
+</tr>
+<tr>
+<td><strong>Lista para cotação</strong></td>
+<td>Os materiais por fornecedor, na unidade de compra, prontos para mandar por e-mail.</td>
+</tr>
+<tr>
+<td><strong>Proposta</strong></td>
+<td>Uma linha por etapa, com o preço do catálogo e das margens, emitida como PDF numerado.</td>
+</tr>
+</tbody>
+</table>
+<figure><img src="../img/measure-projects.png" alt="A lista de projetos" loading="lazy"><figcaption>A lista de projetos</figcaption></figure>
+<figure><img src="../img/measure-viewer-plan.png" alt="Medição na planta baixa" loading="lazy"><figcaption>Medição na planta baixa</figcaption></figure>
+<h2 id="o-caminho-de-um-orcamento">O caminho de um orçamento</h2>
+<table>
+<thead>
+<tr>
+<th>Passo</th>
+<th>O que acontece</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. <strong>Projeto</strong></td>
+<td>Crie com cliente, local e prazo da proposta.</td>
+</tr>
+<tr>
+<td>2. <strong>Plantas</strong></td>
+<td>Envie o PDF: cada página vira uma folha.</td>
+</tr>
+<tr>
+<td>3. <strong>Escala</strong></td>
+<td>Escolha a escala na lista (ou calibre por uma cota) e <strong>confira</strong> em outra cota.</td>
+</tr>
+<tr>
+<td>4. <strong>Incluir assemblies</strong></td>
+<td>Escolha o que vai medir nesta folha (paredes externas, piso, siding, janelas…).</td>
+</tr>
+<tr>
+<td>5. <strong>Medir</strong></td>
+<td>Clique na planta: linhas, áreas, contagens. Desconte vãos e recortes.</td>
+</tr>
+<tr>
+<td>6. <strong>Materiais e mão de obra</strong></td>
+<td>Calculados pelos assemblies, com a conta à vista.</td>
+</tr>
+<tr>
+<td>7. <strong>Cotações</strong></td>
+<td>Mande a cada fornecedor a lista dele; registre os preços que voltarem.</td>
+</tr>
+<tr>
+<td>8. <strong>Proposta</strong></td>
+<td>Com preço linha a linha; emita, numerada e congelada; o projeto passa para <strong>Proposta enviada</strong>.</td>
+</tr>
+<tr>
+<td>9. <strong>Ganha</strong></td>
+<td>O projeto é fechado como ganho (ou perdido).</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#por-que-importa">Por que importa</a></li><li><a href="#quem-usa">Quem usa</a></li><li><a href="#as-telas-principais">As telas principais</a></li><li><a href="#o-caminho-de-um-orcamento">O caminho de um orçamento</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 18 de outubro de 2026 · <a href="../../../">Entrada principal</a></div>
+  <div>As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

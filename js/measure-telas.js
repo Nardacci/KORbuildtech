@@ -1,6 +1,7 @@
 /* KORbuild Measure — telas: projeto (folhas e quantidades) e o visor de medição (PDF.js + canvas).
  * Medir planta é trabalho de computador: o visor é pensado para mouse e teclado. */
 
+import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
 import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta } from './util.js';
 import { tr, tn } from './i18n.js';
 import { lerFoto, guardarFoto, estado, obra, salvar } from './armazem.js';
@@ -36,7 +37,7 @@ function navMeasure() {
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
     { id: 'precos', href: '#/measure/precos', rotulo: tr('Preços'), icone: 'dinheiro' },
-  ].concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : []);
+  ].concat(podeResponder() && !PRIMEIRA_VERSAO ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : []);
 }
 // o visor da planta usa a tela inteira, sem o menu lateral
 function moldura(o) {
@@ -49,7 +50,7 @@ export function telaMeasure(q) {
   // o motor de fórmulas (mathjs) só carrega no Measure; enquanto carrega, uma tela de espera
   if (!motorPronto()) {
     carregarMotor().then(() => app.desenhar()).catch(() => toast(tr('Não foi possível carregar o motor de fórmulas.')));
-    return moldura({ titulo: 'Measure', conteudo: ('<p class="vazio">' + tr('Carregando o motor de fórmulas…') + '</p>') });
+    return moldura({ titulo: NOME_MEASURE, conteudo: ('<p class="vazio">' + tr('Carregando o motor de fórmulas…') + '</p>') });
   }
   if (!q.length) return telaProjetos();
   if (q[0] === 'projeto' && q[1] === 'novo') return telaFormProjeto(null);
@@ -63,8 +64,8 @@ export function telaMeasure(q) {
     return telaProjeto(q[1]);
   }
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
-  if (q[0] === 'convites' && podeResponder()) return telaConvites(moldura);
-  if (q[0] === 'convite' && podeResponder()) return telaConvite(moldura, q[1]) || { trocar: '#/measure/convites' };
+  if (q[0] === 'convites' && podeResponder() && !PRIMEIRA_VERSAO) return telaConvites(moldura);
+  if (q[0] === 'convite' && podeResponder() && !PRIMEIRA_VERSAO) return telaConvite(moldura, q[1]) || { trocar: '#/measure/convites' };
   if (q[0] === 'itens') return telaItens();
   if (q[0] === 'precos') return telaPrecos(moldura);
   if (q[0] === 'assemblies') return telaAssemblies();
@@ -133,7 +134,7 @@ function telaProjetos() {
           '<td>' + esc(p.cidade) + ', ' + esc(p.estado) + '</td><td>' + esc(TIPOS_PROJETO[p.tipo] || '') + '</td><td>' + esc(nomeUsuario(p.estimadorId)) + '</td>' +
           '<td>' + textoPrazo(p) + '</td><td class="num">' + folhasDo(p.id).length + '</td><td>' + etiquetaSituacao(p) + '</td></tr>').join('') +
         '</tbody></table></div></section>'
-        : ('<p class="vazio">' + tr('Nenhum projeto') + ' ') + (filtroSituacao === 'todos' ? 'cadastrado.' : tr('com a situação "') + SITUACOES[filtroSituacao].nome + '".') + '</p>'),
+        : ('<p class="vazio">' + tr('Nenhum projeto') + ' ') + (filtroSituacao === 'todos' ? tr('cadastrado.') : tr('com a situação "') + SITUACOES[filtroSituacao].nome + '".') + '</p>'),
   });
 }
 
@@ -185,12 +186,12 @@ function telaProjeto(id) {
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + (tr('Lista para cotação') + '</a>') +
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/proposta">' + icone('daily', 16) + tr('Proposta') + ((p.propostas || []).length ? ' · ' + p.propostas[p.propostas.length - 1].numero : '') + '</a>' +
       '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + (tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="') + p.id + '" class="visualmente-oculto"></label></div>',
-    conteudo: htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p) +
+    conteudo: (PRIMEIRA_VERSAO ? '' : htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p)) +
       '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
         dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="#/daily/obras/' + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
         // projeto ganho vira obra: o cadastro já vem preenchido (docs/obras.md OB-07)
-        (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
+        (!PRIMEIRA_VERSAO && p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
           ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.') + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
         '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfis e permissões · Settings · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../settings/roles-and-permissions.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../">Entrar</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-settings)">
+  <aside class="lateral" aria-label="Settings documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">S</span>Settings</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html">Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="roles-and-permissions.html" aria-current=page>Perfis e permissões</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Settings</a> › Regras e acesso</nav>
+    <header class="doc-cabecalho">
+      <h1>Perfis e permissões</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Settings - Perfis e permissões.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>O que cada pessoa pode fazer vem do <strong>perfil de acesso</strong> dela. A empresa pode ajustar os perfis padrão ou criar novos (Settings › Perfis de acesso).</p>
+<h2 id="perfis-padrao">Perfis padrão</h2>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>Pessoa típica</th>
+<th>No Measure Takeoff</th>
+<th>No Settings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Administrador</strong></td>
+<td>Dono ou gerente do escritório</td>
+<td>Tudo: medir, catálogo, preços, propostas</td>
+<td>Tudo: empresa, contatos, usuários, perfis</td>
+</tr>
+<tr>
+<td><strong>Gestor</strong></td>
+<td>Gerente de orçamentos</td>
+<td>Mede e emite propostas; vê preços se o perfil permitir</td>
+<td>Contatos</td>
+</tr>
+<tr>
+<td><strong>Orçamentista</strong></td>
+<td>Quem faz a medição</td>
+<td>Mede; catálogo e preços só se o perfil permitir</td>
+<td>Próprio perfil</td>
+</tr>
+</tbody>
+</table>
+<h2 id="permissoes-que-importam-nesta-versao">Permissões que importam nesta versão</h2>
+<table>
+<thead>
+<tr>
+<th>Permissão</th>
+<th>O que permite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Measure</strong></td>
+<td>Abrir o Measure Takeoff, criar projetos, enviar plantas, medir, emitir propostas.</td>
+</tr>
+<tr>
+<td><strong>Catálogo</strong></td>
+<td>Criar e editar itens e assemblies; ver e mudar preços e margens.</td>
+</tr>
+<tr>
+<td><strong>Ver custos</strong></td>
+<td>Ver valores em dólar (custo e preço) nas listas e nos relatórios.</td>
+</tr>
+<tr>
+<td><strong>Contatos</strong></td>
+<td>Criar e editar clientes e fornecedores.</td>
+</tr>
+<tr>
+<td><strong>Usuários e perfis</strong></td>
+<td>Convidar usuários, desativá-los e editar perfis.</td>
+</tr>
+<tr>
+<td><strong>Empresa</strong></td>
+<td>Editar o perfil da empresa.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="bom-saber">Bom saber</h2>
+<ul>
+<li>Digitar o endereço de uma tela não contorna as permissões: o sistema confere de novo ao gravar.</li>
+<li>Cada empresa só vê os próprios dados.</li>
+<li>Fornecedores e clientes são <strong>contatos</strong>, não usuários: não precisam de conta.</li>
+</ul>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#perfis-padrao">Perfis padrão</a></li><li><a href="#permissoes-que-importam-nesta-versao">Permissões que importam nesta versão</a></li><li><a href="#bom-saber">Bom saber</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 18 de outubro de 2026 · <a href="../../../">Entrada principal</a></div>
+  <div>As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

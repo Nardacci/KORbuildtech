@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roles and permissions · Measure Takeoff · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/measure/roles-and-permissions.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../">Sign in</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-measure)">
+  <aside class="lateral" aria-label="Measure Takeoff documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">M</span>Measure Takeoff</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html">User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="business-rules.html">Business rules</a></li><li><a href="roles-and-permissions.html" aria-current=page>Roles and permissions</a></li><li><a href="release-status.html">Release status</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Measure Takeoff</a> › Rules and access</nav>
+    <header class="doc-cabecalho">
+      <h1>Roles and permissions</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Measure Takeoff - Roles and permissions.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>What each person can do in Measure Takeoff comes from their <strong>access role</strong> (Settings › Access roles). The company can adjust the default roles or create new ones.</p>
+<h2 id="measure-takeoff-permissions">Measure Takeoff permissions</h2>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>What it allows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Measure Takeoff plans</strong></td>
+<td>Open Measure Takeoff: projects, upload PDFs, set the scale, measure, add and apply assemblies, see quantities and materials, material lists for quotes and proposals.</td>
+</tr>
+<tr>
+<td><strong>Items and assemblies</strong></td>
+<td>Create and edit items, assemblies with formulas, prices and markups. Includes <strong>Measure Takeoff plans</strong>. Without it, formulas and prices are read-only.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="default-roles">Default roles</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th style="text-align: center;">Measure Takeoff</th>
+<th style="text-align: center;">Items and assemblies</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Admin</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">✓</td>
+<td>Usually the owner or the chief estimator.</td>
+</tr>
+<tr>
+<td><strong>Project manager</strong></td>
+<td style="text-align: center;">✓</td>
+<td style="text-align: center;">—</td>
+<td>Measures and prices, but does not change the catalog.</td>
+</tr>
+<tr>
+<td><strong>Foreman</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Does not see Measure Takeoff.</td>
+</tr>
+<tr>
+<td><strong>Worker</strong></td>
+<td style="text-align: center;">—</td>
+<td style="text-align: center;">—</td>
+<td>Does not see Measure Takeoff.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Good to know</p>
+<ul>
+<li>Measure Takeoff is offered to companies that <strong>do the work</strong> (subcontractors, or companies that both hire and do the work). A general contractor does not have Measure Takeoff: it receives the proposal by email or PDF.</li>
+<li>Suppliers and clients are <strong>contacts</strong>, not users: they receive the quote request or the proposal and need no account.</li>
+<li>Typing the address of a Measure Takeoff screen does not get around the permissions.</li>
+</ul>
+</div>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#measure-takeoff-permissions">Measure Takeoff permissions</a></li><li><a href="#default-roles">Default roles</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 18, 2026 · <a href="../../">Main sign-in</a></div>
+  <div>Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>
