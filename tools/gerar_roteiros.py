@@ -27,6 +27,17 @@ CABECA = """<!doctype html>
   <p class="mudo">Você vai precisar do <b>login e da senha de teste</b> que quem te convidou mandou numa mensagem separada. A senha não está nesta página.</p>
   <p class="mudo pequeno">{outro}</p>
 </section>
+
+<section class="cartao">
+  <h2 class="cartao-titulo">Seus logins de teste</h2>
+  <p>Empresa fictícia <b>Summit Framing</b>. Digite o e-mail e a senha exatamente como estão aqui.</p>
+  <ul class="passos-teste">
+    <li><b>Crew (ponto):</b> <code>demo.s2.trabalhador@example.com</code></li>
+    <li><b>Daily (diário de obra):</b> <code>demo.s2.encarregado@example.com</code></li>
+    <li><b>Senha (a mesma nos dois):</b> <code id="senha-teste">veio na mensagem de quem te convidou</code></li>
+  </ul>
+  <p class="mudo pequeno">Se o link que você recebeu já terminava com a senha, ela aparece acima e some da barra de endereço. São contas de teste, sem dados de ninguém.</p>
+</section>
 """
 
 PASSOS = """
@@ -98,6 +109,7 @@ PASSOS = """
 </section>
 
 </main>
+<script type="module" src="js/roteiro.js"></script>
 </body>
 </html>
 """

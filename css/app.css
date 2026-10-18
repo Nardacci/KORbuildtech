@@ -1492,3 +1492,4 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 @media (max-height: 660px) { .login-caminhos { margin-top: 6px; padding-top: 6px; gap: 6px; } }
 @media (max-height: 620px) { .login-caminho .mudo { display: none; } }
 @media (max-height: 620px) { .login-caminhos { grid-template-columns: 1fr 1fr; } }
+.passos-teste code, #senha-teste { font-family: ui-monospace, Menlo, monospace; font-size: 14px; word-break: break-all; } #senha-teste.com-senha { background: var(--primario-claro); padding: 2px 8px; border-radius: 6px; font-weight: 700; user-select: all; }
