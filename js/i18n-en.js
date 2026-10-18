@@ -3293,4 +3293,16 @@ export const EN = {
   'O servidor já tem um RDO de {data} ({obra}) com conteúdo diferente do que está neste aparelho (enviado por outro aparelho, ou antes de os dados deste serem limpos). Escolha qual versão fica.': 'The server already has a report for {data} ({obra}) with different content from this device (sent from another device, or before this device\'s data was cleared). Choose which version to keep.',
   'No servidor': 'On the server',
   'Ficar com a do servidor': 'Keep the server\'s version',
+
+  // ---------- Crew ----------
+  'A localização está bloqueada': 'Location is blocked',
+  'O GPS não respondeu': 'The GPS did not respond',
+  'Sem o GPS, o ponto vai para conferência e as fotos saem com o local da obra.': 'Without GPS, clock-ins go to review and photos are stamped with the job site location.',
+  'Abra Ajustes → Privacidade e Segurança → Serviços de Localização e ligue.': 'Open Settings → Privacy & Security → Location Services and turn it on.',
+  'Role até Safari (ou KORbuild), toque e escolha "Ao Usar o App"; ligue a Localização Precisa.': 'Scroll to Safari (or KORbuild), tap it and choose "While Using the App"; turn on Precise Location.',
+  'Puxe a barra de cima do celular e ligue a Localização (GPS).': 'Pull down the top bar of your phone and turn on Location (GPS).',
+  'Toque e segure o ícone do KORbuild → Informações do app → Permissões → Localização → "Permitir somente com o app em uso"; ligue "Usar localização precisa".': 'Touch and hold the KORbuild icon → App info → Permissions → Location → "Allow only while using the app"; turn on "Use precise location".',
+  'Clique no cadeado ao lado do endereço e permita a Localização para este site.': 'Click the padlock next to the address and allow Location for this site.',
+  'GPS funcionando.': 'GPS is working.',
+  'Ainda sem GPS. Siga os passos do aviso e tente de novo.': 'Still no GPS. Follow the steps in the notice and try again.',
 };

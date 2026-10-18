@@ -11,6 +11,10 @@ const ALVO_BYTES = 320 * 1024; // ~300 KB por foto
 let ultimaPosicao = null;
 let ultimaFalha = null;   // { motivo, em }: se o GPS acabou de falhar, as próximas fotos não esperam tudo de novo
 
+/** Por que o GPS falhou há pouco ('negado' | 'tempo' | 'indisponivel'), ou '' se está tudo bem (js/gps.js usa para avisar). */
+export function motivoDaFalhaDoGps() { return ultimaFalha && Date.now() - ultimaFalha.em < 600000 ? ultimaFalha.motivo : ''; }
+export function esquecerFalhaDoGps() { ultimaFalha = null; }
+
 /* Devolve { lat, lon, precisao, fonte: 'gps' | 'obra' }. Se o GPS não responder,
  * usa o centro da obra e deixa isso claro no carimbo. */
 export function obterPosicao(obra) {

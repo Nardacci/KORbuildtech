@@ -35,6 +35,7 @@ import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from '.
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
 import { acoesInstalar } from './instalar.js';
+import { htmlAvisoGps, verificarGps, acoesGps } from './gps.js';
 import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, acoesCadastros, mudarOficial } from './oficial-telas.js';
 import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder, telaConvitePublico } from './concorrencias-telas.js';
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
@@ -305,6 +306,13 @@ function desenharPrototipo() {
   app.innerHTML = html;
   if (sinoEstavaAberto && chave === rotaAnterior) { const sino = document.querySelector('details.sino'); if (sino) sino.open = true; }
   document.body.dataset.modo = modo;
+  // celular sem GPS (permissão negada ou sem resposta): recado no topo das telas que usam a localização, com o passo a passo
+  if (p[0] === 'crew' || p[0] === 'inicio' || (p[0] === 'daily' && rotaDaily()[0] === 'campo')) {
+    const aviso = htmlAvisoGps();
+    const principal = aviso && app.querySelector('main');
+    if (principal) principal.insertAdjacentHTML('afterbegin', aviso);
+    verificarGps(desenhar).then((mudou) => { if (mudou && !formularioEmEdicao()) desenhar(); });
+  }
   if (chave !== rotaAnterior) {
     window.scrollTo(0, 0);
     rotaAnterior = chave;
@@ -1874,7 +1882,7 @@ function notificacoesDaily(u) {
 }
 
 async function iniciar() {
-  Object.assign(acoes, acoesInstalar, acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias, acoesOficiais, acoesCadastros);
+  Object.assign(acoes, acoesInstalar, acoesGps(desenhar, (ok) => toast(ok ? tr('GPS funcionando.') : tr('Ainda sem GPS. Siga os passos do aviso e tente de novo.'))), acoesCrew, acoesSettings, acoesMeasure, acoesContatos, acoesRelatorios, acoesPrecos, acoesCronograma, acoesObras, acoesConcorrencias, acoesOficiais, acoesCadastros);
   ligarCrew({ desenhar, ir, topoExtra: botaoConexao });
   ligarSettings({ desenhar, ir, topoExtra: botaoConexao });
   ligarMeasure({ desenhar, ir, topoExtra: botaoConexao });
