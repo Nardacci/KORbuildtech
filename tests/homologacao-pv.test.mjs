@@ -50,10 +50,16 @@ async function entrar(chave, papel = 'admin') {
   return { ctx, p };
 }
 const texto = async (p) => (await p.locator('body').innerText()).replace(/\s+/g, ' ');
-async function abrir(p, hash, seletor) {
-  await p.goto(BASE + (REAL ? '' : '') + hash); await p.reload();
-  await p.waitForSelector(seletor, { timeout: 60000 }).catch(() => null);
-  await p.waitForTimeout(600);
+/* Abre uma rota e espera a tela ficar pronta: "pronto" roda dentro da página e devolve verdadeiro quando o conteúdo que importa apareceu (e o "Loading…" saiu).
+ * Com a rede de verdade a tela demora mais que no banco local: espera até 90 s e, se não vier, recarrega uma vez. */
+async function abrir(p, hash, pronto, arg) {
+  const espera = () => p.waitForFunction(([fn, a]) => { const t = document.body.innerText; return !/Loading…|Carregando…/.test(t) && new Function('a', 'return (' + fn + ')(a)')(a); }, [String(pronto), arg], { timeout: 90000 });
+  await p.goto(BASE + hash);
+  if (await espera().then(() => true, () => false)) { await p.waitForTimeout(400); return true; }
+  await p.reload();
+  const ok = await espera().then(() => true, () => false);
+  await p.waitForTimeout(400);
+  return ok;
 }
 
 try {
@@ -69,36 +75,44 @@ try {
     E('o painel mostra projetos, cotações e preços da empresa', /Projects by status/.test(painel) && /Material quotes/.test(painel) && /Catalog and prices/.test(painel), painel.slice(0, 200));
 
     // catálogo
-    await abrir(p, '#/measure/itens', 'table, .vazio');
+    await abrir(p, '#/measure/itens', (c) => document.body.innerText.includes(c), fam.itens[0].codigo);
     const itens = await texto(p);
     const faltam = fam.itens.filter((i) => !itens.includes(i.codigo));
     E('o catálogo tem os itens da família (' + fam.itens.length + ' novos além dos básicos)', faltam.length === 0, faltam.map((i) => i.codigo).join(','));
-    await abrir(p, '#/measure/assemblies', 'a[href*="#/measure/assembly/"], .vazio');
+    await abrir(p, '#/measure/assemblies', (n) => document.body.innerText.includes(n), fam.assemblies[0][0]);
     const nAsm = await p.locator('a[href*="#/measure/assembly/"]').count();
     const textoAsm = await texto(p);
     const asmFalta = fam.assemblies.filter(([n]) => !textoAsm.includes(n));
     E('os assemblies da família aparecem (' + fam.assemblies.length + ')', asmFalta.length === 0, asmFalta.map((a) => a[0]).join(' | '));
     E('há pelo menos 3 assemblies no total', nAsm >= 3, nAsm);
-    await abrir(p, '#/measure/precos', 'table, .vazio');
+    await abrir(p, '#/measure/precos', () => /Overhead|overhead|Margin|margin/.test(document.body.innerText));
     const precos = await texto(p);
     E('a tela de Preços abre com os itens e as margens', /Overhead|overhead|Margin|margin/.test(precos) && fam.itens.some((i) => precos.includes(i.codigo) || precos.includes(i.nome)), precos.slice(0, 160));
 
     // projetos: o primeiro com condições medidas
-    await abrir(p, '#/measure', 'a[href*="#/measure/projeto/"]');
+    await abrir(p, '#/measure', () => !!document.querySelector('a[href*="#/measure/projeto/"]'));
     const hrefs = await p.locator('a[href*="#/measure/projeto/"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute('href')).filter((h) => /^#\/measure\/projeto\/[0-9a-f-]{36}$/.test(h)))]);
     E('a lista de projetos tem projetos', hrefs.length >= 1, hrefs.length);
     let projetoComLista = null;
+    const candidatos = [];
     for (const h of hrefs) {
-      await abrir(p, h, '#mz-enviar, .mz-condicao, .cartao');
+      await abrir(p, h, () => !!document.querySelector('#mz-enviar, .mz-condicao, .cartao'));
       const t = await texto(p);
       const asmNoProjeto = fam.assemblies.filter(([n]) => t.includes(n)).length;
-      if (asmNoProjeto >= 2) { projetoComLista = h; E('o projeto "' + (await p.title()).slice(0, 30) + '..." tem as condições medidas com os assemblies da família (' + asmNoProjeto + ')', true); break; }
+      if (asmNoProjeto >= 2) candidatos.push(h);
     }
-    E('existe um projeto com as condições dos assemblies', !!projetoComLista, hrefs.join(' '));
+    E('existe um projeto com as condições dos assemblies (≥ 2 da família)', candidatos.length >= 1, hrefs.join(' '));
+    // dos projetos medidos, o que tem cotação enviada (tem os avisos de e-mail preparado) é o que a lista para cotação mostra por inteiro
+    for (const h of candidatos) {
+      const id = h.split('/').pop();
+      await abrir(p, '#/measure/projeto/' + id + '/cotacao', () => !!document.querySelector('.cot-fornecedor, .aviso-info'));
+      if (await p.locator('.cot-fornecedor .etiqueta-verde, .cot-fornecedor .etiqueta-azul').count()) { projetoComLista = h; break; }
+    }
+    projetoComLista = projetoComLista || candidatos[0] || null;
     if (projetoComLista) {
       const id = projetoComLista.split('/').pop();
       // lista para cotação
-      await abrir(p, '#/measure/projeto/' + id + '/cotacao', '.cot-fornecedor, .aviso-info');
+      await abrir(p, '#/measure/projeto/' + id + '/cotacao', () => !!document.querySelector('.cot-fornecedor, .aviso-info'));
       const secoes = await p.locator('.cot-fornecedor').count();
       const tcot = await texto(p);
       E('a lista para cotação separa os materiais por fornecedor (≥ 2 fornecedores)', secoes >= 2, secoes);
@@ -110,12 +124,12 @@ try {
       const forn = await p.locator('.cot-fornecedor a[href*="/imprimir"]').first().getAttribute('href').catch(() => null);
       E('há o PDF do pedido de cotação por fornecedor', !!forn, forn);
       if (forn) {
-        await abrir(p, forn, '.doc');
+        await abrir(p, forn, () => !!document.querySelector('.doc'));
         const doc = await texto(p);
         E('o pedido de cotação traz a obra, o prazo para responder e a tabela com colunas para o preço', /Request for quote|Pedido de cotação/.test(doc) && /Reply by|Responder até/.test(doc) && /Subtotal/.test(doc) && await p.locator('.doc-tabela tbody tr').count() >= 1, doc.slice(0, 220));
       }
       // proposta
-      await abrir(p, '#/measure/projeto/' + id + '/proposta', '#form-proposta, .aviso-info');
+      await abrir(p, '#/measure/projeto/' + id + '/proposta', () => !!document.querySelector('#form-proposta, .aviso-info'));
       E('a tela da proposta abre com as linhas por etapa', await p.locator('.prop-linhas tbody tr').count() >= 1);
     }
     await ctx.close();
