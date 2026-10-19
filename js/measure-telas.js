@@ -37,7 +37,7 @@ function navMeasure() {
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
     { id: 'precos', href: '#/measure/precos', rotulo: tr('Preços'), icone: 'dinheiro' },
-  ].concat(podeResponder() && !PRIMEIRA_VERSAO ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : []);
+  ].concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : []);
 }
 // o visor da planta usa a tela inteira, sem o menu lateral
 function moldura(o) {
@@ -64,8 +64,8 @@ export function telaMeasure(q) {
     return telaProjeto(q[1]);
   }
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
-  if (q[0] === 'convites' && podeResponder() && !PRIMEIRA_VERSAO) return telaConvites(moldura);
-  if (q[0] === 'convite' && podeResponder() && !PRIMEIRA_VERSAO) return telaConvite(moldura, q[1]) || { trocar: '#/measure/convites' };
+  if (q[0] === 'convites' && podeResponder()) return telaConvites(moldura);
+  if (q[0] === 'convite' && podeResponder()) return telaConvite(moldura, q[1]) || { trocar: '#/measure/convites' };
   if (q[0] === 'itens') return telaItens();
   if (q[0] === 'precos') return telaPrecos(moldura);
   if (q[0] === 'assemblies') return telaAssemblies();
@@ -186,7 +186,8 @@ function telaProjeto(id) {
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + (tr('Lista para cotação') + '</a>') +
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/proposta">' + icone('daily', 16) + tr('Proposta') + ((p.propostas || []).length ? ' · ' + p.propostas[p.propostas.length - 1].numero : '') + '</a>' +
       '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + (tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="') + p.id + '" class="visualmente-oculto"></label></div>',
-    conteudo: (PRIMEIRA_VERSAO ? '' : htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p)) +
+    conteudo: htmlFaixaConcorrencia(p) + (PRIMEIRA_VERSAO ? '' : htmlConcorrenciasDoProjeto(p)) +   // 1ª versão: recebe convites (Measure), mas não manda concorrências (esse lado é o módulo Concorrências)
+
       '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
         dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="#/daily/obras/' + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +

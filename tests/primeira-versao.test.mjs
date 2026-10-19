@@ -79,6 +79,8 @@ try {
     await a.p.waitForSelector('h1', { timeout: 30000 });
     const m = await texto(a.p);
     verificar(/Measure Takeoff/.test(m), 'o Measure abre e se chama Measure Takeoff', m.slice(0, 200));
+    const menuMeasure = (await a.p.locator('.lateral a, nav a, aside a').allInnerTexts().catch(() => [])).join(' | ');
+    verificar(/Invitations/.test(menuMeasure), 'o menu do Measure Takeoff tem os convites para cotar recebidos', menuMeasure.slice(0, 200));
     verificar(await a.p.locator('.sino summary').count() === 1, 'o sininho segue funcionando (sem avisos de outros módulos)');
     await a.ctx.close();
   }
