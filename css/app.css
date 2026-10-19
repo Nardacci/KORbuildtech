@@ -1560,3 +1560,23 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 @media (max-width: 560px) { .ini-ranking li { grid-template-columns: 1fr auto; } .ini-ranking .ini-barra { grid-column: 1 / -1; } }
 .ini-saudacao { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; } .ini-saudacao .oficial-titulo { margin-bottom: 2px; } .ini-saudacao .mudo { margin: 0; }
 .ini-tabela th { white-space: normal; } .ini-kpi-valor { font-size: 21px; }
+
+/* ---------- Início em tela cheia e menu lateral do Settings (1ª versão) ---------- */
+.oficial-pagina.ini-pagina { max-width: none; width: 100%; padding: 0; margin: 0; gap: 0; }
+.ini-pagina > .aviso { margin: 12px 20px 0; }
+.ini-pagina .ini-painel { border-radius: 0; margin: 0; min-height: calc(100vh - 57px); padding: 22px clamp(16px, 2.6vw, 44px) 28px; gap: 18px; }
+.ini-topo { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.ini-ola { margin: 0; font-size: 30px; letter-spacing: -0.4px; color: #fff; } .ini-saudacao .ini-sub { margin: 4px 0 0; font-size: 14px; color: #8b93a0; }
+.ini-botoes { display: flex; flex-wrap: wrap; gap: 12px; }
+.ini-botao { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-radius: 12px; color: #fff !important; text-decoration: none !important; min-width: 250px; border: 1px solid transparent; }
+.ini-botao span { display: flex; flex-direction: column; line-height: 1.25; } .ini-botao b { font-size: 17px; } .ini-botao small { font-size: 12px; opacity: .85; }
+.ini-botao-takeoff { background: linear-gradient(180deg, #f3813a, #d9621b); } .ini-botao-settings { background: #2a2e35; border-color: #3d424b; }
+.ini-botao:hover { filter: brightness(1.1); }
+/* o bloco "Precisa de você agora" é o que chama primeiro: moldura e fundo próprios */
+.ini-painel .ini-acao-bloco { background: linear-gradient(135deg, #4d2210 0%, #2e1b14 70%); border: 2px solid #f3813a; box-shadow: 0 0 0 4px rgba(243, 129, 58, .14), 0 8px 26px rgba(0, 0, 0, .35); }
+.ini-acao-bloco .ini-titulo { display: flex; align-items: center; gap: 8px; font-size: 20px; color: #ffb98a; } .ini-acao-bloco .ini-titulo svg { color: #f3813a; }
+.ini-acao-bloco .ini-sub { color: #d9a98a; }
+.ini-rodape { margin-top: auto; padding-top: 8px; font-size: 13px; }
+.abas-segmento.so-celular { display: none; }
+@media (max-width: 900px) { .abas-segmento.so-celular { display: flex; } .ini-botao { min-width: 0; flex: 1 1 220px; } }
+.ini-topo .ini-saudacao { display: block; }

@@ -35,7 +35,7 @@ function htmlAcao(cards) {
     return '<a class="ini-acao ini-acao-' + t.cor + (c.n ? '' : ' ini-acao-vazio') + '" href="' + c.href + '"><b class="ini-acao-n">' + t.n + '</b><span class="ini-acao-txt"><b>' + t.titulo + '</b><span>' + (c.n ? t.nota : tr('Nada pendente')) + '</span></span>' + icone('seta', 16) + '</a>';
   }).join('');
   const pend = cards.reduce((s, c) => s + (c.n ? 1 : 0), 0);
-  return '<section class="ini-bloco ini-acao-bloco"><header class="ini-cab"><div><h2 class="ini-titulo">' + tr('Precisa de você agora') + '</h2><p class="ini-sub">' + (pend ? tr('Itens que precisam de atenção imediata') : tr('Tudo em dia por aqui')) + '</p></div></header><div class="ini-acoes">' + itens + '</div></section>';
+  return '<section class="ini-bloco ini-acao-bloco"><header class="ini-cab"><div><h2 class="ini-titulo">' + icone('sino', 22) + ' ' + tr('Precisa de você agora') + '</h2><p class="ini-sub">' + (pend ? tr('Itens que precisam de atenção imediata') : tr('Tudo em dia por aqui')) + '</p></div></header><div class="ini-acoes">' + itens + '</div></section>';
 }
 
 function rosca(porSituacao, total) {
@@ -139,8 +139,8 @@ function htmlPrecos(p, dinheiro) {
 
 /* calc: o que calcularInicio() devolveu; o: { ver } */
 export function htmlPainelInicio(calc, o) {
-  return '<div class="ini-painel">' + htmlAcao(calc.acao) +
+  return '<div class="ini-painel">' + (o.cabeca || '') + htmlAcao(calc.acao) +
     '<div class="ini-grade ini-g3">' + (calc.projetos ? htmlProjetos(calc.projetos) : '') + htmlDinheiro(calc.projetos) + htmlCotacoes(calc.cotacoes) + '</div>' +
     '<div class="ini-grade ini-g2">' + htmlConcorrencias(calc.concorrencias, o.ver) + htmlPrazos(calc.prazos) + '</div>' +
-    '<div class="ini-grade ini-g2b">' + htmlParceiras(calc.parceiras) + htmlPrecos(calc.precos, o.ver.dinheiro) + '</div></div>';
+    '<div class="ini-grade ini-g2b">' + htmlParceiras(calc.parceiras) + htmlPrecos(calc.precos, o.ver.dinheiro) + '</div>' + (o.rodape || '') + '</div>';
 }

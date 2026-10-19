@@ -16,6 +16,11 @@ O Início da conta (`#/conta`) deixa de ser dois cartões com botão e passa a m
 | Minhas parceiras | empresas que convidei para cotar: obra em comum (a minha), propostas, tempo de resposta, dias restantes da **minha** obra; sem conta aparece "só pelo link" | `concorrencias.gerir` |
 | Catálogo e preços | itens sem preço novo há mais de 90 dias; margem vigente (overhead + lucro) | `measure.medir` (margem: quem vê dinheiro) |
 
+## Layout
+
+- **Início em tela cheia:** o painel ocupa a largura toda abaixo do cabeçalho; saudação, os dois botões (**Takeoff** e **Settings**) e o link do manual ficam dentro dele. "Precisa de você agora" tem moldura e fundo laranja próprios.
+- **Menu lateral no Settings** (1ª versão): Início, Obras, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil, como o menu do Takeoff, que ganhou o item **Início** (volta ao painel). No celular o menu vira as abas de antes.
+
 Não há custo gasto nem valor realizado: isso depende do Crew e de lançamentos de custo (fora desta versão).
 
 Teste: `tests/inicio-primeira-versao.test.mjs` (cálculo sozinho e 7 logins da massa pv, em PT e EN).

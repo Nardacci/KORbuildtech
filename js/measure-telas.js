@@ -32,12 +32,12 @@ let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; }
 
 export function navMeasure() {
-  return [
+  return (PRIMEIRA_VERSAO ? [{ id: 'inicio', href: '#/conta', rotulo: tr('Início'), icone: 'painel' }] : []).concat([
     { id: 'projetos', href: '#/measure', rotulo: tr('Projetos'), icone: 'obras' },
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
     { id: 'precos', href: '#/measure/precos', rotulo: tr('Preços'), icone: 'dinheiro' },
-  ].concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : [])
+  ]).concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : [])
     .concat(PRIMEIRA_VERSAO && pode(usuarioAtual(), 'concorrencias.gerir') ? [{ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' }] : []);   // 1ª versão: quem convida (o resto do Daily fica oculto)
 }
 // o visor da planta usa a tela inteira, sem o menu lateral

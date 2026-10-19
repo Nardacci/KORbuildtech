@@ -97,6 +97,7 @@ export function telaOficial(p) {
     return r.trocar ? r : { html: moldura(aba, r.html), depois: r.depois };
   }
   if (aba !== 'inicio') return { trocar: '#/conta' };
+  if (temPainelDoInicio() && espelhoProntoParaOInicio()) return { html: moldura('inicio', htmlInicioComPainel(), { cheio: true }) };
   return { html: moldura('inicio', htmlInicio()) };
 }
 
@@ -166,15 +167,23 @@ function telaNovaEmpresa() {
 
 /* ---------- Área da conta ---------- */
 
-function moldura(ativa, conteudo) {
+const ICONES_DO_SETTINGS = { obras: 'obras', contatos: 'crew', funcionarios: 'crew', regras: 'settings', usuarios: 'crew', perfis: 'aprovacoes', empresa: 'conta', perfil: 'settings' };
+/* A moldura da área da conta. Na 1ª versão: o Início é o painel, em tela cheia (opcoes.cheio), e as outras telas do Settings têm o menu
+ * lateral, como o Takeoff (no celular o menu vira as abas de sempre). */
+function moldura(ativa, conteudo, opcoes = {}) {
   const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos' || k === 'obras')).map(([k, nome]) => [k, tr(nome)]))
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
-  return '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ Settings</span>' : '') +
+  const topo = '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ ' + (opcoes.cheio ? tr('Início') : 'Settings') + '</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
-      htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>' +
-    '<main class="pagina pagina-larga oficial-pagina">' +
-      '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + abas.map(([k, r]) => '<a href="#/conta' + (k === 'inicio' ? '' : '/' + k) + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
-      htmlAvisoDoPlano() + htmlAvisoInstalar() + conteudo + '</main>';
+      htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>';
+  const href = (k) => '#/conta' + (k === 'inicio' ? '' : '/' + k);
+  const avisos = htmlAvisoDoPlano() + htmlAvisoInstalar();
+  if (PRIMEIRA_VERSAO && opcoes.cheio) return topo + '<main class="oficial-pagina ini-pagina">' + avisos + conteudo + '</main>';
+  const segmento = '<nav class="abas-segmento' + (PRIMEIRA_VERSAO ? ' so-celular' : '') + '" aria-label="' + tr('Seções') + '">' + abas.map(([k, r]) => '<a href="' + href(k) + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>';
+  if (!PRIMEIRA_VERSAO) return topo + '<main class="pagina pagina-larga oficial-pagina">' + segmento + avisos + conteudo + '</main>';
+  const lateral = '<nav class="lateral" aria-label="' + tr('Seções') + '"><span class="lateral-titulo">Settings</span>' +
+    abas.map(([k, r]) => '<a class="lateral-item' + (k === ativa ? ' ativo' : '') + '" href="' + href(k) + '"' + (k === ativa ? ' aria-current="page"' : '') + '>' + icone(k === 'inicio' ? 'painel' : (ICONES_DO_SETTINGS[k] || 'settings')) + '<span>' + r + '</span></a>').join('') + '</nav>';
+  return topo + '<div class="corpo com-lateral">' + lateral + '<main class="pagina pagina-larga oficial-pagina" id="conteudo">' + segmento + avisos + conteudo + '</main></div>';
 }
 
 /** Conta suspensa (só lê) ou teste vencido: o aviso fica no alto de toda tela da conta (docs/banco.md §15.6). */
@@ -201,25 +210,25 @@ function iniciarTelaDiagnostico() {
 /* O painel do Início (1ª versão): para quem mede, convida ou responde convites. Precisa do espelho do banco (o app o carrega ao abrir o Início). */
 export const temPainelDoInicio = () => PRIMEIRA_VERSAO && !!conta.membro && (pode('measure.medir') || pode('concorrencias.gerir') || pode('concorrencias.responder'));
 export const espelhoProntoParaOInicio = () => !!(espelho.pronto && estado() && estado().oficial && conta.empresa && estado().empresa.id === conta.empresa.id);
-function htmlPainel() {
+function htmlPainel(cabeca, rodape) {
   const medir = pode('measure.medir');
   const ver = { medir, dinheiro: medir && (pode('measure.catalogo') || pode('crew.custos')), concorrenciasEnviadas: pode('concorrencias.gerir'), concorrenciasRecebidas: pode('concorrencias.responder'), obras: pode('settings.obras') || medir };
   const dados = { ...estado(), concorrencias: (bancoDeDados() || {}).concorrencias || [] };   // as concorrências ficam fora das empresas, numa lista só
   const calc = calcularInicio(dados, { eu: conta.empresa.id, agora: Date.now(), ver, itensDaLista: (id) => { try { return listaDeCotacao(id).total; } catch { return 0; } } });
-  return htmlPainelInicio(calc, { ver });
+  return htmlPainelInicio(calc, { ver, cabeca, rodape });
 }
 function htmlInicioComPainel() {
-  return '<section class="cartao ini-saudacao"><div><h1 class="oficial-titulo">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
-      '<p class="mudo">' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</p></div>' +
-    '<div class="btn-linha">' + (pode('measure.medir') ? '<a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + tr('Abrir o Measure Takeoff') + '</a>' : '') +
-      (pode('concorrencias.gerir') ? '<a class="btn btn-contorno" href="#/daily/concorrencias">' + icone('tabela', 18) + tr('Abrir as concorrências') + '</a>' : '') +
-      (!pode('concorrencias.gerir') && pode('concorrencias.responder') ? '<a class="btn btn-contorno" href="#/measure/convites">' + icone('sino', 18) + tr('Convites') + '</a>' : '') + '</div></section>' +
-    htmlPainel() +
-    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Manual do usuário') + '</h2><div class="btn-linha"><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>';
+  const rotaDoSettings = pode('settings.obras') ? '#/conta/obras' : pode('settings.contatos') ? '#/conta/contatos' : '#/conta/empresa';
+  const rotaDoTakeoff = pode('measure.medir') ? '#/measure' : '#/measure/convites';
+  const cabeca = '<header class="ini-topo"><div class="ini-saudacao"><h1 class="ini-ola">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
+      '<p class="ini-sub">' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</p></div>' +
+    '<div class="ini-botoes"><a class="ini-botao ini-botao-takeoff" href="' + rotaDoTakeoff + '">' + icone('tabela', 22) + '<span><b>Takeoff</b><small>' + tr('Plantas, quantidades e propostas') + '</small></span></a>' +
+      '<a class="ini-botao ini-botao-settings" href="' + rotaDoSettings + '">' + icone('settings', 22) + '<span><b>Settings</b><small>' + tr('Obras, contatos, usuários e empresa') + '</small></span></a></div></header>';
+  const rodape = '<footer class="ini-rodape"><a href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></footer>';
+  return htmlPainel(cabeca, rodape);
 }
 
 function htmlInicio() {
-  if (temPainelDoInicio() && espelhoProntoParaOInicio()) return htmlInicioComPainel();
   return '<section class="cartao"><h1 class="oficial-titulo">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
       '<dl class="lista-dados"><dt>' + tr('Empresa') + '</dt><dd>' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + '</dd>' +
       '<dt>' + tr('Seu acesso') + '</dt><dd>' + esc(nomeDoPerfil(conta.perfil)) + ' · ' + esc(emailAtual()) + '</dd>' +

@@ -3417,4 +3417,6 @@ export const EN = {
   'menos de 1 hora': 'less than 1 hour',
   '{n} hora': '{n} hour',
   '{n} horas': '{n} hours',
+  'Plantas, quantidades e propostas': 'Plans, quantities and proposals',
+  'Obras, contatos, usuários e empresa': 'Jobs, contacts, users and company',
 };

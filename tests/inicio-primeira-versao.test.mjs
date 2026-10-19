@@ -133,6 +133,34 @@ try {
     await o.ctx.close();
   }
 
+  console.log('Layout: tela cheia, dois botões, destaque e menu lateral do Settings');
+  {
+    const { ctx, p } = await painel('c1', 'admin');
+    const largura = await p.evaluate(() => ({ painel: document.querySelector('.ini-painel').getBoundingClientRect().width, janela: window.innerWidth, abas: !!document.querySelector('.abas-segmento:not(.so-celular)') }));
+    verificar('o painel ocupa a largura toda, sem abas nem menu no Início', largura.painel >= largura.janela - 20 && !largura.abas && await p.locator('.lateral').count() === 0, JSON.stringify(largura));
+    verificar('tudo dentro do painel: saudação, os dois botões e o manual', await p.locator('.ini-painel .ini-ola').count() === 1 && await p.locator('.ini-painel .ini-botao').count() === 2 && await p.locator('.ini-painel .ini-rodape a').count() === 1);
+    const botoes = await p.locator('.ini-botao').allInnerTexts();
+    verificar('os botões são Takeoff e Settings', /Takeoff/.test(botoes[0]) && /Settings/.test(botoes[1]), botoes.join(' | '));
+    const fundo = await p.evaluate(() => getComputedStyle(document.querySelector('.ini-acao-bloco')).borderTopColor);
+    verificar('o bloco "Precisa de você agora" tem moldura laranja própria', /243, 129, 58/.test(fundo), fundo);
+    await p.screenshot({ path: process.env.PRINT_C1 || '/tmp/inicio-c1.png', fullPage: true });
+    await p.click('.ini-botao-settings');
+    await p.waitForSelector('.lateral', { timeout: 15000 });
+    const itens = (await p.locator('.lateral-item').allInnerTexts()).map((t) => t.trim());
+    verificar('o Settings tem menu lateral com Início, Obras, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil', ['Início', 'Obras', 'Contatos', 'Usuários', 'Perfis de acesso', 'Empresa', 'Meu perfil'].every((n) => itens.includes(n)), itens.join(' | '));
+    verificar('o item da tela aberta fica marcado (Obras)', /Obras/.test(await p.locator('.lateral-item.ativo').innerText()));
+    await p.click('.lateral-item:has-text("Contatos")');
+    await p.waitForSelector('.lateral-item.ativo:has-text("Contatos")', { timeout: 15000 });
+    await p.click('.lateral-item:has-text("Início")');
+    await p.waitForSelector('.ini-painel', { timeout: 30000 });
+    verificar('"Início" do menu volta ao painel', await p.locator('.ini-painel').count() === 1);
+    await p.click('.ini-botao-takeoff');
+    await p.waitForSelector('.lateral-item:has-text("Início")', { timeout: 30000 });
+    const takeoff = (await p.locator('.lateral-item').allInnerTexts()).map((t) => t.trim());
+    verificar('o Takeoff também tem o Início no menu lateral, junto com Projetos e Concorrências', takeoff.includes('Início') && takeoff.includes('Projetos') && takeoff.some((t) => /Concorr/.test(t)), takeoff.join(' | '));
+    await ctx.close();
+  }
+
   console.log('Inglês e links');
   {
     const { ctx, p } = await painel('c1', 'admin', 'en');
@@ -140,7 +168,7 @@ try {
     verificar('os títulos saem em inglês', /Needs you now/.test(t) && /Projects by status/.test(t) && /Job deadlines/.test(t) && /My partners/.test(t) && /Catalog and prices/.test(t), t.slice(0, 300));
     verificar('nada sem tradução (sem português solto no painel)', !/Precisa de você|Dinheiro em jogo|Prazo das obras|Minhas parceiras/.test(await p.locator('.ini-painel').innerText()));
     const hrefs = await p.locator('.ini-painel a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^#\/(measure|daily\/concorrencias|conta\/obras)/.test(h)), hrefs.join(' '));
+    verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^(#\/(measure|daily\/concorrencias|conta\/obras)|portal)/.test(h)), hrefs.join(' '));
     await ctx.close();
   }
 } finally {
