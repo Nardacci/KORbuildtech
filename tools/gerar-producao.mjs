@@ -23,6 +23,12 @@ for (const item of COPIAR) {
 }
 cpSync(join(RAIZ, 'portal-measure'), join(SAIDA, 'portal'), { recursive: true });
 
+// o app instalado se chama KORbuild Takeoff (a homologação, com o mesmo código, mantém o nome KORbuild)
+const manifesto = JSON.parse(readFileSync(join(SAIDA, 'manifest.webmanifest'), 'utf8'));
+manifesto.name = 'KORbuild Takeoff'; manifesto.short_name = 'Takeoff';
+manifesto.description = 'KORbuild Takeoff: medição de plantas, quantidades de material, cotações e propostas.';
+writeFileSync(join(SAIDA, 'manifest.webmanifest'), JSON.stringify(manifesto, null, 2) + '\n');
+
 // outro projeto Supabase para produção (recomendado: o de homologação fica com os dados de teste): KOR_SUPABASE_URL e KOR_SUPABASE_ANON_KEY (a chave pública "anon"/publishable; nunca a service_role)
 if (process.env.KOR_SUPABASE_URL || process.env.KOR_SUPABASE_ANON_KEY) {
   const url = process.env.KOR_SUPABASE_URL, chave = process.env.KOR_SUPABASE_ANON_KEY;

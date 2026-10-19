@@ -32,7 +32,7 @@ const ABAS = () => [['empresas', tr('Empresas')], ['valores', tr('Valores padrã
 function moldura(ativa, conteudo) {
   const email = conta.sessao && conta.sessao.user ? conta.sessao.user.email : '';
   return '<header class="topo"><div class="topo-dentro">' +
-      '<a class="topo-marca" href="#empresas" aria-label="KORbuild">' + marca(26) + logotipo({ classe: 'topo-nome' }) + '</a>' +
+      '<a class="topo-marca" href="#empresas" aria-label="KORbuild">' + marca(26) + logotipo({ produto: false, classe: 'topo-nome' }) + '</a>' +
       '<span class="topo-sep" aria-hidden="true"></span><span class="topo-modulo">' + tr('Administração da plataforma') + '</span>' +
       '<span class="topo-espaco"></span>' + htmlSeletorIdioma() +
       '<a class="btn btn-contorno btn-pequeno" style="white-space:nowrap" href="index.html#/inicio" title="' + esc(email) + '">' + tr('Voltar ao KORbuild') + '</a>' +

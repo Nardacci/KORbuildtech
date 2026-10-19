@@ -3307,11 +3307,11 @@ export const EN = {
   'Ainda sem GPS. Siga os passos do aviso e tente de novo.': 'Still no GPS. Follow the steps in the notice and try again.',
 
   // ---------- Entrada ----------
-  'O que o Measure Takeoff faz e o manual do usuário': 'What Measure Takeoff does and the user manual',
+  'O que o KORbuild Takeoff faz e o manual do usuário': 'What KORbuild Takeoff does and the user manual',
 
   // ---------- Entrada ----------
   'Manual do usuário': 'User manual',
-  'Abrir o Measure Takeoff': 'Open Measure Takeoff',
+  'Abrir o Takeoff': 'Open Takeoff',
 
   // ---------- Entrada ----------
   'cadastrado.': 'yet.',

@@ -42,7 +42,7 @@ try {
   await p.goto(URL_BASE);
   await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
   const t = (await p.locator('body').innerText()).replace(/\s+/g, ' ');
-  verificar(/Measure Takeoff/.test(t) && !/Daily|Crew|Bids|Concorr/.test(t), 'só fala do Measure Takeoff', t.slice(0, 250));
+  verificar(/Takeoff/.test(t) && !/Daily|Crew|Bids|Concorr/.test(t), 'só fala do KORbuild Takeoff', t.slice(0, 250));
   verificar(await p.locator('a[href*="demo"]').count() === 0 && await p.locator('a[href*="teste-"]').count() === 0, 'sem link do protótipo nem dos roteiros');
   await p.goto(URL_BASE + '?demo#/entrar');
   await p.waitForSelector('#form-login-oficial, #form-login', { timeout: 30000 });

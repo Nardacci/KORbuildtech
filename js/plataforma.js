@@ -260,7 +260,7 @@ export function paginaEntrada(conteudo) {
 
 /* Os dois caminhos sem conta: o portal e o protótipo. */
 export function htmlCaminhosEntrada() {
-  const portal = '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + (PRIMEIRA_VERSAO ? tr('O que o Measure Takeoff faz e o manual do usuário') : tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário')) + '</span></span>' + icone('seta', 18) + '</a>';
+  const portal = '<a class="login-caminho" href="' + URL_PORTAL + '">' + icone('daily', 20) + '<span><b>' + tr('Especificações e manual') + '</b><span class="mudo">' + (PRIMEIRA_VERSAO ? tr('O que o KORbuild Takeoff faz e o manual do usuário') : tr('O que o KORbuild faz, as regras de cada módulo e o manual do usuário')) + '</span></span>' + icone('seta', 18) + '</a>';
   if (PRIMEIRA_VERSAO) return '<div class="login-caminhos">' + portal + '</div>';   // 1ª versão: sem protótipo e sem roteiros de teste no celular
   return '<div class="login-caminhos">' + portal +
     '<a class="login-caminho" href="' + URL_PROTOTIPO + '">' + icone('play', 20) + '<span><b>' + tr('Abrir o protótipo') + '</b><span class="mudo">' + tr('Com dados de exemplo, sem conta: para conhecer e apresentar') + '</span></span>' + icone('seta', 18) + '</a>' +

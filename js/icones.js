@@ -1,3 +1,4 @@
+import { PRIMEIRA_VERSAO } from './versao.js';
 /* KORbuild — ícones de traço (24×24), usados em toda a plataforma. */
 
 const P = {
@@ -50,9 +51,10 @@ export function icone(nome, tamanho) {
 /* Marca KORbuild: monograma "K" num quadrado com canto cortado. */
 export function marca(tamanho) {
   const t = tamanho || 28;
-  return '<svg class="marca-k" width="' + t + '" height="' + t + '" viewBox="0 0 32 32" aria-hidden="true">' +
-    '<path d="M4 4h18l6 6v18H4z" fill="currentColor"/>' +
-    '<path d="M11 9v14M11 16.5L19 9M13.5 14.2L20 23" stroke="#fff" stroke-width="3" stroke-linecap="square" fill="none"/></svg>';
+  // o K aprovado (docs/guia-da-marca.md): haste e braço de cima em laranja; a diagonal de baixo em grafite (branco sobre fundo escuro) com a dobra em tom suave
+  return '<svg class="marca-k" width="' + t + '" height="' + t + '" viewBox="0 0 100 100" aria-hidden="true">' +
+    '<path class="k-haste" d="M8 4h24v92H8z"/><path class="k-braco" d="M32 50L66 4h30L52 62l-20 6z"/>' +
+    '<path class="k-baixo" d="M32 68l20-6 44 34H66L32 72z"/><path class="k-dobra" d="M52 62l20 16-32-2z"/></svg>';
 }
 
 /* Logotipo: "KOR" em peso forte + "build" em peso leve. O símbolo K entra quando houver espaço
@@ -64,5 +66,6 @@ export function logotipo(opcoes) {
   const o = opcoes || {};
   return '<span class="logo' + (o.classe ? ' ' + o.classe : '') + '">' +
     (o.simbolo ? marca(o.simbolo) : '') +
-    '<span class="logo-texto" aria-label="KORbuild"><b>KOR</b><span>build</span></span></span>';
+    '<span class="logo-texto" aria-label="KORbuild"><b>KOR</b><span>build</span></span>' +
+    (PRIMEIRA_VERSAO && o.produto !== false ? '<span class="logo-produto">Takeoff</span>' : '') + '</span>';
 }

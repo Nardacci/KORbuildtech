@@ -102,7 +102,7 @@ try {
     verificar('2 projetos (1 proposta emitida e 1 rascunho)', /2 projetos no total/.test(t) && /Proposta emitida\s*1/.test(t) && /Rascunho\s*1/.test(t), t.match(/Projetos por status.{0,200}/));
     verificar('recebidos: 3 convites (2 com proposta e 1 recusado)', /Recebidas por nós 3 convites recebidos/.test(t) && /Proposta enviada\s*2/.test(t) && /Recusado\s*1/.test(t), t.match(/Recebidas por nós.{0,200}/));
     verificar('enviadas: 1 fechada (Soffit and fascia)', /Enviadas por nós 1 concorr/.test(t) && /Fechadas\s*1/.test(t));
-    verificar('as cotações de material aparecem (sem lista enviada ainda)', /Cotações de material/.test(t) && /0 Listas enviadas/.test(t), t.match(/Cotações de material.{0,160}/));
+    verificar('as cotações de material aparecem com as listas enviadas', /Cotações de material/.test(t) && /\d+ Listas enviadas/.test(t), t.match(/Cotações de material.{0,160}/));
     verificar('o catálogo tem itens, com margem vigente', /Catálogo e preços/.test(t) && /Margem vigente/.test(t));
     await ctx.close();
   }

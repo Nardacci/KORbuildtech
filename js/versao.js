@@ -22,4 +22,9 @@ export const PRIMEIRA_VERSAO = NO_DOMINIO || preferenciaDoNavegador();
 /** Os módulos que a empresa abre nesta versão (o Settings vem em todo plano). */
 export const MODULOS_DA_VERSAO = PRIMEIRA_VERSAO ? ['measure'] : ['daily', 'crew', 'measure'];
 
-export const NOME_MEASURE = PRIMEIRA_VERSAO ? 'Measure Takeoff' : 'Measure';
+export const NOME_MEASURE = PRIMEIRA_VERSAO ? 'Takeoff' : 'Measure';   // o produto é "KORbuild Takeoff": no topo, o logotipo já traz o KORbuild
+
+try {   // as cores e o título seguem a versão (css/app.css: [data-versao="primeira"])
+  document.documentElement.dataset.versao = PRIMEIRA_VERSAO ? 'primeira' : 'completa';
+  if (PRIMEIRA_VERSAO && document.title === 'KORbuild') document.title = 'KORbuild Takeoff';
+} catch { /* sem documento (testes em Node) */ }

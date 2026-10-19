@@ -1580,3 +1580,15 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .abas-segmento.so-celular { display: none; }
 @media (max-width: 900px) { .abas-segmento.so-celular { display: flex; } .ini-botao { min-width: 0; flex: 1 1 220px; } }
 .ini-topo .ini-saudacao { display: block; }
+
+/* ---------- A marca aprovada: KORbuild Takeoff (docs/guia-da-marca.md) ---------- */
+.marca-k .k-haste, .marca-k .k-braco { fill: #F26A1B; } .marca-k .k-baixo { fill: #141B26; } .marca-k .k-dobra { fill: #5D6B82; }
+.ini-painel .marca-k .k-baixo, .escuro .marca-k .k-baixo { fill: #fff; } .ini-painel .marca-k .k-dobra, .escuro .marca-k .k-dobra { fill: #C9CED6; }
+.logo-produto { margin-left: 8px; padding-left: 10px; border-left: 1px solid var(--borda-forte); font-size: 0.56em; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: var(--primario); line-height: 1; }
+:root[data-versao="primeira"] { --cor-measure: var(--primario); }   /* o Takeoff é laranja; o índigo fica só no app completo */
+.login-marca .marca-k .k-baixo { fill: #fff; } .login-marca .marca-k .k-dobra { fill: #C9CED6; }   /* o painel escuro da entrada */
+.login-logotipo { display: flex; align-items: center; flex-wrap: wrap; }
+.login-logotipo .logo-produto { font-size: 0.24em; margin-left: 20px; padding-left: 20px; border-left-color: #3d424b; color: #F26A1B; letter-spacing: 0.3em; }
+:root[data-versao="primeira"] { --cor-measure-claro: #FFF2EA; }
+:root[data-versao="primeira"] .modulo-measure { --fundo-modulo: #FFF2EA; }
+:root[data-versao="primeira"] .login-modulos .modulo-measure { --cor-modulo-claro: #FDA36B; }

@@ -46,7 +46,7 @@ try {
     await p.goto(BASE + '?versao=primeira');
     await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
     const t = await texto(p);
-    verificar(/Measure Takeoff/.test(t) && !/Daily|Crew/.test(t), 'a entrada fala do Measure Takeoff e não do Daily nem do Crew', t.slice(0, 300));
+    verificar(/Takeoff/.test(t) && !/Daily|Crew/.test(t), 'a entrada fala do Takeoff e não do Daily nem do Crew', t.slice(0, 300));
     verificar(await p.locator('a[href*="demo"]').count() === 0 && await p.locator('a[href*="teste-"]').count() === 0, 'sem link do protótipo nem dos roteiros de teste no celular');
     verificar(await p.evaluate(() => localStorage.getItem('kbt.versao')) === 'primeira', 'o ?versao=primeira fica guardado neste navegador');
     await p.goto(BASE + '?versao=completa');
@@ -81,7 +81,7 @@ try {
     await a.p.goto(BASE + '#/daily/concorrencias');
     await a.p.waitForTimeout(1500);
     const tc = await texto(a.p);
-    verificar(/Bids/.test(tc) && /Measure Takeoff/.test(tc) && !/Daily|Crew/.test(tc.replace(/Dados/g, '')) && /measure|concorrencias/.test(await a.p.evaluate(() => location.hash)), 'as concorrências abrem dentro do Measure Takeoff', (await a.p.evaluate(() => location.hash)) + ' · ' + tc.slice(0, 200));
+    verificar(/Bids/.test(tc) && /Takeoff/.test(tc) && !/Daily|Crew/.test(tc.replace(/Dados/g, '')) && /measure|concorrencias/.test(await a.p.evaluate(() => location.hash)), 'as concorrências abrem dentro do Measure Takeoff', (await a.p.evaluate(() => location.hash)) + ' · ' + tc.slice(0, 200));
     await a.p.goto(BASE + '#/conta/obras/nova');
     await a.p.waitForSelector('#form-obra', { timeout: 20000 });
     const to = await texto(a.p);
@@ -89,7 +89,7 @@ try {
     await a.p.goto(BASE + '#/measure');
     await a.p.waitForSelector('h1', { timeout: 30000 });
     const m = await texto(a.p);
-    verificar(/Measure Takeoff/.test(m), 'o Measure abre e se chama Measure Takeoff', m.slice(0, 200));
+    verificar(/Takeoff/.test(m), 'o Measure abre e se chama Takeoff', m.slice(0, 200));
     const menuMeasure = (await a.p.locator('.lateral a, nav a, aside a').allInnerTexts().catch(() => [])).join(' | ');
     verificar(/Invitations/.test(menuMeasure) && /Bids/.test(menuMeasure), 'o menu do Measure Takeoff tem os convites recebidos e as concorrências', menuMeasure.slice(0, 200));
     verificar(await a.p.locator('.sino summary').count() === 1, 'o sininho segue funcionando (sem avisos de outros módulos)');
@@ -102,7 +102,7 @@ try {
     await a.p.goto(BASE + '#/conta');
     await a.p.waitForSelector('.oficial-titulo', { timeout: 30000 });
     const t = await texto(a.p);
-    verificar(/Daily/.test(t) && /Crew/.test(t) && !/Measure Takeoff/.test(t), 'sem a 1ª versão, a conta continua com Daily, Crew e Measure', t.slice(0, 300));
+    verificar(/Daily/.test(t) && /Crew/.test(t) && !/Takeoff/.test(t), 'sem a 1ª versão, a conta continua com Daily, Crew e Measure', t.slice(0, 300));
     await a.ctx.close();
   }
   verificar(!erros.length, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));

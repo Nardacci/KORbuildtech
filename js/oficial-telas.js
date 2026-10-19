@@ -243,7 +243,7 @@ function htmlInicio() {
       : '') +
     ((conta.empresa.atuacao !== 'construtora' || PRIMEIRA_VERSAO) && pode('measure.medir')
       ? '<section class="cartao"><h2 class="cartao-titulo">' + NOME_MEASURE + '</h2><p>' + (PRIMEIRA_VERSAO ? tr('Abra a planta em PDF, defina a escala, meça em pés e polegadas, monte as quantidades e emita a proposta. No computador.') : tr('A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.')) + '</p>' +
-        '<div class="btn-linha"><a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + (PRIMEIRA_VERSAO ? tr('Abrir o Measure Takeoff') : tr('Abrir o Measure')) + '</a></div></section>'
+        '<div class="btn-linha"><a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + (PRIMEIRA_VERSAO ? tr('Abrir o Takeoff') : tr('Abrir o Measure')) + '</a></div></section>'
       : '') +
     (pode('concorrencias.gerir')
       ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Concorrências') + '</h2><p>' + tr('As concorrências já funcionam com o banco de dados: convide prestadoras, receba propostas (pela plataforma ou por link), compare e feche; a obra da vencedora nasce ligada à sua.') + '</p>' +
