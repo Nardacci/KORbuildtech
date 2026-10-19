@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual do usuário · Concorrências · Guia KORbuild</title>
+<meta name="description" content="Guia do produto KORbuild: especificações, regras de negócio e manual do usuário de cada módulo.">
+<link rel="icon" href="../../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="Guia do produto KORbuild, início"><img src="../../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guia</small></a>
+  <nav class="topo-nav" aria-label="Principal">
+    <a href="../index.html#modules" aria-current=page>Módulos</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Buscar regras, telas, tarefas…" aria-label="Buscar no guia" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="../../bids/user-manual.html" lang="en">EN</a><a href="#" aria-current=true lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../../">Entrar</a>
+    <button class="menu-celular" type="button" aria-label="Menu e busca">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-bids)">
+  <aside class="lateral" aria-label="Concorrências documentos">
+    <a class="lat-modulo" href="index.html"><span class="ico">B</span>Concorrências</a>
+    <div class="lat-titulo">Comece aqui</div><ul><li><a href="overview.html">Visão geral</a></li></ul><div class="lat-titulo">No dia a dia</div><ul><li><a href="user-manual.html" aria-current=page>Manual do usuário</a></li></ul><div class="lat-titulo">Regras e acesso</div><ul><li><a href="roles-and-permissions.html">Perfis e permissões</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="Você está aqui"><a href="../index.html">Início</a> › <a href="index.html">Concorrências</a> › No dia a dia</nav>
+    <header class="doc-cabecalho">
+      <h1>Manual do usuário</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Concorrências - Manual do usuário.docx" download>⤓ Baixar Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Imprimir</button></div>
+    </header>
+    <article class="texto">
+<p>Passo a passo. As capturas são de uma conta de demonstração com dados de exemplo: <strong>Ana Ribeiro</strong> (administradora da Construtora Exemplo) manda e fecha, <strong>Tom Reilly</strong> (administrador da Northfield Framing &amp; Siding) cota, e a <strong>Bay State Drywall</strong> responde pelo link, sem conta.</p>
+<h2 id="mandar-uma-concorrencia">Mandar uma concorrência</h2>
+<p><strong>Para que serve:</strong> convidar empresas para cotar um serviço.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Fazer concorrências e fechar</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>).</p>
+</div>
+<p>Abra <strong>Concorrências</strong> no menu do Measure Takeoff (ou <strong>Cotar com prestadoras</strong> num projeto). A lista tem as abas <strong>Abertas</strong>, <strong>Para fechar</strong>, <strong>Rascunhos</strong>, <strong>Fechadas</strong> e <strong>Todas</strong>.</p>
+<figure><img src="../img/bids-list.png" alt="Concorrências" loading="lazy"><figcaption>Concorrências</figcaption></figure>
+<ol>
+<li>Clique em <strong>Nova concorrência</strong>.</li>
+<li>Preencha o pacote:<ul>
+<li><strong>Serviço:</strong> o projeto e um nome (ex.: <em>Framing e drywall</em>).</li>
+<li><strong>Etapas a cotar:</strong> marque as que valem (vêm do seu catálogo e dos fornecedores) ou digite outras. Cada uma vira uma linha na comparação.</li>
+<li>Escopo <strong>Incluso</strong> e <strong>Excluso</strong>, um item por linha; observações (horário, acesso ao canteiro, visita).</li>
+<li><strong>Desenhos:</strong> os PDFs.</li>
+<li><strong>Prazos:</strong> prazo da proposta com hora, início e término previstos.</li>
+<li><strong>Orçamento e exigências:</strong> um orçamento opcional e se ele aparece, seguro GL mínimo, licença, workers' comp, visita obrigatória e se a contratada <strong>pode quarteirizar</strong>.</li>
+<li><strong>Convidados:</strong> empresas dos seus Contatos. Cada uma diz <strong>Tem KORbuild</strong> ou <strong>Recebe por link</strong>.</li>
+</ul>
+</li>
+<li>Clique em <strong>Enviar convites</strong>. Se faltar algo, o rascunho fica salvo e a tela diz o que falta.</li>
+</ol>
+<figure><img src="../img/bids-new.png" alt="Uma concorrência nova" loading="lazy"><figcaption>Uma concorrência nova</figcaption></figure>
+<h2 id="acompanhar-as-convidadas">Acompanhar as convidadas</h2>
+<p>A página da concorrência abre em <strong>Convidados</strong>: cada empresa, como recebe (KORbuild ou link), a situação (<em>Convite enviado</em>, <em>Visto</em>, <em>Vai cotar</em>, <em>Não vai participar</em> com o motivo, <em>Proposta enviada</em>), a última proposta e quando viu o convite.</p>
+<figure><img src="../img/bids-invitees.png" alt="Convidados" loading="lazy"><figcaption>Convidados</figcaption></figure>
+<ul>
+<li><strong>Prorrogar:</strong> um novo prazo, depois do atual; as convidadas mandam propostas até lá.</li>
+<li><strong>Convidar mais:</strong> empresas ainda não convidadas.</li>
+<li><strong>Cancelar:</strong> com motivo; as convidadas são avisadas.</li>
+<li><strong>Copiar o link:</strong> para a convidada sem conta.</li>
+</ul>
+<h2 id="responder-as-perguntas">Responder as perguntas</h2>
+<p>A aba <strong>Perguntas</strong> tem uma conversa por convidada, e quantas perguntas estão sem resposta.</p>
+<ol>
+<li>Clique em <strong>Responder</strong> embaixo da pergunta.</li>
+<li>Escreva a resposta e escolha <strong>Todas as convidadas</strong> (a pergunta vai junto, sem dizer quem perguntou) ou <strong>Só para quem perguntou</strong>.</li>
+</ol>
+<p>Use <strong>Avisar a todos</strong> para um adendo, uma mudança de data ou uma folha nova.</p>
+<figure><img src="../img/bids-questions.png" alt="Perguntas" loading="lazy"><figcaption>Perguntas</figcaption></figure>
+<h2 id="comparar-e-fechar">Comparar e fechar</h2>
+<p><strong>Comparar</strong> mostra uma coluna por proposta e uma linha por etapa, ao lado do seu orçamento:</p>
+<ul>
+<li>em verde, o menor valor de cada etapa;</li>
+<li><em>não cotada</em> quando a empresa deixou uma etapa sem preço — compare o total só entre propostas completas;</li>
+<li>prazo de execução, exclusões (⚠ quando a exclusão está no seu escopo incluso), data e número da proposta.</li>
+</ul>
+<figure><img src="../img/bids-leveling.png" alt="Comparar" loading="lazy"><figcaption>Comparar</figcaption></figure>
+<p>Clique em <strong>Fechar com esta</strong> na coluna escolhida. A confirmação avisa sobre etapas não cotadas e exclusões no escopo. Depois de <strong>Fechar negócio</strong>, a concorrência fica fechada e não muda mais; as outras são avisadas de que não foram escolhidas, sem o valor.</p>
+<p>Se a concorrência saiu de um projeto seu que ainda está em orçamento, ela só fecha depois que você ganhar esse projeto e criar a obra dele (Settings › Obras, ou <strong>Criar obra a partir deste projeto</strong>).</p>
+<figure><img src="../img/bids-award-dialog.png" alt="Fechar" loading="lazy"><figcaption>Fechar</figcaption></figure>
+<figure><img src="../img/bids-awarded.png" alt="Uma concorrência fechada" loading="lazy"><figcaption>Uma concorrência fechada</figcaption></figure>
+<h2 id="cotar-quando-voce-e-convidada">Cotar quando você é convidada</h2>
+<p><strong>Para que serve:</strong> responder um convite e mandar a proposta sem sair do KORbuild.</p>
+<div class="admonition who">
+<p class="admonition-title">Quem pode fazer</p>
+<p>Quem tem <strong>Responder convites e enviar propostas</strong> (perfis padrão: <strong>Administrador</strong> e <strong>Gestor de obras</strong>), numa empresa com o Measure Takeoff.</p>
+</div>
+<ol>
+<li>Abra <strong>Measure Takeoff › Convites</strong> (o sininho também avisa). Abra o convite: o pacote, o prazo, o orçamento se a contratante escolheu mostrar.</li>
+<li>Clique em <strong>Vou cotar</strong> — o KORbuild cria um <strong>projeto no Measure Takeoff</strong> com a contratante, o endereço e o prazo — ou em <strong>Não vou participar</strong>, com um motivo opcional que a contratante vê.</li>
+<li>Meça, ponha os preços e <strong>emita</strong> a proposta no projeto, como sempre.</li>
+<li>Em <strong>Propostas emitidas</strong>, clique em <strong>Enviar pela plataforma</strong>. O diálogo mostra como as linhas vão por etapa, o que vai como outros itens e o que fica <em>não cotada</em>; informe o prazo de execução e as exclusões e envie.</li>
+<li>Para mudar algo, emita de novo e envie: vira a revisão seguinte, até o prazo.</li>
+</ol>
+<figure><img src="../img/bids-invitations.png" alt="Convites" loading="lazy"><figcaption>Convites</figcaption></figure>
+<figure><img src="../img/bids-invitation.png" alt="O convite" loading="lazy"><figcaption>O convite</figcaption></figure>
+<p>Quando você vence, o convite diz <strong>Você venceu esta concorrência</strong> e oferece <strong>Criar obra a partir deste projeto</strong>: a obra nasce <strong>já ligada</strong> à obra da contratante.</p>
+<h2 id="quarteirizacao">Quarteirização</h2>
+<p>Uma empresa pode contratar outra para parte do serviço, com as mesmas telas. No seu projeto do Measure Takeoff, <strong>Cotar com prestadoras › Nova concorrência</strong>. O prazo precisa ser anterior ao seu. Em <strong>Comparar</strong>, <strong>Usar no meu orçamento</strong> põe o preço da subcontratada na proposta do seu projeto (como outros itens, com as suas margens). Você só fecha depois de ganhar e criar a obra.</p>
+<p>Se a empresa que contratou você pediu aprovação, <strong>Fechar</strong> envia um pedido a ela: ela vê só a empresa que você escolheu, nunca o valor, e aprova ou recusa. Se ela não permite quarteirizar, a concorrência não é enviada.</p>
+<figure><img src="../img/bids-sub-tier.png" alt="Uma concorrência de quarteirização" loading="lazy"><figcaption>Uma concorrência de quarteirização</figcaption></figure>
+<h2 id="a-pagina-do-link-sem-conta">A página do link (sem conta)</h2>
+<p>Uma empresa sem KORbuild abre o link pessoal e, sem login: vê o pacote, responde <strong>Vou cotar</strong> ou <strong>Não vou participar</strong>, pergunta e manda a proposta com o <strong>PDF</strong>, o total (e, se quiser, o valor por etapa), o prazo de execução e as exclusões.</p>
+<figure><img src="../img/bids-link.png" alt="A página do link" loading="lazy"><figcaption>A página do link</figcaption></figure>
+<h2 id="mensagens-e-alertas">Mensagens e alertas</h2>
+<table>
+<thead>
+<tr>
+<th>Mensagem</th>
+<th>O que significa</th>
+<th>O que fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Falta: …</td>
+<td>O rascunho não está completo.</td>
+<td>Preencha o que aparece e envie.</td>
+</tr>
+<tr>
+<td>O prazo da proposta já venceu.</td>
+<td>Não se aceitam mais propostas.</td>
+<td>A contratante prorroga, ou compara e fecha.</td>
+</tr>
+<tr>
+<td>O total precisa ser a soma dos valores por etapa.</td>
+<td>A proposta por etapa não fecha a conta.</td>
+<td>Corrija os valores ou deixe a etapa em branco (não cotada).</td>
+</tr>
+<tr>
+<td>Esta concorrência saiu de um projeto em orçamento…</td>
+<td>Não dá para fechar antes de ganhar.</td>
+<td>Ganhe o projeto e crie a obra antes.</td>
+</tr>
+<tr>
+<td>A contratante desta obra não permite quarteirizar.</td>
+<td>A concorrência de cima não permite.</td>
+<td>Converse com quem contratou você.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="Nesta página"><div class="toc-titulo">Nesta página</div><ul><li><a href="#mandar-uma-concorrencia">Mandar uma concorrência</a></li><li><a href="#acompanhar-as-convidadas">Acompanhar as convidadas</a></li><li><a href="#responder-as-perguntas">Responder as perguntas</a></li><li><a href="#comparar-e-fechar">Comparar e fechar</a></li><li><a href="#cotar-quando-voce-e-convidada">Cotar quando você é convidada</a></li><li><a href="#quarteirizacao">Quarteirização</a></li><li><a href="#a-pagina-do-link-sem-conta">A página do link (sem conta)</a></li><li><a href="#mensagens-e-alertas">Mensagens e alertas</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · Guia do produto KORbuild · atualizado em 19 de outubro de 2026 · <a href="../../../">Entrada principal</a></div>
+  <div>As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Voltar ao topo">↑</button>
+<script src="../../assets/portal.js"></script>
+</body></html>

@@ -9,6 +9,7 @@ Each company has its own Settings and never sees another company's.
 | Screen | What it is for |
 |---|---|
 | **Company** | Name, legal name, address, phone, logo and the details that appear on proposals. |
+| **Jobs** | One entry per job. Needed to close a bid: the company that wins creates its job from the won project, already linked to the contracting company's job. |
 | **Contacts** | Clients, suppliers and other companies you work with. A supplier is marked with the **cost codes it supplies**, so each quote list goes to the right supplier. Contacts are not users: they receive the quote request or the proposal by email and need no account. |
 | **Users** | The people who sign in. Invite by email, choose each person's access role, deactivate when someone leaves. |
 | **Access roles** | A matrix of permissions per role. The company can adjust the default roles or create new ones. A separate permission controls who sees dollar amounts. |

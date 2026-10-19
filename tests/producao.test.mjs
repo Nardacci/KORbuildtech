@@ -65,7 +65,7 @@ try {
   await p.goto(URL_BASE + 'portal/');
   await p.waitForSelector('h1', { timeout: 30000 });
   const g = (await p.locator('body').innerText()).replace(/\s+/g, ' ');
-  verificar(/Measure Takeoff/.test(g) && !/Daily|Crew|Bids|Presenter|prototype/i.test(g), 'a página inicial do guia só tem o Measure Takeoff e o Settings', g.slice(0, 250));
+  verificar(/Measure Takeoff/.test(g) && !/Daily|Crew|Presenter|prototype/i.test(g), 'a página inicial do guia só tem o Measure Takeoff e o Settings', g.slice(0, 250));
   await p.goto(URL_BASE + 'portal/measure/user-manual.html');
   await p.waitForSelector('h1', { timeout: 30000 });
   const m = (await p.locator('body').innerText()).replace(/\s+/g, ' ');

@@ -8,6 +8,10 @@ Passo a passo, uma tarefa por vez. O Settings fica na aba **Settings** da sua co
 2. Preencha o nome, a razão social, o endereço, o telefone e o e-mail. Esses dados aparecem nas suas propostas.
 3. Coloque o logo (opcional) e salve.
 
+## Criar uma obra
+
+Abra **Obras** e escolha **Nova obra**, ou abra um projeto **ganho** no Measure Takeoff e clique em **Criar obra a partir deste projeto** (nome, endereço e partes já vêm preenchidos). Informe o contratante, o local (clique no mapa ou use a sua localização) e as datas de início e término. Projeto e obra ficam ligados. Quando o projeto ganhou uma concorrência, a obra nasce já ligada à obra da contratante.
+
 ## Cadastrar um contato (cliente ou fornecedor)
 
 1. Abra **Contatos** e escolha **Novo contato**.

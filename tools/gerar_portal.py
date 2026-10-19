@@ -101,13 +101,13 @@ PT = {
     'Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.': 'As telas são de uma conta de demonstração com dados de exemplo. Nomes, empresas e números são fictícios.',
     'Measure Takeoff user guide': 'Guia do usuário do Measure Takeoff',
     'Plan takeoff in feet and inches, from the PDF to the proposal.': 'Medição de plantas em pés e polegadas, do PDF à proposta.',
-    'Measure Takeoff: open the plan PDF, set the scale, measure lines, areas and counts, price the materials and labor from your own assemblies, send quote lists to suppliers and issue the proposal. Settings holds your company, contacts, users and access roles.':
-        'Measure Takeoff: abra a planta em PDF, defina a escala, meça linhas, áreas e contagens, calcule materiais e mão de obra com os seus assemblies, mande listas de cotação aos fornecedores e emita a proposta. O Settings guarda a empresa, os contatos, os usuários e os perfis de acesso.',
+    'Measure Takeoff: open the plan PDF, set the scale, measure lines, areas and counts, price the materials and labor from your own assemblies, send quote lists to suppliers and issue the proposal. Bids invite other companies to bid. Settings holds your company, jobs, contacts, users and access roles.':
+        'Measure Takeoff: abra a planta em PDF, defina a escala, meça linhas, áreas e contagens, calcule materiais e mão de obra com os seus assemblies, mande listas de cotação aos fornecedores e emita a proposta. As Concorrências convidam outras empresas para cotar. O Settings guarda a empresa, as obras, os contatos, os usuários e os perfis de acesso.',
     'Measure Takeoff and Settings': 'Measure Takeoff e Settings', 'Measure Takeoff': 'Measure Takeoff',
     'Open Measure Takeoff, then follow the user manual: one task at a time, with screenshots.': 'Abra o Measure Takeoff e siga o manual do usuário: uma tarefa por vez, com as telas.',
-    'Company setup: company profile, contacts, users and access roles.': 'Configuração da empresa: perfil da empresa, contatos, usuários e perfis de acesso.',
+    'Company setup: company profile, jobs, contacts, users and access roles.': 'Configuração da empresa: perfil da empresa, obras, contatos, usuários e perfis de acesso.',
     'What is in Settings and who uses it.': 'O que há no Settings e quem usa.',
-    'Company, contacts, users and roles — step by step.': 'Empresa, contatos, usuários e perfis — passo a passo.',
+    'Company, jobs, contacts, users and roles — step by step.': 'Empresa, contatos, usuários e perfis — passo a passo.',
     'The default roles and the permissions that matter in this release.': 'Os perfis padrão e as permissões que importam nesta versão.',
     'Release status': 'Situação da versão',
     'What works today and what comes next.': 'O que funciona hoje e o que vem depois.',
@@ -208,11 +208,18 @@ EDICOES_MEASURE_MODULOS = [
          {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'Who can measure and who can change the catalog.'},
          {'slug': 'release-status', 'titulo': 'Release status', 'grupo': 'Rules and access', 'desc': 'What works today and what comes next.'},
      ]},
+    {'id': 'bids', 'nome': 'Bids', 'cor': 'var(--cor-bids)', 'ico': 'B',
+     'resumo': 'Invitations to bid between companies: send the bid package, level the bids and award; bid from Measure Takeoff or by a link; subcontracting down the chain.',
+     'paginas': [
+         {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'How a bid works, who takes part and how it links the companies.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'Send a bid, level and award; bid when invited; subcontracting — step by step.'},
+         {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'Who runs bids and who answers invitations.'},
+     ]},
     {'id': 'settings', 'nome': 'Settings', 'cor': 'var(--cor-settings)', 'ico': 'S',
-     'resumo': 'Company setup: company profile, contacts, users and access roles.',
+     'resumo': 'Company setup: company profile, jobs, contacts, users and access roles.',
      'paginas': [
          {'slug': 'overview', 'titulo': 'Overview', 'grupo': 'Start here', 'desc': 'What is in Settings and who uses it.'},
-         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'Company, contacts, users and roles — step by step.'},
+         {'slug': 'user-manual', 'titulo': 'User manual', 'grupo': 'Using it', 'desc': 'Company, jobs, contacts, users and roles — step by step.'},
          {'slug': 'roles-and-permissions', 'titulo': 'Roles and permissions', 'grupo': 'Rules and access', 'desc': 'The default roles and the permissions that matter in this release.'},
      ]},
 ]
@@ -459,7 +466,7 @@ def pagina_inicial_edicao():
 <section class="heroi"><div class="heroi-dentro">
   <p class="sobrescrito">{L('Measure Takeoff user guide')}</p>
   <h1>{L('Plan takeoff in feet and inches, from the PDF to the proposal.')}</h1>
-  <p class="lead">{L('Measure Takeoff: open the plan PDF, set the scale, measure lines, areas and counts, price the materials and labor from your own assemblies, send quote lists to suppliers and issue the proposal. Settings holds your company, contacts, users and access roles.')}</p>
+  <p class="lead">{L('Measure Takeoff: open the plan PDF, set the scale, measure lines, areas and counts, price the materials and labor from your own assemblies, send quote lists to suppliers and issue the proposal. Bids invite other companies to bid. Settings holds your company, jobs, contacts, users and access roles.')}</p>
   <div class="botoes">
     <a class="botao" href="measure/user-manual.html">{L('Measure Takeoff')} — {L('user manual')}</a>
     <a class="botao botao-secundario" href="settings/user-manual.html">Settings — {L('user manual')}</a>

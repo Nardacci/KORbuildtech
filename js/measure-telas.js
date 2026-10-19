@@ -31,13 +31,14 @@ import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE,
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
 export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; }
 
-function navMeasure() {
+export function navMeasure() {
   return [
     { id: 'projetos', href: '#/measure', rotulo: tr('Projetos'), icone: 'obras' },
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
     { id: 'precos', href: '#/measure/precos', rotulo: tr('Preços'), icone: 'dinheiro' },
-  ].concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : []);
+  ].concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : [])
+    .concat(PRIMEIRA_VERSAO && pode(usuarioAtual(), 'concorrencias.gerir') ? [{ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' }] : []);   // 1ª versão: quem convida (o resto do Daily fica oculto)
 }
 // o visor da planta usa a tela inteira, sem o menu lateral
 function moldura(o) {
@@ -186,14 +187,14 @@ function telaProjeto(id) {
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + (tr('Lista para cotação') + '</a>') +
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/proposta">' + icone('daily', 16) + tr('Proposta') + ((p.propostas || []).length ? ' · ' + p.propostas[p.propostas.length - 1].numero : '') + '</a>' +
       '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + (tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="') + p.id + '" class="visualmente-oculto"></label></div>',
-    conteudo: htmlFaixaConcorrencia(p) + (PRIMEIRA_VERSAO ? '' : htmlConcorrenciasDoProjeto(p)) +   // 1ª versão: recebe convites (Measure), mas não manda concorrências (esse lado é o módulo Concorrências)
+    conteudo: htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p) +
 
       '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
-        dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="#/daily/obras/' + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
+        dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (PRIMEIRA_VERSAO || pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="' + (PRIMEIRA_VERSAO ? (estado().oficial ? '#/conta/obras/' : '#/settings/obra/') : '#/daily/obras/') + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
         // projeto ganho vira obra: o cadastro já vem preenchido (docs/obras.md OB-07)
-        (!PRIMEIRA_VERSAO && p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
-          ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.') + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
+        (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
+          ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + (PRIMEIRA_VERSAO ? tr('Cadastre a obra: ela liga a concorrência e a contratada. Nome, endereço e partes já vão preenchidos.') : tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.')) + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
         '</section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
         fs.map((f) => {

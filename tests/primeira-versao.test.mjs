@@ -61,26 +61,35 @@ try {
     await a.p.goto(BASE + '#/conta');
     await a.p.waitForSelector('.oficial-titulo', { timeout: 30000 });
     const t = await texto(a.p);
-    verificar(/Measure Takeoff/.test(t) && !/Daily|Crew|Concorr|Bids/.test(t.replace(/Dados/g, '')), 'a área da conta oferece só o Measure Takeoff', t.slice(0, 400));
+    verificar(/Measure Takeoff/.test(t) && !/Daily|Crew/.test(t.replace(/Dados/g, '')), 'a área da conta oferece o Measure Takeoff e as concorrências, sem Daily nem Crew', t.slice(0, 400));
     const abas = (await a.p.locator('.abas-segmento a').allInnerTexts()).map((x) => x.trim());
-    verificar(!abas.some((x) => /Jobs|Employees|Rules|Obras|Funcion/.test(x)) && abas.some((x) => /Contacts|Contatos/.test(x)), 'as abas da conta não têm obras, funcionários nem regras', abas);
+    verificar(!abas.some((x) => /Employees|Rules|Funcion/.test(x)) && abas.some((x) => /Contacts|Contatos/.test(x)) && abas.some((x) => /Jobs|Obras/.test(x)), 'as abas da conta têm contatos e obras (as concorrências precisam da obra), mas não funcionários nem regras', abas);
     await a.p.goto(BASE + '#/inicio');
     await a.p.waitForSelector('.modulos, .oficial-titulo, .pagina', { timeout: 30000 });
     await a.p.waitForTimeout(1500);
     const ti = await texto(a.p);
-    verificar(!/Daily|Crew|Concorr|Bids|Em breve|Coming soon/.test(ti.replace(/Dados/g, '')), 'o início não mostra nenhum outro módulo', (await a.p.evaluate(() => location.hash)) + ' · ' + ti.slice(0, 200));
-    for (const rota of ['#/daily', '#/crew', '#/daily/concorrencias', '#/settings/funcionarios', '#/settings/obras', '#/conta/obras', '#/conta/funcionarios']) {
+    verificar(!/Daily|Crew|Em breve|Coming soon/.test(ti.replace(/Dados/g, '')), 'o início não mostra nenhum outro módulo', (await a.p.evaluate(() => location.hash)) + ' · ' + ti.slice(0, 200));
+    for (const rota of ['#/daily', '#/crew', '#/daily/painel', '#/daily/campo', '#/daily/obras', '#/settings/funcionarios', '#/conta/funcionarios', '#/conta/regras', '#/conta/obras/modelos']) {
       await a.p.goto(BASE + rota);
       await a.p.waitForTimeout(1200);
       const tr = await texto(a.p);
-      verificar(!/Daily|Crew|Time clock|Employees|Concorr|Bids|Em breve|Coming soon/.test(tr.replace(/Dados/g, '')) && !/^#\/(daily|crew)/.test(await a.p.evaluate(() => location.hash)), rota + ' não abre: volta para o que existe', (await a.p.evaluate(() => location.hash)) + ' · ' + tr.slice(0, 160));
+      verificar(!/Daily|Crew|Time clock|Employees|Em breve|Coming soon/.test(tr.replace(/Dados/g, '')) && !/^#\/(daily|crew)/.test(await a.p.evaluate(() => location.hash)), rota + ' não abre: volta para o que existe', (await a.p.evaluate(() => location.hash)) + ' · ' + tr.slice(0, 160));
     }
+    // as concorrências (quem convida) ficam, dentro do Measure Takeoff, sem o resto do Daily
+    await a.p.goto(BASE + '#/daily/concorrencias');
+    await a.p.waitForTimeout(1500);
+    const tc = await texto(a.p);
+    verificar(/Bids/.test(tc) && /Measure Takeoff/.test(tc) && !/Daily|Crew/.test(tc.replace(/Dados/g, '')) && /measure|concorrencias/.test(await a.p.evaluate(() => location.hash)), 'as concorrências abrem dentro do Measure Takeoff', (await a.p.evaluate(() => location.hash)) + ' · ' + tc.slice(0, 200));
+    await a.p.goto(BASE + '#/conta/obras/nova');
+    await a.p.waitForSelector('#form-obra', { timeout: 20000 });
+    const to = await texto(a.p);
+    verificar(!/Daily|Crew|time clock|geofence|fence|schedule|crew|Employees|diary|timesheet/i.test(to) && await a.p.locator('[name="responsavelId"], [name="diasTrabalho"]').count() >= 1, 'a obra (necessária para fechar a concorrência) abre sem diário, ponto nem cronograma', to.slice(0, 300));
     await a.p.goto(BASE + '#/measure');
     await a.p.waitForSelector('h1', { timeout: 30000 });
     const m = await texto(a.p);
     verificar(/Measure Takeoff/.test(m), 'o Measure abre e se chama Measure Takeoff', m.slice(0, 200));
     const menuMeasure = (await a.p.locator('.lateral a, nav a, aside a').allInnerTexts().catch(() => [])).join(' | ');
-    verificar(/Invitations/.test(menuMeasure), 'o menu do Measure Takeoff tem os convites para cotar recebidos', menuMeasure.slice(0, 200));
+    verificar(/Invitations/.test(menuMeasure) && /Bids/.test(menuMeasure), 'o menu do Measure Takeoff tem os convites recebidos e as concorrências', menuMeasure.slice(0, 200));
     verificar(await a.p.locator('.sino summary').count() === 1, 'o sininho segue funcionando (sem avisos de outros módulos)');
     await a.ctx.close();
   }

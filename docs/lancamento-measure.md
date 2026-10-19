@@ -17,8 +17,9 @@ Para **ver a 1ª versão na homologação**, abra `https://nardacci.github.io/KO
 
 - **Nomes:** Measure → **Measure Takeoff**; **Settings** continua Settings.
 - **Fica:** Measure Takeoff (projetos, plantas, escala, medição, assemblies, itens, preços, listas de cotação, propostas) e Settings (Empresa, Contatos, Usuários, Perfis de acesso, Meu perfil).
-- **Convites para cotar (recebidos):** **ficam** no Measure Takeoff (aba *Convites*, a faixa no projeto, "Vou cotar" e "Enviar pela plataforma"), junto com os avisos do sininho. Quem **manda** concorrências ("Cotar com prestadoras", comparar propostas, fechar) é o módulo Concorrências e **fica oculto**; por isso, nesta versão, os convites que chegam vêm de empresas que usam o app completo (homologação) ou de outro projeto.
-- **Oculto:** Daily, Crew, concorrências (o lado de quem convida), cronograma, Obras, Funcionários, Encargos, Regras, aviso de GPS, aviso de instalar no celular, protótipo, roteiros de teste, sininho de outros módulos.
+- **Concorrências (mandar e receber convites):** **ficam**, dentro do Measure Takeoff (menu *Concorrências* e *Convites*), de qualquer empresa para qualquer empresa. Fechar uma concorrência exige a **obra** do projeto ganho: por isso **Obras** também fica (sem diário, ponto nem cronograma: só nome, partes, local e datas). O canal da obra depois do fechamento fica na página de obra do Daily e **não** entra.
+- **Convites para cotar (recebidos):** **ficam** no Measure Takeoff (aba *Convites*, a faixa no projeto, "Vou cotar" e "Enviar pela plataforma"), junto com os avisos do sininho. 
+- **Oculto:** Daily, Crew, cronograma, modelos de etapas, Funcionários, Encargos, Regras, o canal da obra, aviso de GPS, aviso de instalar no celular, protótipo, roteiros de teste, sininho de outros módulos.
 - **O Measure Takeoff vale para qualquer empresa** (na versão completa ele é só de prestadoras e de quem é ambos).
 - O que fica oculto **continua existindo no banco e nas regras de acesso**: nada foi apagado.
 

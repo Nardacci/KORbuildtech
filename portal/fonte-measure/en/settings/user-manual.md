@@ -8,6 +8,10 @@ Step by step, one task at a time. Settings is under the **Settings** tab of your
 2. Fill in the name, legal name, address, phone and email. These details appear on your proposals.
 3. Add the logo (optional) and save.
 
+## Create a job
+
+Open **Jobs** and choose **New job**, or open a **won** project in Measure Takeoff and click **Create job from this project** (name, address and parties come filled in). Fill in the client, the location (click the map or use your current location) and the start and end dates. Project and job stay linked. When the project won a bid, the job is created already linked to the contracting company's job.
+
 ## Add a contact (client or supplier)
 
 1. Open **Contacts** and choose **New contact**.

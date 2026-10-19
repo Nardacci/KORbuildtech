@@ -2,6 +2,7 @@
  * lista, nova concorrência (rascunho e envio), a página com Convidados, Comparar e Detalhes,
  * prorrogar, convidar mais, fechar e cancelar. O motor e as regras estão em concorrencias.js. */
 
+import { PRIMEIRA_VERSAO } from './versao.js';
 import { esc, toast, abrirDialogo, confirmar, dataCurta, dataHora, isoDoDia, diasEntre, hoje } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar, obra as acharObra } from './armazem.js';
@@ -385,7 +386,7 @@ export function telaConvite(moldura, id) {
   if (x.situacao === 'cancelada') situacao = '<div class="aviso"><b>' + tr('Concorrência cancelada pela contratante.') + '</b></div>';
   else if (v.situacao === 'vencedora') situacao = '<div class="aviso aviso-verde"><b>' + tr('Você venceu esta concorrência.') + '</b><span>' + tr('Rev. {rev} aceita.', { rev: (v.propostas[v.propostas.length - 1] || {}).rev }) + ' ' +
     (obraLigada ? tr('A obra já está criada e ligada à da contratante.') : pj ? tr('Crie a obra a partir do projeto: ela já nasce ligada à obra da contratante.') : '') + '</span>' +
-    (obraLigada ? '<a class="btn btn-primario btn-pequeno" href="#/daily/obras/' + obraLigada.id + '">' + tr('Abrir a obra') + '</a>' : pj ? '<a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + pj.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a>' : '') + '</div>';
+    (obraLigada ? '<a class="btn btn-primario btn-pequeno" href="' + (PRIMEIRA_VERSAO ? '#/conta/obras/' : '#/daily/obras/') + obraLigada.id + '">' + tr('Abrir a obra') + '</a>' : pj ? '<a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + pj.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a>' : '') + '</div>';
   else if (v.situacao === 'nao-escolhida') situacao = '<div class="aviso"><b>' + tr('A contratante fechou com outra empresa.') + '</b><span>' + tr('Obrigado por cotar. O valor da vencedora não é informado.') + '</span></div>';
   else if (x.situacao === 'fechada') situacao = '<div class="aviso"><b>' + tr('Esta concorrência já foi fechada.') + '</b></div>';
   else if (!aberta) situacao = '<div class="aviso aviso-ambar"><b>' + tr('O prazo da proposta venceu.') + '</b><span>' + tr('Só dá para mandar proposta se a contratante prorrogar.') + '</span></div>';

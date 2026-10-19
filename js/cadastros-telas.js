@@ -3,6 +3,7 @@
  * Mesmas frases e classes do protótipo (js/settings-telas.js, js/obras-telas.js), para o visual e a tradução
  * serem os mesmos. O mapa da obra e as linhas dos modelos reaproveitam js/obras-telas.js (só dependem dos ids). */
 
+import { PRIMEIRA_VERSAO } from './versao.js';
 import { esc, toast, confirmar, dataCurta, dataHora, decimal, numTexto, hoje } from './util.js';
 import { tr, tn } from './i18n.js';
 import { icone } from './icones.js';
@@ -65,6 +66,7 @@ export function telaCadastro(aba, resto) {
     return { html: '<p class="vazio">' + tr('Carregando…') + '</p>' };
   }
   if (aba === 'obras') {
+    if (resto[0] === 'modelos' && PRIMEIRA_VERSAO) return { trocar: '#/conta/obras' };
     if (resto[0] === 'modelos') return resto[1] ? telaFormModelo(resto[1] === 'novo' ? null : resto[1]) : { html: telaModelos() };
     if (resto[0]) return telaFormObra(resto[0] === 'nova' ? null : resto[0], resto[0] === 'nova' ? resto[1] : null);
     return { html: telaObras() };
@@ -292,12 +294,12 @@ function telaFormContato(id) {
 
 function telaObras() {
   const sit = (o) => SITUACOES_OBRA[o.situacao] || SITUACOES_OBRA.andamento;
-  return cabeca(tr('Obras'), '<span class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/conta/obras/modelos">' + tr('Modelos de etapas') + '</a>' +
+  return cabeca(tr('Obras'), '<span class="btn-linha">' + (PRIMEIRA_VERSAO ? '' : '<a class="btn btn-contorno btn-pequeno" href="#/conta/obras/modelos">' + tr('Modelos de etapas') + '</a>') +
       '<a class="btn btn-primario btn-pequeno" href="#/conta/obras/nova">' + icone('mais', 16) + tr('Nova obra') + '</a></span>') +
-    '<section class="cartao"><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Obra') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Prazo') + '</th><th>' + tr('Equipe') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
+    '<section class="cartao"><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Obra') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Prazo') + '</th>' + (PRIMEIRA_VERSAO ? '' : '<th>' + tr('Equipe') + '</th>') + '<th>' + tr('Situação') + '</th></tr></thead><tbody>' +
       (cad.obras.map((o) => '<tr><td><a href="#/conta/obras/' + o.id + '"><b>' + esc(o.nome) + '</b></a><span class="mudo pequeno bloco">' + esc([o.municipio, o.estado].filter(Boolean).join(', ')) + '</span></td>' +
         '<td>' + esc((contato(o.contratante_id) || {}).nome || '') + '</td><td class="pequeno">' + dataCurta(o.inicio) + ' → ' + dataCurta(o.prazo) + '</td>' +
-        '<td class="num">' + (alocacoesDa(o.id).filter((a) => !a.ate).length || '') + '</td><td><span class="etiqueta ' + sit(o).classe + '">' + sit(o).nome + '</span></td></tr>').join('') ||
+        (PRIMEIRA_VERSAO ? '' : '<td class="num">' + (alocacoesDa(o.id).filter((a) => !a.ate).length || '') + '</td>') + '<td><span class="etiqueta ' + sit(o).classe + '">' + sit(o).nome + '</span></td></tr>').join('') ||
         '<tr><td colspan="5" class="mudo">' + tr('Nenhuma obra ainda.') + '</td></tr>') +
     '</tbody></table></div></section>' +
     (cad.contatos.some((c) => c.papeis.includes('construtora') || c.papeis.includes('cliente')) ? '' : '<p class="dica">' + tr('Antes da primeira obra, cadastre o contratante em <a href="#/conta/contatos/novo">Contatos</a>.') + '</p>');
@@ -315,37 +317,39 @@ function telaFormObra(id, projetoId) {
   const perfilDoMembro = (m) => conta.perfis.find((p) => p.id === m.perfil_id);
   const preenchem = cad.membros.filter((m) => m.ativo && (perfilDoMembro(m) || { permissoes: [] }).permissoes.includes('daily.preencher'));
   const contratantes = cad.contatos.filter((c) => c.papeis.includes('construtora') || c.papeis.includes('cliente'));
+  // 1ª versão: sem diário, ponto nem cronograma; o banco ainda pede responsável e dias de trabalho, então vão os padrões (quem cria a obra, segunda a sexta)
+  const ocultosDaObra = (executa ? '<input type="hidden" name="responsavelId" value="' + esc(o.responsavel_id || (conta.membro && conta.membro.id) || '') + '">' : '') + [1, 2, 3, 4, 5].map((d) => '<input type="hidden" name="diasTrabalho" value="' + d + '">').join('');
   const html = cabeca(existente ? existente.nome : tr('Nova obra'), '', ['#/conta/obras', tr('Obras')]) +
     '<form id="form-obra" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
     (pj ? '<input type="hidden" name="projetoId" value="' + esc(pj.id) + '"><p class="pequeno">' + tr('A partir do projeto {nome} (Measure)', { nome: esc(pj.nome) }) + (pj.concorrencia && pj.concorrencia.vinculo ? ' · ' + tr('ganho numa concorrência: a obra nasce ligada à obra da contratante') : '') + '</p>' : '') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Obra') + '</h2><div class="grade-campos">' +
       campo('ob-nome', tr('Nome da obra *'), texto('ob-nome', 'nome', o.nome, ' placeholder="' + esc(tr('Ex.: Residencial Thompson, Mezanino LogSul')) + '"')) +
       campo('ob-situacao', tr('Situação'), '<select id="ob-situacao" name="situacao">' + Object.entries(SITUACOES_OBRA).map(([k, s]) => '<option value="' + k + '"' + (o.situacao === k ? ' selected' : '') + '>' + s.nome + '</option>').join('') + '</select>') + '</div>' +
-      '<p class="mudo pequeno">' + tr('Só obra em andamento cobra o diário e aparece no celular do campo e no ponto. Paralisada e concluída ficam no escritório, com o histórico.') + '</p></section>' +
+      (PRIMEIRA_VERSAO ? '</section>' : '<p class="mudo pequeno">' + tr('Só obra em andamento cobra o diário e aparece no celular do campo e no ponto. Paralisada e concluída ficam no escritório, com o histórico.') + '</p></section>') +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Partes') + '</h2><div class="grade-campos">' +
-      campo('ob-contratanteId', tr('Contratante * (recebe o diário)'), '<select id="ob-contratanteId" name="contratanteId"><option value="">' + tr('Escolha…') + '</option>' + opcoes(contratantes.map((c) => [c.id, c.nome]), o.contratante_id) + '</select>') +
+      campo('ob-contratanteId', (PRIMEIRA_VERSAO ? tr('Contratante *') : tr('Contratante * (recebe o diário)')), '<select id="ob-contratanteId" name="contratanteId"><option value="">' + tr('Escolha…') + '</option>' + opcoes(contratantes.map((c) => [c.id, c.nome]), o.contratante_id) + '</select>') +
       campo('ob-donoId', tr('Dono da obra (se for outro)'), '<select id="ob-donoId" name="donoId"><option value="">' + tr('O próprio contratante') + '</option>' + opcoes(contratantes.map((c) => [c.id, c.nome]), o.dono_id) + '</select>') + '</div>' +
       (contratantes.length ? '' : '<p class="mudo pequeno">' + tr('Antes da primeira obra, cadastre o contratante em <a href="#/conta/contatos/novo">Contatos</a>.') + '</p>') + '</section>' +
-    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Local e cerca do ponto') + '</h2>' +
+    '<section class="cartao"><h2 class="cartao-titulo">' + (PRIMEIRA_VERSAO ? tr('Local') : tr('Local e cerca do ponto')) + '</h2>' +
       campo('ob-endereco', tr('Endereço'), texto('ob-endereco', 'endereco', o.endereco)) +
       '<div class="grade-campos mz-grade-local">' + campo('ob-municipio', tr('Cidade *'), texto('ob-municipio', 'municipio', o.municipio)) + campo('ob-estado', tr('Estado *'), texto('ob-estado', 'estado', o.estado, ' maxlength="2"')) + campo('ob-zip', tr('ZIP code'), texto('ob-zip', 'zip', o.zip, ' maxlength="10"')) + '</div>' +
-      '<p class="mudo pequeno">' + tr('Clique no mapa onde fica a obra (ou use a localização atual, se estiver no canteiro). O círculo é a cerca: batida de ponto fora dela fica marcada para o escritório conferir. O mesmo local dá o clima do diário.') + '</p>' +
+      '<p class="mudo pequeno">' + (PRIMEIRA_VERSAO ? tr('Clique no mapa onde fica a obra (ou use a localização atual, se estiver no local).') : tr('Clique no mapa onde fica a obra (ou use a localização atual, se estiver no canteiro). O círculo é a cerca: batida de ponto fora dela fica marcada para o escritório conferir. O mesmo local dá o clima do diário.')) + '</p>' +
       '<div id="mapa-obra" class="mapa-obra" data-lat="' + centro.lat + '" data-lon="' + centro.lon + '" data-tem="' + (tem ? '1' : '') + '"><span class="mudo pequeno">' + tr('Carregando o mapa…') + '</span></div>' +
       '<div class="grade-campos mapa-obra-campos">' +
         campo('ob-lat', tr('Latitude *'), '<input type="text" inputmode="decimal" id="ob-lat" name="lat" value="' + (tem ? o.lat : '') + '">') +
         campo('ob-lon', tr('Longitude *'), '<input type="text" inputmode="decimal" id="ob-lon" name="lon" value="' + (tem ? o.lon : '') + '">') +
-        campo('ob-raio', tr('Raio da cerca (m)'), '<input type="number" id="ob-raio" name="raio" min="' + RAIO_MIN + '" max="' + RAIO_MAX + '" step="10" value="' + (o.raio || RAIO_PADRAO) + '">') +
+        (PRIMEIRA_VERSAO ? '<input type="hidden" name="raio" value="' + RAIO_PADRAO + '">' : campo('ob-raio', tr('Raio da cerca (m)'), '<input type="number" id="ob-raio" name="raio" min="' + RAIO_MIN + '" max="' + RAIO_MAX + '" step="10" value="' + (o.raio || RAIO_PADRAO) + '">')) +
       '</div><button type="button" class="btn btn-contorno btn-pequeno" data-acao="obra-aqui">' + icone('pino', 16) + tr('Usar a localização atual') + '</button></section>' +
-    '<section class="cartao"><h2 class="cartao-titulo">' + (executa ? tr('Prazo e diário de obra') : tr('Prazo')) + '</h2><div class="grade-campos">' +
+    '<section class="cartao"><h2 class="cartao-titulo">' + (executa && !PRIMEIRA_VERSAO ? tr('Prazo e diário de obra') : tr('Prazo')) + '</h2><div class="grade-campos">' +
       campo('ob-inicio', tr('Início *'), data('ob-inicio', 'inicio', o.inicio)) + campo('ob-prazo', tr('Prazo (término) *'), data('ob-prazo', 'prazo', o.prazo)) +
-      (executa ? campo('ob-responsavelId', tr('Quem preenche o diário *'), '<select id="ob-responsavelId" name="responsavelId"><option value="">' + tr('Escolha…') + '</option>' + opcoes(preenchem.map((m) => [m.id, m.nome]), o.responsavel_id) + '</select>',
+      (executa && !PRIMEIRA_VERSAO ? campo('ob-responsavelId', tr('Quem preenche o diário *'), '<select id="ob-responsavelId" name="responsavelId"><option value="">' + tr('Escolha…') + '</option>' + opcoes(preenchem.map((m) => [m.id, m.nome]), o.responsavel_id) + '</select>',
         preenchem.length ? '' : tr('Ninguém tem a permissão de preencher o diário: dê essa permissão a um perfil em Perfis de acesso.')) : '') + '</div>' +
-      (executa ? '<fieldset class="dias-obra"><legend class="rotulo-pequeno">' + tr('Dias de trabalho * (cobram o diário)') + '</legend>' +
+      (executa && !PRIMEIRA_VERSAO ? '<fieldset class="dias-obra"><legend class="rotulo-pequeno">' + tr('Dias de trabalho * (cobram o diário)') + '</legend>' +
         [1, 2, 3, 4, 5, 6, 0].map((dia) => '<label class="check pequeno"><input type="checkbox" name="diasTrabalho" value="' + dia + '"' + ((o.dias_trabalho || []).includes(dia) ? ' checked' : '') + '> ' + NOMES_DIAS[dia] + '</label>').join('') + '</fieldset>'
-        : '<p class="mudo pequeno">' + tr('O diário, o ponto e o cronograma são feitos pelas prestadoras, cada uma na obra dela ligada a esta.') + '</p>') +
+        : (PRIMEIRA_VERSAO ? ocultosDaObra : '<p class="mudo pequeno">' + tr('O diário, o ponto e o cronograma são feitos pelas prestadoras, cada uma na obra dela ligada a esta.') + '</p>')) +
     '</section>' +
     '<div class="rodape-form"><a class="btn btn-contorno" href="#/conta/obras">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="cad-salvar-obra">' + (existente ? tr('Salvar') : tr('Criar obra')) + '</button></div></form>' +
-    (existente ? htmlEquipeDaObra(existente) : '');
+    (existente && !PRIMEIRA_VERSAO ? htmlEquipeDaObra(existente) : '');
   return { html, depois: aposDesenharObras };
 }
 

@@ -30,7 +30,7 @@ import {
 } from './plataforma.js';
 import { telaCrew, acoesCrew, ligarCrew, notificacoesCrew, aposDesenharCrew } from './crew-telas.js';
 import { telaSettings, acoesSettings, ligarSettings, notificacoesSettings } from './settings-telas.js';
-import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure } from './measure-telas.js';
+import { telaMeasure, acoesMeasure, ligarMeasure, aposDesenharMeasure, navMeasure } from './measure-telas.js';
 import { acoesContatos, ligarContatos, htmlLogo } from './contatos-telas.js';
 import { acoesObras, ligarObras, aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
@@ -248,7 +248,8 @@ function desenharPrototipo() {
   let modo = p[0];
   if (p[0] === 'daily') {
     const q = rotaDaily();
-    if (!modulosLiberados(u).includes('daily')) return trocarRota(inicioDoUsuario(u));
+    // 1ª versão: do Daily só existem as concorrências (quem convida), dentro do Measure Takeoff; o resto volta para o início
+    if (PRIMEIRA_VERSAO ? q[0] !== 'concorrencias' : !modulosLiberados(u).includes('daily')) return trocarRota(inicioDoUsuario(u));
     // Dentro do Daily, cada perfil tem a sua área: quem acompanha (painel, aprovações, obras) e quem preenche (hoje, histórico).
     const inicioDoPapel = pode(u, 'daily.acompanhar') ? '#/daily/painel' : '#/daily/campo';
     if (!q.length) return trocarRota(inicioDoPapel);
@@ -369,6 +370,7 @@ function botaoConexao() {
 }
 
 function moldura({ ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, largo, semAbas }) {
+  if (PRIMEIRA_VERSAO) return casca({ modulo: 'measure', nav: navMeasure(), ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, semAbas, largura: largo ? 'larga' : 'estreita', topoExtra: '' });   // as concorrências aparecem como parte do Measure Takeoff
   return casca({
     modulo: 'daily', nav: navDaily(), ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, semAbas,
     largura: largo ? 'larga' : 'estreita', topoExtra: botaoConexao(),
@@ -1901,7 +1903,7 @@ async function iniciar() {
       .concat(podeResponder() ? avisosDaConvidada().map((n) => ({ ...n, modulo: 'measure' })) : []);
     const doAparelho = (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
     // conta de verdade: o que acontece entre pessoas e empresas vem do servidor (avisos-oficial.js); no aparelho ficam só os lembretes do relógio
-    if (PRIMEIRA_VERSAO) return estado().oficial ? avisosDoServidor().filter((n) => n.modulo === 'measure' || n.modulo === 'settings') : [];   // 1ª versão: só avisos do Measure Takeoff e do Settings
+    if (PRIMEIRA_VERSAO) return estado().oficial ? avisosDoServidor().map((n) => ((n.href || '').startsWith('#/daily/concorrencias') ? { ...n, modulo: 'measure' } : n)).filter((n) => n.modulo === 'measure' || n.modulo === 'settings') : [];   // 1ª versão: só avisos do Measure Takeoff (convites e concorrências) e do Settings
     if (estado().oficial) return doAparelho.filter((n) => !/^(d-recebido-|d-ajuste-|d-aprovado-)/.test(n.id)).concat(avisosDoServidor());
     return doAparelho.concat(concorrencias);
   });

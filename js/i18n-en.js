@@ -3316,4 +3316,9 @@ export const EN = {
   // ---------- Entrada ----------
   'cadastrado.': 'yet.',
   'Abra a planta em PDF, defina a escala, meça em pés e polegadas, monte as quantidades e emita a proposta. No computador.': 'Open the plan PDF, set the scale, measure in feet and inches, build the quantities and issue the proposal. On your computer.',
+
+  // ---------- Obras ----------
+  'Contratante *': 'Client *',
+  'Clique no mapa onde fica a obra (ou use a localização atual, se estiver no local).': 'Click the map where the job is (or use your current location, if you are on site).',
+  'Cadastre a obra: ela liga a concorrência e a contratada. Nome, endereço e partes já vão preenchidos.': 'Register the job: it links the bid and the awarded company. Name, address and parties are already filled in.',
 };

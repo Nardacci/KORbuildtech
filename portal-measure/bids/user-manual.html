@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User manual · Bids · KORbuild guide</title>
+<meta name="description" content="KORbuild product guide: specifications, business rules and user manual for each module.">
+<link rel="icon" href="../../icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/portal.css">
+</head>
+<body data-raiz="../">
+<header class="topo">
+  <a class="marca" href="../index.html" aria-label="KORbuild product guide, home"><img src="../../icons/icon-192.png" alt=""><span><b>KOR</b>build</span><small>Guide</small></a>
+  <nav class="topo-nav" aria-label="Main">
+    <a href="../index.html#modules" aria-current=page>Modules</a>
+    
+    
+  </nav>
+  <div class="topo-acoes">
+    <label class="busca"><span aria-hidden="true">⌕</span><input id="busca" type="search" placeholder="Search rules, screens, tasks…" aria-label="Search the guide" autocomplete="off"></label>
+    <span class="idioma-topo" aria-label="Language / Idioma"><a href="#" aria-current=true lang="en">EN</a><a href="../pt/bids/user-manual.html" lang="pt-BR">PT</a></span>
+    <a class="btn-topo" href="../../">Sign in</a>
+    <button class="menu-celular" type="button" aria-label="Menu and search">☰</button>
+  </div>
+  <div class="busca-resultados" id="busca-resultados" role="listbox" hidden></div>
+</header>
+
+<div class="doc-layout" style="--cor:var(--cor-bids)">
+  <aside class="lateral" aria-label="Bids documents">
+    <a class="lat-modulo" href="index.html"><span class="ico">B</span>Bids</a>
+    <div class="lat-titulo">Start here</div><ul><li><a href="overview.html">Overview</a></li></ul><div class="lat-titulo">Using it</div><ul><li><a href="user-manual.html" aria-current=page>User manual</a></li></ul><div class="lat-titulo">Rules and access</div><ul><li><a href="roles-and-permissions.html">Roles and permissions</a></li></ul>
+  </aside>
+  <main class="doc" id="conteudo">
+    <nav class="trilha" aria-label="You are here"><a href="../index.html">Home</a> › <a href="index.html">Bids</a> › Using it</nav>
+    <header class="doc-cabecalho">
+      <h1>User manual</h1>
+      <div class="doc-acoes"><a class="botao" href="../files/KORbuild Bids - User manual.docx" download>⤓ Download Word</a><button class="botao botao-secundario" type="button" onclick="window.print()">⎙ Print</button></div>
+    </header>
+    <article class="texto">
+<p>Step by step. The screenshots come from a demo account with sample data: <strong>Ana Ribeiro</strong> (Admin at Example Builders, the general contractor) sends and awards, <strong>Tom Reilly</strong> (Admin at Northfield Framing &amp; Siding) bids, and <strong>Bay State Drywall</strong> answers by link, without an account.</p>
+<h2 id="send-a-bid">Send a bid</h2>
+<p><strong>What it is for:</strong> inviting companies to bid on a scope of work.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Run bids and award</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<p>Open <strong>Bids</strong> in the Measure Takeoff menu (or <strong>Get sub bids</strong> on a project). The list has tabs <strong>Open</strong>, <strong>Ready to award</strong>, <strong>Drafts</strong>, <strong>Awarded</strong> and <strong>All</strong>.</p>
+<figure><img src="../img/bids-list.png" alt="Bids" loading="lazy"><figcaption>Bids</figcaption></figure>
+<ol>
+<li>Click <strong>New bid</strong>.</li>
+<li>Fill in the package:<ul>
+<li><strong>Scope of work:</strong> the project and a name (e.g. <em>Framing and drywall</em>).</li>
+<li><strong>Cost codes to bid:</strong> check the ones that apply (they come from your catalog and suppliers) or type others. Each one becomes a row in the leveling.</li>
+<li><strong>Included</strong> and <strong>Excluded</strong> scope, one item per line; notes (work hours, site access, site walk).</li>
+<li><strong>Drawings:</strong> the PDFs.</li>
+<li><strong>Dates:</strong> bid due date and time, expected start and finish.</li>
+<li><strong>Budget and requirements:</strong> an optional budget and whether to show it, minimum GL insurance, license, workers' comp, mandatory site walk, and whether the awarded company <strong>can subcontract</strong>.</li>
+<li><strong>Invitees:</strong> companies from your Contacts. Each one says <strong>On KORbuild</strong> or <strong>Gets a link</strong>.</li>
+</ul>
+</li>
+<li>Click <strong>Send invitations</strong>. If something is missing, the draft is saved and the page says what is missing.</li>
+</ol>
+<figure><img src="../img/bids-new.png" alt="A new bid" loading="lazy"><figcaption>A new bid</figcaption></figure>
+<h2 id="follow-the-invitees">Follow the invitees</h2>
+<p>The bid page opens on <strong>Invitees</strong>: each company, how it receives (KORbuild or link), its status (<em>Invitation sent</em>, <em>Viewed</em>, <em>Will bid</em>, <em>Declined</em> with the reason, <em>Bid submitted</em>), its latest bid and when it viewed the invitation.</p>
+<figure><img src="../img/bids-invitees.png" alt="Invitees" loading="lazy"><figcaption>Invitees</figcaption></figure>
+<ul>
+<li><strong>Extend:</strong> a new due date, after the current one; invitees can bid until then.</li>
+<li><strong>Invite more:</strong> companies not invited yet.</li>
+<li><strong>Cancel:</strong> with a reason; invitees are notified.</li>
+<li><strong>Copy the link:</strong> for an invitee without an account.</li>
+</ul>
+<h2 id="answer-questions">Answer questions</h2>
+<p>The <strong>Questions</strong> tab has one conversation per invitee, and the count of questions without an answer.</p>
+<ol>
+<li>Click <strong>Reply</strong> under a question.</li>
+<li>Write the answer and choose <strong>All invitees</strong> (the question goes along, without saying who asked) or <strong>Only the one who asked</strong>.</li>
+</ol>
+<p>Use <strong>Notify all</strong> for an addendum, a date change or a new sheet.</p>
+<figure><img src="../img/bids-questions.png" alt="Questions" loading="lazy"><figcaption>Questions</figcaption></figure>
+<h2 id="level-the-bids-and-award">Level the bids and award</h2>
+<p><strong>Level bids</strong> shows one column per bid and one row per cost code, next to your budget:</p>
+<ul>
+<li>in green, the lowest amount of each cost code;</li>
+<li><em>not bid</em> when a company left a cost code without a price — compare totals only between complete bids;</li>
+<li>duration, exclusions (⚠ when an exclusion is in your included scope), date and proposal number.</li>
+</ul>
+<figure><img src="../img/bids-leveling.png" alt="Leveling" loading="lazy"><figcaption>Leveling</figcaption></figure>
+<p>Click <strong>Award</strong> on the chosen column. The confirmation warns about cost codes not bid and exclusions in scope. After <strong>Award</strong>, the bid is closed and never changes; the others are told they were not selected, without the amount.</p>
+<p>If the bid came from a project of yours that is still being estimated, it can only be awarded after you win that project and create its job (Settings › Jobs, or <strong>Create job from this project</strong>).</p>
+<figure><img src="../img/bids-award-dialog.png" alt="Award" loading="lazy"><figcaption>Award</figcaption></figure>
+<h2 id="bid-when-you-are-invited">Bid when you are invited</h2>
+<p><strong>What it is for:</strong> answering an invitation and submitting your bid without leaving KORbuild.</p>
+<div class="admonition who">
+<p class="admonition-title">Who can do it</p>
+<p>Anyone with <strong>Respond to invitations and submit bids</strong> (default roles: <strong>Admin</strong> and <strong>Project manager</strong>).</p>
+</div>
+<ol>
+<li>Open <strong>Measure Takeoff › Invitations</strong> (the bell also tells you). Open the invitation: the package, the due date, the budget if the contracting company chose to show it.</li>
+<li>Click <strong>I'll bid</strong> — KORbuild creates a <strong>project in Measure Takeoff</strong> with the contracting company, the address and the due date — or <strong>Decline</strong>, with an optional reason the contracting company sees.</li>
+<li>Measure, price and <strong>issue</strong> the proposal in the project, as usual.</li>
+<li>In <strong>Issued proposals</strong>, click <strong>Submit through the platform</strong>. The dialog shows how the lines go by cost code, what goes as other items and what is <em>not bid</em>; fill in the duration and the exclusions and submit.</li>
+<li>To change anything, issue again and submit: it becomes the next revision, until the due date.</li>
+</ol>
+<figure><img src="../img/bids-invitations.png" alt="Invitations" loading="lazy"><figcaption>Invitations</figcaption></figure>
+<figure><img src="../img/bids-invitation.png" alt="The invitation" loading="lazy"><figcaption>The invitation</figcaption></figure>
+<p>When you win, the invitation says <strong>You were awarded this bid</strong> and offers <strong>Create job from this project</strong>: the job is created <strong>already linked</strong> to the contracting company's job.</p>
+<h2 id="subcontracting">Subcontracting</h2>
+<p>A company can hire another one for part of its work, with the same screens. On your Measure Takeoff project, <strong>Get sub bids › New bid</strong>. The due date must be before your own. In <strong>Level bids</strong>, <strong>Use in my estimate</strong> puts the sub's price into your project proposal (as other items, with your markups). You award only after you win and create the job.</p>
+<p>If the company that hired you asked for approval, <strong>Award</strong> sends it a request: it sees only the company you chose, never the amount, and approves or declines. If it does not allow subcontracting, the bid is not sent.</p>
+<figure><img src="../img/bids-sub-tier.png" alt="A subcontracting bid" loading="lazy"><figcaption>A subcontracting bid</figcaption></figure>
+<h2 id="the-link-page-without-an-account">The link page (without an account)</h2>
+<p>A company without KORbuild opens the private link and, without signing in: sees the package, answers <strong>I'll bid</strong> or <strong>Decline</strong>, asks questions and submits the bid with the <strong>PDF</strong>, the total (and, optionally, the amount by cost code), the duration and the exclusions.</p>
+<figure><img src="../img/bids-link.png" alt="The link page" loading="lazy"><figcaption>The link page</figcaption></figure>
+<h2 id="messages-and-alerts">Messages and alerts</h2>
+<table>
+<thead>
+<tr>
+<th>Message</th>
+<th>What it means</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Missing: …</td>
+<td>The draft is not complete.</td>
+<td>Fill in what is listed and send.</td>
+</tr>
+<tr>
+<td>The bid due date has passed.</td>
+<td>Bids are no longer accepted.</td>
+<td>The contracting company extends, or levels and awards.</td>
+</tr>
+<tr>
+<td>The total must equal the sum of the cost code amounts.</td>
+<td>The bid by cost code doesn't add up.</td>
+<td>Fix the amounts or leave a cost code blank (not bid).</td>
+</tr>
+<tr>
+<td>This bid came from a project still being estimated…</td>
+<td>You can't award before winning.</td>
+<td>Win the project and create its job first.</td>
+</tr>
+<tr>
+<td>The contracting company for this job doesn't allow subcontracting.</td>
+<td>The upstream bid does not allow it.</td>
+<td>Talk to whoever hired you.</td>
+</tr>
+</tbody>
+</table>
+    </article>
+  </main>
+  <nav class="toc" aria-label="On this page"><div class="toc-titulo">On this page</div><ul><li><a href="#send-a-bid">Send a bid</a></li><li><a href="#follow-the-invitees">Follow the invitees</a></li><li><a href="#answer-questions">Answer questions</a></li><li><a href="#level-the-bids-and-award">Level the bids and award</a></li><li><a href="#bid-when-you-are-invited">Bid when you are invited</a></li><li><a href="#subcontracting">Subcontracting</a></li><li><a href="#the-link-page-without-an-account">The link page (without an account)</a></li><li><a href="#messages-and-alerts">Messages and alerts</a></li></ul></nav>
+</div>
+<footer class="rodape">
+  <div><b>KORbuild</b> · KORbuild product guide · updated October 19, 2026 · <a href="../../">Main sign-in</a></div>
+  <div>Screenshots come from a demo account with sample data. Names, companies and numbers are fictitious.</div>
+</footer>
+<button class="voltar-topo" type="button" aria-label="Back to top">↑</button>
+<script src="../assets/portal.js"></script>
+</body></html>

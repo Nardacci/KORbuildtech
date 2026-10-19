@@ -4,11 +4,13 @@ What each person can do comes from their **access role**. The company can adjust
 
 ## Default roles
 
-| Role | Typical person | In Measure Takeoff | In Settings |
+| Role | Typical person | In Measure Takeoff and Bids | In Settings |
 |---|---|---|---|
-| **Admin** | Owner or office manager | Everything: measure, catalog, prices, proposals | Everything: company, contacts, users, roles |
-| **Manager** | Estimating manager | Measures and issues proposals; sees prices if the role allows | Contacts |
-| **Estimator** | Person who does the takeoff | Measures; catalog and prices only if the role allows | Own profile |
+| **Admin** | Owner or office manager | Everything: measure, catalog, prices, proposals, send bids, respond to invitations | Everything: company, jobs, contacts, users, roles |
+| **Project manager** | Estimating or project manager | Measures, issues proposals, sends bids and responds to invitations | Jobs |
+| **Foreman** and **Worker** | Field people | Not used in this release (they belong to modules that are not part of it); they do not open Measure Takeoff | — |
+
+The company can change these roles or create new ones, for example an **Estimator** who measures but does not change the catalog or see prices.
 
 ## Permissions that matter in this release
 
@@ -19,6 +21,9 @@ What each person can do comes from their **access role**. The company can adjust
 | **See costs** | See dollar amounts (cost and price) in lists and reports. |
 | **Contacts** | Create and edit clients and suppliers. |
 | **Users and roles** | Invite users, deactivate them and edit roles. |
+| **Run bids and award** | Send bids, level them and award. |
+| **Respond to invitations** | Answer invitations to bid and submit bids. |
+| **Jobs** | Create the job from a won project (needed to close a bid). |
 | **Company** | Edit the company profile. |
 
 ## Good to know

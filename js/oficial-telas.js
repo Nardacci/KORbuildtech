@@ -88,7 +88,7 @@ export function telaOficial(p) {
   if (aba === 'diagnostico') return { html: moldura('perfil', htmlTelaDiagnostico()), depois: iniciarTelaDiagnostico };
   const cadastro = ABAS_CADASTROS.find(([k]) => k === aba);
   if (cadastro) {
-    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && cadastro[0] !== 'contatos')) return { trocar: '#/conta' };
+    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && cadastro[0] !== 'contatos' && cadastro[0] !== 'obras')) return { trocar: '#/conta' };
     const r = telaCadastro(aba, p.slice(2));
     return r.trocar ? r : { html: moldura(aba, r.html), depois: r.depois };
   }
@@ -163,7 +163,7 @@ function telaNovaEmpresa() {
 /* ---------- Área da conta ---------- */
 
 function moldura(ativa, conteudo) {
-  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos')).map(([k, nome]) => [k, tr(nome)]))
+  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos' || k === 'obras')).map(([k, nome]) => [k, tr(nome)]))
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
   return '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ Settings</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
@@ -211,7 +211,7 @@ function htmlInicio() {
       ? '<section class="cartao"><h2 class="cartao-titulo">' + NOME_MEASURE + '</h2><p>' + (PRIMEIRA_VERSAO ? tr('Abra a planta em PDF, defina a escala, meça em pés e polegadas, monte as quantidades e emita a proposta. No computador.') : tr('A medição de plantas já funciona com o banco de dados, no computador: envie o PDF, defina a escala, meça, monte o catálogo e emita a proposta.')) + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + (PRIMEIRA_VERSAO ? tr('Abrir o Measure Takeoff') : tr('Abrir o Measure')) + '</a></div></section>'
       : '') +
-    (!PRIMEIRA_VERSAO && pode('concorrencias.gerir')
+    (pode('concorrencias.gerir')
       ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Concorrências') + '</h2><p>' + tr('As concorrências já funcionam com o banco de dados: convide prestadoras, receba propostas (pela plataforma ou por link), compare e feche; a obra da vencedora nasce ligada à sua.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/daily/concorrencias">' + icone('tabela', 18) + tr('Abrir as concorrências') + '</a></div></section>'
       : '') +
