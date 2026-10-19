@@ -103,11 +103,11 @@ try {
   await t.p.waitForSelector('[data-acao="co-enviar"]', { timeout: 20000 });
   await t.p.click('[data-acao="co-enviar"]');
   await t.p.click('dialog button:has-text("Enviar")');
-  await t.p.waitForSelector('dialog:has-text("Links dos convidados")', { timeout: 30000 });
-  const link = await t.p.inputValue('dialog input[type="text"]');
-  const token = (link.split('#/convite/')[1] || '').trim();
+  await t.p.waitForSelector('[data-acao="co-link"]', { timeout: 30000 });
+  verificar((await t.p.locator('dialog').count()) === 0, 'não abre popup com os links');
+  const token = await t.p.getAttribute('[data-acao="co-link"]', 'data-token');
+  const link = 'https://x/#/convite/' + token;
   verificar(/^[0-9a-f]{48}$/.test(token) && !/\?demo/.test(link), 'o link da Bayside veio uma vez, sem "?demo"', link);
-  await noDialogo(t.p, 'Fechar');
   verificar(await esperarAte(async () => (await conc())[0].situacao === 'aberta'), 'a concorrência está aberta no banco');
   const hashes = await sql(`select nome, token_hash is not null as tem from public.concorrencia_convites where concorrencia_id = '${c.id}'`);
   verificar(hashes.find((v) => v.nome === 'Bayside Local').tem && !hashes.find((v) => v.nome !== 'Bayside Local').tem, 'só o convite pelo link tem token (e só o hash fica)', hashes);

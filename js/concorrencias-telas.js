@@ -9,8 +9,10 @@ import { estado, salvar, obra as acharObra } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { contatosCom, contatos, salvarContato } from './contatos.js';
-import { salvarProjeto, projeto as acharProjeto } from './measure.js';
+import { salvarProjeto, projeto as acharProjeto, folhasDo } from './measure.js';
 import { importarPdfNoProjeto } from './measure-telas.js';
+import { bytesDaPlanta } from './measure-oficial.js';
+import { lerFoto } from './armazem.js';
 import { cliente } from './conta.js';
 import { dinheiro } from './crew.js';
 import {
@@ -108,6 +110,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   if (projetoId && !pj) return null;
   const d = c || { origem: pj ? { tipo: 'projeto', id: pj.id } : null, obraId: obraId || '', servico: '', etapas: [], incluso: [], excluso: [], observacoes: '', desenhos: [], prazo: '', inicio: '', termino: '', orcamento: { valor: null, mostrar: 'nao' }, exigencias: {}, quarteirizacao: 'permitida', convites: [] };
   const obras = estado().obras.filter((o) => o.situacao !== 'concluida' || o.id === d.obraId);
+  const pdfsDoProjeto = pj ? pdfsDe(pj.id).filter((a) => !d.desenhos.some((x) => x.nome === a.nome.replace(/\.pdf$/i, ''))) : [];
   const conhecidas = etapasConhecidas();
   const outras = d.etapas.filter((e) => !conhecidas.includes(e));
   const prestadoras = contatosCom('prestadora');
@@ -143,6 +146,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Desenhos') + '</h2>' +
         '<input type="hidden" name="desenhosAtuais" value="' + esc(JSON.stringify(d.desenhos)) + '">' +
         (d.desenhos.length ? '<p class="pequeno">' + d.desenhos.map((x) => esc(x.nome)).join(' · ') + '</p>' : '') +
+        (pdfsDoProjeto.length ? '<p class="pequeno"><b>' + tr('Plantas do projeto') + '</b></p><div class="lista-marcar">' + pdfsDoProjeto.map((a) => '<label class="check"><input type="checkbox" name="plantasProjeto" value="' + esc(a.id) + '"' + (c ? '' : ' checked') + '> ' + esc(a.nome) + '</label>').join('') + '</div>' : '') +
         campo('co-desenhos', tr('Acrescentar PDFs'), '<input type="file" id="co-desenhos" name="desenhos" accept="application/pdf" multiple>') +
         '<p class="mudo pequeno">' + (estado().oficial ? tr('Os PDFs vão para a pasta da concorrência; quem cotar recebe uma cópia no projeto do Measure.') : tr('No protótipo, só o nome de cada arquivo é guardado.')) + '</p>' +
       '</section>' +
@@ -170,16 +174,35 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
         '<p class="mudo pequeno">' + tr('A lista vem dos Contatos com o marcador prestadora.') + ' <a href="#/settings/contatos">' + tr('Abrir os Contatos') + '</a></p>' +
       '</section>' +
       '<div class="rodape-form"><a class="btn btn-contorno" href="' + voltar.href + '">' + tr('Cancelar') + '</a>' +
-        '<button type="button" class="btn btn-contorno" data-acao="co-salvar">' + tr('Salvar rascunho') + '</button>' +
-        '<button type="button" class="btn btn-primario" data-acao="co-salvar" data-enviar="1">' + tr('Enviar convites') + '</button></div>' +
+        '<button type="button" class="btn btn-primario" data-acao="co-salvar">' + tr('Salvar') + '</button></div>' +
+      '<p class="mudo pequeno">' + tr('Depois de salvar, a próxima tela tem o botão Enviar convites.') + '</p>' +
     '</form>',
   });
+}
+
+/* Os PDFs distintos das folhas de um projeto (uma folha por página, vários por PDF). */
+function pdfsDe(projetoId) {
+  const vistos = new Map();
+  for (const f of folhasDo(projetoId)) if (f.arquivo && !vistos.has(f.arquivo.id)) vistos.set(f.arquivo.id, f.arquivo);
+  return Array.from(vistos.values()).map((a) => ({ id: a.id, nome: a.nome || a.id, arquivo: a }));
+}
+
+async function arquivosDasPlantas(projetoId, ids) {
+  const out = [];
+  for (const a of pdfsDe(projetoId).filter((x) => ids.includes(x.id))) {
+    try {
+      const bytes = a.arquivo.tipo === 'storage' ? await bytesDaPlanta(a.arquivo) : new Uint8Array(await (await lerFoto(a.arquivo.id)).arrayBuffer());
+      out.push({ nome: a.nome.replace(/\.pdf$/i, ''), arquivo: new File([bytes], a.nome, { type: 'application/pdf' }) });
+    } catch (e) { console.error('planta ' + a.nome + ': ' + (e && e.message ? e.message : e)); }
+  }
+  return out;
 }
 
 function dadosDoForm() {
   const form = document.getElementById('form-concorrencia');
   const fd = new FormData(form);
   const anexos = Array.from((document.getElementById('co-desenhos') || {}).files || []).map((f) => ({ nome: f.name.replace(/\.pdf$/i, ''), arquivo: f }));
+  const plantas = fd.getAll('plantasProjeto');
   let atuais = [];
   try { atuais = JSON.parse(fd.get('desenhosAtuais') || '[]'); } catch (e) { atuais = []; }
   const visitaAntes = (concorrenciaEnviada(form.dataset.id) || { exigencias: {} }).exigencias.visita || {};
@@ -189,7 +212,7 @@ function dadosDoForm() {
       obraId: fd.get('obraId'), origem: fd.get('origemProjeto') ? { tipo: 'projeto', id: fd.get('origemProjeto') } : null, servico: fd.get('servico'),
       etapas: fd.getAll('etapas').concat(String(fd.get('outrasEtapas') || '').split('\n')),
       incluso: fd.get('incluso'), excluso: fd.get('excluso'), observacoes: fd.get('observacoes'),
-      desenhos: atuais.concat(anexos.map((a) => ({ nome: a.nome }))), desenhosNovos: anexos,
+      desenhos: atuais.concat(anexos.map((a) => ({ nome: a.nome }))), desenhosNovos: anexos, plantasProjeto: plantas,
       prazo: fd.get('prazoData') ? fd.get('prazoData') + 'T' + (fd.get('prazoHora') || '17:00') : '',
       inicio: fd.get('inicio'), termino: fd.get('termino'),
       orcamento: { valor: fd.get('orcamento'), mostrar: fd.get('mostrar') },
@@ -212,7 +235,7 @@ export function telaConcorrencia(moldura, id, abaPedida) {
   const acoes = '<div class="acoes-cabeca">' +
     (c.situacao === 'rascunho' ? '<a class="btn btn-contorno" href="#/daily/concorrencias/' + c.id + '/editar">' + tr('Editar') + '</a>' +
       '<button type="button" class="btn btn-contorno" data-acao="co-cancelar" data-id="' + c.id + '">' + tr('Excluir rascunho') + '</button>' +
-      '<button type="button" class="btn btn-primario" data-acao="co-enviar" data-id="' + c.id + '">' + tr('Enviar convites') + '</button>' : '') +
+      '<button type="button" class="btn btn-primario" data-acao="co-enviar" data-id="' + c.id + '"' + (pendenciasDeEnvio(c).length ? ' disabled title="' + esc(tr('Complete o que falta para enviar.')) + '"' : '') + '>' + tr('Enviar convites') + '</button>' : '') +
     (ativa ? '<button type="button" class="btn btn-contorno" data-acao="co-prorrogar" data-id="' + c.id + '">' + icone('relogio', 18) + tr('Prorrogar') + '</button>' +
       '<button type="button" class="btn btn-contorno" data-acao="co-convidar" data-id="' + c.id + '">' + icone('mais', 18) + tr('Convidar mais') + '</button>' +
       '<button type="button" class="btn btn-contorno" data-acao="co-cancelar" data-id="' + c.id + '">' + tr('Cancelar') + '</button>' : '') + '</div>';
@@ -410,7 +433,7 @@ export function telaConvite(moldura, id) {
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
         '<dt>' + tr('Obra') + '</dt><dd>' + (x.obra ? esc(x.obra.nome) + '<span class="mudo bloco">' + esc([x.obra.endereco, textoLocal(x.obra)].filter(Boolean).join(' · ')) + '</span>' : '—') + '</dd>' +
         '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
-        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => esc(d.nome)).join(' · ') : '—') + '</dd>' +
+        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => d.url ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + esc(d.nome) + '.pdf</a>' : esc(d.nome)).join(' · ') : '—') + '</dd>' +
         '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
         '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
         '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
@@ -553,15 +576,7 @@ export function propostaParaConcorrencia(x, emitida) {
 export const linkDoConvite = (token) => location.origin + location.pathname + (estado().oficial ? '' : '?demo') + '#/convite/' + token;
 
 /* Os links dos convidados sem conta, para copiar (o banco entrega o token uma vez, ao enviar). */
-async function mostrarLinks(links) {
-  if (!links || !links.length) return;
-  await abrirDialogo({
-    titulo: tr('Links dos convidados sem conta'),
-    corpo: '<p class="mudo pequeno">' + tr('Mande cada link para a prestadora (o envio por e-mail vem em seguida). O link é pessoal e só abre aquele convite.') + '</p>' +
-      links.map((l) => '<p><b>' + esc(l.nome) + '</b><input type="text" readonly value="' + esc(linkDoConvite(l.token)) + '" data-selecionar></p>').join(''),
-    acoes: [{ rotulo: tr('Fechar'), valor: true, classe: 'btn-primario' }],
-  });
-}
+async function mostrarLinks() { /* sem popup: o link de cada convidado sem conta fica na tabela, em "Copiar o link" */ }
 
 export function telaConvitePublico(token, marca) {
   let x = porToken(token);
@@ -605,7 +620,7 @@ export function telaConvitePublico(token, marca) {
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
         '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
-        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => esc(d.nome)).join(' · ') : '—') + '</dd>' +
+        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => d.url ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + esc(d.nome) + '.pdf</a>' : esc(d.nome)).join(' · ') : '—') + '</dd>' +
         '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
         '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
         '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
@@ -767,18 +782,16 @@ export const acoesConcorrencias = {
   },
   async 'co-salvar'(el) {
     const { id, dados } = dadosDoForm();
+    if (dados.plantasProjeto.length && dados.origem) dados.desenhosNovos = dados.desenhosNovos.concat(await arquivosDasPlantas(dados.origem.id, dados.plantasProjeto));
+    dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome })));
     const r = await salvarRascunho(id, dados, quem());
     if (r.erro) { toast(r.erro); return; }
-    if (el.dataset.enviar) {
-      const e = await enviar(r.id, quem());
-      if (e.erro) { toast(tr('Rascunho salvo. Para enviar: {falta}', { falta: e.erro })); app.ir('#/daily/concorrencias/' + r.id); return; }
-      toast(tr('Convites enviados.'));
-      await mostrarLinks(e.links);
-    } else toast(tr('Rascunho salvo.'));
+    toast(tr('Rascunho salvo.'));
     app.ir('#/daily/concorrencias/' + r.id);
   },
   async 'co-enviar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
+    if (!c.desenhos.length && !(await confirmar(tr('Sem desenhos anexados'), tr('Quem for cotar não vai ver nenhum desenho da obra. Enviar assim mesmo?'), tr('Enviar sem desenhos')))) return;
     if (!(await confirmar(tr('Enviar os convites?'), tn(c.convites.length, 'A prestadora recebe o pacote para cotar. Depois de enviado, só dá para prorrogar o prazo, convidar mais ou cancelar.', 'As {n} prestadoras recebem o pacote para cotar. Depois de enviado, só dá para prorrogar o prazo, convidar mais ou cancelar.'), tr('Enviar')))) return;
     const r = await enviar(c.id, quem());
     toast(r.erro || tr('Convites enviados.'));
