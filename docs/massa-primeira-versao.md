@@ -74,7 +74,7 @@ Pode rodar de novo: o que já existe é pulado. Para testar antes num banco loca
 
 ## A construtora no Measure
 
-Até a migração `20261024_0015_measure_construtora.sql`, o banco só liberava o Measure para prestadora e "ambas" (`tenho_measure()`); a construtora via a tela mas não gravava. A 0015 troca só essa função: vale para qualquer empresa com a permissão `measure.medir`, e as políticas continuam presas à própria empresa. **Precisa ser aplicada no Supabase antes de rodar a massa do Measure da c1** (a migração é aplicada à parte, depois da revisão; para voltar atrás, recrie a função com a condição de 0008).
+Até a migração `20261024_0015_measure_construtora.sql`, o banco só liberava o Measure para prestadora e "ambas" (`tenho_measure()`); a construtora via a tela mas não gravava. A 0015 troca só essa função: vale para qualquer empresa com a permissão `measure.medir`, e as políticas continuam presas à própria empresa. A 0015 já foi aplicada no Supabase do projeto (para voltar atrás, recrie a função com a condição de 0008).
 
 ## Limpeza (no fim da rodada de testes)
 

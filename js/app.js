@@ -37,7 +37,7 @@ import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
 import { acoesInstalar } from './instalar.js';
 import { htmlAvisoGps, verificarGps, acoesGps } from './gps.js';
-import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, acoesCadastros, mudarOficial } from './oficial-telas.js';
+import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, acoesCadastros, mudarOficial, temPainelDoInicio, espelhoProntoParaOInicio } from './oficial-telas.js';
 import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder, telaConvitePublico } from './concorrencias-telas.js';
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
@@ -221,6 +221,12 @@ function desenhar() {
         return;
       }
       return desenharPrototipo();
+    }
+    // o Início da 1ª versão é um painel: precisa do espelho do banco (projetos, concorrências, preços); com ele pronto, relê de vez em quando
+    const pInicio = rota();
+    if (pInicio[0] === 'conta' && (!pInicio[1] || pInicio[1] === 'inicio') && conta.pronto && conta.sessao && conta.membro && conta.membro.ativo && temPainelDoInicio() && !inicioSemEspelho) {
+      if (!espelhoProntoParaOInicio()) { app.innerHTML = carregando(); abrirInicioOficial(); return; }
+      atualizarInicioOficial();
     }
     const r = telaOficial(rota());
     if (r.trocar) return trocarRota(r.trocar);
@@ -1200,6 +1206,17 @@ function acaoNoIdioma(acao) {
 
 let diarioPublico = null; // { codigo, lacre } do link do cliente aberto
 const relidoPorRdo = new Set();
+let inicioSemEspelho = false, inicioRelidoEm = Date.now();
+async function abrirInicioOficial() {
+  try { await montarEspelho(); inicioRelidoEm = Date.now(); } catch { if (!usarOQueTemNoAparelho()) inicioSemEspelho = true; }   // sem internet nem dados no aparelho: o Início simples
+  desenhar();
+}
+/* Quem fica no Início vê os números do banco do último minuto: uma releitura por minuto, só com internet. */
+function atualizarInicioOficial() {
+  if (Date.now() - inicioRelidoEm < 60000 || semInternet()) return;
+  inicioRelidoEm = Date.now();
+  montarEspelho(true).catch(() => {}).then(() => { const q = rota(); if (q[0] === 'conta' && (!q[1] || q[1] === 'inicio')) desenhar(); });
+}
 async function abrirDailyOficial() {
   try {
     await montarEspelho();

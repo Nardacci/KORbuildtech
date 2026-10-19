@@ -16,6 +16,10 @@ import {
 import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
 import { esquecer as esquecerCadastros } from './cadastros.js';
 import { espelho } from './espelho.js';
+import { estado, bancoDeDados } from './armazem.js';
+import { calcularInicio } from './inicio-calculo.js';
+import { htmlPainelInicio } from './inicio-dashboard.js';
+import { listaDeCotacao } from './measure-relatorios.js';
 import { htmlAvisoInstalar } from './instalar.js';
 import { iniciarDiagnostico } from './diagnostico.js';
 import { CATEGORIAS_DE_EMAIL, textoDaCategoria, recebePorEmail, prefsLidas, lerPrefs, salvarPrefEmail } from './avisos-oficial.js';
@@ -194,7 +198,28 @@ function iniciarTelaDiagnostico() {
   });
 }
 
+/* O painel do Início (1ª versão): para quem mede, convida ou responde convites. Precisa do espelho do banco (o app o carrega ao abrir o Início). */
+export const temPainelDoInicio = () => PRIMEIRA_VERSAO && !!conta.membro && (pode('measure.medir') || pode('concorrencias.gerir') || pode('concorrencias.responder'));
+export const espelhoProntoParaOInicio = () => !!(espelho.pronto && estado() && estado().oficial && conta.empresa && estado().empresa.id === conta.empresa.id);
+function htmlPainel() {
+  const medir = pode('measure.medir');
+  const ver = { medir, dinheiro: medir && (pode('measure.catalogo') || pode('crew.custos')), concorrenciasEnviadas: pode('concorrencias.gerir'), concorrenciasRecebidas: pode('concorrencias.responder'), obras: pode('settings.obras') || medir };
+  const dados = { ...estado(), concorrencias: (bancoDeDados() || {}).concorrencias || [] };   // as concorrências ficam fora das empresas, numa lista só
+  const calc = calcularInicio(dados, { eu: conta.empresa.id, agora: Date.now(), ver, itensDaLista: (id) => { try { return listaDeCotacao(id).total; } catch { return 0; } } });
+  return htmlPainelInicio(calc, { ver });
+}
+function htmlInicioComPainel() {
+  return '<section class="cartao ini-saudacao"><div><h1 class="oficial-titulo">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
+      '<p class="mudo">' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</p></div>' +
+    '<div class="btn-linha">' + (pode('measure.medir') ? '<a class="btn btn-primario" href="#/measure">' + icone('tabela', 18) + tr('Abrir o Measure Takeoff') + '</a>' : '') +
+      (pode('concorrencias.gerir') ? '<a class="btn btn-contorno" href="#/daily/concorrencias">' + icone('tabela', 18) + tr('Abrir as concorrências') + '</a>' : '') +
+      (!pode('concorrencias.gerir') && pode('concorrencias.responder') ? '<a class="btn btn-contorno" href="#/measure/convites">' + icone('sino', 18) + tr('Convites') + '</a>' : '') + '</div></section>' +
+    htmlPainel() +
+    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Manual do usuário') + '</h2><div class="btn-linha"><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>';
+}
+
 function htmlInicio() {
+  if (temPainelDoInicio() && espelhoProntoParaOInicio()) return htmlInicioComPainel();
   return '<section class="cartao"><h1 class="oficial-titulo">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
       '<dl class="lista-dados"><dt>' + tr('Empresa') + '</dt><dd>' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + '</dd>' +
       '<dt>' + tr('Seu acesso') + '</dt><dd>' + esc(nomeDoPerfil(conta.perfil)) + ' · ' + esc(emailAtual()) + '</dd>' +
