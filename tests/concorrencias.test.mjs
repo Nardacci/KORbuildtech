@@ -277,6 +277,7 @@ verificar(await page.locator('#co-anexos tbody tr').count() === 2 && (await page
 await page.locator('[data-acao="co-tirar-anexo"]').first().click();
 verificar(await page.locator('#co-anexos tbody tr').count() === 1, 'remove um anexo da lista');
 verificar(await page.locator('[data-enviar]').count() === 0, 'o formulário não tem botão de envio');
+await page.setInputFiles('#co-arquivo', { name: 'solto.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%%EOF') });
 await page.locator('[data-acao="co-salvar"]').click();
 await page.waitForTimeout(400);
 verificar(page.url().includes('#/daily/concorrencias/co-') && (await page.locator('.aviso').innerText()).includes('Rascunho'), 'salva o rascunho e diz o que falta');

@@ -3420,6 +3420,7 @@ export const EN = {
   'Plantas, quantidades e propostas': 'Plans, quantities and proposals',
   'Obras, contatos, usuários e empresa': 'Jobs, contacts, users and company',
   'Ainda não enviado': 'Not sent yet',
+  'Não foi possível salvar: {erro}': 'Could not save: {erro}',
   'Observação': 'Note',
   'Documentos anexos': 'Attached documents',
   'Arquivos (um ou vários PDFs)': 'Files (one or more PDFs)',

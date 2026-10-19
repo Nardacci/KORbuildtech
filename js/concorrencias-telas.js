@@ -820,13 +820,22 @@ export const acoesConcorrencias = {
     desenharAnexos();
   },
   async 'co-salvar'(el) {
-    const { id, dados } = dadosDoForm();
-    if (dados.plantasProjeto.length && dados.origem) dados.desenhosNovos = dados.desenhosNovos.concat(await arquivosDasPlantas(dados.origem.id, dados.plantasProjeto));
-    dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome })));
-    const r = await salvarRascunho(id, dados, quem());
-    if (r.erro) { toast(r.erro); return; }
-    toast(tr('Rascunho salvo.'));
-    app.ir('#/daily/concorrencias/' + r.id);
+    if (el.disabled) return;
+    el.disabled = true;
+    try {
+      // arquivo escolhido mas ainda sem clicar em Anexar: entra junto, para não se perder
+      if ((document.getElementById('co-arquivo') || { files: [] }).files.length) await acoesConcorrencias['co-anexar']();
+      const { id, dados } = dadosDoForm();
+      if (dados.plantasProjeto.length && dados.origem) dados.desenhosNovos = dados.desenhosNovos.concat(await arquivosDasPlantas(dados.origem.id, dados.plantasProjeto));
+      dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome })));
+      const r = await salvarRascunho(id, dados, quem());
+      if (r.erro) { toast(r.erro); return; }
+      toast(tr('Rascunho salvo.'));
+      app.ir('#/daily/concorrencias/' + r.id);
+    } catch (e) {
+      console.error(e);
+      toast(tr('Não foi possível salvar: {erro}', { erro: (e && e.message) || String(e) }));
+    } finally { el.disabled = false; }
   },
   async 'co-enviar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
