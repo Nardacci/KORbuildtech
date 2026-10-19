@@ -3419,4 +3419,6 @@ export const EN = {
   '{n} horas': '{n} hours',
   'Plantas, quantidades e propostas': 'Plans, quantities and proposals',
   'Obras, contatos, usuários e empresa': 'Jobs, contacts, users and company',
+  'Ainda não enviado': 'Not sent yet',
+  'Nenhum e-mail ou aviso sai antes de você clicar em Enviar convites.': 'No email or notice goes out until you click Send invitations.',
 };

@@ -219,7 +219,7 @@ export function telaConcorrencia(moldura, id, abaPedida) {
   let aviso = '';
   if (c.situacao === 'rascunho') {
     const falta = pendenciasDeEnvio(c);
-    aviso = '<div class="aviso aviso-ambar"><b>' + tr('Rascunho: as prestadoras ainda não receberam nada.') + '</b>' + (falta.length ? '<span>' + tr('Falta: {itens}', { itens: falta.map((x) => x.replace(/\.$/, '')).join(' · ') }) + '</span>' : '<span>' + tr('Tudo pronto para enviar.') + '</span>') + '</div>';
+    aviso = '<div class="aviso aviso-ambar"><b>' + tr('Rascunho: as prestadoras ainda não receberam nada.') + '</b>' + (falta.length ? '<span>' + tr('Falta: {itens}', { itens: falta.map((x) => x.replace(/\.$/, '')).join(' · ') }) + '</span>' : '<span>' + tr('Tudo pronto para enviar.') + '</span>') + '<span class="mudo pequeno">' + tr('Nenhum e-mail ou aviso sai antes de você clicar em Enviar convites.') + '</span></div>';
   } else if (s === 'para-fechar') aviso = '<div class="aviso aviso-ambar"><b>' + tr('O prazo venceu.') + '</b><span>' + tr('Compare as propostas e feche, ou prorrogue para receber mais.') + '</span></div>';
   else if (c.situacao === 'fechada') {
     const v = c.convites.find((x) => x.id === c.fechamento.conviteId);
@@ -250,7 +250,7 @@ function htmlConvidados(c) {
       const p = ultimaProposta(v);
       return '<tr><td><b>' + esc(v.nome) + '</b>' + (v.email ? '<span class="mudo pequeno bloco">' + esc(v.email) + '</span>' : '') + '</td><td>' + comoRecebe(v) +
           (!v.empresaId && c.situacao !== 'rascunho' ? (v.token ? '<button type="button" class="link-botao pequeno bloco" data-acao="co-link" data-token="' + esc(v.token) + '">' + tr('Copiar o link') + '</button>' : '<span class="mudo pequeno bloco">' + tr('link no aparelho que enviou') + '</span>') : '') + '</td>' +
-        '<td>' + etiquetaConvite(v) + (v.motivo ? '<span class="mudo pequeno bloco">“' + esc(v.motivo) + '”</span>' : '') + '</td>' +
+        '<td>' + (c.situacao === 'rascunho' ? '<span class="etiqueta etiqueta-neutro">' + tr('Ainda não enviado') + '</span>' : etiquetaConvite(v)) + (v.motivo ? '<span class="mudo pequeno bloco">“' + esc(v.motivo) + '”</span>' : '') + '</td>' +
         '<td>' + (p ? '<b>' + dinheiro(p.total) + '</b><span class="mudo pequeno bloco">' + tr('rev. {rev} · {quando}', { rev: p.rev, quando: dataHora(p.enviadaEm) }) + '</span>' : '<span class="mudo">—</span>') + '</td>' +
         '<td>' + (v.vistoEm ? dataHora(v.vistoEm) : '<span class="mudo">' + (c.situacao === 'rascunho' ? '—' : tr('ainda não')) + '</span>') + '</td></tr>';
     }).join('') + '</tbody></table></div>' +
