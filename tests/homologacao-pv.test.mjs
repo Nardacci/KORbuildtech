@@ -119,7 +119,7 @@ try {
       const linhasTabela = await p.locator('.cot-fornecedor tbody tr').count();
       E('a lista tem as linhas de material (item, quantidade, unidade)', linhasTabela >= 6, linhasTabela);
       E('as quantidades vêm com unidade de compra', /(piece|box|roll|sheet|bundle|each|gallon|bucket|bag|cubic yard)/.test(tcot));
-      E('mostra o e-mail preparado e/ou os preços recebidos de um fornecedor', /e-mail prepared on|prices received on|E-mail preparado|preços recebidos/i.test(tcot), tcot.slice(0, 200));
+      E('mostra o e-mail preparado e/ou os preços recebidos de um fornecedor', /email drafted on|prices received on|e-mail preparado|preços recebidos/i.test(tcot), tcot.slice(0, 200));
       // impressão por fornecedor
       const forn = await p.locator('.cot-fornecedor a[href*="/imprimir"]').first().getAttribute('href').catch(() => null);
       E('há o PDF do pedido de cotação por fornecedor', !!forn, forn);
