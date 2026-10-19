@@ -54,6 +54,14 @@ async function salvarRascunho(id, d, contatoIds, arquivos) {
     const entraram = contatoIds.filter((cid) => !antes.some((v) => v.contatoId === cid));
     if (sairam.length) { const { error } = await sb.from('concorrencia_convites').delete().in('id', sairam); if (error) throw error; }
     if (entraram.length) { const { error } = await sb.from('concorrencia_convites').insert(entraram.map((cid) => ({ concorrencia_id: novoId, contato_id: cid }))); if (error) throw error; }
+    // desenhos que o usuário tirou do formulário: saem da lista e do Storage
+    if (id && Array.isArray(d.desenhosMantidos)) {
+      const sobra = ((minha(id) || { desenhos: [] }).desenhos || []).filter((x) => !d.desenhosMantidos.includes(x.id));
+      if (sobra.length) {
+        const { error } = await sb.from('concorrencia_desenhos').delete().in('id', sobra.map((x) => x.id)); if (error) throw error;
+        await sb.storage.from('concorrencias').remove(sobra.map((x) => x.path).filter(Boolean)).catch(() => {});
+      }
+    }
     // desenhos novos: o PDF vai ao Storage da contratante, a linha aponta para ele
     for (const a of arquivos || []) {
       const path = conta.empresa.id + '/' + novoId + '/desenhos/' + crypto.randomUUID() + '.pdf';

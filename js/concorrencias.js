@@ -130,12 +130,13 @@ export function salvarRascunho(id, dados, por) {
     servico: String(dados.servico || '').trim(),
     etapas: [...new Set(textoItens(dados.etapas))],
     incluso: textoItens(dados.incluso), excluso: textoItens(dados.excluso), observacoes: String(dados.observacoes || '').trim(),
-    desenhos: (dados.desenhos || []).map((x) => ({ nome: String(x.nome || '').trim(), arquivoId: x.arquivoId || null })).filter((x) => x.nome),
+    desenhos: (dados.desenhos || []).map((x) => ({ nome: String(x.nome || '').trim(), arquivoId: x.arquivoId || null, observacao: String(x.observacao || '').trim() })).filter((x) => x.nome),
     prazo: String(dados.prazo || '').trim(), inicio: String(dados.inicio || '').trim(), termino: String(dados.termino || '').trim(),
     orcamento: { valor: orc.valor === '' || orc.valor == null ? null : valor(orc.valor), porEtapa: {}, mostrar: MOSTRAR_ORCAMENTO[orc.mostrar] ? orc.mostrar : 'nao' },
     exigencias: dados.exigencias || {},
     quarteirizacao: QUARTEIRIZACAO[dados.quarteirizacao] ? dados.quarteirizacao : 'permitida',
   };
+  d.desenhosMantidos = dados.desenhosMantidos;
   for (const [k, x] of Object.entries(orc.porEtapa || {})) if (x !== '' && x != null) d.orcamento.porEtapa[k] = valor(x);
   if (d.prazo && !DATA_HORA.test(d.prazo)) return { erro: tr('Prazo da proposta inválido.') };
   if (d.orcamento.valor != null && !(d.orcamento.valor > 0)) return { erro: tr('O orçamento precisa ser um valor maior que zero.') };

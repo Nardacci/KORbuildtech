@@ -110,6 +110,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   if (projetoId && !pj) return null;
   const d = c || { origem: pj ? { tipo: 'projeto', id: pj.id } : null, obraId: obraId || '', servico: '', etapas: [], incluso: [], excluso: [], observacoes: '', desenhos: [], prazo: '', inicio: '', termino: '', orcamento: { valor: null, mostrar: 'nao' }, exigencias: {}, quarteirizacao: 'permitida', convites: [] };
   const obras = estado().obras.filter((o) => o.situacao !== 'concluida' || o.id === d.obraId);
+  anexosNovos = [];
   const pdfsDoProjeto = pj ? pdfsDe(pj.id).filter((a) => !d.desenhos.some((x) => x.nome === a.nome.replace(/\.pdf$/i, ''))) : [];
   const conhecidas = etapasConhecidas();
   const outras = d.etapas.filter((e) => !conhecidas.includes(e));
@@ -143,12 +144,16 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
         campo('co-excluso', tr('Excluso (um item por linha)'), '<textarea id="co-excluso" name="excluso" rows="4">' + esc(d.excluso.join('\n')) + '</textarea>') + '</div>' +
         campo('co-observacoes', tr('Observações'), '<textarea id="co-observacoes" name="observacoes" rows="2" placeholder="' + esc(tr('Horário de trabalho, acesso ao canteiro, visita…')) + '">' + esc(d.observacoes) + '</textarea>') +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Desenhos') + '</h2>' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Documentos anexos') + '</h2>' +
         '<input type="hidden" name="desenhosAtuais" value="' + esc(JSON.stringify(d.desenhos)) + '">' +
-        (d.desenhos.length ? '<p class="pequeno">' + d.desenhos.map((x) => esc(x.nome)).join(' · ') + '</p>' : '') +
+        '<div class="grade-campos">' +
+          campo('co-arquivo', tr('Arquivos (um ou vários PDFs)'), '<input type="file" id="co-arquivo" accept="application/pdf" multiple>') +
+          campo('co-descricao', tr('Descrição'), '<input type="text" id="co-descricao" placeholder="' + esc(tr('Vazio: usa o nome do arquivo')) + '">') + '</div>' +
+        campo('co-obs-anexo', tr('Observação'), '<textarea id="co-obs-anexo" rows="2"></textarea>') +
+        '<p><button type="button" class="btn btn-contorno" data-acao="co-anexar">' + icone('mais', 18) + tr('Anexar') + '</button></p>' +
         (pdfsDoProjeto.length ? '<p class="pequeno"><b>' + tr('Plantas do projeto') + '</b></p><div class="lista-marcar">' + pdfsDoProjeto.map((a) => '<label class="check"><input type="checkbox" name="plantasProjeto" value="' + esc(a.id) + '"' + (c ? '' : ' checked') + '> ' + esc(a.nome) + '</label>').join('') + '</div>' : '') +
-        campo('co-desenhos', tr('Acrescentar PDFs'), '<input type="file" id="co-desenhos" name="desenhos" accept="application/pdf" multiple>') +
-        '<p class="mudo pequeno">' + (estado().oficial ? tr('Os PDFs vão para a pasta da concorrência; quem cotar recebe uma cópia no projeto do Measure.') : tr('No protótipo, só o nome de cada arquivo é guardado.')) + '</p>' +
+        '<div class="tabela-rolagem"><table class="tabela" id="co-anexos"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Descrição') + '</th><th>' + tr('Arquivo') + '</th><th>' + tr('Tamanho') + '</th><th>' + tr('Observação') + '</th><th></th></tr></thead><tbody>' + linhasDeAnexos(d.desenhos) + '</tbody></table></div>' +
+        '<p class="mudo pequeno">' + (estado().oficial ? tr('Os PDFs vão para a pasta da concorrência; quem cotar abre os arquivos pelo convite e recebe uma cópia no projeto do Takeoff.') : tr('No protótipo, só o nome de cada arquivo é guardado.')) + '</p>' +
       '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Prazos') + '</h2><div class="grade-campos">' +
         campo('co-prazoData', tr('Prazo da proposta *'), '<input type="date" id="co-prazoData" name="prazoData" value="' + esc(prazoData) + '">') +
@@ -198,10 +203,29 @@ async function arquivosDasPlantas(projetoId, ids) {
   return out;
 }
 
+/* Anexos do formulário: os já gravados (no campo oculto) e os novos, ainda na memória até salvar. */
+let anexosNovos = [];
+const tamanhoLegivel = (n) => (n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round((n || 0) / 1024)) + ' KB');
+function atuaisDoForm() {
+  const el = document.querySelector('#form-concorrencia [name="desenhosAtuais"]');
+  try { return JSON.parse((el && el.value) || '[]'); } catch (e) { return []; }
+}
+function linhasDeAnexos(atuais) {
+  const linhas = atuais.map((x, i) => ({ k: 'a' + i, nome: x.nome, arquivo: x.nome + '.pdf', tamanho: x.tamanho, obs: x.observacao }))
+    .concat(anexosNovos.map((x, i) => ({ k: 'n' + i, nome: x.nome, arquivo: x.arquivo.name, tamanho: x.arquivo.size, obs: x.observacao })));
+  return linhas.length ? linhas.map((l, i) => '<tr><td>' + (i + 1) + '</td><td>' + esc(l.nome) + '</td><td>' + esc(l.arquivo) + '</td><td>' + (l.tamanho ? tamanhoLegivel(l.tamanho) : '—') + '</td><td>' + esc(l.obs || '') + '</td>' +
+    '<td><button type="button" class="link-botao pequeno" data-acao="co-tirar-anexo" data-k="' + l.k + '">' + tr('Remover') + '</button></td></tr>').join('')
+    : '<tr><td colspan="6" class="mudo">' + tr('Nenhum arquivo anexado.') + '</td></tr>';
+}
+function desenharAnexos() {
+  const corpo = document.querySelector('#co-anexos tbody');
+  if (corpo) corpo.innerHTML = linhasDeAnexos(atuaisDoForm());
+}
+
 function dadosDoForm() {
   const form = document.getElementById('form-concorrencia');
   const fd = new FormData(form);
-  const anexos = Array.from((document.getElementById('co-desenhos') || {}).files || []).map((f) => ({ nome: f.name.replace(/\.pdf$/i, ''), arquivo: f }));
+  const anexos = anexosNovos.slice();
   const plantas = fd.getAll('plantasProjeto');
   let atuais = [];
   try { atuais = JSON.parse(fd.get('desenhosAtuais') || '[]'); } catch (e) { atuais = []; }
@@ -212,7 +236,7 @@ function dadosDoForm() {
       obraId: fd.get('obraId'), origem: fd.get('origemProjeto') ? { tipo: 'projeto', id: fd.get('origemProjeto') } : null, servico: fd.get('servico'),
       etapas: fd.getAll('etapas').concat(String(fd.get('outrasEtapas') || '').split('\n')),
       incluso: fd.get('incluso'), excluso: fd.get('excluso'), observacoes: fd.get('observacoes'),
-      desenhos: atuais.concat(anexos.map((a) => ({ nome: a.nome }))), desenhosNovos: anexos, plantasProjeto: plantas,
+      desenhos: atuais.concat(anexos.map((a) => ({ nome: a.nome, observacao: a.observacao }))), desenhosNovos: anexos, plantasProjeto: plantas, desenhosMantidos: atuais.map((x) => x.id).filter(Boolean),
       prazo: fd.get('prazoData') ? fd.get('prazoData') + 'T' + (fd.get('prazoHora') || '17:00') : '',
       inicio: fd.get('inicio'), termino: fd.get('termino'),
       orcamento: { valor: fd.get('orcamento'), mostrar: fd.get('mostrar') },
@@ -779,6 +803,21 @@ export const acoesConcorrencias = {
     const r = await enviarProposta(x.id, { ...m, numero: emitida.numero, propostaEmitidaId: emitida._banco ? emitida.id : null, prazoExecucaoDias: res.campos.prazo, exclusoes: res.campos.exclusoes, pdf: { numero: emitida.numero } }, quem());
     toast(r.erro || tr('Proposta enviada para {nome} (rev. {rev}).', { nome: nomeContratante(x), rev: r.rev }));
     if (r.ok) app.desenhar();
+  },
+  async 'co-anexar'() {
+    const campoArq = document.getElementById('co-arquivo');
+    const arqs = Array.from(campoArq.files || []);
+    if (!arqs.length) { toast(tr('Escolha pelo menos um arquivo.')); return; }
+    const desc = document.getElementById('co-descricao').value.trim(), obs = document.getElementById('co-obs-anexo').value.trim();
+    for (const f of arqs) anexosNovos.push({ nome: arqs.length === 1 && desc ? desc : (desc ? desc + ' · ' : '') + f.name.replace(/\.pdf$/i, ''), observacao: obs, arquivo: f });
+    campoArq.value = ''; document.getElementById('co-descricao').value = ''; document.getElementById('co-obs-anexo').value = '';
+    desenharAnexos();
+  },
+  async 'co-tirar-anexo'(el) {
+    const k = el.dataset.k;
+    if (k[0] === 'n') anexosNovos.splice(Number(k.slice(1)), 1);
+    else { const a = atuaisDoForm(); a.splice(Number(k.slice(1)), 1); document.querySelector('#form-concorrencia [name="desenhosAtuais"]').value = JSON.stringify(a); }
+    desenharAnexos();
   },
   async 'co-salvar'(el) {
     const { id, dados } = dadosDoForm();
