@@ -1,0 +1,51 @@
+﻿Empresa;Tipo;Papel;Perfil;Nome;Login
+Northgate Builders;construtora;admin;administrador;Helen Marsh;pv.c1.admin@example.com
+Northgate Builders;construtora;gestor;gestor;Victor Aldana;pv.c1.gestor@example.com
+Northgate Builders;construtora;orcamentista;Estimator;Priya Nair;pv.c1.orcamentista@example.com
+Northgate Builders;construtora;contatos;Contacts only;Tom Becker;pv.c1.contatos@example.com
+Northgate Builders;construtora;trabalhador;trabalhador;Lena Ortiz;pv.c1.trabalhador@example.com
+Stonebridge Construction;construtora;admin;administrador;Raymond Pike;pv.c2.admin@example.com
+Stonebridge Construction;construtora;gestor;gestor;Alicia Moreno;pv.c2.gestor@example.com
+Stonebridge Construction;construtora;orcamentista;Estimator;Dev Kapoor;pv.c2.orcamentista@example.com
+Stonebridge Construction;construtora;contatos;Contacts only;Nina Wolfe;pv.c2.contatos@example.com
+Stonebridge Construction;construtora;trabalhador;trabalhador;Gus Hartley;pv.c2.trabalhador@example.com
+Harbor & Pine Group;ambas;admin;administrador;Oscar Whitfield;pv.a1.admin@example.com
+Harbor & Pine Group;ambas;gestor;gestor;Carla Benning;pv.a1.gestor@example.com
+Harbor & Pine Group;ambas;orcamentista;Estimator;Ian Fallon;pv.a1.orcamentista@example.com
+Harbor & Pine Group;ambas;contatos;Contacts only;Maya Chen;pv.a1.contatos@example.com
+Harbor & Pine Group;ambas;trabalhador;trabalhador;Pete Rowan;pv.a1.trabalhador@example.com
+Granite Peak Contracting;ambas;admin;administrador;Sylvia Dunn;pv.a2.admin@example.com
+Granite Peak Contracting;ambas;gestor;gestor;Marcus Webb;pv.a2.gestor@example.com
+Granite Peak Contracting;ambas;orcamentista;Estimator;Jo Ellison;pv.a2.orcamentista@example.com
+Granite Peak Contracting;ambas;contatos;Contacts only;Ravi Shah;pv.a2.contatos@example.com
+Granite Peak Contracting;ambas;trabalhador;trabalhador;Tess Kim;pv.a2.trabalhador@example.com
+Maple Siding Co;prestadora;admin;administrador;Carol Brennan;pv.p1.admin@example.com
+Maple Siding Co;prestadora;gestor;gestor;Eddie Sosa;pv.p1.gestor@example.com
+Maple Siding Co;prestadora;orcamentista;Estimator;Hana Ito;pv.p1.orcamentista@example.com
+Maple Siding Co;prestadora;contatos;Contacts only;Bill Garner;pv.p1.contatos@example.com
+Maple Siding Co;prestadora;trabalhador;trabalhador;Abe Lowe;pv.p1.trabalhador@example.com
+Cobalt Framing;prestadora;admin;administrador;Gary Lindqvist;pv.p2.admin@example.com
+Cobalt Framing;prestadora;gestor;gestor;Rita Alonso;pv.p2.gestor@example.com
+Cobalt Framing;prestadora;orcamentista;Estimator;Sam Tolliver;pv.p2.orcamentista@example.com
+Cobalt Framing;prestadora;contatos;Contacts only;Irene Fox;pv.p2.contatos@example.com
+Cobalt Framing;prestadora;trabalhador;trabalhador;Hal Dutra;pv.p2.trabalhador@example.com
+Bedrock Foundations;prestadora;admin;administrador;Frank DiNardo;pv.p3.admin@example.com
+Bedrock Foundations;prestadora;gestor;gestor;Ellen Park;pv.p3.gestor@example.com
+Bedrock Foundations;prestadora;orcamentista;Estimator;Noel Baptiste;pv.p3.orcamentista@example.com
+Bedrock Foundations;prestadora;contatos;Contacts only;Zoe Hart;pv.p3.contatos@example.com
+Bedrock Foundations;prestadora;trabalhador;trabalhador;Moe Rivas;pv.p3.trabalhador@example.com
+Lantern Roofing;prestadora;admin;administrador;Beth Calhoun;pv.p4.admin@example.com
+Lantern Roofing;prestadora;gestor;gestor;Kurt Neely;pv.p4.gestor@example.com
+Lantern Roofing;prestadora;orcamentista;Estimator;Lola Banks;pv.p4.orcamentista@example.com
+Lantern Roofing;prestadora;contatos;Contacts only;Omar Reid;pv.p4.contatos@example.com
+Lantern Roofing;prestadora;trabalhador;trabalhador;Vic Santos;pv.p4.trabalhador@example.com
+Cedar Electric;prestadora;admin;administrador;Walter Pruitt;pv.p5.admin@example.com
+Cedar Electric;prestadora;gestor;gestor;Dana Voss;pv.p5.gestor@example.com
+Cedar Electric;prestadora;orcamentista;Estimator;Kai Mercer;pv.p5.orcamentista@example.com
+Cedar Electric;prestadora;contatos;Contacts only;Lucy Frye;pv.p5.contatos@example.com
+Cedar Electric;prestadora;trabalhador;trabalhador;Ned Oakes;pv.p5.trabalhador@example.com
+Willow Drywall;prestadora;admin;administrador;Janet Okonkwo;pv.p6.admin@example.com
+Willow Drywall;prestadora;gestor;gestor;Ben Corrigan;pv.p6.gestor@example.com
+Willow Drywall;prestadora;orcamentista;Estimator;Tina Vega;pv.p6.orcamentista@example.com
+Willow Drywall;prestadora;contatos;Contacts only;Arlo Finch;pv.p6.contatos@example.com
+Willow Drywall;prestadora;trabalhador;trabalhador;Cal Moody;pv.p6.trabalhador@example.com
