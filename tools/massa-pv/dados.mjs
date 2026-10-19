@@ -115,4 +115,7 @@ export const MEASURE = [
   { chave: 'a2', pessoa: 'Jo Ellison', login: 'orcamentista', itens: [['Steel stud 3-5/8" 20ga', 'SS-358', 'piece', 'Framing', 7.1], ['Gypsum board 5/8" 4\'x12\'', 'GB-58', 'sheet', 'Drywall', 21.5]],
     assembly: ['Interior partition type A', [['SS-358', 'MeasuredArea / 1.33'], ['GB-58', 'MeasuredArea / 24']]], margens: [9, 7],
     projetos: [{ nome: 'Nashua Medical Annex — Level 1 fit-out', cliente: 'Nashua Medical Annex Owner LLC', cidade: 'Nashua', estado: 'nh', condicao: 'Level 1 partitions', emitir: false }] },
+  { chave: 'c1', pessoa: 'Priya Nair', login: 'orcamentista', itens: [['Steel stud 3-5/8" 20ga', 'SS-358', 'piece', 'Framing', 7.1], ['Gypsum board 5/8" 4\'x12\'', 'GB-58', 'sheet', 'Drywall', 21.5]],
+    assembly: ['Interior partition type A', [['SS-358', 'MeasuredArea / 1.33'], ['GB-58', 'MeasuredArea / 24']]], margens: [9, 7],
+    projetos: [{ nome: 'Northgate Tower — Level 5 fit-out', cliente: 'Northgate Tower Renovation Owner LLC', cidade: 'Manchester', estado: 'nh', condicao: 'Level 5 partitions', emitir: true }] },
 ];

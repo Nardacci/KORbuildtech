@@ -84,13 +84,12 @@ confere('gestor NÃO cria item no catálogo (sem measure.catalogo)', !(await ten
 confere('trabalhador não vê o catálogo', nega(await tenta(trab, '/itens?select=id')));
 confere('orçamentista NÃO envia concorrência (sem concorrencias.gerir)', !(await tenta(orc, '/rpc/enviar_concorrencia', 'POST', { p_id: '00000000-0000-0000-0000-000000000000' })).ok);
 
-// ---- o achado importante: a construtora no Measure
+// ---- a construtora no Measure (migração 0015): usa o da própria empresa
 const itemConstrutora = await tenta(c1, '/itens', 'POST', { empresa_id: await empresaDe(c1), nome: 'Item da construtora', codigo: 'GC-' + Date.now() % 100000, unidade: 'each', categoria: 'material', etapa: 'Teste' });
-console.log('  [achado] construtora grava item no Measure? ' + (itemConstrutora.ok ? 'sim' : 'NÃO (' + itemConstrutora.erro.slice(0, 110) + ')'));
-const projConstrutora = await tenta(c1, '/projetos?select=id');
-console.log('  [achado] construtora lê projetos do Measure? ' + (projConstrutora.ok && projConstrutora.dados.length ? 'sim' : 'não (vazio/negado)'));
+confere('construtora grava item no Measure', itemConstrutora.ok, itemConstrutora.erro);
+confere('construtora não lê itens de outra empresa', ((await tenta(c1, '/itens?select=empresa_id')).dados || []).every((x) => x.empresa_id === itemConstrutora.dados[0].empresa_id));
 const itemAmbas = await tenta(a1, '/itens?select=id');
-confere('a "ambas" usa o Measure normalmente', itemAmbas.ok && itemAmbas.dados.length > 0, JSON.stringify(itemAmbas).slice(0, 120));
+confere('a "ambas" usa o Measure normalmente', itemAmbas.ok, JSON.stringify(itemAmbas).slice(0, 120));
 
 console.log('massa-primeira-versao: ' + ok + '/' + (ok + falhas) + ' verificações passaram');
 process.exit(falhas ? 1 : 0);

@@ -46,7 +46,7 @@ Há também dois **convidados sem conta** (Birchwood Insulation, Redline Excavat
 ## Measure
 
 `node tools/massa-measure.mjs --conjunto=pv` monta, **pelas telas** (como uma pessoa faria): catálogo com preços, assembly, margens, projeto com a planta de exemplo, escala conferida, medição e proposta emitida.
-Feito para p1, p2, p3, p4, a1 e a2 (`a2` com o login `orcamentista`).
+Feito para p1, p2, p3, p4, a1, a2 e c1 (`a2` e `c1` com o login `orcamentista`; c1 só depois da migração 0015).
 
 ## Como rodar
 
@@ -72,10 +72,9 @@ Pode rodar de novo: o que já existe é pulado. Para testar antes num banco loca
 8. **Link sem conta**: no envio de uma concorrência com "Redline Excavation" como convidada, copie o link e abra numa janela anônima.
 9. **Celular**: repita 2 e 7 no iPhone e no Android (roteiros em `docs/iphone.md`).
 
-## Pendência conhecida: a construtora no Measure
+## A construtora no Measure
 
-O banco (`tenho_measure()`, migração 0008) só libera as tabelas do Measure para empresas **prestadora** ou **ambas**; a **construtora** vê o Measure Takeoff na 1ª versão, mas **não consegue gravar** itens nem projetos (e lê vazio). Convites e Concorrências funcionam normalmente para ela.
-Decisão pendente: esconder as ferramentas de medição para construtora (só app, sem tocar no banco) ou liberar `construtora` em `tenho_measure()` (migração, depende de aprovação).
+Até a migração `20261024_0015_measure_construtora.sql`, o banco só liberava o Measure para prestadora e "ambas" (`tenho_measure()`); a construtora via a tela mas não gravava. A 0015 troca só essa função: vale para qualquer empresa com a permissão `measure.medir`, e as políticas continuam presas à própria empresa. **Precisa ser aplicada no Supabase antes de rodar a massa do Measure da c1** (a migração é aplicada à parte, depois da revisão; para voltar atrás, recrie a função com a condição de 0008).
 
 ## Limpeza (no fim da rodada de testes)
 

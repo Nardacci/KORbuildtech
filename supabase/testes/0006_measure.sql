@@ -2,7 +2,7 @@
 -- Tudo dentro de uma transação que termina em ROLLBACK: nada de teste fica no banco.
 -- Cada verificação que falhar interrompe com 'FALHOU: …'. Se chegar ao fim, imprime 'fatia 6: todas as verificações passaram'.
 -- Pessoas: Ana (Administradora da prestadora A: medir + catálogo), Rita (Gestora da A: mede, sem catálogo nem custos),
---          Tom (Administrador da construtora B: sem Measure) e Eva (Administradora da C, de fora).
+--          Tom (Administrador da construtora B: Measure só da própria empresa, 0015) e Eva (Administradora da C, de fora).
 
 begin;
 
@@ -178,13 +178,14 @@ begin
 end $$;
 reset role;
 
--- ---------- Tom (construtora): não tem Measure ----------
+-- ---------- Tom (construtora): tem o Measure (0015), mas só o da própria empresa ----------
 select pg_temp.como('00000000-0000-4000-8000-0000000006b1', 'kb-teste6-tom@example.com');
 do $$ begin
-  if exists (select 1 from public.projetos) or exists (select 1 from public.itens) or exists (select 1 from public.propostas_emitidas) then raise exception 'FALHOU: a construtora leu o Measure de outra'; end if;
-  begin insert into public.projetos (nome, contratante_id, cidade, estado, tipo) values ('X', (select id from public.contatos where nome = 'Dono'), 'Nashua', 'NH', 'comercial'); raise exception 'FALHOU: a construtora criou projeto';
-  exception when others then if sqlerrm like 'FALHOU%' then raise; end if; end;
-  begin insert into storage.objects (bucket_id, name) values ('plantas', pg_temp.g('B') || '/x/y.pdf'); raise exception 'FALHOU: a construtora gravou planta';
+  if exists (select 1 from public.projetos) or exists (select 1 from public.itens) or exists (select 1 from public.propostas_emitidas) then raise exception 'FALHOU: a construtora leu o Measure de outra empresa'; end if;
+  insert into public.contatos (nome, papeis) values ('Dono do projeto da B', array['cliente']);
+  insert into public.projetos (nome, contratante_id, cidade, estado, tipo) values ('Projeto da construtora', (select id from public.contatos where nome = 'Dono do projeto da B'), 'Nashua', 'NH', 'comercial');
+  if (select count(*) from public.projetos) <> 1 then raise exception 'FALHOU: a construtora não grava o próprio projeto'; end if;
+  begin insert into storage.objects (bucket_id, name) values ('plantas', pg_temp.g('C') || '/x/y.pdf'); raise exception 'FALHOU: a construtora gravou planta de outra empresa';
   exception when others then if sqlerrm like 'FALHOU%' then raise; end if; end;
 end $$;
 reset role;

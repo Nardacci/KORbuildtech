@@ -2,7 +2,7 @@
 -- Projetos, folhas (plantas no Storage "plantas"), condições com as medições dentro, typicals, catálogo (itens e
 -- assemblies), preços e margens com vigência (só insert) e propostas emitidas (só insert, numeradas pelo banco).
 -- O motor de cálculo (unidades, geometria, fórmulas, preço de venda) fica no app; o banco garante:
---   · tudo é da própria empresa (prestadora ou ambas; a construtora não tem Measure, HS-09);
+--   · tudo é da própria empresa (a 0015 liberou o Measure também para a construtora);
 --   · medir (projetos, folhas, condições, typicals, emitir) exige measure.medir; catálogo, preços e margens, measure.catalogo;
 --   · dinheiro (preços, margens, o retrato da proposta com custo) só para measure.catalogo ou crew.custos;
 --   · preços, margens e propostas nunca mudam nem saem (BD-04); item usado em assembly não sai;
