@@ -166,3 +166,60 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Idem
 - [ ] **T65** · `pv.p1.admin` — Com o app instalado, abrir depois de uma atualização  
   _Esperado:_ Pega a versão nova sem reinstalar
+
+## 12 Início: painel e menu lateral
+
+- [ ] **T66** · `pv.c1.admin` — Entrar com ?versao=primeira e olhar o Início  
+  _Esperado:_ Painel em tela cheia abaixo do cabeçalho, sem abas nem menu lateral; 'Olá, Helen' e dois botões: Takeoff e Settings
+- [ ] **T67** · `pv.c1.admin` — Olhar o bloco 'Precisa de você agora'  
+  _Esperado:_ Fundo e borda laranja que se destacam dos demais; 3 propostas recebidas e 1 convite para responder; os cartões sem pendência aparecem apagados com 'Nada pendente'
+- [ ] **T68** · `pv.c1.admin` — Clicar em 'Propostas recebidas' e em 'Convite para responder'  
+  _Esperado:_ Abre as concorrências (propostas) e a lista de Convites
+- [ ] **T69** · `pv.c1.admin` — Conferir 'Projetos por status'  
+  _Esperado:_ Rosca com 1 projeto em Proposta emitida; 2 obras em andamento e 0 concluídas
+- [ ] **T70** · `pv.c1.admin` — Conferir 'Dinheiro em jogo'  
+  _Esperado:_ Propostas abertas com valor em US$; Taxa de acerto e Ticket médio com '—' (nenhum projeto decidido); valor por contratante
+- [ ] **T71** · `pv.c1.admin` — Conferir 'Concorrências'  
+  _Esperado:_ Enviadas por nós: 3 (2 abertas e 1 rascunho); Recebidas por nós: 1 sem resposta; economia média '—'; tempo médio de resposta em horas ou dias
+- [ ] **T72** · `pv.c1.admin` — Conferir 'Prazo das obras'  
+  _Esperado:_ Northgate Tower Renovation e Canal Street Lofts com início, prazo, % de tempo decorrido e dias restantes; linha 'Andamento do cronograma: —'
+- [ ] **T73** · `pv.c1.admin` — Em Settings › Obras, mudar o prazo de uma obra para uma data passada e voltar ao Início  
+  _Esperado:_ A obra aparece com 'atrasada N dias' em vermelho e a barra completa
+- [ ] **T74** · `pv.c1.admin` — Conferir 'Minhas parceiras'  
+  _Esperado:_ Maple Siding, Cobalt Framing e outras com a obra em comum, propostas e tempo de resposta; Birchwood Insulation com 'só pelo link'
+- [ ] **T75** · `pv.c1.admin` — Conferir 'Catálogo e preços'  
+  _Esperado:_ Itens sem preço novo há mais de 90 dias (0 na massa nova) e margem vigente 16% (overhead 9% + lucro 7%)
+- [ ] **T76** · `pv.c1.admin` — Clicar em 'Ver todos' de cada bloco  
+  _Esperado:_ Cada um abre a lista certa (projetos, concorrências, obras, preços)
+- [ ] **T77** · `pv.p1.admin` — Entrar e conferir o painel  
+  _Esperado:_ 2 projetos (1 proposta emitida e 1 rascunho); recebidas 3 (2 com proposta e 1 recusado); enviadas 1 fechada (Soffit and fascia)
+- [ ] **T78** · `pv.p1.admin` — No Measure, gerar a lista de cotação de um projeto e preparar o e-mail de um fornecedor; voltar ao Início  
+  _Esperado:_ 'Cotações de material' passa a mostrar 1 lista enviada e 1 fornecedor; o cartão 'Cotações de material' mostra 1 sem retorno
+- [ ] **T79** · `pv.p1.admin` — Registrar os preços recebidos desse fornecedor e voltar ao Início  
+  _Esperado:_ O fornecedor passa a 'respondeu' e o cartão volta a 'Nada pendente'
+- [ ] **T80** · `pv.p1.admin` — Num projeto ganho sem obra, olhar o Início  
+  _Esperado:_ Aparece o cartão 'Projeto ganho sem obra' com o link para criar a obra
+- [ ] **T81** · `pv.p1.gestor` — Entrar  
+  _Esperado:_ Vê o painel com concorrências enviadas e recebidas; vê 'Dinheiro em jogo' (tem crew.custos)
+- [ ] **T82** · `pv.p1.orcamentista` — Entrar  
+  _Esperado:_ Vê projetos, dinheiro, cotações e preços; NÃO vê 'Enviadas por nós'; vê 'Recebidas por nós'
+- [ ] **T83** · `pv.p1.contatos / pv.p1.trabalhador` — Entrar  
+  _Esperado:_ Sem painel: Início simples; menu lateral só com Início, Empresa e Meu perfil (o contatos também com Contatos)
+- [ ] **T84** · `pv.a2.admin` — Entrar  
+  _Esperado:_ Enviadas por nós 2 e recebidas 2 (o aço e o andaime); painel completo
+- [ ] **T85** · `pv.c1.admin + pv.p1.admin` — Com a p1, enviar uma proposta a um convite da c1; com a c1, voltar ao Início em até 1 minuto  
+  _Esperado:_ Os números de propostas recebidas e de concorrências mudam sozinhos (releitura a cada minuto)
+- [ ] **T86** · `pv.c1.admin` — Trocar o idioma para EN  
+  _Esperado:_ Todos os títulos e legendas do painel em inglês (Needs you now, Projects by status, Job deadlines, My partners...), sem português solto
+- [ ] **T87** · `pv.c1.admin` — Reduzir a janela do navegador  
+  _Esperado:_ Blocos empilham, tabelas rolam na horizontal, botões Takeoff e Settings continuam visíveis
+- [ ] **T88** · `pv.c1.admin` — Clicar em Takeoff e em Settings no painel  
+  _Esperado:_ Takeoff abre o Measure (Projetos); Settings abre Obras
+- [ ] **T89** · `pv.c1.admin` — Olhar o menu lateral do Settings  
+  _Esperado:_ Itens: Início, Obras, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil; o item da tela aberta fica marcado
+- [ ] **T90** · `pv.c1.admin` — Clicar em cada item do menu lateral do Settings  
+  _Esperado:_ Cada um abre a tela certa; 'Início' volta ao painel
+- [ ] **T91** · `pv.c1.admin` — No Takeoff, olhar o menu lateral  
+  _Esperado:_ Tem Início, Projetos, Assemblies, Itens, Preços, Convites e Concorrências; 'Início' volta ao painel
+- [ ] **T92** · `pv.c1.admin` — Abrir o Settings numa janela estreita (celular)  
+  _Esperado:_ O menu lateral some e aparecem as abas de antes (Início, Obras, Contatos...)
