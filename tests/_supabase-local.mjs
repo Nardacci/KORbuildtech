@@ -223,3 +223,7 @@ export async function rotear(contexto, urlProjeto) {
     return route.fulfill({ status: 404, headers: cors, body: '{}' });
   });
 }
+export async function limparMassa(emailLike, condicaoEmpresa) {
+  await sqlExec(`delete from public.empresas where ${condicaoEmpresa}`);
+  await sqlExec(`delete from auth.users where email like '${emailLike.replace(/'/g, "''")}'`);
+}

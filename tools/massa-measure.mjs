@@ -6,18 +6,21 @@
 
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
-import { emailDe, SENHA_VARIAVEL } from './massa-demo/dados.mjs';
+import { emailDe as emailDemo, SENHA_VARIAVEL } from './massa-demo/dados.mjs';
+import { emailDe as emailPv, MEASURE as MEASURE_PV } from './massa-pv/dados.mjs';
 import { servirProjeto } from './massa-demo/servidor.mjs';
 
 const REAL = process.argv.includes('--real');
+const PV = process.argv.includes('--conjunto=pv');   // a massa da 1ª versão (tools/massa-primeira-versao.mjs), em vez da de demonstração
+const emailDe = PV ? emailPv : emailDemo;
 const { sql, garantirUsuario, sessao, rotear } = await import(REAL ? '../tests/_supabase-real.mjs' : '../tests/_supabase-local.mjs');
 const SENHA = process.env[SENHA_VARIAVEL] || '';
 if (REAL && SENHA.length < 12) { console.error('Defina ' + SENHA_VARIAVEL + ' (12+ caracteres) no ambiente.'); process.exit(2); }
 const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
-console.log('Measure da massa de demonstração contra: ' + (REAL ? 'Supabase do projeto' : 'Supabase local'));
+console.log('Measure da massa contra: ' + (REAL ? 'Supabase do projeto' : 'Supabase local'));
 
 const PLANTA = { x0: 110, y0: 190, k: 18 };   // tools/gerar-planta.py: 1/4" = 1'-0", 18 pontos por pé, origem em (110, 190)
-const CONFIG = [
+const CONFIG_DEMO = [
   { chave: 's1', pessoa: 'Carol Brennan', itens: [['Fiber-cement lap siding 8-1/4"', 'FC-825', 'piece', 'Siding', 14.2], ['Housewrap 9\'x150\' roll', 'HW-9150', 'roll', 'Siding', 148]],
     assembly: ['Lap siding with housewrap', [['FC-825', 'MeasuredArea / 5.5'], ['HW-9150', 'MeasuredArea / 1350']]], margens: [12, 10],
     projetos: [{ nome: 'Whitaker Garage — Siding', cliente: 'Northfield Builders', cidade: 'Manchester', estado: 'nh', condicao: 'Front elevation', emitir: true }, { nome: 'Cedar Court Townhomes — Siding', cliente: 'Pine Ridge Homes', cidade: 'Concord', estado: 'nh' }] },
@@ -35,6 +38,7 @@ const CONFIG = [
     projetos: [{ nome: 'Donnelly Kitchen — Estimate', cliente: 'The Donnelly Family', cidade: 'Hooksett', estado: 'nh', condicao: 'Kitchen floor', emitir: true }] },
 ];
 
+const CONFIG = PV ? MEASURE_PV : CONFIG_DEMO;
 const servidor = await servirProjeto();
 const BASE = servidor.base;
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
@@ -60,16 +64,16 @@ async function abrir(p, hash, seletor) {
 const esperaDesenho = (p) => p.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 40000 });
 
 for (const c of CONFIG) {
-  const email = emailDe(c.chave, 'admin');
+  const email = emailDe(c.chave, c.login || 'admin');
   const [emp] = await sql(`select e.id, e.nome from public.empresas e join public.membros m on m.empresa_id = e.id join auth.users u on u.id = m.user_id where u.email = '${email}'`);
-  if (!emp) { console.log('  ' + c.chave + ': empresa não encontrada (rode tools/massa-demo.mjs antes)'); continue; }
+  if (!emp) { console.log('  ' + c.chave + ': empresa não encontrada (rode ' + (PV ? 'tools/massa-primeira-versao.mjs' : 'tools/massa-demo.mjs') + ' antes)'); continue; }
   const jaP = await sql(`select nome from public.projetos where empresa_id = '${emp.id}'`);
   const faltam = c.projetos.filter((p) => !jaP.some((x) => x.nome === p.nome));
   const catalogoCompleto = (await sql(`select (select count(*) from public.itens where empresa_id = '${emp.id}')::int as i, (select count(*) from public.assemblies where empresa_id = '${emp.id}')::int as a, (select count(*) from public.margens_versoes where empresa_id = '${emp.id}')::int as m`))[0];
   if (!faltam.length && catalogoCompleto.i >= c.itens.length && catalogoCompleto.a > 0 && catalogoCompleto.m > 0) { console.log('  ' + emp.nome + ': Measure já montado, pulei'); continue; }
   const uid = await garantirUsuario(email, c.pessoa, SENHA);
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
-  await ctx.addInitScript(([s]) => { try { localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', 'en'); } catch { /* */ } }, [await sessao(uid, email, c.chave)]);
+  await ctx.addInitScript(([s, pv]) => { try { localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', 'en'); if (pv) localStorage.setItem('kbt.versao', 'primeira'); } catch { /* */ } }, [await sessao(uid, email, c.chave), PV]);
   await rotear(ctx, URL_PROJETO);
   await ctx.route(/fonts\.|tile\.openstreetmap|api\.open-meteo/, (r) => r.abort());
   const p = await ctx.newPage();

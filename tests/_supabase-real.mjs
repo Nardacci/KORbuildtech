@@ -108,3 +108,21 @@ export async function limpar() {
   }
   for (const u of await sql(`select id from auth.users where email like '${PADRAO}'`)) await comServico('/auth/v1/admin/users/' + u.id, 'DELETE');
 }
+
+/* Limpeza de uma massa marcada (tools/massa-primeira-versao.mjs --limpar --apagar, só com a aprovação digitada): apaga os arquivos dos buckets das
+ * empresas que casam com a condição, as próprias empresas (em cascata) e os usuários cujo e-mail casa com o padrão. */
+export async function limparMassa(emailLike, condicaoEmpresa) {
+  const empresas = (await sql(`select id from public.empresas where ${condicaoEmpresa}`)).map((x) => x.id);
+  if (empresas.length) {
+    const lista = empresas.map((e) => "'" + e + "/%'").join(', ');
+    for (const bucket of ['diarios', 'ponto', 'plantas', 'concorrencias']) {
+      const nomes = (await sql(`select name from storage.objects where bucket_id = '${bucket}' and name like any (array[${lista}])`)).map((x) => x.name);
+      for (let i = 0; i < nomes.length; i += 100) {
+        const r = await comServico('/storage/v1/object/' + bucket, 'DELETE', { prefixes: nomes.slice(i, i + 100) });
+        if (!r.ok) throw new Error('apagar arquivos (' + bucket + '): ' + r.status + ' ' + (await r.text()));
+      }
+    }
+    await sql(`delete from public.empresas where id in (${empresas.map((e) => "'" + e + "'").join(', ')})`);
+  }
+  for (const u of await sql(`select id from auth.users where email like '${emailLike.replace(/'/g, "''")}'`)) await comServico('/auth/v1/admin/users/' + u.id, 'DELETE');
+}
