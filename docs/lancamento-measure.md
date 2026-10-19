@@ -1,6 +1,6 @@
 # Lançamento da 1ª versão: Measure Takeoff + Settings
 
-**Decisão (outubro de 2026):** o domínio **korbuildtech.com** recebe só a 1ª versão (o **Measure Takeoff** e o **Settings**, para computador). O app inteiro (Daily, Crew, concorrências, cronograma) continua no **GitHub Pages** (`https://nardacci.github.io/KORbuildtech/`) para homologar com calma. Assim o time dos EUA já usa o Measure sem esperar o resto.
+**Decisão (outubro de 2026):** o domínio **korbuildtech.com** recebe só a 1ª versão (o **Measure Takeoff** e o **Settings**, para computador). O app inteiro (Daily, Crew, concorrências, cronograma) continua no **GitHub Pages** (`https://nardacci.github.io/KORbuildtech/`) para homologar com calma. A 1ª versão vai para uma empresa que testa e homologa; assim o time dos EUA não fica esperando o resto.
 
 É o **mesmo código** nos dois lugares. O que muda é só o que aparece:
 
@@ -27,40 +27,34 @@ Para **ver a 1ª versão na homologação**, abra `https://nardacci.github.io/KO
 
 1. `git pull origin main`
 2. Guia: `portal-measure/` já vem no repositório. Se o texto do guia mudar: `python3 tools/gerar_portal.py --edicao=measure`
-3. Montar a pasta: `node tools/gerar-producao.mjs` → cria `producao/`
-   - Com **outro projeto Supabase** para produção (recomendado, veja abaixo): defina antes, na janela do PowerShell, `$env:KOR_SUPABASE_URL = 'https://<projeto>.supabase.co'` e `$env:KOR_SUPABASE_ANON_KEY = '<chave pública anon/publishable>'`. Essa chave é pública por desenho; **nunca** use a `service_role`.
+3. Montar a pasta: `node tools/gerar-producao.mjs` → cria `producao/` (mesmo banco de hoje; as variáveis `KOR_SUPABASE_URL` e `KOR_SUPABASE_ANON_KEY` só se usariam com um projeto Supabase novo, e a chave é a pública `anon`/`publishable`, **nunca** a `service_role`)
 4. Conferir: `node tests/producao.test.mjs` (14 verificações: sem protótipo, sem roteiros, guia só do Measure Takeoff, service worker coerente).
 5. Enviar **o conteúdo** de `producao/` para a pasta do domínio na hospedagem (Hostinger: `public_html`, por FTP ou pelo Gerenciador de Arquivos). O `.htaccess` já força https e não lista pastas.
 6. Abrir `https://korbuildtech.com/` em janela anônima, entrar e conferir: só Measure Takeoff e Settings.
 
-## Banco de dados: um só ou dois?
+## Banco de dados: nada muda por enquanto
 
-- **Um só (o de hoje):** mais rápido, mas os usuários e os dados de teste da homologação ficam ao lado dos clientes reais. Os e-mails (convite, avisos) usam **um** endereço de volta (`SITE_URL`), então os links só apontariam para um dos dois sites.
-- **Dois (recomendado):** um projeto Supabase novo para produção (região us-west-2), com as mesmas migrações (`supabase/migrations/`, em ordem), as funções de borda, o bucket de Storage e os segredos. A homologação segue no projeto atual. Cada ambiente tem o próprio `SITE_URL`. A pasta `producao/` já sabe trocar a URL e a chave (passo 3).
+**Decisão (outubro de 2026):** a 1ª versão será distribuída a **uma empresa que vai testar e homologar** o sistema. Por isso **não se muda nada no banco**: nenhuma migração, nenhum dado apagado ou criado por nós, e o mesmo projeto Supabase de hoje serve o domínio e a homologação. A pasta `producao/` sai **sem** as variáveis `KOR_SUPABASE_URL` e `KOR_SUPABASE_ANON_KEY`, ou seja, com o `js/config.js` de hoje.
 
-## Supabase: o que ajustar para o domínio (feito pela sessão local, com revisão)
+Consequências para se ter em mente:
 
-Em **cada** projeto que atende o domínio:
-
-1. **Authentication › URL Configuration:** `Site URL` = `https://korbuildtech.com/`; em *Redirect URLs* acrescente `https://korbuildtech.com/**` (e deixe os endereços da homologação e `http://localhost…` no projeto de teste).
-2. **Segredo `SITE_URL`** das funções de borda = `https://korbuildtech.com/` (com a barra no fim). É para onde vão os links dos e-mails.
-3. **E-mails (SMTP):** remetente `KORbuild <no-reply@korbuildtech.com>`; a senha do SMTP só em `KOR_SMTP_PASS`, nunca no chat.
-4. **CORS das funções de borda:** hoje `*`. Para a produção, restrinja a `https://korbuildtech.com` (decisão marcada para depois do lançamento).
-5. **CSP:** a política está pronta mas desligada (`node tools/csp-meta.mjs --ligar`). Ligue depois de rodar o Measure Takeoff com ela (testes em `tests/_csp.mjs`).
+- Os dados da empresa de teste ficam no mesmo banco da homologação (o app inteiro no GitHub Pages enxerga a mesma conta). Para esta fase é aceitável; antes de clientes de verdade, vale um projeto Supabase só de produção (o `gerar-producao.mjs` já sabe trocar a URL e a chave).
+- **Um ponto fora do código, que depende de você:** os e-mails do Supabase (confirmar o cadastro, convite de usuário, recuperar senha) voltam para o endereço do **Site URL** do Auth, que hoje é o da homologação (GitHub Pages, app inteiro). Para o link do e-mail abrir o **domínio** (1ª versão), o Supabase precisa de `https://korbuildtech.com/` em *Authentication › URL Configuration* (Site URL e Redirect URLs) e no segredo `SITE_URL` das funções. É uma configuração do painel, **não** muda tabelas, regras nem dados, mas só se faz com a sua aprovação.
+- **Sem essa configuração**, nada quebra: a empresa entra normalmente pelo domínio. Só os links dos e-mails abririam a homologação. Para a fase de teste há um caminho sem tocar no Supabase: a empresa usa sempre `https://korbuildtech.com/`, e quem clicar num link de e-mail e cair na homologação copia o endereço e abre pelo domínio (a sessão não se perde: o login é o mesmo banco).
 
 ## DNS e domínio
 
 - O domínio aponta para a hospedagem (registro A/CNAME que a Hostinger indicar). Se o domínio estiver na Hostinger, é só escolher a pasta do site.
-- HTTPS (certificado gratuito da hospedagem) ligado **antes** de mandar o link ao time dos EUA: o service worker e o login exigem https.
+- HTTPS (certificado gratuito da hospedagem) ligado **antes** de mandar o link à empresa de teste: o service worker e o login exigem https.
 
-## Antes de mandar o link ao time dos EUA
+## Antes de mandar o link à empresa de teste
 
 - [ ] `https://korbuildtech.com/` abre, entra com uma conta de verdade e mostra só Measure Takeoff e Settings.
 - [ ] Criar uma empresa nova (qualquer tipo) e abrir o Measure Takeoff: envia o PDF, define a escala, mede, emite uma proposta.
 - [ ] Convidar um usuário: o e-mail chega, o link abre `korbuildtech.com` e a pessoa entra.
 - [ ] Recuperar senha: o e-mail chega e o link volta para o domínio.
 - [ ] `https://korbuildtech.com/portal/` mostra o guia só do Measure Takeoff e do Settings (EN e PT).
-- [ ] Os testes de segurança passam contra o projeto de produção (`tests/seguranca.test.mjs --real`).
+- [ ] Os testes de segurança seguem passando contra o projeto atual (`tests/seguranca.test.mjs --real`).
 - [ ] Preço e pagamento: continuam por último (decisão anterior).
 
 ## O que continua na homologação
