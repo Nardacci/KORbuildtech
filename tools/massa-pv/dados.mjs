@@ -119,3 +119,40 @@ export const MEASURE = [
     assembly: ['Interior partition type A', [['SS-358', 'MeasuredArea / 1.33'], ['GB-58', 'MeasuredArea / 24']]], margens: [9, 7],
     projetos: [{ nome: 'Northgate Tower — Level 5 fit-out', cliente: 'Northgate Tower Renovation Owner LLC', cidade: 'Manchester', estado: 'nh', condicao: 'Level 5 partitions', emitir: true }] },
 ];
+
+/* ---------- Catálogo ampliado (tools/massa-catalogo-pv.mjs): mais itens, assemblies com perda e arredondamento, fornecedores por etapa ---------- */
+const I = (codigo, nome, unidade, etapa, preco, antigo) => ({ codigo, nome, unidade, etapa, preco, antigo: !!antigo });   // antigo: só tem preço de mais de 90 dias (acende "sem preço novo")
+export const FAMILIAS = {
+  siding: {
+    itens: [I('TR-CORN', 'Corner trim 10\'', 'piece', 'Trim', 18.5), I('CAU-10', 'Exterior sealant tube', 'each', 'Sealants', 7.9, true), I('NL-SS', 'Stainless siding nails 1 lb', 'box', 'Fasteners', 12.4), I('FLSH-T', 'Z-flashing 10\'', 'piece', 'Flashing', 9.6), I('PNT-PR', 'Exterior primer, gallon', 'gallon', 'Finish', 31), I('PNT-TC', 'Exterior topcoat, gallon', 'gallon', 'Finish', 46, true)],
+    assemblies: [['Siding full package', [['FC-825', 'MeasuredArea / 5.5', 5], ['HW-9150', 'MeasuredArea / 1350', 5], ['NL-SS', 'MeasuredArea / 250', 0], ['FLSH-T', 'MeasuredArea / 40', 5]]], ['Trim and corners', [['TR-CORN', 'MeasuredArea / 18', 5], ['CAU-10', 'MeasuredArea / 120', 0]]], ['Exterior paint, two coats', [['PNT-PR', 'MeasuredArea / 350', 5], ['PNT-TC', 'MeasuredArea / 350 * 2', 5]]]],
+    fornecedores: [['Granite State Lumber', ['Siding', 'Trim', 'Fasteners', 'Flashing']], ['Merrimack Paint Supply', ['Finish', 'Sealants']]],
+  },
+  framing: {
+    itens: [I('PL-2X6', 'Plate 2x6x12', 'piece', 'Framing', 11.8), I('HDR-2X10', 'Header 2x10x12', 'piece', 'Framing', 24.5, true), I('NL-16D', '16d nails 5 lb', 'box', 'Fasteners', 21), I('HNG-STR', 'Hurricane tie', 'each', 'Connectors', 1.35)],
+    assemblies: [['Wall frame package', [['ST-2692', 'MeasuredArea / 1.33', 5], ['PL-2X6', 'MeasuredArea / 4', 5]]], ['Sheathing and fasteners', [['OSB-716', 'MeasuredArea / 32', 8], ['NL-16D', 'MeasuredArea / 400', 0]]], ['Openings and hardware', [['HDR-2X10', 'MeasuredArea / 60', 0], ['HNG-STR', 'MeasuredArea / 8', 0]]]],
+    fornecedores: [['Capital Lumber & Truss', ['Framing', 'Sheathing']], ['Seacoast Fasteners', ['Fasteners', 'Connectors']]],
+  },
+  concrete: {
+    itens: [I('FRM-LUM', 'Form lumber 2x8x16', 'piece', 'Formwork', 19.4), I('ANC-J', 'J-bolt anchor', 'each', 'Anchors', 2.1), I('VAP-6', 'Vapor barrier 6 mil roll', 'roll', 'Slab prep', 88, true), I('GRV-34', 'Crushed gravel 3/4"', 'cubic yard', 'Slab prep', 42), I('WIRE-M', 'Wire mesh 5x10 sheet', 'sheet', 'Reinforcing', 14.7)],
+    assemblies: [['Slab prep (gravel and vapor barrier)', [['GRV-34', 'MeasuredArea * 0.0123', 5], ['VAP-6', 'MeasuredArea / 1500', 10]]], ['Footing formwork', [['FRM-LUM', 'MeasuredArea / 12', 5], ['ANC-J', 'MeasuredArea / 6', 0]]], ['Slab reinforcing', [['WIRE-M', 'MeasuredArea / 50', 10], ['RB-4-20', 'MeasuredArea / 60', 5]]]],
+    fornecedores: [['Londonderry Ready-Mix', ['Foundation walls', 'Footings', 'Slab prep']], ['Granite Rebar & Forming', ['Reinforcing', 'Formwork', 'Anchors']]],
+  },
+  roofing: {
+    itens: [I('ICE-WS', 'Ice and water shield roll', 'roll', 'Underlayment', 118), I('RDG-CAP', 'Ridge cap bundle', 'bundle', 'Roofing', 55, true), I('DRP-EDG', 'Drip edge 10\'', 'piece', 'Flashing', 8.4), I('RF-NL', 'Roofing nails 5 lb', 'box', 'Fasteners', 26)],
+    assemblies: [['Underlayment and ice shield', [['UL-SYN', 'MeasuredArea / 1000', 10], ['ICE-WS', 'MeasuredArea / 200 * 0.25', 10]]], ['Edge metal and ridge', [['DRP-EDG', 'MeasuredArea / 20', 5], ['RDG-CAP', 'MeasuredArea / 90', 5]]], ['Roofing fasteners', [['RF-NL', 'MeasuredArea / 300', 0]]]],
+    fornecedores: [['Seacoast Roofing Supply', ['Roofing', 'Underlayment', 'Flashing']], ['Hampton Fasteners', ['Fasteners']]],
+  },
+  gutters: {
+    itens: [I('GT-HNG', 'Gutter hanger', 'each', 'Gutters', 1.1), I('GT-END', 'Gutter end cap', 'each', 'Gutters', 2.2, true), I('GT-ELB', 'Downspout elbow', 'each', 'Downspouts', 3.4), I('SEAL-GT', 'Gutter sealant tube', 'each', 'Sealants', 6.2)],
+    assemblies: [['Gutter hangers and ends', [['GT-HNG', 'MeasuredArea / 2', 5], ['GT-END', 'MeasuredArea / 40', 0], ['SEAL-GT', 'MeasuredArea / 60', 0]]], ['Downspout fittings', [['DS-23', 'MeasuredArea / 120', 5], ['GT-ELB', 'MeasuredArea / 60', 0]]]],
+    fornecedores: [['Portsmouth Sheet Metal', ['Gutters', 'Downspouts']], ['Dover Building Supply', ['Sealants']]],
+  },
+  partitions: {
+    itens: [I('TRK-358', 'Track 3-5/8" 10\'', 'piece', 'Framing', 6.8), I('SCR-DW', 'Drywall screws 5 lb', 'box', 'Fasteners', 24), I('JC-45', 'Joint compound 4.5 gal', 'bucket', 'Finishing', 17.5, true), I('TAPE-P', 'Paper tape roll', 'roll', 'Finishing', 4.3), I('INS-R13', 'Batt insulation R-13', 'bag', 'Insulation', 54)],
+    assemblies: [['Drywall finishing (compound and tape)', [['JC-45', 'MeasuredArea / 350', 5], ['TAPE-P', 'MeasuredArea / 500', 5], ['SCR-DW', 'MeasuredArea / 300', 0]]], ['Insulated partition', [['SS-358', 'MeasuredArea / 1.33', 5], ['TRK-358', 'MeasuredArea / 40', 5], ['INS-R13', 'MeasuredArea / 88', 5], ['GB-58', 'MeasuredArea / 24 * 2', 5]]], ['Partition framing only', [['SS-358', 'MeasuredArea / 1.33', 5], ['TRK-358', 'MeasuredArea / 40', 5]]]],
+    fornecedores: [['Concord Drywall Supply', ['Framing', 'Drywall', 'Finishing', 'Insulation']], ['Nashua Fasteners', ['Fasteners']]],
+  },
+};
+/* Que família cada empresa com Measure usa. */
+export const FAMILIA_DA_EMPRESA = { p1: 'siding', p2: 'framing', p3: 'concrete', p4: 'roofing', a1: 'gutters', a2: 'partitions', c1: 'partitions' };

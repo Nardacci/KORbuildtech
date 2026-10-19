@@ -223,3 +223,34 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Tem Início, Projetos, Assemblies, Itens, Preços, Convites e Concorrências; 'Início' volta ao painel
 - [ ] **T92** · `pv.c1.admin` — Abrir o Settings numa janela estreita (celular)  
   _Esperado:_ O menu lateral some e aparecem as abas de antes (Início, Obras, Contatos...)
+
+## 13 Assemblies, listas de materiais e cotações
+
+- [ ] **T93** · `pv.p1.admin` — Settings › Takeoff › Assemblies: abrir a lista  
+  _Esperado:_ Lista com 4 assemblies (Lap siding with housewrap, Siding full package, Trim and corners, Exterior paint two coats), cada um com seus materiais
+- [ ] **T94** · `pv.p1.admin` — Abrir 'Siding full package'  
+  _Esperado:_ 4 linhas de material com fórmula, perda % e unidade; as quantidades de exemplo calculam sem erro
+- [ ] **T95** · `pv.p1.admin` — Takeoff › Itens: conferir o catálogo  
+  _Esperado:_ 8 itens (2 básicos + 6 novos) por etapa (Siding, Trim, Fasteners, Flashing, Finish, Sealants), com unidade de compra
+- [ ] **T96** · `pv.p1.admin` — Takeoff › Preços: abrir o histórico de um item (por exemplo Corner trim)  
+  _Esperado:_ Dois preços: o de 120 dias atrás (menor) e o atual; o item 'Exterior sealant tube' só tem preço de 200 dias atrás
+- [ ] **T97** · `pv.p1.admin` — Abrir o projeto 'Canal Street Lofts — Siding bid'  
+  _Esperado:_ Várias condições medidas, uma por assembly, com áreas diferentes e as quantidades de material de cada uma
+- [ ] **T98** · `pv.p1.admin` — No projeto, abrir a lista de materiais / quantidades por item  
+  _Esperado:_ Soma das quantidades por item entre as condições, na unidade de compra, com perda e arredondamento
+- [ ] **T99** · `pv.p1.admin` — Abrir a Lista para cotação do projeto  
+  _Esperado:_ Duas seções de fornecedor (Granite State Lumber e Merrimack Paint Supply), cada uma só com os itens das etapas que ele fornece; nenhum item em 'Sem fornecedor'
+- [ ] **T100** · `pv.p1.admin` — Na Lista para cotação: conferir os avisos de envio  
+  _Esperado:_ Um fornecedor com 'e-mail preparado em <data>' e outro com 'preços recebidos em <data>'
+- [ ] **T101** · `pv.p1.admin` — Baixar o PDF do pedido de cotação de um fornecedor  
+  _Esperado:_ Documento A4 com logo e dados da empresa, 'Request for quote', obra, 'Reply by', tabela com colunas em branco para preço unitário e total, subtotal, frete e total
+- [ ] **T102** · `pv.p1.admin` — Clicar em 'Enviar por e-mail' de um fornecedor  
+  _Esperado:_ Abre o programa de e-mail com o assunto, os itens e o prazo preenchidos (nada é enviado sozinho)
+- [ ] **T103** · `pv.p1.admin` — Clicar em 'Registrar preços recebidos' de um fornecedor e lançar preços  
+  _Esperado:_ Os preços entram no histórico dos itens com a fonte 'cotação' e o fornecedor; o selo 'preços recebidos' aparece
+- [ ] **T104** · `pv.p1.admin` — Abrir a Proposta do projeto e emitir uma nova  
+  _Esperado:_ Linhas por etapa com os materiais como detalhe; emitir gera um número novo e o PDF; a anterior continua guardada
+- [ ] **T105** · `pv.p1.admin` — Voltar ao Início depois das cotações  
+  _Esperado:_ 'Cotações de material' mostra as listas enviadas e os fornecedores; o cartão de cotação sem retorno reflete o que falta
+- [ ] **T106** · `pv.c1.admin / pv.a2.admin / pv.p2.admin / pv.p3.admin / pv.p4.admin / pv.a1.admin` — Repetir a Lista para cotação e o PDF em cada empresa  
+  _Esperado:_ Cada uma tem a sua família de materiais (partições, framing, concreto, telhado, calhas), seus fornecedores e as quantidades coerentes

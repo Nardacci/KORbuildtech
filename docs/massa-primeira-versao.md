@@ -92,3 +92,10 @@ node tools/massa-primeira-versao.mjs --limpar --apagar --real
 ```
 
 Apaga só as empresas com `plano.massa = 'pv'` (em cascata: obras, contatos, concorrências, projetos), os arquivos delas no Storage (plantas, concorrências) e os usuários `pv.*@example.com`. **Não** toca na massa de demonstração do protótipo (`demo.*`) nem em contas reais.
+
+## Catálogo ampliado, listas de materiais e cotações
+
+`node tools/massa-catalogo-pv.mjs [--real]` (depois da massa e do Measure) completa as 7 empresas com Measure: 4 a 6 itens novos por empresa, com histórico de preço (alguns só com preço de 200 dias, para acender "itens sem preço novo"); 2 a 3 assemblies com perda e arredondamento; 2 fornecedores por empresa com as etapas que fornecem; uma condição medida para cada assembly em cada projeto já medido (assim a lista de materiais soma várias condições); e cotações: o primeiro projeto enviado a dois fornecedores com retorno de um (preços entram no histórico), o segundo enviado e sem retorno. Só grava dados, nunca apaga, e pode rodar de novo.
+Famílias: p1 siding, p2 framing, p3 concreto, p4 telhado, a1 calhas, a2 e c1 partições de drywall (`tools/massa-pv/dados.mjs`, `FAMILIAS`).
+
+Homologação automática: `tests/homologacao-pv.test.mjs` (local, ou `--real` contra o endereço de homologação com `KOR_DEMO_SENHA`) confere, por empresa, o painel, o catálogo, os assemblies, as condições, a lista para cotação por fornecedor, o PDF do pedido de cotação e a proposta (114 verificações). Só lê.
