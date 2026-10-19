@@ -3421,4 +3421,6 @@ export const EN = {
   'Obras, contatos, usuários e empresa': 'Jobs, contacts, users and company',
   'Ainda não enviado': 'Not sent yet',
   'Nenhum e-mail ou aviso sai antes de você clicar em Enviar convites.': 'No email or notice goes out until you click Send invitations.',
+  'Domínio reservado para testes: o provedor recusa o e-mail.': 'Domain reserved for testing: the provider rejects the email.',
+  'endereço de teste: não recebe e-mail': 'test address: receives no email',
 };

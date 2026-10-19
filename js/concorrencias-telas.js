@@ -244,11 +244,14 @@ export function telaConcorrencia(moldura, id, abaPedida) {
   });
 }
 
+/* Domínios reservados (RFC 2606): o SMTP recusa com erro 554, então o convite por e-mail nunca chega; o aviso evita a dúvida "cadê o e-mail?". */
+const enderecoDeTeste = (e) => /@([a-z0-9-]+\.)*example\.(com|net|org)$|\.(test|invalid|localhost|example)$/i.test(String(e || '').trim());
+
 function htmlConvidados(c) {
   return '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-convidados"><thead><tr><th>' + tr('Prestadora') + '</th><th>' + tr('Recebe') + '</th><th>' + tr('Situação') + '</th><th>' + tr('Última proposta') + '</th><th>' + tr('Visto') + '</th></tr></thead><tbody>' +
     c.convites.map((v) => {
       const p = ultimaProposta(v);
-      return '<tr><td><b>' + esc(v.nome) + '</b>' + (v.email ? '<span class="mudo pequeno bloco">' + esc(v.email) + '</span>' : '') + '</td><td>' + comoRecebe(v) +
+      return '<tr><td><b>' + esc(v.nome) + '</b>' + (v.email ? '<span class="mudo pequeno bloco">' + esc(v.email) + (enderecoDeTeste(v.email) ? ' <span class="etiqueta etiqueta-ambar" title="' + esc(tr('Domínio reservado para testes: o provedor recusa o e-mail.')) + '">' + tr('endereço de teste: não recebe e-mail') + '</span>' : '') + '</span>' : '') + '</td><td>' + comoRecebe(v) +
           (!v.empresaId && c.situacao !== 'rascunho' ? (v.token ? '<button type="button" class="link-botao pequeno bloco" data-acao="co-link" data-token="' + esc(v.token) + '">' + tr('Copiar o link') + '</button>' : '<span class="mudo pequeno bloco">' + tr('link no aparelho que enviou') + '</span>') : '') + '</td>' +
         '<td>' + (c.situacao === 'rascunho' ? '<span class="etiqueta etiqueta-neutro">' + tr('Ainda não enviado') + '</span>' : etiquetaConvite(v)) + (v.motivo ? '<span class="mudo pequeno bloco">“' + esc(v.motivo) + '”</span>' : '') + '</td>' +
         '<td>' + (p ? '<b>' + dinheiro(p.total) + '</b><span class="mudo pequeno bloco">' + tr('rev. {rev} · {quando}', { rev: p.rev, quando: dataHora(p.enviadaEm) }) + '</span>' : '<span class="mudo">—</span>') + '</td>' +
