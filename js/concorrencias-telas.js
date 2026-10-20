@@ -67,7 +67,7 @@ export function telaConcorrencias(moldura, filtro) {
     acoes: '<div class="acoes-cabeca">' + (podeResponder() ? '<a class="btn btn-contorno" href="#/measure/convites">' + tr('Convites recebidos') + (convitesPendentes() ? ' <span class="mz-contagem">' + convitesPendentes() + '</span>' : '') + '</a>' : '') +
       '<a class="btn btn-primario" href="#/daily/concorrencias/nova">' + icone('mais', 18) + tr('Nova concorrência') + '</a></div>',
     conteudo: '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r, f]) => '<a href="#/daily/concorrencias' + (id ? '/' + id : '') + '"' + (aba[0] === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + ' <span class="mz-contagem">' + todas.filter((c) => f(situacaoDe(c))).length + '</span></a>').join('') + '</nav>' +
-      (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-concorrencias"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Convidados') + '</th><th>' + tr('Propostas') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
+      (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-concorrencias"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Convidados') + '</th><th>' + tr('Propostas') + '</th><th>' + tr('Situação') + '</th><th>' + tr('Ações') + '</th></tr></thead><tbody>' +
         lista.map((c) => {
           const s = situacaoDe(c);
           const ativos = c.convites.filter((v) => v.situacao !== 'nao-vai');
@@ -75,7 +75,8 @@ export function telaConcorrencias(moldura, filtro) {
           return '<tr><td><a href="#/daily/concorrencias/' + c.id + '"><b>' + esc(c.servico || tr('(sem nome)')) + '</b></a></td><td>' + esc(nomeObra(c.obraId)) + '</td>' +
             '<td>' + (s === 'aberta' || s === 'para-fechar' ? textoPrazo(c) : c.prazo ? dataCurta(c.prazo.slice(0, 10)) : '—') + '</td>' +
             '<td>' + c.convites.length + '</td><td>' + tr('{n} de {total}', { n: c.convites.filter((v) => v.propostas.length).length, total: ativos.length }) + '</td>' +
-            '<td>' + etiqueta(s) + (vencedora ? ' <span class="mudo pequeno">' + esc(vencedora.nome) + '</span>' : '') + '</td></tr>';
+            '<td>' + etiqueta(s) + (vencedora ? ' <span class="mudo pequeno">' + esc(vencedora.nome) + '</span>' : '') + '</td>' +
+            '<td>' + (c.situacao === 'rascunho' ? '<a class="btn btn-contorno btn-pequeno" href="#/daily/concorrencias/' + c.id + '/editar">' + tr('Editar') + '</a>' : '<a class="btn btn-contorno btn-pequeno" href="#/daily/concorrencias/' + c.id + '">' + tr('Abrir') + '</a>') + '</td></tr>';
         }).join('') + '</tbody></table></div></section>'
         : '<section class="cartao vazio-grande"><h2>' + (todas.length ? tr('Nenhuma concorrência aqui') : tr('Nenhuma concorrência ainda')) + '</h2><p class="mudo">' +
           tr('Monte o pacote de um serviço (escopo, etapas, desenhos e prazo), convide as prestadoras dos seus Contatos e compare as propostas lado a lado.') + '</p></section>'),
@@ -457,7 +458,6 @@ export function telaConvite(moldura, id) {
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
         '<dt>' + tr('Obra') + '</dt><dd>' + (x.obra ? esc(x.obra.nome) + '<span class="mudo bloco">' + esc([x.obra.endereco, textoLocal(x.obra)].filter(Boolean).join(' · ')) + '</span>' : '—') + '</dd>' +
         '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
-        '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => d.url ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + esc(d.nome) + '.pdf</a>' : esc(d.nome)).join(' · ') : '—') + '</dd>' +
         '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
         '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
         '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
@@ -602,6 +602,22 @@ export const linkDoConvite = (token) => location.origin + location.pathname + (e
 /* Os links dos convidados sem conta, para copiar (o banco entrega o token uma vez, ao enviar). */
 async function mostrarLinks() { /* sem popup: o link de cada convidado sem conta fica na tabela, em "Copiar o link" */ }
 
+/* A tabela de documentos de uma concorrência (a mesma forma do formulário, só leitura). */
+function tabelaDeDocumentos(docs) {
+  if (!docs || !docs.length) return '<p class="mudo">' + tr('Nenhum documento anexado.') + '</p>';
+  return '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Descrição') + '</th><th>' + tr('Arquivo') + '</th><th>' + tr('Tamanho') + '</th><th>' + tr('Observação') + '</th><th></th></tr></thead><tbody>' +
+    docs.map((d, i) => '<tr><td>' + (i + 1) + '</td><td>' + esc(d.nome) + '</td><td>' + esc(d.nome) + '.pdf</td><td>' + (d.tamanho ? tamanhoLegivel(d.tamanho) : '—') + '</td><td>' + esc(d.observacao || '') + '</td><td>' +
+      (d.url ? '<a class="btn btn-contorno btn-pequeno" href="' + esc(d.url) + '" target="_blank" rel="noopener">' + tr('Abrir') + '</a>' : '<span class="mudo pequeno">' + tr('indisponível') + '</span>') + '</td></tr>').join('') + '</tbody></table></div>';
+}
+
+/* Para quem abre o convite sem conta: o que o KORbuild faz por ela. */
+function cartaoConta() {
+  return '<section class="cartao cartao-conta"><div><h2 class="cartao-titulo">' + tr('Cote mais rápido com o KORbuild Takeoff') + '</h2>' +
+    '<p>' + tr('Meça as plantas na tela, gere a lista de materiais e acompanhe convites e propostas num só lugar.') + '</p>' +
+    '<p class="mudo pequeno">' + tr('Use o mesmo e-mail deste convite: o convite, as mensagens e as propostas vêm junto.') + '</p></div>' +
+    '<a class="btn btn-primario" href="' + esc(location.pathname) + '">' + tr('Entrar ou criar conta') + '</a></section>';
+}
+
 export function telaConvitePublico(token, marca) {
   let x = porToken(token);
   if (!x) return '<main class="pagina pagina-estreita"><div class="aviso aviso-ambar"><b>' + tr('Convite não encontrado') + '</b><span>' + (estado() && estado().oficial ? tr('Confira o link: ele pode estar incompleto, ou a concorrência foi encerrada.') : tr('Confira o link. No protótipo não há servidor, então o link só abre no mesmo navegador em que a concorrência foi enviada.')) + '</span></div></main>';
@@ -623,10 +639,10 @@ export function telaConvitePublico(token, marca) {
   else situacao = '<div class="aviso aviso-verde"><b>' + (v.propostas.length ? tr('Proposta enviada (rev. {rev}).', { rev: v.propostas.length }) : tr('Você vai cotar.')) + '</b><span>' + tr('Mande a proposta abaixo, com o PDF. Dá para mandar revisões até o prazo.') + '</span></div>';
   const podeMandar = aberta && v.situacao !== 'nao-vai';
   const formProposta = podeMandar && !PENDENTES.includes(v.situacao) ? '<section class="cartao"><h2 class="cartao-titulo">' + (v.propostas.length ? tr('Mandar uma revisão') : tr('Mandar a proposta')) + '</h2>' +
-    '<form id="form-link" data-sem-envio><div class="grade-campos">' +
-      campo('lk-pdf', tr('Proposta em PDF'), '<input type="file" id="lk-pdf" name="pdf" accept="application/pdf">') +
+    '<form id="form-link" class="form-settings" data-sem-envio><div class="grade-campos">' +
       campo('lk-total', tr('Total (US$) *'), '<input type="text" inputmode="decimal" id="lk-total" name="total">') +
       campo('lk-prazo', tr('Prazo de execução (dias)'), '<input type="number" id="lk-prazo" name="prazo" min="1">') + '</div>' +
+      campo('lk-pdf', tr('Proposta em PDF'), '<input type="file" id="lk-pdf" name="pdf" accept="application/pdf">') +
       '<details class="co-por-etapa"><summary class="pequeno">' + tr('Valor por etapa (opcional)') + '</summary><div class="grade-campos">' +
         x.etapas.map((e, i) => campo('lk-et-' + i, esc(e), '<input type="text" inputmode="decimal" id="lk-et-' + i + '" name="etapa" data-etapa="' + esc(e) + '">')).join('') + '</div>' +
         '<p class="mudo pequeno">' + tr('Se informar, o total precisa ser a soma das etapas. Etapa em branco fica "não cotada".') + '</p></details>' +
@@ -649,11 +665,13 @@ export function telaConvitePublico(token, marca) {
         '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
         '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
       '</dl></section></div>' +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Documentos do projeto') + '</h2>' + tabelaDeDocumentos(x.desenhos) + '</section>' +
+      cartaoConta() +
       formProposta +
       (v.propostas.length ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Suas propostas') + '</h2><ul class="lista-simples">' + v.propostas.slice().reverse().map((q) => '<li><b>' + tr('rev. {rev}', { rev: q.rev }) + ' · ' + dinheiro(q.total) + '</b> · ' + dataHora(q.enviadaEm) + (q.pdf && q.pdf.nome ? ' · ' + esc(q.pdf.nome) : '') + '</li>').join('') + '</ul></section>' : '') +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Perguntas e mensagens') + '</h2>' + htmlMensagens(canalPorToken(token)) +
         (podeMandar ? formMensagem('lk-perguntar', { token }, tr('Perguntar'), tr('A contratante pode responder só para você ou para todas as convidadas (sem dizer quem perguntou).')) : '') + '</section>' +
-      '<p class="mudo pequeno convite-rodape">' + tr('Este link é só seu e só abre este convite. Para medir as plantas e orçar no KORbuild, crie a sua conta com o mesmo e-mail: o convite, as mensagens e as propostas vêm junto.') + '</p>' +
+      '<p class="mudo pequeno convite-rodape">' + tr('Este link é só seu e só abre este convite.') + ' <a href="' + esc(location.pathname) + '">' + tr('Entrar ou criar conta') + '</a></p>' +
     '</main>';
 }
 

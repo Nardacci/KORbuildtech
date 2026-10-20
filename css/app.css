@@ -1592,3 +1592,8 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 :root[data-versao="primeira"] { --cor-measure-claro: #FFF2EA; }
 :root[data-versao="primeira"] .modulo-measure { --fundo-modulo: #FFF2EA; }
 :root[data-versao="primeira"] .login-modulos .modulo-measure { --cor-modulo-claro: #FDA36B; }
+
+/* Convite pelo link: cartão da conta e campos do formulário de proposta */
+.cartao-conta { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-left: 4px solid var(--marca, #F26A1B); }
+.cartao-conta p { margin: 4px 0; }
+.convite-publico .form-settings input[type="file"] { width: 100%; box-sizing: border-box; }
