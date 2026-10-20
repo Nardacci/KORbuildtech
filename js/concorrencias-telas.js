@@ -847,6 +847,7 @@ export const acoesConcorrencias = {
       if (dados.plantasProjeto.length && dados.origem) dados.desenhosNovos = dados.desenhosNovos.concat(await arquivosDasPlantas(dados.origem.id, dados.plantasProjeto));
       dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome })));
       const r = await salvarRascunho(id, dados, quem());
+      if (r.id) document.getElementById('form-concorrencia').dataset.id = r.id;   // se falhou depois de criar, a próxima tentativa atualiza o mesmo rascunho
       if (r.erro) { toast(r.erro); return; }
       toast(tr('Rascunho salvo.'));
       app.ir('#/daily/concorrencias/' + r.id);

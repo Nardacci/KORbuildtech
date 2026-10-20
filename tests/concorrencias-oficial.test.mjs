@@ -98,6 +98,18 @@ try {
   verificar(c.situacao === 'rascunho' && c.etapas.length === 2 && c.obra_id === obraB.id, 'rascunho com a obra e as 2 etapas', c);
   const convites = await sql(`select id, nome, convidada_id, situacao, token_hash from public.concorrencia_convites where concorrencia_id = '${c.id}' order by nome`);
   verificar(convites.length === 2 && convites.find((v) => v.nome === 'Bayside Local').convidada_id === null && convites.find((v) => v.nome !== 'Bayside Local').convidada_id === A, 'os 2 convites: a Ana com conta, a Bayside pelo link', convites);
+
+  // regressão: salvar o rascunho de novo (sem mudar os convidados) não duplica nem dá erro de chave
+  await t.p.goto(BASE + '#/daily/concorrencias/' + c.id + '/editar');
+  await t.p.waitForSelector('#form-concorrencia', { timeout: 20000 });
+  await t.p.click('button[data-acao="co-salvar"]');
+  await t.p.waitForURL('**#/daily/concorrencias/' + c.id, { timeout: 30000 });
+  await t.p.goto(BASE + '#/daily/concorrencias/' + c.id + '/editar');
+  await t.p.waitForSelector('#form-concorrencia', { timeout: 20000 });
+  await t.p.click('button[data-acao="co-salvar"]');
+  await t.p.waitForURL('**#/daily/concorrencias/' + c.id, { timeout: 30000 });
+  verificar((await conc()).length === 1 && (await sql(`select 1 from public.concorrencia_convites where concorrencia_id = '${c.id}'`)).length === 2, 'salvar de novo atualiza o mesmo rascunho, sem duplicar rascunho nem convite');
+  await t.p.goto(BASE + '#/daily/concorrencias/' + c.id);
   const desenhos = await sql(`select nome, arquivo_path from public.concorrencia_desenhos where concorrencia_id = '${c.id}'`);
   verificar(desenhos.length === 1 && desenhos[0].arquivo_path.startsWith(B + '/' + c.id + '/desenhos/'), 'o desenho aponta a pasta da concorrência', desenhos);
   verificar((await arquivosDaPasta(B + '/' + c.id + '/desenhos/', 'concorrencias')).length === 1, 'o PDF do desenho foi para o Storage');

@@ -44,12 +44,15 @@ async function salvarRascunho(id, d, contatoIds, arquivos) {
     prazo: iso(d.prazo), inicio: d.inicio || null, termino: d.termino || null,
     orcamento: { valor: d.orcamento.valor, porEtapa: d.orcamento.porEtapa || {}, mostrar: d.orcamento.mostrar }, exigencias: d.exigencias || {}, quarteirizacao: d.quarteirizacao,
   };
+  let novoId = id;
   try {
-    let novoId = id;
     if (id) { const { error } = await sb.from('concorrencias').update(linha).eq('id', id); if (error) throw error; }
     else { const { data, error } = await sb.from('concorrencias').insert(linha).select('id').single(); if (error) throw error; novoId = data.id; }
     // convidados: o que saiu e o que entrou
-    const antes = id ? (minha(id) || { convites: [] }).convites : [];
+    // o que já está gravado vem do banco, não do espelho (que pode estar atrasado depois de uma tentativa que falhou)
+    const { data: gravados, error: erroLeitura } = await sb.from('concorrencia_convites').select('id, contato_id').eq('concorrencia_id', novoId);
+    if (erroLeitura) throw erroLeitura;
+    const antes = (gravados || []).map((v) => ({ id: v.id, contatoId: v.contato_id }));
     const sairam = antes.filter((v) => !contatoIds.includes(v.contatoId)).map((v) => v.id);
     const entraram = contatoIds.filter((cid) => !antes.some((v) => v.contatoId === cid));
     if (sairam.length) { const { error } = await sb.from('concorrencia_convites').delete().in('id', sairam); if (error) throw error; }
@@ -73,7 +76,7 @@ async function salvarRascunho(id, d, contatoIds, arquivos) {
     }
     await montar(true).catch(() => {});
     return { ok: true, id: novoId };
-  } catch (e) { return { erro: traduzir(e) }; }
+  } catch (e) { return { erro: traduzir(e), id: novoId || null }; }   // com o id, a nova tentativa atualiza o mesmo rascunho em vez de criar outro
 }
 
 /* ---------- Pelo link (a função de borda) ---------- */
