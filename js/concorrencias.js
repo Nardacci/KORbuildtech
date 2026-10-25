@@ -21,7 +21,7 @@ export const SITUACOES_CONVITE = {
   visto: tr('Visto'),
   'vai-cotar': tr('Vai cotar'),
   'nao-vai': tr('Não vai participar'),
-  proposta: tr('Proposta enviada'),
+  proposta: tr('Enviou proposta'),
   vencedora: tr('Vencedora'),
   'nao-escolhida': tr('Não escolhida'),
   cancelado: tr('Cancelado'),

@@ -413,7 +413,7 @@ function htmlDetalhes(c) {
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(c.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(c.excluso) +
       (c.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(c.observacoes) + '</p>' : '') + '</section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
-      '<dt>' + tr('Etapas') + '</dt><dd>' + c.etapas.map(esc).join('<br>') + '</dd>' +
+      '<dt>' + tr('Etapas a cotar') + '</dt><dd>' + c.etapas.map(esc).join('<br>') + '</dd>' +
       '<dt>' + tr('Desenhos') + '</dt><dd>' + (c.desenhos.length ? c.desenhos.map((x) => esc(x.nome)).join(' · ') : '—') + '</dd>' +
       '<dt>' + tr('Prazo da proposta') + '</dt><dd>' + (c.prazo ? dataHora(instante(c.prazo)) : '—') + '</dd>' +
       '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (c.inicio ? dataCurta(c.inicio) : '—') + ' → ' + (c.termino ? dataCurta(c.termino) : '—') + '</dd>' +
@@ -480,7 +480,7 @@ export function telaConvite(moldura, id) {
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
         '<dt>' + tr('Obra') + '</dt><dd>' + (x.obra ? esc(x.obra.nome) + '<span class="mudo bloco">' + esc([x.obra.endereco, textoLocal(x.obra)].filter(Boolean).join(' · ')) + '</span>' : '—') + '</dd>' +
-        '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
+        '<dt>' + tr('Etapas a cotar') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
         '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
         '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +
         '<dt>' + tr('Exigências') + '</dt><dd>' + (exig.length ? exig.map(esc).join('<br>') : '—') + '</dd>' +
@@ -678,7 +678,7 @@ export function telaConvitePublico(token, marca) {
       '<h1>' + esc(x.servico) + '</h1><p class="mudo">' + esc(x.obra ? x.obra.nome + ' · ' + textoLocal(x.obra) : '') + ' · ' + tr('para {nome}', { nome: esc(v.nome) }) + '</p>' +
       '<div class="co-kpis co-kpis-4"><div class="co-kpi"><span>' + tr('Prazo da proposta') + '</span><b>' + (x.prazo ? dataCurta(x.prazo.slice(0, 10)) + ' · ' + x.prazo.slice(11, 16) : '—') + '</b></div>' +
         '<div class="co-kpi"><span>' + tr('Faltam') + '</span><b>' + (x.prazo && aberta ? textoPrazo(x).replace(/^.*·\s*/, '') : '—') + '</b></div>' +
-        '<div class="co-kpi"><span>' + tr('Etapas') + '</span><b>' + x.etapas.map(esc).join(' · ') + '</b></div>' +
+        '<div class="co-kpi"><span>' + tr('Etapas a cotar') + '</span><b>' + x.etapas.map(esc).join(' · ') + '</b></div>' +
         '<div class="co-kpi"><span>' + tr('Serviço previsto') + '</span><b>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</b></div></div>' +
       situacao +
       '<div class="grade-2">' +
@@ -686,7 +686,7 @@ export function telaConvitePublico(token, marca) {
         (x.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(x.observacoes) + '</p>' : '') + '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
-        '<dt>' + tr('Etapas') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
+        '<dt>' + tr('Etapas a cotar') + '</dt><dd>' + x.etapas.map(esc).join('<br>') + '</dd>' +
         '<dt>' + tr('Desenhos') + '</dt><dd>' + (x.desenhos.length ? x.desenhos.map((d) => d.url ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">' + esc(d.nome) + '.pdf</a>' : esc(d.nome)).join(' · ') : '—') + '</dd>' +
         '<dt>' + tr('Serviço previsto') + '</dt><dd>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</dd>' +
         '<dt>' + tr('Orçamento') + '</dt><dd>' + (x.orcamento.mostrar === 'nao' ? '<span class="mudo">' + tr('não informado') + '</span>' : dinheiro(x.orcamento.valor)) + '</dd>' +

@@ -5,6 +5,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 
+const IDIOMA = process.env.IDIOMA === 'en' ? 'en' : 'pt';
 const saida = process.argv[2];
 if (!saida) { console.error('Uso: node tools/capturas-modulos.mjs <pasta de saída> [url]'); process.exit(1); }
 const BASE = (process.argv[3] || 'http://localhost:8123/').replace(/\/?$/, '/') + '?demo';
@@ -13,7 +14,7 @@ mkdirSync(saida, { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 async function sessao(usuario) {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  await ctx.addInitScript(() => { try { if (!localStorage.getItem('kbt.idioma')) localStorage.setItem('kbt.idioma', 'pt'); localStorage.setItem('kbt.versao', 'primeira'); } catch { /* sem armazenamento */ } });
+  await ctx.addInitScript((idioma) => { try { localStorage.setItem('kbt.idioma', idioma); localStorage.setItem('kbt.versao', 'primeira'); } catch { /* sem armazenamento */ } }, IDIOMA);
   await ctx.route(/fonts\.|tile\.openstreetmap|open-meteo/, (r) => r.abort());
   const p = await ctx.newPage();
   await p.goto(BASE);
@@ -73,8 +74,8 @@ console.log('Licitações (quem contrata)');
     const base = h2.replace(/^.*#/, '#');
     await ir(p, base, 1200);
     await foto(p, 'li-03-detalhe-convidados', { pagina: true });
-    for (const [aba, nome] of [['Comparar', 'li-04-comparar'], ['Perguntas', 'li-05-perguntas'], ['Detalhes', 'li-06-detalhes']]) {
-      await p.locator('.abas-sublinhadas a', { hasText: aba }).first().click();
+    for (const [aba, nome] of [[2, 'li-04-comparar'], [1, 'li-05-perguntas'], [3, 'li-06-detalhes']]) {
+      await p.locator('.abas-sublinhadas a').nth(aba).click();
       await p.waitForTimeout(900);
       await foto(p, nome, { pagina: true });
     }
