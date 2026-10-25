@@ -1619,3 +1619,66 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 #form-concorrencia .cartao, #form-link { border-radius: 14px; }
 .tabela-concorrencias th, #co-anexos th { font-size: 12px; text-transform: none; color: #6B7280; }
 .tabela-concorrencias td, #co-anexos td { padding: 14px 12px; vertical-align: middle; }
+
+/* =====================================================================================================
+   Visual profissional da 1ª versão (Takeoff e Bids): menu escuro, cartões e tabelas sóbrios, formulários
+   com a mesma altura e o laranja só onde importa (ação e item ativo). Só vale com ?versao=primeira.
+   ===================================================================================================== */
+:root[data-versao="primeira"] {
+  --fundo: #F3F4F6;
+  --borda: #E1E5EB;
+  --borda-forte: #C9D0DA;
+  --texto-2: #2F3A4B;
+  --mudo: #5B6779;
+  --raio: 8px;
+  --raio-grande: 14px;
+  --sombra: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --sombra-alta: 0 10px 24px -8px rgba(16, 24, 40, 0.16), 0 3px 6px -3px rgba(16, 24, 40, 0.08);
+}
+/* menu lateral escuro */
+:root[data-versao="primeira"] .lateral { background: var(--grafite); border-right: 0; padding: 20px 12px; gap: 4px; }
+:root[data-versao="primeira"] .lateral-titulo { color: #8A96A8; padding: 0 12px 10px; letter-spacing: 0.12em; }
+:root[data-versao="primeira"] .lateral-item { color: #C9D1DC; padding: 11px 12px; font-weight: 500; transition: background .12s, color .12s; }
+:root[data-versao="primeira"] .lateral-item:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+:root[data-versao="primeira"] .lateral-item.ativo { background: var(--primario); color: #fff; font-weight: 600; }
+:root[data-versao="primeira"] .lateral-item .contador { background: #fff; color: var(--primario); }
+:root[data-versao="primeira"] .lateral-item.ativo .contador { background: #fff; color: var(--primario); }
+/* barra superior: mais limpa */
+:root[data-versao="primeira"] .topo { border-bottom: 1px solid var(--borda); box-shadow: none; }
+/* página e títulos */
+:root[data-versao="primeira"] .pagina { padding: 28px 36px 56px; gap: 18px; }
+:root[data-versao="primeira"] .pagina-titulo h1 { font-size: 26px; letter-spacing: -0.025em; }
+:root[data-versao="primeira"] .pagina-titulo p { font-size: 14.5px; }
+:root[data-versao="primeira"] .voltar { font-size: 13px; color: var(--mudo); }
+/* cartões */
+:root[data-versao="primeira"] .cartao { border-radius: var(--raio-grande); border-color: var(--borda); padding: 22px 24px; box-shadow: var(--sombra); }
+:root[data-versao="primeira"] .cartao-titulo { font-size: 16px; letter-spacing: -0.01em; }
+/* botões */
+:root[data-versao="primeira"] .btn { min-height: 40px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background .12s, border-color .12s, box-shadow .12s; }
+:root[data-versao="primeira"] .btn-primario { box-shadow: 0 1px 2px rgba(154, 52, 18, 0.35); }
+:root[data-versao="primeira"] .btn-contorno { border-color: var(--borda-forte); color: var(--texto); }
+:root[data-versao="primeira"] .btn-contorno:hover { background: #F7F8FA; border-color: #B5BEC9; }
+:root[data-versao="primeira"] .btn-pequeno { min-height: 32px; padding: 4px 12px; font-size: 13px; }
+/* tabelas */
+:root[data-versao="primeira"] .tabela { font-size: 14px; margin-top: 4px; }
+:root[data-versao="primeira"] .tabela th { background: #F8F9FB; color: #5B6779; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; padding: 11px 12px; border-bottom: 1px solid var(--borda); }
+:root[data-versao="primeira"] .tabela th:first-child { border-top-left-radius: 8px; }
+:root[data-versao="primeira"] .tabela th:last-child { border-top-right-radius: 8px; }
+:root[data-versao="primeira"] .tabela td { padding: 14px 12px; border-bottom: 1px solid #EDF0F4; vertical-align: middle; }
+:root[data-versao="primeira"] .tabela tbody tr:hover td { background: #FAFBFC; }
+:root[data-versao="primeira"] .tabela tbody tr:last-child td { border-bottom: 0; }
+/* etiquetas de situação */
+:root[data-versao="primeira"] .etiqueta { padding: 3px 10px; font-size: 12px; font-weight: 600; letter-spacing: 0.01em; }
+/* formulários */
+:root[data-versao="primeira"] .campo > span:first-child, :root[data-versao="primeira"] label.campo > span:first-child { font-size: 12.5px; font-weight: 600; color: #3B4658; }
+:root[data-versao="primeira"] input[type="text"], :root[data-versao="primeira"] input[type="email"], :root[data-versao="primeira"] input[type="number"], :root[data-versao="primeira"] input[type="date"], :root[data-versao="primeira"] input[type="time"], :root[data-versao="primeira"] input[type="tel"], :root[data-versao="primeira"] select {
+  min-height: 40px; border-radius: 8px; border: 1px solid var(--borda-forte); background: #fff; padding: 0 12px;
+}
+:root[data-versao="primeira"] textarea { border-radius: 8px; border: 1px solid var(--borda-forte); padding: 10px 12px; }
+:root[data-versao="primeira"] input:focus, :root[data-versao="primeira"] select:focus, :root[data-versao="primeira"] textarea:focus { outline: 0; border-color: var(--primario); box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.18); }
+/* avisos */
+:root[data-versao="primeira"] .aviso { border-radius: 12px; padding: 14px 18px; }
+/* abas sublinhadas e cartões de resumo */
+:root[data-versao="primeira"] .abas-sublinhadas a.ativa, :root[data-versao="primeira"] .abas-sublinhadas button.ativa { color: var(--primario); border-bottom-color: var(--primario); }
+:root[data-versao="primeira"] .co-kpi { border-radius: 14px; padding: 16px 20px; }
+:root[data-versao="primeira"] .co-kpi b { font-size: 20px; letter-spacing: -0.01em; }
