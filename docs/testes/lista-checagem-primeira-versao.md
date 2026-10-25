@@ -285,3 +285,60 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ A proposta e a pergunta chegam para a contratante; a contratante responde e a resposta aparece no link
 - [ ] **T120** · `pv.c1.admin` — Abrir a concorrência com proposta recebida, comparar e fechar  
   _Esperado:_ A comparação mostra a proposta; ao fechar, a vencedora e a situação 'Fechada' aparecem
+
+## 15 Projeto — espaço de trabalho (abas, escopo e cronograma)
+
+- [ ] **T121** · `pv.p1.admin` — Projects: abrir a lista de projetos e digitar parte de um nome na busca  
+  _Esperado:_ A lista mostra Project, Bid due, Progress, Proposal, Estimator e Status; a busca filtra as linhas na hora; clicar no projeto abre o Overview
+- [ ] **T122** · `pv.p1.admin` — New project: abrir e olhar os campos  
+  _Esperado:_ Passo 1 pede só o essencial: nome, cliente, prazo da proposta e endereço (rua, cidade, estado, ZIP); botão 'Continuar para as plantas'
+- [ ] **T123** · `pv.p1.admin` — New project: salvar sem cliente; depois com ZIP de 4 dígitos  
+  _Esperado:_ Avisa que o cliente é obrigatório; avisa que o ZIP precisa de 5 dígitos; nada é salvo com erro
+- [ ] **T124** · `pv.p1.admin` — New project: preencher tudo certo e continuar  
+  _Esperado:_ Abre o projeto na aba Plans, com o cartão para enviar o PDF das plantas e o texto 'Nenhuma folha ainda'
+- [ ] **T125** · `pv.p1.admin` — Plans: enviar o PDF do jogo de plantas  
+  _Esperado:_ Cada página vira uma folha; o contador na aba Plans sobe; cada folha mostra escala, medições e o botão Abrir
+- [ ] **T126** · `pv.p1.admin` — Abrir uma folha e voltar pelo link do topo  
+  _Esperado:_ O visor abre; o link de volta leva à aba Takeoff do mesmo projeto
+- [ ] **T127** · `pv.p1.admin` — Overview: conferir os 4 cartões do topo e o checklist 'Set up this project'  
+  _Esperado:_ Bid due (com 'em N dias'), Progress (N de 6 passos e o próximo), Plans and measuring, Proposal; os 6 passos mostram feito/próximo/pendente com o botão certo
+- [ ] **T128** · `pv.p1.admin` — Overview: clicar nos botões do checklist (View plans, Set scales, Review, Open takeoff, Open schedule, Open proposal)  
+  _Esperado:_ Cada botão leva à aba certa; ao concluir o passo, a marca verde aparece e o progresso sobe
+- [ ] **T129** · `pv.p1.admin` — Edit project: mudar dono da obra, obra vinculada, situação e estimador; salvar  
+  _Esperado:_ Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado
+- [ ] **T130** · `pv.p1.admin` — Scope & delivery: clicar nos três padrões (We do it all, Mixed, We subcontract it all)  
+  _Esperado:_ O escolhido fica destacado; 'We do it all' marca todas as etapas como Self-perform; 'We subcontract it all' marca Subcontract
+- [ ] **T131** · `pv.p1.admin` — Scope & delivery: adicionar uma etapa (ex.: 07 46 33 · Siding) e usar 'Bring in from takeoff'  
+  _Esperado:_ A etapa entra na tabela; 'Bring in from takeoff' traz as etapas dos assemblies já aplicados, sem duplicar
+- [ ] **T132** · `pv.p1.admin` — Scope & delivery: mudar 'Who does it' de uma etapa para Subcontract  
+  _Esperado:_ Takeoff passa a 'None' com a opção 'also measure quantities'; a linha oferece criar a bid request; Decide later fica tracejado
+- [ ] **T133** · `pv.p1.admin` — Scope & delivery: em uma etapa Subcontract, abrir 'New bid' pelo link da linha  
+  _Esperado:_ Abre a nova concorrência já ligada ao projeto
+- [ ] **T134** · `pv.p1.admin` — Takeoff: abrir a aba e conferir quantidades e condições  
+  _Esperado:_ Tabela de quantidades com medido, derivadas e número de medições; os vãos e o rastro do cálculo aparecem como antes
+- [ ] **T135** · `pv.p1.admin` — Materials: abrir a aba; clicar 'Lista para cotação'  
+  _Esperado:_ Mostra os materiais calculados; a Lista para cotação abre com a faixa de abas do projeto no topo (Materials marcada)
+- [ ] **T136** · `pv.p1.admin` — Schedule: 'Gerar a partir das etapas' e mudar início e dias de uma tarefa  
+  _Esperado:_ Uma tarefa por etapa, com início e duração; o término e a barra de tempo acompanham a mudança
+- [ ] **T137** · `pv.p1.admin` — Schedule: adicionar tarefa, adicionar marco, remover cada um  
+  _Esperado:_ Linhas novas editáveis; remover tira só a linha escolhida
+- [ ] **T138** · `pv.p1.admin` — Schedule: projeto ainda em Estimating  
+  _Esperado:_ Não aparece pedido de confirmação do cronograma
+- [ ] **T139** · `pv.p1.admin` — Edit project: mudar a situação para Won e abrir Schedule  
+  _Esperado:_ Aparece 'Confirme o cronograma' com o botão 'Confirmar cronograma' (desabilitado se não há tarefas)
+- [ ] **T140** · `pv.p1.admin` — Schedule (Won): confirmar; depois mudar uma data e confirmar de novo  
+  _Esperado:_ Mostra 'Cronograma confirmado' com a data e o número de tarefas; o botão vira 'Atualizar a base' e regrava
+- [ ] **T141** · `pv.p1.admin` — Bids (aba do projeto): conferir e criar uma 'New bid'  
+  _Esperado:_ Lista só as concorrências deste projeto; 'New bid' abre o formulário já com o projeto
+- [ ] **T142** · `pv.p1.admin` — Proposal: abrir pela última aba e emitir uma proposta  
+  _Esperado:_ A faixa de abas aparece no topo (Proposal marcada); a proposta sai com as linhas e o total; voltar leva ao projeto
+- [ ] **T143** · `pv.p1.admin` — Trocar o idioma para inglês (padrão) e percorrer todas as abas do projeto  
+  _Esperado:_ Nenhum texto em português (menus, botões, avisos, tabelas); termos em inglês: Plans, Scope & delivery, Takeoff, Materials, Schedule, Bids, Proposal
+- [ ] **T144** · `pv.p1.orcamentista` — Entrar como orçamentista e abrir um projeto  
+  _Esperado:_ Consegue ver e editar o projeto conforme o perfil; nada de módulos ocultos na 1ª versão
+- [ ] **T145** · `pv.p1.gestor` — Entrar como gestor e abrir um projeto  
+  _Esperado:_ Mede e vê quantidades, mas não vê dinheiro (preços e proposta)
+- [ ] **T146** · `pv.p1.admin` — Conta real (depois da migração 0016): mudar o padrão em Scope & delivery e recarregar a página  
+  _Esperado:_ A escolha continua depois de recarregar; o aviso 'só neste navegador' não aparece
+- [ ] **T147** · `pv.p1.admin` — Conta real (depois da migração 0016): criar tarefas no Schedule, recarregar e abrir em outro navegador  
+  _Esperado:_ Tarefas, marcos e a confirmação continuam; aparecem no outro navegador
