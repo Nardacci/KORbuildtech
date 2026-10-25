@@ -23,15 +23,15 @@ const EN: Record<string, string> = {
   'Quarteirização aprovada: {empresa} · {servico}': 'Sub-tier subcontracting approved: {empresa} · {servico}',
   'Quarteirização recusada: {empresa} · {servico}': 'Sub-tier subcontracting declined: {empresa} · {servico}',
   'Convite para cotar: {servico} · {nome}': 'Invitation to bid: {servico} · {nome}',
-  'Prazo prorrogado: {servico}': 'Bid deadline extended: {servico}',
+  'Prazo prorrogado: {servico}': 'Bid due date extended: {servico}',
   'Aviso a todos: {servico}': 'Notice to all bidders: {servico}',
   'Concorrência cancelada: {servico}': 'Bid canceled: {servico}',
-  'Você venceu: {servico} · {nome}': 'You won: {servico} · {nome}',
+  'Você venceu: {servico} · {nome}': 'You were awarded: {servico} · {nome}',
   'Concorrência fechada com outra empresa: {servico}': 'Bid awarded to another company: {servico}',
   '{nome} não vai participar · {servico}': '{nome} will not bid · {servico}',
   'Proposta de {nome} (rev. {rev}) · {servico}': 'Bid from {nome} (rev. {rev}) · {servico}',
   'Mensagem de {nome} · {servico}': 'Message from {nome} · {servico}',
-  'Prazo vencido: compare e feche · {servico}': 'Deadline passed: compare and award · {servico}',
+  'Prazo vencido: compare e feche · {servico}': 'Bid due date passed: compare and award · {servico}',
   'O período de teste termina em {dias} dias': 'Your trial ends in {dias} days',
   'O período de teste termina amanhã': 'Your trial ends tomorrow',
   'O plano da sua empresa foi alterado pelo KORbuild': 'Your company\'s plan was changed by KORbuild',
@@ -136,19 +136,19 @@ export function montarAvisos(d: Destinatario, site: string): Mensagem {
 // ---------- A fila: quem ainda não tem conta ----------
 
 const AVISO_LINK: Record<string, [string, string]> = {
-  prazo: ['O prazo da proposta de {servico} ({contratante}) foi prorrogado para {prazo}.', 'The bid deadline for {servico} ({contratante}) was extended to {prazo}.'],
+  prazo: ['O prazo da proposta de {servico} ({contratante}) foi prorrogado para {prazo}.', 'The bid due date for {servico} ({contratante}) was extended to {prazo}.'],
   adendo: ['{contratante} enviou um aviso sobre {servico}: {texto}', '{contratante} sent a notice about {servico}: {texto}'],
-  mensagem: ['{contratante} respondeu na conversa de {servico}: {texto}', '{contratante} replied in the conversation about {servico}: {texto}'],
-  cancelada: ['{contratante} cancelou a concorrência {servico}.', '{contratante} canceled the bid {servico}.'],
-  venceu: ['Você venceu a concorrência {servico}, de {contratante}. A contratante vai entrar em contato.', 'You won the bid {servico}, from {contratante}. The contractor will be in touch.'],
-  fechada: ['{contratante} fechou a concorrência {servico} com outra empresa. Obrigado por cotar.', '{contratante} awarded the bid {servico} to another company. Thank you for bidding.'],
+  mensagem: ['{contratante} respondeu na conversa de {servico}: {texto}', '{contratante} replied about {servico}: {texto}'],
+  cancelada: ['{contratante} cancelou a concorrência {servico}.', '{contratante} canceled the bid for {servico}.'],
+  venceu: ['Você venceu a concorrência {servico}, de {contratante}. A contratante vai entrar em contato.', 'You were awarded {servico} by {contratante}. They will be in touch.'],
+  fechada: ['{contratante} fechou a concorrência {servico} com outra empresa. Obrigado por cotar.', '{contratante} awarded {servico} to another company. Thank you for bidding.'],
 };
 const ASSUNTO_LINK: Record<string, [string, string]> = {
-  prazo: ['Prazo prorrogado: {servico}', 'Bid deadline extended: {servico}'],
+  prazo: ['Prazo prorrogado: {servico}', 'Bid due date extended: {servico}'],
   adendo: ['Aviso sobre {servico}', 'Notice about {servico}'],
   mensagem: ['Nova mensagem sobre {servico}', 'New message about {servico}'],
   cancelada: ['Concorrência cancelada: {servico}', 'Bid canceled: {servico}'],
-  venceu: ['Você venceu: {servico}', 'You won: {servico}'],
+  venceu: ['Você venceu: {servico}', 'You were awarded: {servico}'],
   fechada: ['Concorrência fechada: {servico}', 'Bid awarded: {servico}'],
 };
 
@@ -173,12 +173,12 @@ export function montarFila(item: ItemFila, site: string): Mensagem {
     return pronto(item.para_email, {
       idioma: i, assunto, previa: dizer(i, `${d.contratante} convidou a sua empresa para cotar`, `${d.contratante} invited your company to bid`), saudacao: saudar(i, nome),
       paragrafos: [
-        dizer(i, `${d.contratante} convidou a sua empresa para cotar o serviço: ${d.servico}.`, `${d.contratante} invited your company to bid on: ${d.servico}.`),
-        ...(d.prazo ? [dizer(i, `Prazo da proposta: ${dataHora(d.prazo, i)}.`, `Bid due: ${dataHora(d.prazo, i)}.`)] : []),
-        dizer(i, 'O botão abre o pacote (escopo e desenhos). Pelo link você responde, pergunta e envia a proposta, sem precisar de conta. O link é pessoal: não o encaminhe.', 'The button opens the package (scope and drawings). Through the link you can answer, ask questions and send your bid, no account needed. The link is personal: please do not forward it.'),
-        dizer(i, 'Para medir plantas e orçar no KORbuild, crie a sua conta com este mesmo e-mail: o convite e as propostas vêm junto.', 'To measure plans and estimate on KORbuild, create your account with this same email: the invitation and your bids come along.'),
+        dizer(i, `${d.contratante} convidou a sua empresa para cotar o serviço: ${d.servico}.`, `${d.contratante} invited your company to bid on ${d.servico}.`),
+        ...(d.prazo ? [dizer(i, `Prazo da proposta: ${dataHora(d.prazo, i)}.`, `Bids are due by ${dataHora(d.prazo, i)}.`)] : []),
+        dizer(i, 'O botão abre o pacote (escopo e desenhos). Pelo link você responde, pergunta e envia a proposta, sem precisar de conta. O link é pessoal: não o encaminhe.', 'The button below opens the bid package: scope, drawings and requirements. From there you can say whether you will bid, ask questions and submit your bid. No account is needed. This link is personal to you, so please do not forward it.'),
+        dizer(i, 'Para medir plantas e orçar no KORbuild, crie a sua conta com este mesmo e-mail: o convite e as propostas vêm junto.', 'Want to take off plans and build your estimate in KORbuild Takeoff? Create an account with this same email, and this invitation and your bids carry over automatically.'),
       ],
-      botao: { rotulo: dizer(i, 'Abrir o convite', 'Open the invitation'), url: enderecoDoApp(site, '#/convite/' + d.token) },
+      botao: { rotulo: dizer(i, 'Abrir o convite', 'View bid package'), url: enderecoDoApp(site, '#/convite/' + d.token) },
     });
   }
   if (item.modelo === 'aviso-link' && AVISO_LINK[String(d.evento)]) {
