@@ -218,11 +218,11 @@ function telaProjeto(id, abaPedida) {
         (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
           ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + (PRIMEIRA_VERSAO ? tr('Cadastre a obra: ela liga a concorrência e a contratada. Nome, endereço e partes já vão preenchidos.') : tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.')) + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
         '</section>';
-  const secFolhas = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
+  const secFolhas = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th>' + tr('Observação') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
         fs.map((f) => {
           const n = cs.reduce((t, c) => t + c.medicoes.filter((m) => m.folhaId === f.id).length, 0);
           return '<tr><td><a href="#/measure/folha/' + f.id + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(f.arquivo.nome || '') + (f.pagina > 1 ? (' ' + tr('· página') + ' ') + f.pagina : '') + '</span></td>' +
-            '<td>' + escalaTxt(f) + '</td><td class="num">' + n + '</td><td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/folha/' + f.id + ('">' + tr('Abrir') + '</a></td></tr>');
+            '<td>' + escalaTxt(f) + '</td><td class="mz-obs"><textarea rows="2" maxlength="500" data-mz-folha-obs="' + f.id + '" placeholder="' + esc(tr('Referência desta planta (ex.: revisão, o que mostra)')) + '" aria-label="' + esc(tr('Observação')) + '">' + esc(f.observacao || '') + '</textarea></td><td class="num">' + n + '</td><td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/folha/' + f.id + ('">' + tr('Abrir') + '</a></td></tr>');
         }).join('') + '</tbody></table></div>' : ('<p class="vazio">' + tr('Nenhuma folha ainda. Envie o PDF do jogo de plantas: cada página vira uma folha.') + '</p>')) + '</section>';
   const secQuantidades = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Quantidades') + '</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>' + tr('Condição') + '</th><th>' + tr('Medido') + '</th><th>' + tr('Derivadas') + '</th><th class="num">' + tr('Medições') + '</th></tr></thead><tbody>') +
         cs.map((c) => {
@@ -246,7 +246,7 @@ function telaProjeto(id, abaPedida) {
   };
   const conteudos = {
     overview: htmlOverview(p, ajudas),
-    plans: '<section class="cartao mz-envio"><div><h2 class="cartao-titulo">' + tr('Enviar as plantas') + '</h2><p class="mudo pequeno">' + tr('Somente PDF. Cada página vira uma folha que você pode medir.') + '</p></div><label class="btn btn-primario">' + icone('mais', 16) + tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></section>' + secFolhas + htmlTypicaisDoProjeto(p),
+    plans: '<section class="cartao mz-envio"><div><h2 class="cartao-titulo">' + tr('Enviar as plantas') + '</h2><p class="mudo pequeno">' + tr('Somente PDF. Cada página vira uma folha que você pode medir.') + '</p></div><div class="mz-envio-campos"><input type="text" id="mz-enviar-obs" maxlength="500" placeholder="' + esc(tr('Referência do arquivo (opcional): ex.: Rev. B')) + '" aria-label="' + esc(tr('Observação')) + '"><label class="btn btn-primario">' + icone('mais', 16) + tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></div></section>' + secFolhas + htmlTypicaisDoProjeto(p),
     scope: htmlEscopo(p, ajudas),
     takeoff: secQuantidades,
     materials: htmlMateriais(id) + '<p><a class="btn btn-contorno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + tr('Lista para cotação') + '</a></p>',
@@ -891,6 +891,8 @@ async function enviarPdf(input) {
   toast(tr('Lendo o PDF…'));
   try {
     const novas = await importarPdfNoProjeto(input.dataset.projeto, arq);
+    const obs = ((document.getElementById('mz-enviar-obs') || {}).value || '').trim();
+    if (obs) { for (const f of novas) f.observacao = obs; salvar(); }
     toast(novas.length === 1 ? tr('Folha adicionada. Abra e defina a escala.') : novas.length + (' ' + tr('folhas adicionadas. Abra cada uma e defina a escala.')));
     app.desenhar();
   } catch (e) {
@@ -1268,6 +1270,16 @@ document.addEventListener('change', (ev) => {
   // paleta → seletor livre (o que vale ao salvar é o seletor, name="cor")
   if (ev.target.name === 'corPaleta') ev.target.closest('.mz-escolha-cor').querySelector('[name="cor"]').value = ev.target.value.toLowerCase();
 });
+document.addEventListener('change', (ev) => {
+  const el = ev.target.closest && ev.target.closest('[data-mz-folha-obs]');
+  if (!el) return;
+  const f = folha(el.dataset.mzFolhaObs);
+  if (!f) return;
+  f.observacao = el.value.trim().slice(0, 500);
+  salvar();
+  toast(tr('Observação salva.'));
+});
+
 document.addEventListener('input', (ev) => {
   if (ev.target.name === 'cor' && ev.target.closest('.mz-escolha-cor')) ev.target.closest('.mz-escolha-cor').querySelectorAll('[name="corPaleta"]').forEach((r) => { r.checked = r.value.toLowerCase() === ev.target.value.toLowerCase(); });
 });

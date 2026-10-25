@@ -176,7 +176,7 @@ export function aplicarMeasure(d, lido) {
       concorrencia: Object.keys(p.concorrencia || {}).length ? p.concorrencia : undefined,
       propostas: propostasPor.get(p.id) || [], criadoEm: ms(p.criado_em), alteradoEm: ms(p.atualizado_em),
     })),
-    folhas: lido.folhas.map((f) => ({ id: f.id, projetoId: f.projeto_id, nome: f.nome, arquivo: { tipo: 'storage', path: f.arquivo_path, id: nomeDoArquivo(f.arquivo_path), nome: f.arquivo_nome }, pagina: f.pagina, escala: f.escala || null, criadaEm: ms(f.criada_em) })),
+    folhas: lido.folhas.map((f) => ({ id: f.id, projetoId: f.projeto_id, nome: f.nome, arquivo: { tipo: 'storage', path: f.arquivo_path, id: nomeDoArquivo(f.arquivo_path), nome: f.arquivo_nome }, pagina: f.pagina, escala: f.escala || null, observacao: f.observacao || '', criadaEm: ms(f.criada_em) })),
     condicoes: lido.condicoes.map((c) => ({ id: c.id, projetoId: c.projeto_id, nome: c.nome, tipo: c.tipo, cor: c.cor, props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: c.oculta, medicoes: c.medicoes || [], _banco: { versao: c.versao } })),
     typicais: lido.typicais.map((t) => ({ id: t.id, projetoId: t.projeto_id, folhaId: t.folha_id, nome: t.nome, regiao: t.regiao, ocorrencias: t.ocorrencias, por: t.por_nome, em: ms(t.em) })),
     itens: lido.itens.map((i) => ({ id: i.id, codigo: i.codigo, nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa, nota: i.nota, precos: precosPor.get(i.id) || [] })),

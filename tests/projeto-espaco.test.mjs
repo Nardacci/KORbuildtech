@@ -46,6 +46,24 @@ await p.waitForSelector('.mz-checklist', { timeout: 10000 });
 verificar(await p.locator('.mz-checklist li').count() === 6, 'a visão geral tem o checklist de 6 passos');
 verificar(await p.locator('.co-kpi').count() === 4, 'e os quatro cartões de resumo');
 
+console.log('Observação das plantas');
+await p.goto('about:blank');
+await p.goto(BASE + '#/measure/projeto/pj-casa/plans');
+await p.waitForSelector('#mz-enviar-obs', { timeout: 10000 });
+verificar(await p.locator('[data-mz-folha-obs]').count() === 3, 'cada folha tem o seu campo de observação');
+await p.locator('[data-mz-folha-obs]').first().fill('Rev. B: térreo');
+await p.locator('[data-mz-folha-obs]').first().dispatchEvent('change');
+await p.waitForTimeout(300);
+await p.goto('about:blank');
+await p.goto(BASE + '#/measure/projeto/pj-casa/plans');
+await p.waitForSelector('[data-mz-folha-obs]');
+verificar(await p.locator('[data-mz-folha-obs]').first().inputValue() === 'Rev. B: térreo', 'a observação da folha continua depois de recarregar');
+await p.fill('#mz-enviar-obs', 'Rev. C: fachadas');
+await p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
+await p.waitForFunction(() => document.querySelectorAll('[data-mz-folha-obs]').length > 3, null, { timeout: 30000 });
+const obs = await p.locator('[data-mz-folha-obs]').evaluateAll((els) => els.map((e) => e.value));
+verificar(obs.filter((v) => v === 'Rev. C: fachadas').length >= 1, 'a referência digitada no envio vai para as folhas do arquivo novo', obs);
+
 console.log('Escopo e execução');
 await p.goto(BASE + '#/measure/projeto/' + id + '/scope');
 await p.waitForSelector('.mz-padroes', { timeout: 10000 });

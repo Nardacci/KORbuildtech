@@ -1731,3 +1731,7 @@ select.mz-quem.decidir { border-style: dashed; color: var(--mudo); }
 .mz-t-dias { width: 80px; }
 .mz-linha-tempo { height: 10px; border-radius: 999px; background: #E6E9EF; position: relative; min-width: 160px; }
 .mz-linha-tempo span { position: absolute; top: 0; height: 10px; border-radius: 999px; background: var(--primario); }
+.mz-envio-campos { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; flex-wrap: wrap; min-width: 280px; }
+.mz-envio-campos input[type="text"] { flex: 1; min-width: 240px; max-width: 460px; }
+td.mz-obs { min-width: 240px; }
+td.mz-obs textarea { width: 100%; min-height: 52px; resize: vertical; font: inherit; font-size: 13px; }

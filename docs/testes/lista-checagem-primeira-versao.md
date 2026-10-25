@@ -342,3 +342,5 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ A escolha continua depois de recarregar; o aviso 'só neste navegador' não aparece
 - [ ] **T147** · `pv.p1.admin` — Conta real (depois da migração 0016): criar tarefas no Schedule, recarregar e abrir em outro navegador  
   _Esperado:_ Tarefas, marcos e a confirmação continuam; aparecem no outro navegador
+- [ ] **T148** · `pv.p1.admin` — Plans: digitar uma referência no campo do envio e enviar um PDF; depois editar a observação de uma folha e recarregar  
+  _Esperado:_ Cada folha do arquivo novo nasce com a referência digitada; a coluna Note de cada folha aceita texto (até 500 caracteres), mostra 'Note saved.' e o texto continua depois de recarregar
