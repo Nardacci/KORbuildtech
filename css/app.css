@@ -1682,3 +1682,20 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 :root[data-versao="primeira"] .abas-sublinhadas a.ativa, :root[data-versao="primeira"] .abas-sublinhadas button.ativa { color: var(--primario); border-bottom-color: var(--primario); }
 :root[data-versao="primeira"] .co-kpi { border-radius: 14px; padding: 16px 20px; }
 :root[data-versao="primeira"] .co-kpi b { font-size: 20px; letter-spacing: -0.01em; }
+
+/* Projetos: busca, andamento e faixa de etapas */
+.mz-busca-linha { display: flex; margin: 2px 0 -4px; }
+.mz-busca { width: 100%; max-width: 360px; height: 40px; padding: 0 12px 0 36px; border: 1px solid var(--borda-forte); border-radius: 8px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235B6779' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 12px center; }
+.tabela-projetos tbody tr { position: relative; cursor: pointer; }
+.tabela-projetos .mz-projeto-nome { color: var(--texto); font-weight: 600; text-decoration: none; }
+.tabela-projetos .mz-projeto-nome::after { content: ""; position: absolute; inset: 0; }
+.tabela-projetos tbody tr:hover .mz-projeto-nome { color: var(--primario); }
+.mz-prog { width: 120px; height: 6px; border-radius: 999px; background: #E6E9EF; overflow: hidden; }
+.mz-prog span { display: block; height: 100%; background: var(--verde); border-radius: 999px; }
+.mz-etapas { display: flex; flex-wrap: wrap; gap: 8px 4px; list-style: none; margin: 0; padding: 0; }
+.mz-etapas li { display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; border-radius: 999px; background: #fff; border: 1px solid var(--borda); font-size: 13px; font-weight: 600; color: var(--mudo); }
+.mz-etapa-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid #C9D0DA; font-size: 11.5px; box-sizing: border-box; }
+.mz-etapas li.feita { color: var(--texto); }
+.mz-etapas li.feita .mz-etapa-n { background: var(--verde); border-color: var(--verde); color: #fff; }
+.mz-etapas li.atual { color: var(--primario); border-color: var(--primario-borda); background: var(--primario-claro); }
+.mz-etapas li.atual .mz-etapa-n { border-color: var(--primario); color: var(--primario); }

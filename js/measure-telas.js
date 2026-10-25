@@ -3,6 +3,7 @@
 
 import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
 import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta } from './util.js';
+import { dinheiro } from './crew.js';
 import { tr, tn } from './i18n.js';
 import { lerFoto, guardarFoto, estado, obra, salvar } from './armazem.js';
 import { casca, usuarioAtual, pode, modulosLiberados } from './plataforma.js';
@@ -122,6 +123,26 @@ function textoPrazo(p) {
   return dataCurta(p.prazoProposta) + ' ' + nota;
 }
 
+/* Onde o projeto está: plantas enviadas, escala, medição, materiais e proposta (5 passos). */
+function andamentoDoProjeto(p) {
+  const fs = folhasDo(p.id), cs = condicoesDo(p.id);
+  const passos = [
+    fs.length > 0,
+    fs.length > 0 && fs.every((f) => f.escala),
+    cs.some((c) => (c.medicoes || []).length > 0),
+    cs.some((c) => (c.medicoes || []).length > 0 && (c.assemblies || []).length > 0),
+    (p.propostas || []).length > 0,
+  ];
+  return { passos, feitos: passos.filter(Boolean).length, total: passos.length, folhas: fs.length, condicoes: cs.length };
+}
+/* A faixa de etapas no alto do projeto. */
+function htmlEtapasDoProjeto(p) {
+  const a = andamentoDoProjeto(p);
+  const nomes = [tr('Plantas'), tr('Escala'), tr('Medição'), tr('Materiais'), tr('Proposta')];
+  const atual = a.passos.findIndex((x) => !x);
+  return '<ol class="mz-etapas" aria-label="' + esc(tr('Andamento do projeto')) + '">' + nomes.map((n, i) => '<li class="' + (a.passos[i] ? 'feita' : i === atual ? 'atual' : '') + '"><span class="mz-etapa-n">' + (a.passos[i] ? '✓' : i + 1) + '</span>' + esc(n) + '</li>').join('') + '</ol>';
+}
+
 function telaProjetos() {
   const todos = projetos();
   const lista = todos.filter((p) => filtroSituacao === 'todos' || p.situacao === filtroSituacao)
@@ -132,10 +153,18 @@ function telaProjetos() {
     acoes: '<a class="btn btn-primario btn-pequeno" href="#/measure/projeto/novo">' + icone('mais', 16) + (tr('Novo projeto') + '</a>'),
     conteudo: ('<div class="btn-linha mz-filtros" role="group" aria-label="' + tr('Filtrar por situação') + '">') + filtro('todos', tr('Todos'), todos.length) +
         Object.entries(SITUACOES).map(([id, x]) => filtro(id, x.nome, todos.filter((p) => p.situacao === id).length)).join('') + '</div>' +
-      (lista.length ? ('<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-projetos"><thead><tr><th>' + tr('Projeto') + '</th><th>' + tr('Local') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Estimador') + '</th><th>' + tr('Prazo da proposta') + '</th><th class="num">' + tr('Folhas') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
-        lista.map((p) => '<tr><td><a href="#/measure/projeto/' + p.id + '" class="mz-projeto-nome"><b>' + esc(p.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(textoPartes(p)) + (p.obraId && obra(p.obraId) ? (' ' + tr('· obra') + ' ') + esc(obra(p.obraId).nome) : '') + '</span></td>' +
-          '<td>' + esc(p.cidade) + ', ' + esc(p.estado) + '</td><td>' + esc(TIPOS_PROJETO[p.tipo] || '') + '</td><td>' + esc(nomeUsuario(p.estimadorId)) + '</td>' +
-          '<td>' + textoPrazo(p) + '</td><td class="num">' + folhasDo(p.id).length + '</td><td>' + etiquetaSituacao(p) + '</td></tr>').join('') +
+      '<div class="mz-busca-linha"><input type="search" class="mz-busca" data-filtrar=".tabela-projetos" placeholder="' + esc(tr('Buscar projetos…')) + '" aria-label="' + esc(tr('Buscar projetos')) + '"></div>' +
+      (lista.length ? ('<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-projetos"><thead><tr><th>' + tr('Projeto') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Andamento') + '</th><th class="num">' + tr('Proposta') + '</th><th>' + tr('Estimador') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
+        lista.map((p) => {
+          const pr = andamentoDoProjeto(p);
+          const emitidas = p.propostas || [];
+          return '<tr><td><a href="#/measure/projeto/' + p.id + '" class="mz-projeto-nome">' + esc(p.nome) + '</a><span class="mudo pequeno bloco">' + esc(textoPartes(p)) + (p.obraId && obra(p.obraId) ? (' ' + tr('· obra') + ' ') + esc(obra(p.obraId).nome) : '') + '</span>' +
+            '<span class="mudo pequeno bloco">' + esc(p.cidade) + ', ' + esc(p.estado) + ' · ' + esc(TIPOS_PROJETO[p.tipo] || '') + '</span></td>' +
+            '<td>' + textoPrazo(p) + '</td>' +
+            '<td><div class="mz-prog" role="img" aria-label="' + pr.feitos + '/' + pr.total + '"><span style="width:' + Math.round(pr.feitos * 100 / pr.total) + '%"></span></div><span class="mudo pequeno bloco">' + tn(pr.folhas, '{n} folha', '{n} folhas') + ' · ' + tn(pr.condicoes, '{n} condição', '{n} condições') + '</span></td>' +
+            '<td class="num">' + (emitidas.length ? '<b>' + dinheiro(emitidas[emitidas.length - 1].total) + '</b>' : '<span class="mudo">—</span>') + '</td>' +
+            '<td>' + esc(nomeUsuario(p.estimadorId)) + '</td><td>' + etiquetaSituacao(p) + '</td></tr>';
+        }).join('') +
         '</tbody></table></div></section>'
         : ('<p class="vazio">' + tr('Nenhum projeto') + ' ') + (filtroSituacao === 'todos' ? tr('cadastrado.') : tr('com a situação "') + SITUACOES[filtroSituacao].nome + '".') + '</p>'),
   });
@@ -189,7 +218,7 @@ function telaProjeto(id) {
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + (tr('Lista para cotação') + '</a>') +
       '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/proposta">' + icone('daily', 16) + tr('Proposta') + ((p.propostas || []).length ? ' · ' + p.propostas[p.propostas.length - 1].numero : '') + '</a>' +
       '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + (tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="') + p.id + '" class="visualmente-oculto"></label></div>',
-    conteudo: htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p) +
+    conteudo: htmlEtapasDoProjeto(p) + htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p) +
 
       '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
@@ -1236,3 +1265,13 @@ document.addEventListener('fullscreenchange', () => {
   atualizarInterface();
   requestAnimationFrame(() => { visor.zoom = ajustarZoom(document.getElementById('mz-area')); renderizar(); });
 });
+
+/* Busca na tabela: esconde as linhas que não contêm o texto, sem redesenhar a tela. */
+if (typeof document !== 'undefined') {
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if (!el || !el.matches || !el.matches('[data-filtrar]')) return;
+    const q = el.value.trim().toLowerCase();
+    for (const tr of document.querySelectorAll(el.dataset.filtrar + ' tbody tr')) tr.hidden = !!q && !tr.textContent.toLowerCase().includes(q);
+  });
+}

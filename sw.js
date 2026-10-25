@@ -3,7 +3,7 @@
  * Arquivos do app: rede primeiro (pega a versão nova) e cópia guardada quando não há conexão.
  * Na instalação e em cada pedido o navegador revalida com o servidor (cache: reload/no-cache): sem isso a cópia do cache HTTP do GitHub Pages (10 min) entrava no cache do app e a versão nova demorava a aparecer.
  * O clima (Open-Meteo) nunca passa pelo cache: sem internet, o app pede para marcar à mão. */
-var CACHE = 'korbuild-v106';
+var CACHE = 'korbuild-v107';
 var APP = [
   './', 'index.html', 'diagnostico.html', 'teste-iphone.html', 'teste-android.html', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/i18n.js', 'js/i18n-en.js', 'js/util.js', 'js/diagnostico.js', 'js/diagnostico-pagina.js', 'js/roteiro.js', 'js/instalar.js', 'js/versao.js', 'js/inicio-calculo.js', 'js/inicio-dashboard.js', 'js/gps.js', 'js/armazem.js', 'js/fotos.js', 'js/clima.js', 'js/ia.js',
