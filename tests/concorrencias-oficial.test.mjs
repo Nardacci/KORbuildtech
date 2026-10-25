@@ -159,6 +159,7 @@ try {
   await l.p.goto(BASE + '#/convite/' + token);
   await l.p.waitForSelector('[data-acao="lk-vou"]', { timeout: 30000 });
   verificar((await l.p.textContent('main')).includes('Framing e drywall') && !(await l.p.textContent('main')).includes('Prestadora Local'), 'a página do link mostra o convite e não cita a outra convidada');
+  verificar(await l.p.locator('.convite-publico table a[href][target="_blank"]').count() >= 1 && !(await l.p.textContent('main')).includes('indisponível'), 'o link mostra os desenhos com botão Abrir (não "indisponível")');
   await l.p.click('[data-acao="lk-vou"]');
   await l.p.waitForSelector('#form-link', { timeout: 30000 });
   await l.p.fill('#form-link input[name="total"]', '61500');

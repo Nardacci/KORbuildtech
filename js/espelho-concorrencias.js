@@ -86,7 +86,7 @@ export function aplicarConcorrencias(d, lido, vizinhas, novaEmpresa, minhaEmpres
     return {
       id: x.id, contratanteId: x.contratanteId, origem: { tipo: 'obra', id: obraId }, obraId, paiId: null,
       servico: x.servico, etapas: x.etapas || [], incluso: x.incluso || [], excluso: x.excluso || [], observacoes: x.observacoes || '',
-      desenhos: (x.desenhos || []).map((y) => ({ id: y.id, nome: y.nome, path: y.path, tamanho: y.tamanho, em: ms(y.em) })),
+      desenhos: (x.desenhos || []).map((y) => ({ id: y.id, nome: y.nome, path: y.path, url: y.url || null, observacao: y.observacao || '', tamanho: y.tamanho, em: ms(y.em) })),
       prazo: prazoLocal(x.prazo), inicio: x.inicio || '', termino: x.termino || '',
       orcamento: orcamentoDe(x.orcamento), exigencias: x.exigencias || {}, quarteirizacao: x.quarteirizacao,
       situacao: x.situacao === 'para-fechar' ? 'aberta' : x.situacao, enviadaEm: ms(x.enviadaEm), criadaPor: '—', criadaEm: ms(x.enviadaEm),
