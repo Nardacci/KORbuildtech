@@ -1699,3 +1699,35 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-etapas li.feita .mz-etapa-n { background: var(--verde); border-color: var(--verde); color: #fff; }
 .mz-etapas li.atual { color: var(--primario); border-color: var(--primario-borda); background: var(--primario-claro); }
 .mz-etapas li.atual .mz-etapa-n { border-color: var(--primario); color: var(--primario); }
+
+/* Projeto como espaço de trabalho: checklist, escopo e execução, cronograma */
+.mz-duas-colunas { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 960px) { .mz-duas-colunas { grid-template-columns: minmax(0, 1fr); } }
+.mz-checklist { list-style: none; margin: 14px 0 0; padding: 0; }
+.mz-checklist li { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid #EDF0F4; }
+.mz-passo { width: 26px; height: 26px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12.5px; font-weight: 700; flex: none; border: 2px solid #C9D0DA; color: var(--mudo); box-sizing: border-box; }
+.mz-passo.feito { background: var(--verde); border-color: var(--verde); color: #fff; }
+.mz-passo.atual { border-color: var(--primario); color: var(--primario); background: var(--primario-claro); }
+.mz-passo-texto { flex: 1; min-width: 0; }
+.mz-passo-texto b { display: block; }
+.mz-passo-texto small { color: var(--mudo); }
+.mz-marcos { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px 12px; margin: 12px 0 0; }
+.mz-marcos dt { color: var(--mudo); font-weight: 600; }
+.mz-marcos dd { margin: 0; }
+.mz-envio { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.mz-padroes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+@media (max-width: 760px) { .mz-padroes { grid-template-columns: minmax(0, 1fr); } }
+.mz-padrao { text-align: left; background: #fff; border: 1px solid var(--borda-forte); border-radius: 12px; padding: 14px 16px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; font: inherit; }
+.mz-padrao small { color: var(--mudo); }
+.mz-padrao.ativo { border-color: var(--primario); background: #FFF6EF; box-shadow: 0 0 0 1px var(--primario) inset; }
+select.mz-quem { min-height: 36px; border-radius: 8px; font-weight: 600; padding: 0 10px; min-width: 150px; }
+select.mz-quem.proprio { background: var(--verde-claro); border-color: var(--verde-borda); color: var(--verde); }
+select.mz-quem.terceiro { background: var(--ambar-claro); border-color: var(--ambar-borda); color: var(--ambar); }
+select.mz-quem.decidir { border-style: dashed; color: var(--mudo); }
+.mz-add-etapa { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+.mz-add-etapa input { flex: 1 1 260px; min-width: 200px; }
+.tabela-cronograma input[type="text"] { width: 100%; min-width: 150px; }
+.tabela-cronograma input[type="date"] { min-width: 140px; }
+.mz-t-dias { width: 80px; }
+.mz-linha-tempo { height: 10px; border-radius: 999px; background: #E6E9EF; position: relative; min-width: 160px; }
+.mz-linha-tempo span { position: absolute; top: 0; height: 10px; border-radius: 999px; background: var(--primario); }

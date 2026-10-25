@@ -494,6 +494,9 @@ export function telaConvite(moldura, id) {
 }
 
 /* Na página do projeto do Measure: as concorrências que saíram dele (cotar com as suas prestadoras). */
+/* As licitações (enviadas) que nasceram deste projeto. */
+export function licitacoesDoProjeto(p) { return enviadas().filter((c) => doProjeto(c) && c.origem.id === p.id); }
+
 export function htmlConcorrenciasDoProjeto(p) {
   if (!podeGerir()) return '';
   const lista = enviadas().filter((c) => doProjeto(c) && c.origem.id === p.id);

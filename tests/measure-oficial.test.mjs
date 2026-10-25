@@ -98,7 +98,6 @@ try {
   await a.p.goto(BASE + '#/measure/projeto/novo');
   await a.p.waitForSelector('#form-projeto', { timeout: 20000 });
   await a.p.fill('#pj-nome', 'Casa Thompson');
-  await a.p.selectOption('#pj-tipo', 'residencial-uni');
   await a.p.selectOption('#pj-contratanteId', (await sql(`select id from public.contatos where empresa_id = '${A}' and nome = 'Thompson Family'`))[0].id);
   await a.p.fill('#pj-cidade', 'Manchester');
   await a.p.fill('#pj-estado', 'nh');
@@ -113,6 +112,7 @@ try {
   verificar(folhas.every((f) => f.arquivo_path.startsWith(A + '/' + pj.id + '/')), 'as folhas apontam a planta na pasta da empresa e do projeto', folhas);
   const noStorage = await arquivosDaPasta(A + '/' + pj.id + '/', 'plantas');
   verificar(noStorage.length === 1, 'o PDF foi para o Storage (um arquivo, três páginas)', noStorage);
+  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
   await a.p.click('a:has-text("casa-modelo · página 1")');
   await esperaDesenho(a.p);
   await a.p.click('[data-acao="mz-escala"]');
@@ -137,8 +137,8 @@ try {
   for (const pt of [[22, 12], [30, 12], [30, 18]]) await clicar(a.p, pt);
   await clicar(a.p, [22, 12]);
   verificar(await esperarAte(async () => { const c = (await sql(`select medicoes, versao from public.condicoes where projeto_id = '${pj.id}'`))[0]; return c.medicoes.length === 2 && c.medicoes[1].desconto === true && c.versao > versaoAntes; }), 'o recorte (desconto) chegou e a versão subiu');
-  await a.p.goto(BASE + '#/measure/projeto/' + pj.id);
-  await a.p.waitForSelector('.tabela-quantidades', { timeout: 20000 });
+  await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/materials');
+  await a.p.waitForSelector('#mz-materiais', { timeout: 20000 });
   const materiais = await a.p.locator('.pagina').innerText();
   verificar(/OSB 7\/16/.test(materiais) && /chapa/.test(materiais), 'a página do projeto calcula os materiais pelo assembly (chapas de OSB)', materiais.slice(0, 160));
 
@@ -173,6 +173,7 @@ try {
   await a.p.waitForSelector('.mz-dados', { timeout: 30000 });
   const dados = await a.p.locator('body').innerText();
   verificar(dados.includes('Casa Thompson') && dados.includes('Proposta enviada') && dados.includes(numero), 'projeto, situação e número da proposta voltam do banco', dados.slice(0, 200));
+  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
   await a.p.click('a:has-text("casa-modelo · página 1")');
   await esperaDesenho(a.p);
   verificar((await a.p.locator('.mz-cond').count()) === 1 && (await a.p.locator('#mz-painel').innerText()).includes('Piso térreo'), 'a folha abre do Storage com a condição medida');

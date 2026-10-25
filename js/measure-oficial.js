@@ -14,6 +14,8 @@ import { montar, antesDeMontar, aoTrocarEspelho } from './espelho.js';
 import { ligarServidorMeasure } from './measure-relatorios.js';
 
 const ESPERA_MS = 800;
+/* Os campos novos do projeto (entrega por etapa e cronograma preliminar) só sobem para o banco depois da migração 0016 (supabase/pendentes/). Antes dela, ficam só no aparelho: virar true junto com a migração. */
+export const PERSISTE_ESPACO = false;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;
@@ -24,7 +26,7 @@ let dentroDeMim = false;       // salvar() chamado por aqui (ids e marcas): não
 const linha = {
   projetos: (p) => ({ id: p.id, nome: p.nome, contratante_id: p.contratanteId, dono_id: p.donoId || null, endereco: p.endereco || '', cidade: p.cidade, estado: p.estado, zip: p.zip || '',
     tipo: p.tipo, situacao: p.situacao, descricao: p.descricao || '', obra_id: p.obraId || null, estimador_id: p.estimadorId || null, prazo_proposta: p.prazoProposta || null,
-    proposta_rascunho: p.proposta || {}, cotacao: p.cotacao || {} }),
+    proposta_rascunho: p.proposta || {}, cotacao: p.cotacao || {}, ...(PERSISTE_ESPACO ? { entrega: p.entrega || {}, cronograma: p.cronograma || {} } : {}) }),
   folhas: (f) => ({ id: f.id, projeto_id: f.projetoId, nome: f.nome, arquivo_path: f.arquivo.path, arquivo_nome: f.arquivo.nome || '', pagina: f.pagina, escala: f.escala || null }),
   condicoes: (c) => ({ id: c.id, projeto_id: c.projetoId, nome: c.nome, tipo: c.tipo, cor: c.cor || '', props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: !!c.oculta, medicoes: c.medicoes || [] }),
   typicais: (t) => ({ id: t.id, projeto_id: t.projetoId, folha_id: t.folhaId, nome: t.nome, regiao: t.regiao || null, ocorrencias: t.ocorrencias }),

@@ -25,12 +25,13 @@ import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
 import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta } from './measure-relatorios.js';
 import { telaPrecos } from './precos-telas.js';
-import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto } from './measure-oficial.js';
-import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
+import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
+import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
+import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlEscopo, htmlCronograma, andamentoDoProjeto, ABAS as ABAS_PROJETO } from './projeto-espaco.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
-export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; }
+export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; ligarEspaco(funcoes); }
 
 export function navMeasure() {
   return (PRIMEIRA_VERSAO ? [{ id: 'inicio', href: '#/conta', rotulo: tr('Início'), icone: 'painel' }] : []).concat([
@@ -65,7 +66,7 @@ export function telaMeasure(q) {
     if (q[2] === 'cotacao') return telaCotacao(q[1], moldura);
     if (q[2] === 'proposta' && q[3] === 'imprimir') return telaImpressaoProposta(q[1], q[4] ? decodeURIComponent(q[4]) : null);
     if (q[2] === 'proposta') return telaProposta(q[1], moldura);
-    return telaProjeto(q[1]);
+    return telaProjeto(q[1], ABAS_PROJETO.includes(q[2]) ? q[2] : 'overview');
   }
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
   if (q[0] === 'convites' && podeResponder()) return telaConvites(moldura);
@@ -123,26 +124,6 @@ function textoPrazo(p) {
   return dataCurta(p.prazoProposta) + ' ' + nota;
 }
 
-/* Onde o projeto está: plantas enviadas, escala, medição, materiais e proposta (5 passos). */
-function andamentoDoProjeto(p) {
-  const fs = folhasDo(p.id), cs = condicoesDo(p.id);
-  const passos = [
-    fs.length > 0,
-    fs.length > 0 && fs.every((f) => f.escala),
-    cs.some((c) => (c.medicoes || []).length > 0),
-    cs.some((c) => (c.medicoes || []).length > 0 && (c.assemblies || []).length > 0),
-    (p.propostas || []).length > 0,
-  ];
-  return { passos, feitos: passos.filter(Boolean).length, total: passos.length, folhas: fs.length, condicoes: cs.length };
-}
-/* A faixa de etapas no alto do projeto. */
-function htmlEtapasDoProjeto(p) {
-  const a = andamentoDoProjeto(p);
-  const nomes = [tr('Plantas'), tr('Escala'), tr('Medição'), tr('Materiais'), tr('Proposta')];
-  const atual = a.passos.findIndex((x) => !x);
-  return '<ol class="mz-etapas" aria-label="' + esc(tr('Andamento do projeto')) + '">' + nomes.map((n, i) => '<li class="' + (a.passos[i] ? 'feita' : i === atual ? 'atual' : '') + '"><span class="mz-etapa-n">' + (a.passos[i] ? '✓' : i + 1) + '</span>' + esc(n) + '</li>').join('') + '</ol>';
-}
-
 function telaProjetos() {
   const todos = projetos();
   const lista = todos.filter((p) => filtroSituacao === 'todos' || p.situacao === filtroSituacao)
@@ -177,6 +158,23 @@ function telaFormProjeto(id) {
   const texto = (nome, rotulo, extra) => campo(nome, rotulo, '<input type="text" id="pj-' + nome + '" name="' + nome + '" value="' + v(nome) + '"' + (extra || '') + '>');
   const opcoes = (lista, atual) => lista.map(([valor, nome]) => '<option value="' + valor + '"' + (valor === atual ? ' selected' : '') + '>' + esc(nome) + '</option>').join('');
   const estimadores = estado().usuarios.filter((u) => u.ativo !== false && pode(u, 'measure.medir'));
+  if (!id) {
+    // projeto novo: só o essencial; o resto (tipo, estimador, dono da obra…) fica para o Editar projeto
+    return moldura({
+      ativo: 'projetos', largura: 'larga', titulo: tr('Novo projeto'), subtitulo: tr('Poucos campos para começar. O resto você ajusta dentro do projeto.'),
+      voltar: { href: '#/measure', rotulo: tr('Projetos') },
+      conteudo: '<form id="form-projeto" class="form-settings" data-id="" data-sem-envio>' +
+        '<input type="hidden" name="tipo" value="' + esc(p.tipo) + '"><input type="hidden" name="situacao" value="orcamento"><input type="hidden" name="estimadorId" value="' + esc(p.estimadorId || '') + '">' +
+        ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2>') + texto('nome', tr('Nome do projeto *'), (' placeholder="' + tr('Ex.: Casa Thompson, Mezanino LogSul') + '"')) +
+        '<div class="grade-campos">' +
+          htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Cliente * (quem pediu a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
+          campo('prazoProposta', tr('Prazo da proposta (bid due date)'), '<input type="date" id="pj-prazoProposta" name="prazoProposta" value="">') + '</div></section>' +
+        ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
+          '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
+        '<div class="rodape-form"><a class="btn btn-contorno" href="#/measure">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">' + tr('Continuar para as plantas') + ' ›</button></div>' +
+      '</form>',
+    });
+  }
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: id ? tr('Editar projeto') : tr('Novo projeto'),
     voltar: id ? { href: '#/measure/projeto/' + id, rotulo: p.nome } : { href: '#/measure', rotulo: tr('Projetos') },
@@ -205,36 +203,28 @@ function telaFormProjeto(id) {
 
 /* ---------- Projeto: folhas e quantidades ---------- */
 
-function telaProjeto(id) {
+function telaProjeto(id, abaPedida) {
   const p = projeto(id);
+  const aba = ABAS_PROJETO.includes(abaPedida) ? abaPedida : 'overview';
   const fs = folhasDo(id);
   const cs = condicoesDo(id);
   const escalaTxt = (f) => !f.escala ? ('<span class="etiqueta etiqueta-ambar">' + tr('sem escala') + '</span>')
     : esc(f.escala.nome) + (f.escala.conferencia ? (f.escala.conferencia.ok ? ' <span class="etiqueta etiqueta-verde">' + tr('conferida') + '</span>' : (' <span class="etiqueta etiqueta-alerta">' + tr('conferência com diferença') + '</span>')) : (' <span class="etiqueta etiqueta-neutro">' + tr('não conferida') + '</span>'));
   const dado = (rot, html) => html ? '<div><dt>' + rot + '</dt><dd>' + html + '</dd></div>' : '';
-  return moldura({
-    ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: textoPartes(p) + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: tr('Projetos') },
-    acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + ('/editar">' + tr('Editar projeto') + '</a>') +
-      '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + (tr('Lista para cotação') + '</a>') +
-      '<a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '/proposta">' + icone('daily', 16) + tr('Proposta') + ((p.propostas || []).length ? ' · ' + p.propostas[p.propostas.length - 1].numero : '') + '</a>' +
-      '<label class="btn btn-primario btn-pequeno">' + icone('mais', 16) + (tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="') + p.id + '" class="visualmente-oculto"></label></div>',
-    conteudo: htmlEtapasDoProjeto(p) + htmlFaixaConcorrencia(p) + htmlConcorrenciasDoProjeto(p) +
-
-      '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
+  const detalhes = '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
         dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (PRIMEIRA_VERSAO || pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="' + (PRIMEIRA_VERSAO ? (estado().oficial ? '#/conta/obras/' : '#/settings/obra/') : '#/daily/obras/') + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
         // projeto ganho vira obra: o cadastro já vem preenchido (docs/obras.md OB-07)
         (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
           ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + (PRIMEIRA_VERSAO ? tr('Cadastre a obra: ela liga a concorrência e a contratada. Nome, endereço e partes já vão preenchidos.') : tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.')) + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
-        '</section>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
+        '</section>';
+  const secFolhas = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
         fs.map((f) => {
           const n = cs.reduce((t, c) => t + c.medicoes.filter((m) => m.folhaId === f.id).length, 0);
           return '<tr><td><a href="#/measure/folha/' + f.id + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(f.arquivo.nome || '') + (f.pagina > 1 ? (' ' + tr('· página') + ' ') + f.pagina : '') + '</span></td>' +
             '<td>' + escalaTxt(f) + '</td><td class="num">' + n + '</td><td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/folha/' + f.id + ('">' + tr('Abrir') + '</a></td></tr>');
-        }).join('') + '</tbody></table></div>' : ('<p class="vazio">' + tr('Nenhuma folha ainda. Envie o PDF do jogo de plantas: cada página vira uma folha.') + '</p>')) + '</section>' +
-      htmlTypicaisDoProjeto(p) +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Quantidades') + '</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>' + tr('Condição') + '</th><th>' + tr('Medido') + '</th><th>' + tr('Derivadas') + '</th><th class="num">' + tr('Medições') + '</th></tr></thead><tbody>') +
+        }).join('') + '</tbody></table></div>' : ('<p class="vazio">' + tr('Nenhuma folha ainda. Envie o PDF do jogo de plantas: cada página vira uma folha.') + '</p>')) + '</section>';
+  const secQuantidades = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Quantidades') + '</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>' + tr('Condição') + '</th><th>' + tr('Medido') + '</th><th>' + tr('Derivadas') + '</th><th class="num">' + tr('Medições') + '</th></tr></thead><tbody>') +
         cs.map((c) => {
           const t = totaisDaCondicao(c);
           return '<tr><td><span class="mz-cor" style="background:' + c.cor + '"></span><b>' + esc(c.nome) + '</b><span class="mudo pequeno bloco">' + TIPOS[c.tipo].nome + (textoProps(c) ? ' · ' + esc(textoProps(c)) : '') +
@@ -242,9 +232,31 @@ function telaProjeto(id) {
             '<td><b>' + (t.medicoes ? textoPrincipal(c, t) : '<span class="mudo">—</span>') + '</b>' + (t.semEscala ? '<span class="etiqueta etiqueta-ambar">' + t.semEscala + (' ' + tr('sem escala') + '</span>') : '') + '</td>' +
             '<td>' + (t.medicoes ? t.derivados.map((d) => '<span class="bloco">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</td>' +
             '<td class="num">' + t.medicoes + '</td></tr>';
-        }).join('') + (cs.length ? '' : ('<tr><td colspan="4" class="mudo">' + tr('Nada medido ainda. Abra uma folha e inclua os assemblies que vai medir.') + '</td></tr>')) + '</tbody></table></div></section>' +
-      htmlMateriais(id) +
-      ('<p class="dica">' + tr('Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.') + '</p>'),
+        }).join('') + (cs.length ? '' : ('<tr><td colspan="4" class="mudo">' + tr('Nada medido ainda. Abra uma folha e inclua os assemblies que vai medir.') + '</td></tr>')) + '</tbody></table></div></section>';
+  const nBids = licitacoesDoProjeto(p).length;
+  const aviso = estado().oficial ? tr('Esta parte fica guardada neste aparelho até a próxima atualização do banco.') : '';
+  const ajudas = {
+    detalhes,
+    textoDias: (iso) => { const n = diasEntre(hoje(), iso); return n < 0 ? tr('vencido') : n === 0 ? tr('hoje') : tn(n, 'em {n} dia', 'em {n} dias'); },
+    licitacoesDa: (pj, etapa) => {
+      const lista = licitacoesDoProjeto(pj).filter((c) => (c.etapas || []).includes(etapa));
+      return lista.length ? { href: '#/daily/concorrencias/' + lista[0].id, texto: tn(lista.reduce((n, c) => n + c.convites.filter((v) => v.propostas.length).length, 0), '{n} proposta recebida', '{n} propostas recebidas') } : null;
+    },
+    aviso: PERSISTE_ESPACO ? '' : aviso,
+  };
+  const conteudos = {
+    overview: htmlOverview(p, ajudas),
+    plans: '<section class="cartao mz-envio"><div><h2 class="cartao-titulo">' + tr('Enviar as plantas') + '</h2><p class="mudo pequeno">' + tr('Somente PDF. Cada página vira uma folha que você pode medir.') + '</p></div><label class="btn btn-primario">' + icone('mais', 16) + tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></section>' + secFolhas + htmlTypicaisDoProjeto(p),
+    scope: htmlEscopo(p, ajudas),
+    takeoff: secQuantidades,
+    materials: htmlMateriais(id) + '<p><a class="btn btn-contorno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + tr('Lista para cotação') + '</a></p>',
+    schedule: htmlCronograma(p, ajudas),
+    bids: htmlConcorrenciasDoProjeto(p),
+  };
+  return moldura({
+    ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: textoPartes(p) + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: tr('Projetos') },
+    acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + ('/editar">' + tr('Editar projeto') + '</a>') + '</div>',
+    conteudo: htmlFaixaConcorrencia(p) + htmlAbas(p, aba, nBids) + conteudos[aba] + (aba === 'takeoff' ? '<p class="dica">' + tr('Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.') + '</p>' : ''),
   });
 }
 
@@ -435,7 +447,7 @@ function htmlBarra() {
   const estado = !f.escala ? '' : !conf ? 'pendente' : conf.ok ? 'ok' : 'erro';
   // a planta ocupa a tela: o caminho de volta e o nome da folha ficam na própria barra
   const fs = folhasDo(f.projetoId);
-  return '<div class="mz-barra-titulo"><a class="voltar mz-voltar" href="#/measure/projeto/' + f.projetoId + ('" title="' + tr('Voltar para o projeto') + '">') + icone('voltar', 18) + '<span>' + esc(projeto(f.projetoId).nome) + '</span></a>' +
+  return '<div class="mz-barra-titulo"><a class="voltar mz-voltar" href="#/measure/projeto/' + f.projetoId + ('/takeoff" title="' + tr('Voltar para o projeto') + '">') + icone('voltar', 18) + '<span>' + esc(projeto(f.projetoId).nome) + '</span></a>' +
       (fs.length > 1 ? ('<select class="mz-trocar-folha" aria-label="' + tr('Folha') + '">') + fs.map((x) => '<option value="' + x.id + '"' + (x.id === f.id ? ' selected' : '') + '>' + esc(x.nome) + '</option>').join('') + '</select>' : '<h1 class="mz-titulo">' + esc(f.nome) + '</h1>') + '</div>' +
     ('<div class="mz-grupo-barra" role="toolbar" aria-label="' + tr('Ferramentas') + '">') +
       ferr('mover', tr('Mover'), 'seta', '', tr('Arrastar a planta (ou segure a barra de espaço)')) +
@@ -1085,6 +1097,7 @@ async function dialogoItem(it) {
 }
 
 export const acoesMeasure = {
+  ...acoesEspaco,
   async 'mz-item'(el) { await dialogoItem(el.dataset.id ? item(el.dataset.id) : null); },
   async 'mz-excluir-item'(el) {
     const it = item(el.dataset.id);
@@ -1237,7 +1250,7 @@ export const acoesMeasure = {
     const r = salvarProjeto(id, dados);
     if (r.erro) { toast(r.erro); return; }
     toast(id ? tr('Projeto atualizado.') : tr('Projeto criado. Agora envie o PDF das plantas.'));
-    app.ir('#/measure/projeto/' + r.id);
+    app.ir('#/measure/projeto/' + r.id + (id ? '' : '/plans'));
   },
   async 'mz-excluir-projeto'(el) {
     const p = projeto(el.dataset.id);
