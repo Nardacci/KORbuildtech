@@ -9,10 +9,10 @@ import { icone } from './icones.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
 import { nomeContato } from './contatos.js';
 import { NOMES_DIAS } from './prazos.js';
-import { cronogramaDe, avancoDaObra } from './cronograma.js';
+import { cronogramaDe, avancoDaObra, servidorCronograma } from './cronograma.js';
 import { carregarLeaflet } from './crew-telas.js';
 import {
-  obras, situacaoDaObra, SITUACOES_OBRA, salvarObra, obraEmBranco, projetoDaObra, RAIO_MIN, RAIO_MAX,
+  obras, baseDoProjeto, MODELO_DO_PROJETO, situacaoDaObra, SITUACOES_OBRA, salvarObra, obraEmBranco, projetoDaObra, RAIO_MIN, RAIO_MAX,
   modelos, modelo, salvarModelo, excluirModelo, distribuir, empresaExecuta,
 } from './obras.js';
 
@@ -108,7 +108,8 @@ export function telaFormObra(moldura, id, projetoId) {
       '</section>' +
       (existente || !executa ? '' : '<section class="cartao"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' +
         campo('ob-modeloId', tr('Começar com um modelo de etapas'), '<select id="ob-modeloId" name="modeloId"><option value="">' + tr('Nenhum: monto depois') + '</option>' +
-          modelos().map((m, i) => '<option value="' + m.id + '"' + (i === 0 ? ' selected' : '') + '>' + esc(m.nome) + ' · ' + tn(m.etapas.length, '{n} etapa', '{n} etapas') + '</option>').join('') + '</select>') +
+          (pj && baseDoProjeto(pj).length && !servidorCronograma() ? '<option value="' + MODELO_DO_PROJETO + '" selected>' + tr('Cronograma confirmado no projeto') + ' · ' + tn(baseDoProjeto(pj).length, '{n} etapa', '{n} etapas') + '</option>' : '') +
+          modelos().map((m, i) => '<option value="' + m.id + '"' + (i === 0 && !(pj && baseDoProjeto(pj).length && !servidorCronograma()) ? ' selected' : '') + '>' + esc(m.nome) + ' · ' + tn(m.etapas.length, '{n} etapa', '{n} etapas') + '</option>').join('') + '</select>') +
         '<div id="ob-previa" class="previa-modelo"></div>' +
         '<p class="mudo pequeno">' + tr('As etapas dividem o período entre o início e o prazo, na proporção do modelo. Depois tudo se ajusta no cronograma.') + ' <a href="#/settings/modelos">' + tr('Ver os modelos') + '</a></p>' +
       '</section>') +

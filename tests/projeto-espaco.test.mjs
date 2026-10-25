@@ -93,6 +93,20 @@ await p.click('[data-acao="pj-confirmar-cronograma"]');
 await p.waitForTimeout(300);
 verificar((await textoDe('.pagina')).includes('Cronograma confirmado') && (await textoDe('.pagina')).includes('2 tarefas'), 'confirmado: vira a base da obra, com a data e o número de tarefas');
 
+console.log('Criar a obra a partir do cronograma confirmado');
+await p.goto('about:blank');
+await p.goto(BASE + '&versao=completa#/settings/obra/nova/' + id); // na 1ª versão não há cronograma da obra: vale na versão completa
+await p.waitForSelector('#form-obra', { timeout: 10000 });
+const opcoes = await p.locator('#ob-modeloId option').evaluateAll((els) => els.map((e) => ({ v: e.value, t: e.textContent, s: e.selected })));
+verificar(opcoes.some((o) => o.v === 'projeto' && o.s && o.t.includes('2 etapas')), 'o cadastro da obra oferece o cronograma confirmado no projeto, já escolhido', opcoes);
+const iniObra = await p.inputValue('#ob-inicio');
+verificar(iniObra === inicio, 'o início da obra vem da primeira tarefa da base', iniObra + ' ≠ ' + inicio);
+await p.fill('#ob-lat', '43.2'); await p.fill('#ob-lon', '-71.5'); await p.selectOption('#ob-responsavelId', 'u-jose');
+await p.click('[data-acao="obra-salvar"]');
+await p.waitForTimeout(600);
+const nEtapas = await p.evaluate(() => { const achar = (o) => { if (!o || typeof o !== 'object') return null; if (o.cronogramas && Object.values(o.cronogramas).length) return Object.values(o.cronogramas).map((c) => c.etapas.length); for (const v of Object.values(o)) { const r = achar(v); if (r) return r; } return null; }; const r = achar(JSON.parse(localStorage.getItem('kbt.rdo.v1') || '{}')); return r ? r[r.length - 1] : -1; });
+verificar(nEtapas === 2, 'a obra nasce com as duas etapas do cronograma do projeto', nEtapas);
+
 console.log('Visão geral depois do trabalho');
 await p.goto(BASE + '#/measure/projeto/' + id);
 await p.waitForSelector('.mz-checklist', { timeout: 10000 });

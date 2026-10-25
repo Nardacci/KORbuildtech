@@ -90,7 +90,8 @@ export function salvarObra(id, dados, por) {
     if (pj.concorrencia && pj.concorrencia.vinculo) { nova.vinculo = { ...pj.concorrencia.vinculo }; nova.concorrenciaId = pj.concorrencia.id; }
   }
   auditar(tr('Obras'), tr('Obra criada: {nome}', { nome: d.nome }), '', nova.cidade + ' · ' + d.inicio + ' → ' + d.prazo, '', por);
-  if (dados.modeloId) aplicarModelo(nova.id, dados.modeloId, por);
+  if (dados.modeloId === MODELO_DO_PROJETO) aplicarCronogramaDoProjeto(nova.id, pj, por);
+  else if (dados.modeloId) aplicarModelo(nova.id, dados.modeloId, por);
   salvar();
   return { ok: true, id: nova.id };
 }
@@ -99,6 +100,31 @@ export function salvarObra(id, dados, por) {
 export function projetoDaObra(o) {
   const lista = (estado().measure || {}).projetos || [];
   return lista.find((p) => p.id === o.projetoId) || lista.find((p) => p.obraId === o.id) || null;
+}
+
+/* ---------- Cronograma confirmado no projeto ganho ---------- */
+
+export const MODELO_DO_PROJETO = 'projeto';
+
+/* Tarefas da base confirmada no projeto (só as que têm início), na ordem das datas. */
+export function baseDoProjeto(pj) {
+  const b = pj && pj.cronograma && pj.cronograma.confirmado;
+  const tarefas = ((b && b.tarefas) || []).filter((t) => t.inicio).map((t) => ({ nome: t.nome, inicio: t.inicio, fim: somarDias(t.inicio, Math.max(0, (Number(t.dias) || 1) - 1)) }));
+  tarefas.sort((a, c) => a.inicio.localeCompare(c.inicio));
+  return tarefas;
+}
+
+export function aplicarCronogramaDoProjeto(obraId, pj, por) {
+  const o = obras().find((x) => x.id === obraId);
+  const base = baseDoProjeto(pj);
+  if (!o || !base.length) return { erro: tr('O projeto não tem cronograma confirmado.') };
+  if (servidorCronograma()) return { erro: tr('Neste modo, monte o cronograma da obra pelo modelo de etapas.') };
+  estado().cronogramas = estado().cronogramas || {};
+  estado().cronogramas[obraId] = { etapas: base.map((e) => ({ id: novoId('et'), ...e, responsavelId: null, pct: 0, historico: [] })), bases: [], publicacoes: [] };
+  auditar(tr('Cronograma'), tr('Cronograma do projeto aplicado em {obra}', { obra: o.nome }), '', base.length + '', '', por);
+  novaBase(obraId, tr('Primeira versão do cronograma (confirmado no projeto {nome})', { nome: pj.nome }), por, true);
+  salvar();
+  return { ok: true };
 }
 
 /* ---------- Modelos de etapas (OB-06) ---------- */
@@ -190,5 +216,7 @@ export function obraEmBranco(projeto) {
   const inicio = somarDias(hoje(), 7);
   const base = { situacao: 'andamento', inicio, prazo: somarDias(inicio, 89), diasTrabalho: DIAS_TRABALHO.slice(), cerca: { raio: RAIO_CERCA }, estado: 'NH' };
   if (!projeto) return base;
+  const bp = baseDoProjeto(projeto);
+  if (bp.length) { base.inicio = bp[0].inicio; base.prazo = bp.map((e) => e.fim).sort().pop(); }
   return { ...base, nome: projeto.nome, contratanteId: projeto.contratanteId, donoId: projeto.donoId, endereco: projeto.endereco, municipio: projeto.cidade, estado: projeto.estado || 'NH', zip: projeto.zip, projetoId: projeto.id };
 }
