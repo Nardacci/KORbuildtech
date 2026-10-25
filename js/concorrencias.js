@@ -139,6 +139,7 @@ export function salvarRascunho(id, dados, por) {
   d.desenhosMantidos = dados.desenhosMantidos;
   for (const [k, x] of Object.entries(orc.porEtapa || {})) if (x !== '' && x != null) d.orcamento.porEtapa[k] = valor(x);
   if (d.prazo && !DATA_HORA.test(d.prazo)) return { erro: tr('Prazo da proposta inválido.') };
+  if (d.prazo && instante(d.prazo) <= Date.now()) return { erro: tr('O prazo da proposta precisa ser no futuro.') };   // o rascunho também: uma data que já passou não é salva
   if (d.orcamento.valor != null && !(d.orcamento.valor > 0)) return { erro: tr('O orçamento precisa ser um valor maior que zero.') };
   if (d.obraId && !estado().obras.some((o) => o.id === d.obraId)) return { erro: tr('Escolha uma obra da sua empresa.') };
   if (d.origem && d.origem.tipo === 'projeto') {

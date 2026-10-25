@@ -92,8 +92,9 @@ r = await rodar((m, a, h, x) => h.como(h.GC, () => {
   }, 'Ana Ribeiro');
   const env = m.enviar(c.id, 'Ana Ribeiro', x.AGORA);
   const depois = m.salvarRascunho(c.id, { servico: 'outro' }, 'Ana Ribeiro');
+  const passado = m.salvarRascunho(null, { servico: 'prazo velho', prazo: '2020-01-01T10:00' }, 'Ana Ribeiro');
   const s = m.concorrenciaEnviada(c.id);
-  return { id: c.id, pend: pend.length, antes: antes.erro, nfAntes: nf, ok: ok.ok, env: env.ok, depois: depois.erro, n: s.convites.length, situacao: s.situacao, tokens: s.convites.every((v) => v.token), aud: a.estado().settings.auditoria[0].descricao };
+  return { passado: passado.erro, id: c.id, pend: pend.length, antes: antes.erro, nfAntes: nf, ok: ok.ok, env: env.ok, depois: depois.erro, n: s.convites.length, situacao: s.situacao, tokens: s.convites.every((v) => v.token), aud: a.estado().settings.auditoria[0].descricao };
 }), { DRYWALL, AGORA });
 const novaId = r.id;
 verificar(r.pend >= 4 && r.antes, 'rascunho incompleto não é enviado e diz o que falta');
@@ -101,6 +102,7 @@ verificar(!r.nfAntes, 'rascunho não aparece para ninguém');
 verificar(r.ok && r.env && r.situacao === 'aberta', 'completo, é enviado e fica aberto');
 verificar(r.n === 2, 'a mesma prestadora não entra duas vezes (CO-16)');
 verificar(r.depois, 'depois de enviada, não se reescreve (CO-09)');
+verificar(/futuro/.test(r.passado || ''), 'o rascunho com prazo que já passou não é salvo');
 verificar(r.tokens, 'cada convite tem o seu link pessoal');
 verificar(r.aud.includes('Convites enviados'), 'o envio vai para a auditoria da construtora (CO-18)');
 
