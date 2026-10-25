@@ -254,3 +254,34 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ 'Cotações de material' mostra as listas enviadas e os fornecedores; o cartão de cotação sem retorno reflete o que falta
 - [ ] **T106** · `pv.c1.admin / pv.a2.admin / pv.p2.admin / pv.p3.admin / pv.p4.admin / pv.a1.admin` — Repetir a Lista para cotação e o PDF em cada empresa  
   _Esperado:_ Cada uma tem a sua família de materiais (partições, framing, concreto, telhado, calhas), seus fornecedores e as quantidades coerentes
+
+## 14 Concorrências — fluxo revisado (envio só depois de salvar, anexos e tela do convite)
+
+- [ ] **T107** · `pv.c1.admin` — Nova concorrência: preencher só o nome e clicar Salvar  
+  _Esperado:_ Vai para a página da concorrência como Rascunho; o botão 'Enviar convites' aparece desabilitado e a página diz o que falta; não existe botão de envio no formulário
+- [ ] **T108** · `pv.c1.admin` — Salvar com o prazo da proposta numa data que já passou  
+  _Esperado:_ O Salvar recusa com 'O prazo da proposta precisa ser no futuro' e nada é gravado
+- [ ] **T109** · `pv.c1.admin` — Editar o rascunho e salvar duas vezes seguidas, sem mudar nada  
+  _Esperado:_ Continua 1 rascunho só (sem duplicar) e sem erro de chave duplicada; a lista mostra 1 linha
+- [ ] **T110** · `pv.c1.admin` — Em Documentos anexos: escolher 3 PDFs de uma vez, preencher Descrição e Observação e clicar Anexar  
+  _Esperado:_ Aparecem 3 linhas na tabela (Código, Descrição, Arquivo, Tamanho, Observação); dá para Remover uma linha. A Observação ainda não é gravada no banco real (depende de migração)
+- [ ] **T111** · `pv.c1.admin` — Escolher um PDF e clicar Salvar sem clicar em Anexar  
+  _Esperado:_ O arquivo entra junto no salvamento; aparece na tabela depois de salvar
+- [ ] **T112** · `pv.c1.admin` — Nova concorrência a partir de um projeto do Takeoff com plantas  
+  _Esperado:_ As plantas do projeto aparecem marcadas em 'Plantas do projeto' e vão junto no pacote
+- [ ] **T113** · `pv.c1.admin` — Completar o rascunho e clicar 'Enviar convites' sem nenhum desenho anexado  
+  _Esperado:_ Pede confirmação ('Sem desenhos anexados'); com desenho, não pede; o envio não abre popup de links
+- [ ] **T114** · `pv.c1.admin` — Abrir a lista de concorrências, aba Rascunhos  
+  _Esperado:_ Coluna Ações: rascunho tem 'Editar'; as demais têm 'Abrir'
+- [ ] **T115** · `pv.c1.admin` — Convidada sem conta: copiar o link na tabela de convidados  
+  _Esperado:_ 'Copiar o link' funciona e não abre popup
+- [ ] **T116** · `(sem login)` — Abrir o link do convite recebido por e-mail  
+  _Esperado:_ A tela mostra Escopo, O pacote, 'Documentos do projeto' (tabela com botão Abrir em cada arquivo) e o cartão 'Cote mais rápido com o KORbuild Takeoff'; o botão leva ao login
+- [ ] **T117** · `(sem login)` — Clicar Abrir em cada documento do projeto  
+  _Esperado:_ O PDF abre; se algum não abrir, aparece 'indisponível' (anote qual)
+- [ ] **T118** · `(sem login)` — Responder 'Vou cotar' e olhar o formulário 'Mandar a proposta'  
+  _Esperado:_ Total (US$) e Prazo de execução (dias) lado a lado, mesmo tamanho; PDF e exclusões na largura inteira; Enviar a proposta no canto direito
+- [ ] **T119** · `(sem login)` — Mandar a proposta com PDF e total, depois uma pergunta  
+  _Esperado:_ A proposta e a pergunta chegam para a contratante; a contratante responde e a resposta aparece no link
+- [ ] **T120** · `pv.c1.admin` — Abrir a concorrência com proposta recebida, comparar e fechar  
+  _Esperado:_ A comparação mostra a proposta; ao fechar, a vencedora e a situação 'Fechada' aparecem

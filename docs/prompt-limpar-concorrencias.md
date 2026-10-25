@@ -22,15 +22,27 @@ select e.nome, (e.plano ->> 'massa') as massa, count(*) from public.concorrencia
 
 ## 2. Apagar (escopo "todas as empresas") — só com a frase digitada
 
+**Passo A — arquivos do Storage, pela API (não por SQL).** Apagar linhas de `storage.objects` por SQL pode deixar os arquivos físicos. Remova pela API (`storage.from('concorrencias').remove([...])`, em lotes, com a service role só no terminal local), listando por pasta de empresa (`<empresa_id>/<concorrencia_id>/...`). Depois confira com `list` que não sobrou nada no escopo escolhido.
+
+**Passo B — linhas do banco, escopo A (todas as empresas):**
+
 ```sql
 begin;
 delete from public.notificacoes where categoria = 'concorrencia';
 delete from public.fila_email where modelo in ('convite-concorrencia', 'aviso-link');
 delete from public.concorrencias;   -- convites, desenhos, propostas, mensagens e histórico saem em cascata
-delete from storage.objects where bucket_id = 'concorrencias';
 commit;
 ```
 
-Se o dono escolher só a conta dele, troque por `where empresa_id = '<id>'` (e filtre os avisos e arquivos pela pasta `<id>/`).
+**Passo B — escopo B (só a massa `pv`):**
+
+```sql
+begin;
+delete from public.notificacoes where categoria = 'concorrencia' and empresa_id in (select id from public.empresas where plano ->> 'massa' = 'pv');
+delete from public.concorrencias where empresa_id in (select id from public.empresas where plano ->> 'massa' = 'pv');
+commit;
+```
+
+No escopo B, os arquivos do Storage seguem o mesmo escopo (só as pastas das empresas `pv`).
 
 Depois: repita a prévia (tudo deve estar em 0) e informe as contagens. Não toque em projetos, obras, catálogo, usuários ou empresas.
