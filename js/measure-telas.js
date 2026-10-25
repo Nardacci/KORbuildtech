@@ -37,8 +37,10 @@ export function navMeasure() {
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
     { id: 'precos', href: '#/measure/precos', rotulo: tr('Preços'), icone: 'dinheiro' },
-  ]).concat(podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : [])
-    .concat(PRIMEIRA_VERSAO && pode(usuarioAtual(), 'concorrencias.gerir') ? [{ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' }] : []);   // 1ª versão: quem convida (o resto do Daily fica oculto)
+  ]).concat(PRIMEIRA_VERSAO
+    // 1ª versão: um item só, Bids, com as abas Sent (quem convida) e Received (quem responde)
+    ? (pode(usuarioAtual(), 'concorrencias.gerir') || podeResponder() ? [{ id: 'bids', href: pode(usuarioAtual(), 'concorrencias.gerir') ? '#/daily/concorrencias' : '#/measure/convites', rotulo: tr('Licitações'), icone: 'tabela', contador: convitesPendentes() }] : [])
+    : (podeResponder() ? [{ id: 'convites', href: '#/measure/convites', rotulo: tr('Convites'), icone: 'sino', contador: convitesPendentes() }] : []));
 }
 // o visor da planta usa a tela inteira, sem o menu lateral
 function moldura(o) {
@@ -155,10 +157,10 @@ function telaFormProjeto(id) {
         campo('tipo', tr('Tipo de obra'), '<select id="pj-tipo" name="tipo">' + opcoes(Object.entries(TIPOS_PROJETO), p.tipo) + '</select>') +
         campo('situacao', tr('Situação'), '<select id="pj-situacao" name="situacao">' + opcoes(Object.entries(SITUACOES).map(([k, x]) => [k, x.nome]), p.situacao) + '</select>') +
       '</div>' + campo('descricao', tr('Escopo'), ('<textarea id="pj-descricao" name="descricao" rows="2" placeholder="' + tr('Ex.: Residência térrea, wood framing, siding vinil') + '">') + v('descricao') + '</textarea>') + '</section>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Para quem é a proposta') + '</h2><div class="grade-campos">') +
-        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Contratante * (recebe a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
-        htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: tr('Dono da obra (se não for o contratante)'), papeis: ['cliente'], atual: p.donoId, vazio: tr('O próprio contratante') }) +
-      ('</div><p class="mudo pequeno">' + tr('Trabalhando para uma construtora, ela é a contratante e o cliente final é o dono. Contratado direto pelo dono do imóvel, ele é o contratante.') + '</p></section>') +
+      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Cliente da proposta') + '</h2><div class="grade-campos">') +
+        htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Cliente * (quem pediu a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
+        htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: tr('Dono da obra (opcional, se for outra pessoa)'), papeis: ['cliente'], atual: p.donoId, vazio: tr('O próprio cliente') }) +
+      ('</div><p class="mudo pequeno">' + tr('Trabalhando para uma construtora, ela é o cliente e o dono do imóvel é o dono da obra. Contratado direto pelo dono, ele é o cliente.') + '</p></section>') +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
         '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Proposta') + '</h2><div class="grade-campos">') +

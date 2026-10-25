@@ -29,6 +29,13 @@ let app = { desenhar: () => {}, ir: () => {} };
 export function ligarConcorrencias(funcoes) { app = { ...app, ...funcoes }; }
 
 const quem = () => (usuarioAtual() || {}).nome || '';
+/* 1ª versão: o menu tem um item só, Bids; dentro dele, as abas Sent (eu convido) e Received (me convidaram). */
+const ativoBids = (antigo) => (PRIMEIRA_VERSAO ? 'bids' : antigo);
+function abasBids(ativa) {
+  if (!PRIMEIRA_VERSAO || !podeGerir() || !podeResponder()) return '';
+  return '<nav class="abas-sublinhadas" aria-label="' + tr('Licitações') + '"><a href="#/daily/concorrencias"' + (ativa === 'enviadas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Enviadas') + '</a>' +
+    '<a href="#/measure/convites"' + (ativa === 'recebidas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Recebidas') + (convitesPendentes() ? ' <span class="mz-contagem">' + convitesPendentes() + '</span>' : '') + '</a></nav>';
+}
 export const podeGerir = () => pode(usuarioAtual(), 'concorrencias.gerir');
 export const podeResponder = () => pode(usuarioAtual(), 'concorrencias.responder') && (estado().empresa.modulos || []).includes('measure');
 const campo = (id, rotulo, html, classe) => '<div class="campo' + (classe ? ' ' + classe : '') + '"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
@@ -63,10 +70,10 @@ export function telaConcorrencias(moldura, filtro) {
   const lista = todas.filter((c) => aba[2](situacaoDe(c)));
   const abas = ABAS.filter((x) => x[0] !== 'rascunhos' || todas.some((c) => c.situacao === 'rascunho'));
   return moldura({
-    ativo: 'concorrencias', largo: true, titulo: tr('Concorrências'), subtitulo: tr('Convide prestadoras, compare as propostas e feche com a melhor'),
-    acoes: '<div class="acoes-cabeca">' + (podeResponder() ? '<a class="btn btn-contorno" href="#/measure/convites">' + tr('Convites recebidos') + (convitesPendentes() ? ' <span class="mz-contagem">' + convitesPendentes() + '</span>' : '') + '</a>' : '') +
+    ativo: ativoBids('concorrencias'), largo: true, titulo: tr('Concorrências'), subtitulo: tr('Convide prestadoras, compare as propostas e feche com a melhor'),
+    acoes: '<div class="acoes-cabeca">' + (podeResponder() && !PRIMEIRA_VERSAO ? '<a class="btn btn-contorno" href="#/measure/convites">' + tr('Convites recebidos') + (convitesPendentes() ? ' <span class="mz-contagem">' + convitesPendentes() + '</span>' : '') + '</a>' : '') +
       '<a class="btn btn-primario" href="#/daily/concorrencias/nova">' + icone('mais', 18) + tr('Nova concorrência') + '</a></div>',
-    conteudo: '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r, f]) => '<a href="#/daily/concorrencias' + (id ? '/' + id : '') + '"' + (aba[0] === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + ' <span class="mz-contagem">' + todas.filter((c) => f(situacaoDe(c))).length + '</span></a>').join('') + '</nav>' +
+    conteudo: abasBids('enviadas') + '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r, f]) => '<a href="#/daily/concorrencias' + (id ? '/' + id : '') + '"' + (aba[0] === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + ' <span class="mz-contagem">' + todas.filter((c) => f(situacaoDe(c))).length + '</span></a>').join('') + '</nav>' +
       (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-concorrencias"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Convidados') + '</th><th>' + tr('Propostas') + '</th><th>' + tr('Situação') + '</th><th>' + tr('Ações') + '</th></tr></thead><tbody>' +
         lista.map((c) => {
           const s = situacaoDe(c);
@@ -127,7 +134,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   const avisoPolitica = politica === 'nao-permitida' ? '<div class="aviso aviso-vermelho"><b>' + tr('A contratante desta obra não permite quarteirizar.') + '</b></div>'
     : politica === 'com-aprovacao' ? '<div class="aviso aviso-ambar"><b>' + tr('Quarteirização com aprovação') + '</b><span>' + tr('Quem contratou a sua empresa aprova a prestadora que você escolher, antes do fechamento. Ela vê só o nome, nunca o valor.') + '</span></div>' : '';
   return moldura({
-    ativo: 'concorrencias', largo: true, titulo: c ? tr('Rascunho: {nome}', { nome: c.servico || tr('(sem nome)') }) : tr('Nova concorrência'),
+    ativo: ativoBids('concorrencias'), largo: true, titulo: c ? tr('Rascunho: {nome}', { nome: c.servico || tr('(sem nome)') }) : tr('Nova concorrência'),
     subtitulo: tr('O pacote que as prestadoras recebem para cotar'), voltar,
     conteudo: avisoPolitica + '<form id="form-concorrencia" class="form-settings" data-id="' + (c ? c.id : '') + '" data-sem-envio>' +
       '<input type="hidden" name="origemProjeto" value="' + (pj ? pj.id : '') + '">' +
@@ -299,7 +306,7 @@ export function telaConcorrencia(moldura, id, abaPedida) {
     '<span>' + tr('Você aprova a empresa; o valor entre elas não é informado.') + '</span><span class="btn-linha"><button type="button" class="btn btn-primario btn-pequeno" data-acao="co-aprovar-q" data-id="' + pd.id + '">' + tr('Aprovar') + '</button><button type="button" class="btn btn-contorno btn-pequeno" data-acao="co-recusar-q" data-id="' + pd.id + '">' + tr('Recusar') + '</button></span></div>';
   const conteudo = aba === 'comparar' ? htmlComparar(c, ativa) : aba === 'detalhes' ? htmlDetalhes(c) : aba === 'perguntas' ? htmlPerguntas(c) : htmlConvidados(c);
   return moldura({
-    ativo: 'concorrencias', largo: true, titulo: c.servico || tr('(sem nome)'),
+    ativo: ativoBids('concorrencias'), largo: true, titulo: c.servico || tr('(sem nome)'),
     subtitulo: nomeOrigem(c) + ' · ' + SITUACOES[s].nome + (ativa ? ' · ' + tr('prazo {quando}', { quando: textoPrazo(c) }) : ''),
     voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') }, acoes,
     conteudo: aviso + '<div id="concorrencia" data-id="' + c.id + '"></div>' +
@@ -429,12 +436,12 @@ const textoLocal = (o) => (o ? [o.cidade, o.estado].filter(Boolean).join(', ') :
 export function telaConvites(moldura) {
   const lista = recebidas().sort((a, b) => (a.situacao === 'aberta' ? 0 : 1) - (b.situacao === 'aberta' ? 0 : 1) || String(a.prazo).localeCompare(String(b.prazo)));
   return moldura({
-    ativo: 'convites', largura: 'larga', titulo: tr('Convites para cotar'), subtitulo: tr('Concorrências em que a sua empresa foi convidada'),
-    conteudo: lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-convites"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
+    ativo: ativoBids('convites'), largura: 'larga', titulo: tr('Convites para cotar'), subtitulo: tr('Concorrências em que a sua empresa foi convidada'),
+    conteudo: abasBids('recebidas') + (lista.length ? '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-convites"><thead><tr><th>' + tr('Serviço') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Obra') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' +
       lista.map((x) => '<tr><td><a href="#/measure/convite/' + x.id + '"><b>' + esc(x.servico) + '</b></a></td><td>' + esc(nomeContratante(x)) + '</td><td>' + esc(x.obra ? x.obra.nome : '—') + '<span class="mudo pequeno bloco">' + esc(textoLocal(x.obra)) + '</span></td>' +
         '<td>' + (x.situacao === 'aberta' ? textoPrazo(x) : x.prazo ? dataCurta(x.prazo.slice(0, 10)) : '—') + '</td>' +
         '<td>' + (x.situacao === 'cancelada' ? etiqueta('cancelada') : etiquetaConvite(x.convite)) + '</td></tr>').join('') + '</tbody></table></div></section>'
-      : '<section class="cartao vazio-grande"><h2>' + tr('Nenhum convite ainda') + '</h2><p class="mudo">' + tr('Quando uma construtora (ou outra prestadora) convidar a sua empresa para cotar pelo KORbuild, o convite aparece aqui e no sininho.') + '</p></section>',
+      : '<section class="cartao vazio-grande"><h2>' + tr('Nenhum convite ainda') + '</h2><p class="mudo">' + tr('Quando uma construtora (ou outra prestadora) convidar a sua empresa para cotar pelo KORbuild, o convite aparece aqui e no sininho.') + '</p></section>'),
   });
 }
 
@@ -464,7 +471,7 @@ export function telaConvite(moldura, id) {
     tr('Meça e monte a proposta no projeto. Emita a proposta e use "Enviar pela plataforma"; dá para mandar revisões até o prazo.') + '</span>' +
     (pj ? '<a class="btn btn-primario btn-pequeno" href="#/measure/projeto/' + pj.id + '">' + tr('Abrir o projeto') + '</a>' : '<button type="button" class="btn btn-primario btn-pequeno" data-acao="cv-projeto" data-id="' + x.id + '">' + tr('Criar o projeto no Measure') + '</button>') + '</div>';
   return moldura({
-    ativo: 'convites', largura: 'larga', titulo: x.servico, subtitulo: tr('Convite de {nome}', { nome: nomeContratante(x) }) + (x.obra ? ' · ' + x.obra.nome : ''),
+    ativo: ativoBids('convites'), largura: 'larga', titulo: x.servico, subtitulo: tr('Convite de {nome}', { nome: nomeContratante(x) }) + (x.obra ? ' · ' + x.obra.nome : ''),
     voltar: { href: '#/measure/convites', rotulo: tr('Convites') },
     conteudo: situacao +
       '<div class="grade-2">' +

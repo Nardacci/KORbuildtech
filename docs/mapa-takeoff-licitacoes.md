@@ -23,24 +23,31 @@ lang: pt-BR
 
 **O que eu recomendaria fazer primeiro** (detalhado no capítulo 9): padronizar os nomes e o menu (barato e de alto efeito), ajustar o cadastro do projeto, fechar os dois caminhos que faltam na licitação, e só então levar o cronograma preliminar para o projeto.
 
-# 2. Vocabulário (EUA) e nomes recomendados
+# 2. Vocabulário (EUA): o inglês é a fonte dos nomes
 
-Em obra privada nos EUA, o termo de uso comum é **bid** (e *bid package*), não "tender" nem "concorrência". "Licitação", em português do Brasil, lembra concorrência pública, mas funciona bem se o inglês ficar *Bid*.
+**Decisão (25/10/2026):** os nomes das telas são definidos **em inglês**, no uso corrente da obra privada nos EUA. O português existe só para facilitar a homologação e acompanha o inglês.
 
-| Conceito | Termo EUA | Hoje no app (PT) | Recomendado (PT / EN) |
-|---|---|---|---|
-| Medir a planta e quantificar | *Takeoff* | "Measure" (nos textos), "Takeoff" (no menu) | **Takeoff** / Takeoff |
-| Conjunto de materiais por tipo de medida | *Assembly* | Assembly | Assembly / Assembly |
-| Quem pediu a minha proposta | *Client / GC / Owner* | "Contratante", "Dono da obra" | **Cliente** (quem pediu) e **Dono da obra** (opcional) |
-| Pedido de cotação a prestadoras | *Invitation to Bid (ITB)*, *bid invitation* | Concorrência, Convite | **Licitação** / **Bid** |
-| Pacote enviado | *Bid package* | "pacote" | Pacote da licitação / Bid package |
-| Quem convida | *Bidder-requesting party*; GC | "Contratante" | **Quem licita** / Inviting company |
-| Quem recebe e cota | *Subcontractor / Bidder* | Convidada, prestadora | **Prestadora** / Subcontractor |
-| Comparar propostas | *Bid leveling* | Comparar | Comparar propostas / Bid leveling |
-| Dúvida durante a licitação | *RFI* | Perguntas | Perguntas (RFI) |
-| Fechar com uma | *Award* | Fechar | **Contratar** (award) |
-| Alteração depois do envio | *Addendum* | Adendo (previsto) | Adendo |
-| Preço de material ou item | *RFQ* | Lista para cotação | Pedido de cotação de material |
+| Conceito | Inglês (fonte) | Português (apoio) |
+|---|---|---|
+| Medir a planta e quantificar | **Takeoff** | Takeoff |
+| Conjunto de materiais por tipo de medida | **Assembly** | Assembly |
+| Quem pediu a minha proposta | **Client** | Cliente (quem pediu a proposta) |
+| Dono final, quando é outra pessoa | **Project owner** (optional) | Dono da obra (opcional) |
+| Módulo e item de menu | **Bids** (abas **Sent** e **Received**) | Licitações (Enviadas e Recebidas) |
+| O que a prestadora recebe | **Bid invitation** (*Invitation to Bid*, ITB) | Convite para cotar |
+| Conjunto de escopo, documentos e prazos | **Bid package** | Pacote da licitação |
+| Botão de quem licita | **Invite to bid** / **Send invitations** | Enviar convites |
+| Prazo | **Bid due date** | Prazo da proposta |
+| Resposta da prestadora | **Bid** | Proposta |
+| Quem licita | **Inviting company** | Quem licita |
+| Quem recebe e cota | **Subcontractor** | Prestadora |
+| Comparar as respostas | **Compare bids** (*bid leveling*) | Comparar propostas |
+| Dúvida durante a licitação | **RFI** / Questions | Perguntas |
+| Escolher a vencedora | **Award** (situações: **Awarded**, **Not awarded**, **Canceled**) | Contratar |
+| Alteração depois do envio | **Addendum** | Adendo |
+| Pedido de preço de material | **RFQ** | Pedido de cotação de material |
+
+**Já aplicado no app (25/10/2026):** menu único **Bids** (Licitações) com as abas **Sent** e **Received**; cadastro do projeto com **Client** e **Project owner (optional)**; abas da licitação com **Compare bids**; situação **Not awarded**; "inviting company" no lugar de "contracting company". **Ainda por aplicar:** o português do corpo das telas (que ainda diz "Concorrência"), a revisão do inglês tela a tela e o idioma de entrada em inglês.
 
 # 3. Quem participa
 
@@ -248,8 +255,8 @@ Cada item abaixo foi observado nas telas ou nos documentos; a gravidade é a min
 
 | # | Achado | Onde se vê | Gravidade | Ajuste proposto |
 |---|---|---|---|---|
-| 1 | **Mesmo objeto, vários nomes:** "Measure" nos textos, "Takeoff" no menu; "Concorrência", "Convite" e "Bid" para o pedido de cotação. | Menu, textos como "Criar o projeto no Measure" | Alta | Fechar o vocabulário do capítulo 2 e aplicar em todas as telas e e-mails |
-| 2 | **Dois menus para a mesma coisa:** "Convites" (recebidos) e "Concorrências" (enviadas). | Menu lateral | Alta | Um item **Licitações** com abas **Enviadas** e **Recebidas** |
+| 1 | **Mesmo objeto, vários nomes:** "Measure" nos textos, "Takeoff" no menu; "Concorrência", "Convite" e "Bid" para o pedido de cotação. | Menu, textos como "Criar o projeto no Measure" | Alta | Vocabulário fechado (cap. 2), menu aplicado; falta o corpo das telas |
+| 2 | **Dois menus para a mesma coisa:** "Convites" (recebidos) e "Concorrências" (enviadas). | Menu lateral | Alta | **Aplicado:** um item **Bids** com abas **Sent** e **Received** |
 | 3 | **"Contratante" tem dois sentidos:** no projeto, quem pediu a *minha* proposta; na licitação, quem convida. | Cadastro do projeto e formulário da licitação | Alta | No projeto, **Cliente (quem pediu a proposta)**; "Dono da obra" vira link opcional; na licitação, "Quem licita" |
 | 4 | **A licitação pede "Obra" logo no início,** mas no momento do orçamento a obra ainda não existe. | Formulário Nova concorrência | Média | A origem natural é o **projeto**; "Obra" só quando a licitação nasce de uma obra já ganha |
 | 5 | **Dois caminhos de resposta para a prestadora com conta:** proposta emitida no Takeoff ("Enviar pela plataforma") ou, pelo link, PDF e total direto. | Convite recebido vs link | Média | Permitir também o envio simples (PDF e total) para quem tem conta |
