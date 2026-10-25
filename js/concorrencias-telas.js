@@ -131,7 +131,8 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
     subtitulo: tr('O pacote que as prestadoras recebem para cotar'), voltar,
     conteudo: avisoPolitica + '<form id="form-concorrencia" class="form-settings" data-id="' + (c ? c.id : '') + '" data-sem-envio>' +
       '<input type="hidden" name="origemProjeto" value="' + (pj ? pj.id : '') + '">' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Serviço') + '</h2><div class="grade-campos">' +
+      '<nav class="abas-sublinhadas" aria-label="' + tr('Seções') + '">' + [['servico', tr('Serviço e escopo')], ['docs', tr('Documentos')], ['prazos', tr('Prazos e exigências')], ['convidados', tr('Convidados')]].map(([k, r], i) => '<button type="button" data-acao="co-aba" data-aba="' + k + '"' + (i === 0 ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</button>').join('') + '</nav>' +
+      '<section class="cartao" data-aba="servico"><h2 class="cartao-titulo">' + tr('Serviço') + '</h2><div class="grade-campos">' +
         (pj ? campo('co-projeto', tr('Projeto'), '<input type="text" id="co-projeto" value="' + esc(pj.nome) + '" readonly>') : campo('co-obraId', tr('Obra *'), '<select id="co-obraId" name="obraId"><option value="">' + tr('Escolha…') + '</option>' + obras.map((o) => '<option value="' + o.id + '"' + (o.id === d.obraId ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') + '</select>')) +
         campo('co-servico', tr('Serviço *'), '<input type="text" id="co-servico" name="servico" value="' + esc(d.servico) + '" placeholder="' + esc(tr('Ex.: Framing e drywall')) + '">') + '</div>' +
         '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Etapas a cotar * (cost codes)') + '</legend>' +
@@ -140,12 +141,12 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
         '<p class="mudo pequeno">' + tr('Cada etapa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas.') + '</p>' +
         (pj ? '<p class="pequeno">' + tr('Cotando antes da sua proposta: o prazo precisa vencer antes do seu ({data}). Você usa os preços no orçamento e só fecha depois de ganhar o projeto.', { data: pj.prazoProposta ? dataCurta(pj.prazoProposta) : '—' }) + '</p>' : '') +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><div class="grade-campos">' +
+      '<section class="cartao" data-aba="servico"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><div class="grade-campos">' +
         campo('co-incluso', tr('Incluso * (um item por linha)'), '<textarea id="co-incluso" name="incluso" rows="4">' + esc(d.incluso.join('\n')) + '</textarea>') +
         campo('co-excluso', tr('Excluso (um item por linha)'), '<textarea id="co-excluso" name="excluso" rows="4">' + esc(d.excluso.join('\n')) + '</textarea>') + '</div>' +
         campo('co-observacoes', tr('Observações'), '<textarea id="co-observacoes" name="observacoes" rows="2" placeholder="' + esc(tr('Horário de trabalho, acesso ao canteiro, visita…')) + '">' + esc(d.observacoes) + '</textarea>') +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Documentos anexos') + '</h2>' +
+      '<section class="cartao" data-aba="docs" hidden><h2 class="cartao-titulo">' + tr('Documentos anexos') + '</h2>' +
         '<input type="hidden" name="desenhosAtuais" value="' + esc(JSON.stringify(d.desenhos)) + '">' +
         '<div class="grade-campos">' +
           campo('co-arquivo', tr('Arquivos (um ou vários PDFs)'), '<input type="file" id="co-arquivo" accept="application/pdf" multiple>') +
@@ -156,13 +157,13 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
         '<div class="tabela-rolagem"><table class="tabela" id="co-anexos"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Descrição') + '</th><th>' + tr('Arquivo') + '</th><th>' + tr('Tamanho') + '</th><th>' + tr('Observação') + '</th><th></th></tr></thead><tbody>' + linhasDeAnexos(d.desenhos) + '</tbody></table></div>' +
         '<p class="mudo pequeno">' + (estado().oficial ? tr('Os PDFs vão para a pasta da concorrência; quem cotar abre os arquivos pelo convite e recebe uma cópia no projeto do Takeoff.') : tr('No protótipo, só o nome de cada arquivo é guardado.')) + '</p>' +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Prazos') + '</h2><div class="grade-campos">' +
+      '<section class="cartao" data-aba="prazos" hidden><h2 class="cartao-titulo">' + tr('Prazos') + '</h2><div class="grade-campos">' +
         campo('co-prazoData', tr('Prazo da proposta *'), '<input type="date" id="co-prazoData" name="prazoData" value="' + esc(prazoData) + '">') +
         campo('co-prazoHora', tr('Hora'), '<input type="time" id="co-prazoHora" name="prazoHora" value="' + esc(prazoHora || '17:00') + '">') +
         campo('co-inicio', tr('Início previsto do serviço'), '<input type="date" id="co-inicio" name="inicio" value="' + esc(d.inicio) + '">') +
         campo('co-termino', tr('Término previsto'), '<input type="date" id="co-termino" name="termino" value="' + esc(d.termino) + '">') + '</div>' +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Orçamento e exigências') + '</h2><div class="grade-campos">' +
+      '<section class="cartao" data-aba="prazos" hidden><h2 class="cartao-titulo">' + tr('Orçamento e exigências') + '</h2><div class="grade-campos">' +
         campo('co-orcamento', tr('Orçamento (US$, opcional)'), '<input type="number" id="co-orcamento" name="orcamento" min="0" step="100" value="' + (d.orcamento.valor == null ? '' : d.orcamento.valor) + '">') +
         campo('co-mostrar', tr('Mostrar o orçamento às prestadoras'), '<select id="co-mostrar" name="mostrar">' + ['nao', 'total'].map((k) => '<option value="' + k + '"' + (d.orcamento.mostrar === k ? ' selected' : '') + '>' + MOSTRAR_ORCAMENTO[k] + '</option>').join('') + '</select>') +
         campo('co-gl', tr('Seguro de responsabilidade civil (GL) mínimo, US$'), '<input type="number" id="co-gl" name="glMinimo" min="0" step="100000" value="' + (ex.glMinimo || '') + '">') +
@@ -172,7 +173,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
         '<label class="check pequeno"><input type="checkbox" name="visita" value="1"' + (ex.visita && ex.visita.obrigatoria ? ' checked' : '') + '> ' + tr('Visita à obra obrigatória') + '</label>' +
         '<p class="mudo pequeno">' + tr('O orçamento nunca aparece para as prestadoras, a não ser que você escolha mostrar o total.') + '</p>' +
       '</section>' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Convidados *') + '</h2>' +
+      '<section class="cartao" data-aba="convidados" hidden><h2 class="cartao-titulo">' + tr('Convidados *') + '</h2>' +
         (prestadoras.length ? '<div class="co-convidados">' + prestadoras.map((p) => '<label class="check"><input type="checkbox" name="convidados" value="' + p.id + '"' + (convidados.includes(p.id) ? ' checked' : '') + '> <b>' + esc(p.nome) + '</b> ' +
           (contaDoContato(p) ? '<span class="etiqueta etiqueta-verde">' + tr('Tem KORbuild') + '</span>' : '<span class="etiqueta etiqueta-neutro">' + tr('Recebe por link') + '</span>') +
           (p.pessoa ? ' <span class="mudo pequeno">' + esc(p.pessoa) + '</span>' : '') + '</label>').join('') + '</div>'
@@ -249,6 +250,21 @@ function dadosDoForm() {
 
 /* ---------- Página da concorrência ---------- */
 
+/* Os três números do alto da página: menor valor, menor prazo e quantas convidadas já mandaram proposta. */
+function kpisDasPropostas(c) {
+  const cmp = comparar(c);
+  const ativos = c.convites.filter((v) => v.situacao !== 'nao-vai');
+  if (!cmp.colunas.length) return '';
+  const menor = cmp.colunas.reduce((a, b) => (b.total < a.total ? b : a));
+  const comPrazo = cmp.colunas.filter((k) => k.prazoExecucaoDias);
+  const rapida = comPrazo.length ? comPrazo.reduce((a, b) => (b.prazoExecucaoDias < a.prazoExecucaoDias ? b : a)) : null;
+  const pct = ativos.length ? Math.round(cmp.colunas.length * 100 / ativos.length) : 0;
+  return '<div class="co-kpis">' +
+    '<div class="co-kpi co-kpi-verde"><span>' + tr('Menor valor') + '</span><b>' + dinheiro(menor.total) + '</b><small>' + esc(menor.nome) + '</small></div>' +
+    '<div class="co-kpi co-kpi-azul"><span>' + tr('Menor prazo') + '</span><b>' + (rapida ? tn(rapida.prazoExecucaoDias, '{n} dia', '{n} dias') : '—') + '</b><small>' + (rapida ? esc(rapida.nome) : '') + '</small></div>' +
+    '<div class="co-kpi co-kpi-roxo"><span>' + tr('Propostas recebidas') + '</span><b>' + tr('{n} de {total}', { n: cmp.colunas.length, total: ativos.length }) + '</b><small>' + tr('{pct}% das convidadas', { pct }) + '</small></div></div>';
+}
+
 const ABAS_PAGINA = [['convidados', tr('Convidados')], ['perguntas', tr('Perguntas')], ['comparar', tr('Comparar')], ['detalhes', tr('Detalhes')]];
 
 export function telaConcorrencia(moldura, id, abaPedida) {
@@ -287,7 +303,7 @@ export function telaConcorrencia(moldura, id, abaPedida) {
     subtitulo: nomeOrigem(c) + ' · ' + SITUACOES[s].nome + (ativa ? ' · ' + tr('prazo {quando}', { quando: textoPrazo(c) }) : ''),
     voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') }, acoes,
     conteudo: aviso + '<div id="concorrencia" data-id="' + c.id + '"></div>' +
-      (c.situacao === 'rascunho' ? '' : '<nav class="abas-segmento" aria-label="' + tr('Seções') + '">' + ABAS_PAGINA.map(([k, r]) => '<a href="#/daily/concorrencias/' + c.id + (k === 'convidados' ? '' : '/' + k) + '"' + (k === aba ? ' class="ativa" aria-current="page"' : '') + '>' + r + (k === 'comparar' ? ' <span class="mz-contagem">' + c.convites.filter((v) => v.propostas.length).length + '</span>' : '') + (k === 'perguntas' && perguntasSemResposta(c).length ? ' <span class="mz-contagem co-pendente">' + perguntasSemResposta(c).length + '</span>' : '') + '</a>').join('') + '</nav>') +
+      (c.situacao === 'rascunho' ? '' : kpisDasPropostas(c) + '<nav class="abas-sublinhadas" aria-label="' + tr('Seções') + '">' + ABAS_PAGINA.map(([k, r]) => '<a href="#/daily/concorrencias/' + c.id + (k === 'convidados' ? '' : '/' + k) + '"' + (k === aba ? ' class="ativa" aria-current="page"' : '') + '>' + r + (k === 'comparar' ? ' <span class="mz-contagem">' + c.convites.filter((v) => v.propostas.length).length + '</span>' : '') + (k === 'perguntas' && perguntasSemResposta(c).length ? ' <span class="mz-contagem co-pendente">' + perguntasSemResposta(c).length + '</span>' : '') + '</a>').join('') + '</nav>') +
       conteudo,
   });
 }
@@ -653,6 +669,10 @@ export function telaConvitePublico(token, marca) {
       '<span class="cliente-via">' + marca(18) + 'KORbuild</span></header>' +
     '<main class="pagina pagina-larga convite-publico">' +
       '<h1>' + esc(x.servico) + '</h1><p class="mudo">' + esc(x.obra ? x.obra.nome + ' · ' + textoLocal(x.obra) : '') + ' · ' + tr('para {nome}', { nome: esc(v.nome) }) + '</p>' +
+      '<div class="co-kpis co-kpis-4"><div class="co-kpi"><span>' + tr('Prazo da proposta') + '</span><b>' + (x.prazo ? dataCurta(x.prazo.slice(0, 10)) + ' · ' + x.prazo.slice(11, 16) : '—') + '</b></div>' +
+        '<div class="co-kpi"><span>' + tr('Faltam') + '</span><b>' + (x.prazo && aberta ? textoPrazo(x).replace(/^.*·\s*/, '') : '—') + '</b></div>' +
+        '<div class="co-kpi"><span>' + tr('Etapas') + '</span><b>' + x.etapas.map(esc).join(' · ') + '</b></div>' +
+        '<div class="co-kpi"><span>' + tr('Serviço previsto') + '</span><b>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</b></div></div>' +
       situacao +
       '<div class="grade-2">' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(x.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(x.excluso) +
@@ -821,6 +841,10 @@ export const acoesConcorrencias = {
     const r = await enviarProposta(x.id, { ...m, numero: emitida.numero, propostaEmitidaId: emitida._banco ? emitida.id : null, prazoExecucaoDias: res.campos.prazo, exclusoes: res.campos.exclusoes, pdf: { numero: emitida.numero } }, quem());
     toast(r.erro || tr('Proposta enviada para {nome} (rev. {rev}).', { nome: nomeContratante(x), rev: r.rev }));
     if (r.ok) app.desenhar();
+  },
+  async 'co-aba'(el) {
+    for (const b of document.querySelectorAll('#form-concorrencia [data-acao="co-aba"]')) { const on = b === el; b.classList.toggle('ativa', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
+    for (const sec of document.querySelectorAll('#form-concorrencia section[data-aba]')) sec.hidden = sec.dataset.aba !== el.dataset.aba;
   },
   async 'co-anexar'() {
     const campoArq = document.getElementById('co-arquivo');

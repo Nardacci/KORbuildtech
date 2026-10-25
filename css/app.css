@@ -1597,3 +1597,25 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .cartao-conta { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-left: 4px solid var(--marca, #F26A1B); }
 .cartao-conta p { margin: 4px 0; }
 .convite-publico .form-settings input[type="file"] { width: 100%; box-sizing: border-box; }
+
+/* Concorrências: abas sublinhadas, cartões de resumo, formulários e tabelas no mesmo padrão (modelo D) */
+[hidden] { display: none !important; }
+.abas-sublinhadas { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--borda, #DDE1E7); margin: 18px 0 20px; }
+.abas-sublinhadas a, .abas-sublinhadas button { padding: 12px 18px; font: inherit; font-weight: 600; color: #6B7280; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; text-decoration: none; cursor: pointer; }
+.abas-sublinhadas a.ativa, .abas-sublinhadas button.ativa { color: #C2410C; border-bottom-color: #C2410C; }
+.abas-sublinhadas a:hover, .abas-sublinhadas button:hover { color: #141B26; }
+.co-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 16px 0 0; }
+.co-kpis-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 16px; }
+.co-kpi { border-radius: 12px; padding: 14px 18px; border: 1px solid #E3E6EB; background: #fff; }
+.co-kpi span { display: block; font-size: 12px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: .02em; }
+.co-kpi b { display: block; font-size: 18px; margin: 2px 0; }
+.co-kpi small { color: #4B5563; }
+.co-kpi-verde { background: #ECFDF3; border-color: #A6E3BD; }
+.co-kpi-azul { background: #EFF6FF; border-color: #BFDBFE; }
+.co-kpi-roxo { background: #F5F3FF; border-color: #DDD6FE; }
+@media (max-width: 760px) { .co-kpis, .co-kpis-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#form-concorrencia input[type="text"], #form-concorrencia input[type="date"], #form-concorrencia input[type="time"], #form-concorrencia input[type="number"], #form-concorrencia input[type="file"], #form-concorrencia select, #form-link input[type="text"], #form-link input[type="number"], #form-link input[type="file"] { height: 40px; width: 100%; box-sizing: border-box; border-radius: 8px; padding: 0 12px; }
+#form-concorrencia input[type="file"], #form-link input[type="file"] { padding-top: 7px; }
+#form-concorrencia .cartao, #form-link { border-radius: 14px; }
+.tabela-concorrencias th, #co-anexos th { font-size: 12px; text-transform: none; color: #6B7280; }
+.tabela-concorrencias td, #co-anexos td { padding: 14px 12px; vertical-align: middle; }

@@ -84,11 +84,14 @@ try {
   await t.p.fill('#co-servico', 'Framing e drywall');
   await t.p.fill('#co-outrasEtapas', '06 10 00\n09 21 16');
   await t.p.fill('#co-incluso', 'Paredes\nForro');
+  await t.p.click('[data-acao="co-aba"][data-aba="prazos"]');
   await t.p.fill('#co-prazoData', isoDaqui(5));
   await t.p.fill('#co-prazoHora', '17:00');
+  await t.p.click('[data-acao="co-aba"][data-aba="docs"]');
   await t.p.setInputFiles('#co-arquivo', 'assets/plantas/casa-modelo.pdf');
   await t.p.fill('#co-descricao', 'Planta da casa');
   await t.p.click('[data-acao="co-anexar"]');
+  await t.p.click('[data-acao="co-aba"][data-aba="convidados"]');
   await t.p.check('input[name="convidados"][value="' + ctA.id + '"]');
   await t.p.check('input[name="convidados"][value="' + ctBay.id + '"]');
   await t.p.click('button[data-acao="co-salvar"]:not([data-enviar])');
