@@ -1,6 +1,4 @@
--- KORbuild — migração 0016 (PROPOSTA, NÃO APLICADA): o projeto como espaço de trabalho + observação dos anexos da licitação.
--- Revisar antes. Só aplicar depois que o dono digitar "pode aplicar". Depois de aplicada: PERSISTE_ESPACO = true em js/measure-oficial.js
--- e mover este arquivo para supabase/migrations/.
+-- KORbuild — migração 0016: o projeto como espaço de trabalho + observação dos anexos da licitação (aprovada pelo dono: "pode aplicar").
 --
 -- 1. projetos.entrega e projetos.cronograma: o "quem faz cada etapa" e o cronograma preliminar do projeto (jsonb, mesma forma do protótipo):
 --      entrega    = { padrao, etapas: [{ id, etapa, quem, takeoff }] }

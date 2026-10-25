@@ -172,6 +172,7 @@ export function aplicarMeasure(d, lido) {
       id: p.id, nome: p.nome, contratanteId: p.contratante_id, donoId: p.dono_id || null, endereco: p.endereco, cidade: p.cidade, estado: p.estado, zip: p.zip,
       tipo: p.tipo, situacao: p.situacao, descricao: p.descricao, obraId: p.obra_id || null, estimadorId: p.estimador_id || null, prazoProposta: p.prazo_proposta || null,
       proposta: Object.keys(p.proposta_rascunho || {}).length ? p.proposta_rascunho : undefined, cotacao: Object.keys(p.cotacao || {}).length ? p.cotacao : undefined,
+      entrega: Object.keys(p.entrega || {}).length ? p.entrega : undefined, cronograma: Object.keys(p.cronograma || {}).length ? p.cronograma : undefined,
       concorrencia: Object.keys(p.concorrencia || {}).length ? p.concorrencia : undefined,
       propostas: propostasPor.get(p.id) || [], criadoEm: ms(p.criado_em), alteradoEm: ms(p.atualizado_em),
     })),

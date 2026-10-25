@@ -2,7 +2,7 @@
  * e Schedule (cronograma preliminar com marcos). Os dados novos ficam no próprio projeto:
  *   p.entrega    = { padrao: 'tudo' | 'misto' | 'terceirizar', etapas: [{ id, etapa, quem: 'proprio' | 'terceiro' | 'decidir', takeoff: 'detalhado' | 'nenhum' | 'quantidades' }] }
  *   p.cronograma = { tarefas: [{ id, nome, quem, inicio, dias }], marcos: [{ id, nome, data, nota }] }
- * No app com conta, estes dois campos só vão para o banco depois da migração 0016 (supabase/pendentes): ver PERSISTE_ESPACO em measure-oficial.js. */
+ * No app com conta, estes dois campos só vão para o banco depois da migração 0016 (supabase/migrations): ver PERSISTE_ESPACO em measure-oficial.js. */
 
 import { esc, toast, hoje, diasEntre, somarDias, dataCurta, novoId } from './util.js';
 import { tr, tn } from './i18n.js';
