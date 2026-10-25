@@ -25,6 +25,8 @@ await p.goto('about:blank');
 await p.goto(BASE + '#/measure/projeto/novo');
 await p.waitForSelector('#form-projeto', { timeout: 20000 });
 
+const textoDe = (sel) => p.locator(sel).first().innerText();
+
 console.log('Novo projeto em dois passos');
 verificar(await p.locator('#pj-nome').count() === 1 && await p.locator('#pj-descricao').count() === 0 && await p.locator('#pj-estimadorId').count() === 0, 'o formulário novo pede só o essencial (sem escopo, estimador nem obra vinculada)');
 await p.fill('#pj-nome', 'Barn residing');
@@ -77,6 +79,19 @@ verificar((await p.locator('.tabela-cronograma tbody tr').first().innerText()).l
 await p.click('[data-acao="pj-add-marco"]');
 await p.waitForTimeout(200);
 verificar(await p.locator('input[data-pj-marco="nome"]').count() === 1, 'dá para adicionar um marco');
+
+verificar(await p.locator('[data-acao="pj-confirmar-cronograma"]').count() === 0, 'projeto ainda em orçamento: sem pedido de confirmação do cronograma');
+await p.goto(BASE + '#/measure/projeto/' + id + '/editar');
+await p.waitForSelector('#pj-situacao');
+await p.selectOption('#pj-situacao', 'ganha');
+await p.click('[data-acao="mz-salvar-projeto"]');
+await p.goto('about:blank');
+await p.goto(BASE + '#/measure/projeto/' + id + '/schedule');
+await p.waitForSelector('[data-acao="pj-confirmar-cronograma"]', { timeout: 10000 });
+verificar((await textoDe('.pagina')).includes('Confirme o cronograma'), 'projeto ganho: o cronograma pede confirmação');
+await p.click('[data-acao="pj-confirmar-cronograma"]');
+await p.waitForTimeout(300);
+verificar((await textoDe('.pagina')).includes('Cronograma confirmado') && (await textoDe('.pagina')).includes('2 tarefas'), 'confirmado: vira a base da obra, com a data e o número de tarefas');
 
 console.log('Visão geral depois do trabalho');
 await p.goto(BASE + '#/measure/projeto/' + id);

@@ -164,7 +164,12 @@ export function htmlCronograma(p, ajudas) {
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +
     '<td><input type="text" data-pj-marco="nota" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nota || '') + '" aria-label="' + esc(tr('Observação')) + '"></td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-marco" data-id="' + p.id + '" data-m="' + m.id + '">' + tr('Remover') + '</button></td></tr>').join('');
-  return '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
+  const ganha = p.situacao === 'ganha';
+  const faixaGanho = !ganha ? '' : '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + (c.confirmado ? tr('Cronograma confirmado') : tr('Confirme o cronograma')) + '</h2><p class="mudo pequeno">' +
+    (c.confirmado ? tn(c.confirmado.tarefas.length, 'Base da obra desde {data}: {n} tarefa.', 'Base da obra desde {data}: {n} tarefas.', { data: dataCurta(c.confirmado.em) }) + ' ' + tr('Se mudar algo, confirme de novo para atualizar a base.')
+      : tr('O projeto foi ganho. Ajuste as datas abaixo e confirme: o cronograma vira a base da obra.')) + '</p></div>' +
+    '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-confirmar-cronograma" data-id="' + p.id + '"' + (tarefas.length ? '' : ' disabled') + '>' + (c.confirmado ? tr('Atualizar a base') : tr('Confirmar cronograma')) + '</button></div></section>';
+  return faixaGanho + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (e.etapas.length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-tarefa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar tarefa') + '</button></div></div>' +
     (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th>' + tr('Linha do tempo') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
@@ -238,6 +243,11 @@ export const acoesEspaco = {
   'pj-add-marco'(el) {
     cronogramaDe(projeto(el.dataset.id)).marcos.push({ id: novoId('mc'), nome: '', data: '', nota: '' });
     terminou();
+  },
+  'pj-confirmar-cronograma'(el) {
+    const c = cronogramaDe(projeto(el.dataset.id));
+    c.confirmado = { em: hoje(), tarefas: JSON.parse(JSON.stringify(c.tarefas)), marcos: JSON.parse(JSON.stringify(c.marcos)) };
+    terminou(tr('Cronograma confirmado como base da obra.'));
   },
   'pj-tirar-marco'(el) {
     const c = cronogramaDe(projeto(el.dataset.id));
