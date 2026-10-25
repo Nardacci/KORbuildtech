@@ -35,3 +35,11 @@ Os campos `entrega` e `cronograma` dependem da migração 0016 (`supabase/penden
 - Confirmar o cronograma no ganho e levá-lo para a obra.
 - Prazo de execução por etapa nas respostas das prestadoras (alimenta o cronograma).
 - As telas "Lista para cotação" e "Proposta" ainda não têm a faixa de abas.
+
+## Cronograma na 1ª versão (decisão do dono: opção A)
+
+- O **cronograma do projeto** (aba Schedule: tarefas, marcos e a confirmação ao ganhar) existe na 1ª versão.
+- O **cronograma da obra** (Gantt, avanço pelo Daily, linha de base da obra) é outro módulo e fica oculto na 1ª versão, com Daily e Crew.
+- Ao ganhar, o dono confirma o cronograma no projeto; a base fica guardada no projeto (`cronograma.confirmado`). O cadastro da obra da 1ª versão não tem cronograma, então a base **não** passa para a obra por ora.
+- Na versão completa, ao criar a obra a partir do projeto ganho, a opção "Cronograma confirmado no projeto" já vem escolhida e cria as etapas e as datas da obra. Na conta com banco, isso depende de uma função nova no servidor (não feita).
+- Quando o módulo de obras for liberado, a base confirmada passa para a obra sem refazer nada.
