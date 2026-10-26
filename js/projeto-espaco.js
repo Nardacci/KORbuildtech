@@ -118,14 +118,11 @@ function htmlMarcos(p) {
 /* ---------- Scope & delivery ---------- */
 
 const QUEM = () => [['proprio', tr('Executo eu')], ['terceiro', tr('Subcontrato')], ['decidir', tr('Decidir depois')]];
-const PADROES = () => [['tudo', tr('Fazemos tudo'), tr('Todas as etapas são nossas')], ['misto', tr('Misto'), tr('Fazemos algumas, subcontratamos outras')], ['terceirizar', tr('Subcontratamos tudo'), tr('Pedimos preço, sem takeoff de materiais')]];
 const TAKEOFF = () => ({ detalhado: tr('Detalhado'), nenhum: tr('Nenhum'), quantidades: tr('Só quantidades') });
 
 export function htmlEscopo(p, ajudas) {
   const e = entregaDe(p);
   const conhecidas = [...new Set(itens().map((i) => i.etapa).filter(Boolean))].sort();
-  const padraoAtual = (PADROES().find(([k]) => k === e.padrao) || PADROES()[1]);
-  const padroes = '<p class="mz-padrao-atual">' + tr('Execução do projeto:') + ' <b>' + esc(padraoAtual[1]) + '</b> · <a href="#/measure/projeto/' + p.id + '/editar">' + tr('mudar em Editar projeto') + '</a></p>';
   const linhas = e.etapas.map((x) => {
     const bids = ajudas.licitacoesDa(p, x.etapa);
     return '<tr><td><b>' + esc(x.etapa) + '</b></td>' +
@@ -140,26 +137,10 @@ export function htmlEscopo(p, ajudas) {
       : '<p class="vazio">' + tr('Nenhuma etapa ainda. Adicione abaixo, ou inclua assemblies nas condições para que elas apareçam sozinhas.') + '</p>') +
     '<div class="mz-add-etapa"><input type="text" id="pj-nova-etapa" list="pj-etapas-conhecidas" placeholder="' + esc(tr('Ex.: 07 46 33 · Siding')) + '" aria-label="' + esc(tr('Nova etapa')) + '"><datalist id="pj-etapas-conhecidas">' + conhecidas.map((c) => '<option value="' + esc(c) + '">').join('') + '</datalist>' +
     '<button type="button" class="btn btn-contorno" data-acao="pj-add-etapa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar etapa') + '</button>' +
-    '<button type="button" class="btn btn-contorno" data-acao="pj-sugerir-etapas" data-id="' + p.id + '">' + tr('Trazer das medições') + '</button></div>' +
+    '<button type="button" class="btn btn-contorno" data-acao="pj-sugerir-etapas" data-id="' + p.id + '">' + tr('Trazer das medições') + '</button>' +
+    '<button type="button" class="btn btn-contorno" data-acao="pj-todas-proprias" data-id="' + p.id + '"' + (e.etapas.length ? '' : ' disabled') + '>' + tr('Marcar todas como próprias') + '</button></div>' +
     (ajudas.aviso ? '<p class="mudo pequeno">' + ajudas.aviso + '</p>' : '') + '</section>';
-  return padroes + tabela;
-}
-
-/* Como o projeto será executado: escolhido ao criar ou editar o projeto (cartões de escolha). */
-export function htmlPadroesDoForm(atual, editando) {
-  const a = atual || 'misto';
-  return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Como este projeto será executado?') + '</h2><p class="mudo pequeno">' + tr('Define o padrão de cada etapa. Você pode mudar cada uma na aba Takeoff.') + (editando ? ' ' + tr('Trocar para "Fazemos tudo" ou "Subcontratamos tudo" muda as etapas já listadas.') : '') + '</p><div class="mz-padroes">' +
-    PADROES().map(([k, n, d]) => '<label class="mz-padrao"><input type="radio" name="padrao" value="' + k + '"' + (a === k ? ' checked' : '') + '><b>' + esc(n) + '</b><small>' + esc(d) + '</small></label>').join('') + '</div></section>';
-}
-
-/* Aplica o padrão ao projeto: "misto" só guarda a escolha; os outros dois ajustam as etapas já listadas. */
-export function definirPadrao(p, padrao) {
-  if (!['tudo', 'misto', 'terceirizar'].includes(padrao)) return;
-  const e = entregaDe(p);
-  if (e.padrao === padrao) return;
-  e.padrao = padrao;
-  if (padrao === 'tudo') for (const x of e.etapas) { x.quem = 'proprio'; x.takeoff = 'detalhado'; }
-  if (padrao === 'terceirizar') for (const x of e.etapas) { x.quem = 'terceiro'; x.takeoff = 'nenhum'; }
+  return tabela;
 }
 
 /* ---------- Schedule ---------- */
@@ -203,6 +184,12 @@ function etapaDe(p, id) { return entregaDe(p).etapas.find((x) => x.id === id); }
 function terminou(msg) { salvar(); if (msg) toast(msg); app.desenhar(); }
 
 export const acoesEspaco = {
+  'pj-todas-proprias'(el) {
+    const e = entregaDe(projeto(el.dataset.id));
+    for (const x of e.etapas) { x.quem = 'proprio'; x.takeoff = 'detalhado'; }
+    e.padrao = 'tudo';
+    terminou();
+  },
   'pj-takeoff'(el) {
     const x = etapaDe(projeto(el.dataset.id), el.dataset.et);
     if (x) x.takeoff = x.takeoff === 'quantidades' ? 'nenhum' : 'quantidades';

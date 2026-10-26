@@ -53,3 +53,7 @@ Overview · Plans · Takeoff · Materials · Schedule · Project summary.
 - **Materials** e **Schedule:** como antes.
 - **Project summary** (última): situação, proposta, custo, margem, quem faz cada parte e de onde vem o preço, resumo do cronograma, concorrências do projeto e a saída para a proposta.
 - **Bids:** não há aba; as concorrências ficam no menu **Bids** e, em cada etapa subcontratada, o link New bid / Open bid. Os endereços antigos `/scope` e `/bids` abrem o Takeoff.
+
+## Padrão de execução (decisão do dono, 26/10)
+
+Os três cartões "Como este projeto será executado?" (Fazemos tudo / Misto / Subcontratamos tudo) foram **retirados**: não ajudam a decidir, só pedem uma escolha cedo. Vale a decisão por etapa, na tabela "Quem faz cada etapa?" do Takeoff. Para quem faz tudo sozinho, o botão **Mark all as self-performed** marca todas de uma vez. O campo interno `entrega.padrao` continua existindo, mas é calculado a partir das etapas.

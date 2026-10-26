@@ -308,8 +308,8 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Plans leva a Plans; Set scales, Review e Open takeoff levam a Takeoff; Open schedule, a Schedule; Open proposal, à proposta; ao concluir o passo, a marca verde aparece e o progresso sobe
 - [ ] **T130** · `pv.p1.admin` — Edit project: mudar dono da obra, obra vinculada, situação e estimador; salvar  
   _Esperado:_ Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado
-- [ ] **T131** · `pv.p1.admin` — Takeoff: no topo, clicar nos três padrões (We do it all, Mixed, We subcontract it all)  
-  _Esperado:_ O escolhido fica destacado; 'We do it all' marca todas as etapas como Self-perform; 'We subcontract it all' marca Subcontract
+- [ ] **T131** · `pv.p1.admin` — Takeoff: clicar em 'Mark all as self-performed'  
+  _Esperado:_ Todas as etapas viram Self-perform com takeoff detalhado; o botão fica desabilitado quando não há etapas; não existem mais cartões de padrão (Fazemos tudo / Misto / Subcontratamos tudo) no Takeoff nem no Novo/Editar projeto
 - [ ] **T132** · `pv.p1.admin` — Takeoff: adicionar uma etapa (ex.: 07 46 33 · Siding) e usar 'Bring in from takeoff'  
   _Esperado:_ A etapa entra na tabela; 'Bring in from takeoff' traz as etapas dos assemblies já aplicados, sem duplicar
 - [ ] **T133** · `pv.p1.admin` — Takeoff: mudar 'Who does it' de uma etapa para Subcontract  
@@ -344,7 +344,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Consegue ver e editar o projeto conforme o perfil; nada de módulos ocultos na 1ª versão
 - [ ] **T148** · `pv.p1.gestor` — Entrar como gestor e abrir um projeto  
   _Esperado:_ Mede e vê quantidades, mas não vê dinheiro (preços e proposta)
-- [ ] **T149** · `pv.p1.admin` — Conta real: mudar o padrão em Takeoff e recarregar a página  
+- [ ] **T149** · `pv.p1.admin` — Conta real: mudar quem faz uma etapa em Takeoff e recarregar a página  
   _Esperado:_ A escolha continua depois de recarregar; o aviso 'só neste navegador' não aparece
 - [ ] **T150** · `pv.p1.admin` — Conta real: criar tarefas no Schedule, recarregar e abrir em outro navegador  
   _Esperado:_ Tarefas, marcos e a confirmação continuam; aparecem no outro navegador

@@ -104,11 +104,12 @@ try {
   await a.p.click('[data-acao="mz-salvar-projeto"]');
   verificar(await esperarAte(async () => (await sql(`select nome, estado from public.projetos where empresa_id = '${A}'`)).some((x) => x.nome === 'Casa Thompson' && x.estado === 'NH')), 'o projeto chegou ao banco (estado em maiúsculas)');
   const pj = (await sql(`select id from public.projetos where empresa_id = '${A}'`))[0];
-  await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/editar');
-  await a.p.waitForSelector('input[name="padrao"]', { timeout: 20000 });
-  await a.p.click('label.mz-padrao:has(input[value="terceirizar"])');
-  await a.p.click('[data-acao="mz-salvar-projeto"]');
-  verificar(await esperarAte(async () => (await sql(`select entrega->>'padrao' as p from public.projetos where id = '${pj.id}'`))[0].p === 'terceirizar'), 'como o projeto será executado (Editar projeto) chegou ao banco');
+  await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/takeoff');
+  await a.p.waitForSelector('#pj-nova-etapa', { timeout: 20000 });
+  await a.p.fill('#pj-nova-etapa', '07 46 33 · Siding');
+  await a.p.click('[data-acao="pj-add-etapa"]');
+  await a.p.click('[data-acao="pj-todas-proprias"]');
+  verificar(await esperarAte(async () => { const e = (await sql(`select entrega from public.projetos where id = '${pj.id}'`))[0].entrega; return e.padrao === 'tudo' && e.etapas && e.etapas.length === 1 && e.etapas[0].quem === 'proprio'; }), 'quem faz cada etapa (Takeoff) chegou ao banco');
   await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/plans');
   await a.p.waitForSelector('#mz-enviar', { timeout: 20000 });
   await a.p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');

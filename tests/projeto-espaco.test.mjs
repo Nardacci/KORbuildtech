@@ -29,7 +29,6 @@ const textoDe = (sel) => p.locator(sel).first().innerText();
 
 console.log('Novo projeto em dois passos');
 verificar(await p.locator('#pj-nome').count() === 1 && await p.locator('#pj-descricao').count() === 0 && await p.locator('#pj-estimadorId').count() === 0, 'o formulário novo pede só o essencial (sem escopo, estimador nem obra vinculada)');
-verificar(await p.locator('input[name="padrao"]').count() === 3 && await p.locator('input[name="padrao"][value="misto"]').isChecked(), 'o novo projeto já pergunta como será executado (Misto marcado)');
 await p.fill('#pj-nome', 'Barn residing');
 await p.selectOption('#pj-contratanteId', { index: 1 });
 await p.fill('#pj-cidade', 'Hooksett');
@@ -66,9 +65,10 @@ const obs = await p.locator('[data-mz-folha-obs]').evaluateAll((els) => els.map(
 verificar(obs.filter((v) => v === 'Rev. C: fachadas').length >= 1, 'a referência digitada no envio vai para as folhas do arquivo novo', obs);
 
 console.log('Escopo e execução');
+await p.goto('about:blank');
 await p.goto(BASE + '#/measure/projeto/' + id + '/takeoff');
-await p.waitForSelector('.tabela-escopo, .mz-padrao-atual', { timeout: 10000 });
-verificar(await p.locator('.mz-padroes').count() === 0 && await p.locator('.mz-padrao-atual a').count() === 1, 'os cartões do padrão de execução não ficam mais no Takeoff (só um aviso com link para Editar projeto)');
+await p.waitForSelector('#pj-nova-etapa', { timeout: 10000 });
+verificar(await p.locator('.mz-padroes').count() === 0 && await p.locator('input[name="padrao"]').count() === 0, 'não há mais cartões de padrão de execução (nem no Takeoff nem nos formulários)');
 await p.fill('#pj-nova-etapa', '07 46 33 · Siding');
 await p.click('[data-acao="pj-add-etapa"]');
 await p.fill('#pj-nova-etapa', '07 31 13 · Roofing');
@@ -80,14 +80,9 @@ verificar(await p.locator('select[data-pj-quem]').nth(1).inputValue() === 'terce
 verificar(await p.locator('.tabela-escopo a[href*="concorrencias/nova/projeto"]').count() === 1, 'a etapa subcontratada oferece "pedir propostas"');
 await p.locator('select[data-pj-quem]').nth(0).selectOption('proprio');
 await p.waitForTimeout(300);
-await p.goto(BASE + '#/measure/projeto/' + id + '/editar');
-await p.waitForSelector('input[name="padrao"]', { timeout: 10000 });
-verificar(await p.locator('input[name="padrao"]').count() === 3 && await p.locator('input[name="padrao"][value="misto"]').isChecked(), 'Editar projeto oferece os três padrões, com "Misto" marcado');
-await p.click('label.mz-padrao:has(input[value="tudo"])');
-await p.click('[data-acao="mz-salvar-projeto"]');
-await p.goto(BASE + '#/measure/projeto/' + id + '/takeoff');
-await p.waitForSelector('select[data-pj-quem]');
-verificar((await p.locator('select[data-pj-quem]').evaluateAll((els) => els.map((e) => e.value))).every((v) => v === 'proprio'), '"Fazemos tudo" marca todas como próprias');
+await p.click('[data-acao="pj-todas-proprias"]');
+await p.waitForTimeout(300);
+verificar((await p.locator('select[data-pj-quem]').evaluateAll((els) => els.map((e) => e.value))).every((v) => v === 'proprio'), '"Marcar todas como próprias" muda todas as etapas');
 
 console.log('Cronograma');
 await p.goto(BASE + '#/measure/projeto/' + id + '/schedule');

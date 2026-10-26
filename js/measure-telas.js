@@ -27,7 +27,7 @@ import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta,
 import { telaPrecos } from './precos-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
-import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlEscopo, htmlCronograma, andamentoDoProjeto, entregaDe, htmlPadroesDoForm, definirPadrao, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
+import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlEscopo, htmlCronograma, andamentoDoProjeto, entregaDe, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -169,7 +169,6 @@ function telaFormProjeto(id) {
         '<div class="grade-campos">' +
           htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Cliente * (quem pediu a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
           campo('prazoProposta', tr('Prazo da proposta (bid due date)'), '<input type="date" id="pj-prazoProposta" name="prazoProposta" value="">') + '</div></section>' +
-        htmlPadroesDoForm('misto', false) +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
           '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
         '<div class="rodape-form"><a class="btn btn-contorno" href="#/measure">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">' + tr('Continuar para as plantas') + ' ›</button></div>' +
@@ -189,7 +188,6 @@ function telaFormProjeto(id) {
         htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Cliente * (quem pediu a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
         htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: tr('Dono da obra (opcional, se for outra pessoa)'), papeis: ['cliente'], atual: p.donoId, vazio: tr('O próprio cliente') }) +
       ('</div><p class="mudo pequeno">' + tr('Trabalhando para uma construtora, ela é o cliente e o dono do imóvel é o dono da obra. Contratado direto pelo dono, ele é o cliente.') + '</p></section>') +
-      htmlPadroesDoForm((p.entrega || {}).padrao, true) +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
         '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Proposta') + '</h2><div class="grade-campos">') +
@@ -1287,7 +1285,6 @@ export const acoesMeasure = {
     const id = form.dataset.id || null;
     const r = salvarProjeto(id, dados);
     if (r.erro) { toast(r.erro); return; }
-    if (dados.padrao) { definirPadrao(projeto(r.id), dados.padrao); salvar(); }
     toast(id ? tr('Projeto atualizado.') : tr('Projeto criado. Agora envie o PDF das plantas.'));
     app.ir('#/measure/projeto/' + r.id + (id ? '' : '/plans'));
   },
