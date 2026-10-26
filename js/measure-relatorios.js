@@ -17,6 +17,7 @@ import { custoDe, margensEm, textoMargens } from './precos.js';
 import { empresa, enderecoDaEmpresa, contato, contatosCom, contratanteDe, donoDe } from './contatos.js';
 import { botaoEnviarPelaPlataforma } from './concorrencias-telas.js';
 import { htmlAbas } from './projeto-espaco.js';
+import { escopoHtml } from './texto-rico.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarRelatorios(funcoes) { app = { ...app, ...funcoes }; }
@@ -206,7 +207,9 @@ export function telaProposta(id, moldura) {
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="prop-emitir" data-projeto="' + id + '">' + icone('aprovacoes', 16) + (tr('Emitir proposta') + '</button></div>'),
     conteudo: htmlAbas(p, 'summary') + '<form id="form-proposta" class="form-settings" data-projeto="' + id + '" data-sem-envio>' +
       (ct ? '' : '<p class="aviso-info">' + icone('conta', 16) + (tr('O projeto ainda não tem contratante: escolha em Editar projeto.') + '</p>')) +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><textarea name="escopo" rows="2" aria-label="' + tr('Escopo') + '">') + esc(r.escopo) + '</textarea></section>' +
+      '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><p class="mudo pequeno">' + tr('O escopo é escrito no projeto (Editar projeto › Escopo). Aqui só se carrega.') + '</p></div>' +
+        '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="prop-carregar-escopo" data-projeto="' + id + '">' + tr('Carregar o escopo do projeto') + '</button></div>' +
+        (r.escopo ? '<div class="doc-rico prop-escopo">' + escopoHtml(r.escopo) + '</div>' : '<p class="vazio">' + tr('Nenhum escopo carregado.') + '</p>') + '</section>' +
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Itens da proposta') + '</h2>') +
         '<label class="check pequeno"><input type="checkbox" name="mostrarQuantidades"' + (r.mostrarQuantidades ? ' checked' : '') + ('> ' + tr('Mostrar as quantidades de material no documento') + '</label></div>') +
         ('<p class="mudo pequeno">' + tr('Uma linha por etapa (material e mão de obra juntos). O preço é') + ' <b>' + tr('calculado') + '</b>' + tr(': quantidades × preços do catálogo (com vigência) +') + ' ') + esc(textoMargens(m)) +
@@ -277,7 +280,7 @@ function htmlProposta(d, numeroDoc, data) {
     '<section class="doc-partes">' + (d.contratante ? ('<div class="doc-bloco"><span class="doc-rotulo">' + tr('Para') + '</span><b>') + esc(d.contratante.nome) + '</b>' + (d.contratante.pessoa ? '<span>A/C ' + esc(d.contratante.pessoa) + '</span>' : '') +
       '<span>' + esc([d.contratante.email, d.contratante.telefone].filter(Boolean).join(' · ')) + '</span></div>' : '') +
       ('<div class="doc-bloco"><span class="doc-rotulo">' + tr('Obra') + '</span><b>') + esc(d.obra.nome) + '</b><span>' + esc(d.obra.endereco) + '</span>' + (d.dono ? ('<span>' + tr('Dono da obra:') + ' ') + esc(d.dono.nome) + '</span>' : '') + '</div></section>' +
-    (d.escopo ? ('<section class="doc-secao"><h2>' + tr('Escopo') + '</h2><p class="doc-pre">') + esc(d.escopo) + '</p></section>' : '') +
+    (d.escopo ? ('<section class="doc-secao"><h2>' + tr('Escopo') + '</h2><div class="doc-rico">') + escopoHtml(d.escopo) + '</div></section>' : '') +
     ('<table class="doc-tabela doc-tabela-proposta"><thead><tr><th>#</th><th>' + tr('Item') + '</th><th class="num">' + tr('Valor') + '</th></tr></thead><tbody>') +
       d.linhas.map((l, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(l.titulo) + '</b>' + (l.codigo ? ' <span class="doc-nota-inline">' + esc(l.codigo) + '</span>' : '') +
         (d.mostrarQuantidades && l.materiais.length ? '<span class="doc-nota">' + l.materiais.map(esc).join(' · ') + '</span>' : '') + ('<span class="doc-nota">' + tr('Material e mão de obra') + '</span></td><td class="num">') + dinheiro(l.valor) + '</td></tr>').join('') +
@@ -309,7 +312,6 @@ function lerFormProposta() {
   if (!form) return null;
   const p = projeto(form.dataset.projeto);
   const r = rascunho(p);
-  r.escopo = form.querySelector('[name="escopo"]').value;
   r.termos = form.querySelector('[name="termos"]').value;
   r.validadeDias = Math.max(1, Math.min(365, Number(form.querySelector('[name="validadeDias"]').value) || 30));
   r.mostrarQuantidades = form.querySelector('[name="mostrarQuantidades"]').checked;
@@ -382,6 +384,13 @@ export const acoesRelatorios = {
     const p = lerFormProposta();
     rascunho(p).extras.splice(Number(el.dataset.i), 1);
     salvar();
+    app.desenhar();
+  },
+  'prop-carregar-escopo'(el) {
+    const p = projeto(el.dataset.projeto);
+    rascunho(p).escopo = escopoHtml(p.descricao);
+    salvar();
+    toast(p.descricao ? tr('Escopo carregado do projeto.') : tr('O projeto ainda não tem escopo.'));
     app.desenhar();
   },
   async 'prop-emitir'(el) {

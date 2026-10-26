@@ -6,6 +6,7 @@
  *  - Guardado: polegadas, polegadas², polegadas³. Na tela: ft-in, lin ft, sq ft, cu yd (js/imperial.js). */
 
 import { novoId, hoje, somarDias } from './util.js';
+import { escopoHtml } from './texto-rico.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
 import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2_POR_PE2 } from './imperial.js';
@@ -76,7 +77,7 @@ export function salvarProjeto(id, dados) {
   const campo = (k) => String(dados[k] || '').trim();
   const d = {
     nome: campo('nome'), contratanteId: campo('contratanteId') || null, donoId: campo('donoId') || null, endereco: campo('endereco'), cidade: campo('cidade'), estado: campo('estado').toUpperCase(), zip: campo('zip'),
-    tipo: dados.tipo, situacao: dados.situacao, descricao: campo('descricao'), obraId: campo('obraId') || null, estimadorId: campo('estimadorId') || null, prazoProposta: campo('prazoProposta') || null,
+    tipo: dados.tipo, situacao: dados.situacao, descricao: dados.descricao === undefined && id ? projeto(id).descricao : escopoHtml(dados.descricao), obraId: campo('obraId') || null, estimadorId: campo('estimadorId') || null, prazoProposta: campo('prazoProposta') || null,
   };
   if (!d.nome) return { erro: tr('Dê um nome ao projeto.') };
   if (!d.contratanteId || !contato(d.contratanteId)) return { erro: tr('Escolha o contratante: a construtora que pediu a proposta, ou o próprio cliente quando contrata direto.') };

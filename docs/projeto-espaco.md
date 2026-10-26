@@ -65,3 +65,9 @@ A aba Schedule abre com uma **Timeline** (estilo Gantt, sem dependências): uma 
 ## Tarefas num só lugar (decisão do dono, 26/10)
 
 As **tarefas** (antes "etapas"/cost codes) são cadastradas **só no Schedule**, na hora de montar o cronograma, e podem ser editadas a qualquer momento. Cada tarefa tem **Who** (Us, Subcontractor, To decide), início e duração. O Takeoff não cadastra etapas nem pergunta quem faz: tem só o cartão Measure, as quantidades e os typicals. Tarefa de Subcontractor mostra **Request bids** (ou o resumo das propostas) e a Timeline pinta a barra de âmbar. "Generate from cost codes" cria as tarefas a partir dos assemblies das medições. O Project summary lê as mesmas tarefas. O campo antigo `entrega` fica sem uso.
+
+## Escopo com texto formatado (decisão do dono, 26/10)
+
+O escopo do projeto é escrito num **editor de texto estilo Word**, em uma aba **Scope** dentro de **Novo projeto** e **Editar projeto** (abas Project e Scope no mesmo formulário, um só botão de salvar). Barra: negrito, itálico, sublinhado, título e subtítulo, parágrafo, listas, recuo, alinhamento, link, desfazer, refazer e limpar formatação. O texto é guardado como HTML simples **sempre limpo** (`js/texto-rico.js`): só ficam as marcações permitidas; scripts, imagens, estilos e classes são removidos ao salvar, ao colar e ao exibir. Cabe no campo `descricao` que já existia (sem migração); textos antigos em texto simples viram parágrafos.
+
+Na **Proposal** o escopo **não é editável**: o botão **Load the project scope** traz o texto formatado do projeto (no primeiro acesso ele já vem carregado). A Overview mostra um resumo em texto, e o documento da proposta imprime o texto formatado. Fora desta versão: tabelas e imagens dentro do escopo.

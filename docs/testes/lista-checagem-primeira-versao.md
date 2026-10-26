@@ -350,3 +350,17 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Abre a nova concorrência já ligada ao projeto
 - [ ] **T151** · `pv.p1.admin` — Takeoff: conferir que não há mais tabela de etapas nem pergunta 'quem faz'  
   _Esperado:_ Só o cartão Measure (plantas), as quantidades e os typicals
+- [ ] **T152** · `pv.p1.admin` — New project e Edit project: olhar as abas Project e Scope no topo do formulário  
+  _Esperado:_ Duas abas; Project tem os campos de sempre (sem a caixa de texto simples do escopo); Scope tem só o editor de texto com barra de formatação; um único botão Save/Continue grava as duas
+- [ ] **T153** · `pv.p1.admin` — Scope: escrever com título (H1/H2), negrito, itálico, sublinhado, lista com marcadores e numerada, recuo, alinhamento, link, desfazer/refazer e limpar formatação  
+  _Esperado:_ Cada botão age no texto selecionado; o texto fica formatado no editor
+- [ ] **T154** · `pv.p1.admin` — Scope: colar um trecho do Word (ou de uma página da web)  
+  _Esperado:_ Entram título, negrito, listas e links; fontes, cores e estilos do Word não entram; nada de imagem
+- [ ] **T155** · `pv.p1.admin` — Scope: salvar, reabrir o projeto e olhar a Overview  
+  _Esperado:_ O escopo volta formatado no editor; a Overview mostra um resumo em texto
+- [ ] **T156** · `pv.p1.admin` — Project summary › Proposal: abrir a proposta; clicar 'Load the project scope'  
+  _Esperado:_ Não há caixa para editar o escopo; o botão traz o texto formatado do projeto; o primeiro acesso já vem com ele
+- [ ] **T157** · `pv.p1.admin` — Proposal: emitir e abrir o documento  
+  _Esperado:_ O escopo sai formatado (título, negrito, listas) no documento da proposta
+- [ ] **T158** · `pv.p1.admin` — Escopos antigos (texto simples)  
+  _Esperado:_ Aparecem no editor como parágrafos normais e continuam indo para a proposta

@@ -23,6 +23,7 @@ import {
 } from './measure.js';
 import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
+import { htmlEditorRico, valorDoEditor, escopoTexto } from './texto-rico.js';
 import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta, totais as totaisDaProposta } from './measure-relatorios.js';
 import { telaPrecos } from './precos-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
@@ -158,19 +159,22 @@ function telaFormProjeto(id) {
   const texto = (nome, rotulo, extra) => campo(nome, rotulo, '<input type="text" id="pj-' + nome + '" name="' + nome + '" value="' + v(nome) + '"' + (extra || '') + '>');
   const opcoes = (lista, atual) => lista.map(([valor, nome]) => '<option value="' + valor + '"' + (valor === atual ? ' selected' : '') + '>' + esc(nome) + '</option>').join('');
   const estimadores = estado().usuarios.filter((u) => u.ativo !== false && pode(u, 'measure.medir'));
+  const abasForm = '<nav class="abas-sublinhadas" aria-label="' + esc(tr('Seções')) + '"><button type="button" class="ativa" aria-current="page" data-acao="pj-form-aba" data-aba="dados">' + tr('Projeto') + '</button><button type="button" data-acao="pj-form-aba" data-aba="escopo">' + tr('Escopo') + '</button></nav>';
+  const secEscopo = '<section class="cartao" data-pj-aba="escopo" hidden><h2 class="cartao-titulo">' + tr('Escopo do projeto') + '</h2><p class="mudo pequeno">' + tr('Descreva o que está incluído (e o que não está). Este texto vai para a proposta. Dá para colar do Word.') + '</p>' + htmlEditorRico({ id: 'pj-escopo-ed', valor: p.descricao, placeholder: tr('Ex.: Residência térrea, wood framing, siding vinil…') }) + '</section>';
   if (!id) {
     // projeto novo: só o essencial; o resto (tipo, estimador, dono da obra…) fica para o Editar projeto
     return moldura({
       ativo: 'projetos', largura: 'larga', titulo: tr('Novo projeto'), subtitulo: tr('Poucos campos para começar. O resto você ajusta dentro do projeto.'),
       voltar: { href: '#/measure', rotulo: tr('Projetos') },
       conteudo: '<form id="form-projeto" class="form-settings" data-id="" data-sem-envio>' +
-        '<input type="hidden" name="tipo" value="' + esc(p.tipo) + '"><input type="hidden" name="situacao" value="orcamento"><input type="hidden" name="estimadorId" value="' + esc(p.estimadorId || '') + '">' +
-        ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2>') + texto('nome', tr('Nome do projeto *'), (' placeholder="' + tr('Ex.: Casa Thompson, Mezanino LogSul') + '"')) +
+        '<input type="hidden" name="tipo" value="' + esc(p.tipo) + '"><input type="hidden" name="situacao" value="orcamento"><input type="hidden" name="estimadorId" value="' + esc(p.estimadorId || '') + '">' + abasForm +
+        ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2>') + texto('nome', tr('Nome do projeto *'), (' placeholder="' + tr('Ex.: Casa Thompson, Mezanino LogSul') + '"')) +
         '<div class="grade-campos">' +
           htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Cliente * (quem pediu a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
           campo('prazoProposta', tr('Prazo da proposta (bid due date)'), '<input type="date" id="pj-prazoProposta" name="prazoProposta" value="">') + '</div></section>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
+      ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
           '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
+        secEscopo +
         '<div class="rodape-form"><a class="btn btn-contorno" href="#/measure">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">' + tr('Continuar para as plantas') + ' ›</button></div>' +
       '</form>',
     });
@@ -178,23 +182,24 @@ function telaFormProjeto(id) {
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: id ? tr('Editar projeto') : tr('Novo projeto'),
     voltar: id ? { href: '#/measure/projeto/' + id, rotulo: p.nome } : { href: '#/measure', rotulo: tr('Projetos') },
-    conteudo: '<form id="form-projeto" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2><div class="grade-campos">') +
+    conteudo: '<form id="form-projeto" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' + abasForm +
+      ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2><div class="grade-campos">') +
         texto('nome', tr('Nome do projeto *'), (' placeholder="' + tr('Ex.: Casa Thompson, Mezanino LogSul') + '"')) + '<div></div>' +
         campo('tipo', tr('Tipo de obra'), '<select id="pj-tipo" name="tipo">' + opcoes(Object.entries(TIPOS_PROJETO), p.tipo) + '</select>') +
         campo('situacao', tr('Situação'), '<select id="pj-situacao" name="situacao">' + opcoes(Object.entries(SITUACOES).map(([k, x]) => [k, x.nome]), p.situacao) + '</select>') +
-      '</div>' + campo('descricao', tr('Escopo'), ('<textarea id="pj-descricao" name="descricao" rows="2" placeholder="' + tr('Ex.: Residência térrea, wood framing, siding vinil') + '">') + v('descricao') + '</textarea>') + '</section>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Cliente da proposta') + '</h2><div class="grade-campos">') +
+      '</div></section>' +
+      ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Cliente da proposta') + '</h2><div class="grade-campos">') +
         htmlEscolhaContato({ id: 'pj-contratanteId', nome: 'contratanteId', rotulo: tr('Cliente * (quem pediu a proposta)'), papeis: ['construtora', 'cliente'], atual: p.contratanteId }) +
         htmlEscolhaContato({ id: 'pj-donoId', nome: 'donoId', rotulo: tr('Dono da obra (opcional, se for outra pessoa)'), papeis: ['cliente'], atual: p.donoId, vazio: tr('O próprio cliente') }) +
       ('</div><p class="mudo pequeno">' + tr('Trabalhando para uma construtora, ela é o cliente e o dono do imóvel é o dono da obra. Contratado direto pelo dono, ele é o cliente.') + '</p></section>') +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
+      ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
         '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
-      ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Proposta') + '</h2><div class="grade-campos">') +
+      ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Proposta') + '</h2><div class="grade-campos">') +
         campo('prazoProposta', tr('Prazo da proposta (bid due date)'), '<input type="date" id="pj-prazoProposta" name="prazoProposta" value="' + v('prazoProposta') + '">') +
         campo('estimadorId', tr('Estimador responsável'), '<select id="pj-estimadorId" name="estimadorId"><option value="">—</option>' + opcoes(estimadores.map((u) => [u.id, u.nome]), p.estimadorId) + '</select>') +
         campo('obraId', tr('Obra vinculada (opcional)'), ('<select id="pj-obraId" name="obraId"><option value="">' + tr('Nenhuma (obra nova)') + '</option>') + opcoes(estado().obras.map((o) => [o.id, o.nome]), p.obraId) + '</select>') +
       ('</div><p class="mudo pequeno">' + tr('Vincule a uma obra já cadastrada quando o orçamento for um aditivo ou uma ampliação.') + '</p></section>') +
+      secEscopo +
       '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="mz-excluir-projeto" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
         '<a class="btn btn-contorno" href="' + (id ? '#/measure/projeto/' + id : '#/measure') + ('">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">') + (id ? tr('Salvar') : tr('Criar projeto')) + '</button></div>' +
     '</form>',
@@ -213,7 +218,7 @@ function telaProjeto(id, abaPedida) {
   const dado = (rot, html) => html ? '<div><dt>' + rot + '</dt><dd>' + html + '</dd></div>' : '';
   const detalhes = '<section class="cartao"><dl class="mz-dados">' + dado(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) + ' <span class="mudo pequeno">· ' + esc(contratanteDe(p).papeis.map((x) => PAPEIS[x].nome.toLowerCase()).join(', ')) + '</span>' : '') +
         dado(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') + dado(tr('Situação'), etiquetaSituacao(p)) + dado(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + dado(tr('Prazo da proposta'), textoPrazo(p)) +
-        dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (PRIMEIRA_VERSAO || pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="' + (PRIMEIRA_VERSAO ? (estado().oficial ? '#/conta/obras/' : '#/settings/obra/') : '#/daily/obras/') + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(p.descricao)) + '</dl>' +
+        dado(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) + dado(tr('Obra vinculada'), p.obraId && obra(p.obraId) ? (PRIMEIRA_VERSAO || pode(usuarioAtual(), 'daily.acompanhar') ? '<a href="' + (PRIMEIRA_VERSAO ? (estado().oficial ? '#/conta/obras/' : '#/settings/obra/') : '#/daily/obras/') + p.obraId + '">' + esc(obra(p.obraId).nome) + '</a>' : esc(obra(p.obraId).nome)) : '') + dado(tr('Escopo'), esc(escopoTexto(p.descricao, 240))) + '</dl>' +
         // projeto ganho vira obra: o cadastro já vem preenchido (docs/obras.md OB-07)
         (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
           ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + (PRIMEIRA_VERSAO ? tr('Cadastre a obra: ela liga a concorrência e a contratada. Nome, endereço e partes já vão preenchidos.') : tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.')) + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
@@ -1279,9 +1284,15 @@ export const acoesMeasure = {
     } catch (e) { toast(tr('O navegador não permitiu a tela cheia.')); }
   },
   'mz-filtro'(el) { filtroSituacao = el.dataset.situacao; app.desenhar(); },
+  'pj-form-aba'(el) {
+    for (const b of document.querySelectorAll('#form-projeto [data-acao="pj-form-aba"]')) { const on = b === el; b.classList.toggle('ativa', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
+    for (const sec of document.querySelectorAll('#form-projeto section[data-pj-aba]')) sec.hidden = sec.dataset.pjAba !== el.dataset.aba;
+  },
   'mz-salvar-projeto'() {
     const form = document.getElementById('form-projeto');
     const dados = Object.fromEntries(new FormData(form).entries());
+    const escopo = valorDoEditor('pj-escopo-ed');
+    if (escopo != null) dados.descricao = escopo;
     const id = form.dataset.id || null;
     const r = salvarProjeto(id, dados);
     if (r.erro) { toast(r.erro); return; }
