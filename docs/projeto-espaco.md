@@ -79,7 +79,7 @@ A aba **Project summary** só mostra: status, proposta, custo e margem, dados do
 ## Concorrência a partir do projeto (decisão do dono, 26/10)
 
 **New bid** começa pela escolha de **um projeto**. O formulário traz:
-- **Tarefas a cotar:** as tarefas do Schedule marcadas como Subcontractor (várias por concorrência; pode escolher de novo uma tarefa que já foi cotada).
+- **Tarefas a cotar:** uma lista com as tarefas do Schedule marcadas como Subcontractor, um botão Adicionar e uma grade com as escolhidas (a tarefa adicionada sai da lista; ao remover, volta). Várias por concorrência; pode escolher de novo uma tarefa que já foi cotada. O **título da concorrência** é o nome que a prestadora vê no convite e na lista; ele sugere o nome das tarefas escolhidas.
 - **Escopo:** o mesmo editor de texto formatado do projeto, já preenchido com o escopo dele e editável só para esta concorrência. **Não vai anexo de escopo**: o texto formatado é parte do pacote que a prestadora vê (convite, link e página da concorrência).
 - **Plantas:** os arquivos da aba Plans, com a observação de cada um em campo editável (só para esta concorrência). Vão como anexos junto com os desenhos.
 - **Notes:** observações gerais.

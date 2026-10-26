@@ -153,7 +153,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
       '<nav class="abas-sublinhadas" aria-label="' + tr('Seções') + '">' + [['servico', tr('Serviço e escopo')], ['docs', tr('Documentos')], ['prazos', tr('Prazos e exigências')], ['convidados', tr('Convidados')]].map(([k, r], i) => '<button type="button" data-acao="co-aba" data-aba="' + k + '"' + (i === 0 ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</button>').join('') + '</nav>' +
       '<section class="cartao" data-aba="servico"><h2 class="cartao-titulo">' + tr('Serviço') + '</h2><div class="grade-campos">' +
         (pj ? campo('co-projeto', tr('Projeto'), '<input type="text" id="co-projeto" value="' + esc(pj.nome) + '" readonly>') : campo('co-obraId', tr('Obra *'), '<select id="co-obraId" name="obraId"><option value="">' + tr('Escolha…') + '</option>' + obras.map((o) => '<option value="' + o.id + '"' + (o.id === d.obraId ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') + '</select>')) +
-        campo('co-servico', tr('Serviço *'), '<input type="text" id="co-servico" name="servico" value="' + esc(d.servico) + '" placeholder="' + esc(tr('Ex.: Framing e drywall')) + '">') + '</div>' +
+        campo('co-servico', tr('Título da concorrência *'), '<input type="text" id="co-servico" name="servico" value="' + esc(d.servico) + '" placeholder="' + esc(tr('Ex.: Framing e drywall')) + '"><span class="mudo pequeno">' + tr('É o nome que a prestadora vê no convite e que aparece na sua lista. Sugerimos o das tarefas escolhidas.') + '</span>') + '</div>' +
         (pj ? htmlTarefasDoProjeto(pj, d.etapas) : '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Etapas a cotar * (cost codes)') + '</legend>' +
           conhecidas.map((e) => '<label class="check pequeno"><input type="checkbox" name="etapas" value="' + esc(e) + '"' + (d.etapas.includes(e) ? ' checked' : '') + '> ' + esc(e) + '</label>').join('') + '</fieldset>' +
           campo('co-outrasEtapas', tr('Outras etapas (uma por linha)'), '<textarea id="co-outrasEtapas" name="outrasEtapas" rows="2" placeholder="' + esc(tr('Ex.: 09 91 00 · Painting')) + '">' + esc(outras.join('\n')) + '</textarea>') +
@@ -210,15 +210,37 @@ function observacaoDaPlanta(projetoId, arquivoId) {
   return [...new Set(folhasDo(projetoId).filter((f) => f.arquivo && f.arquivo.id === arquivoId).map((f) => (f.observacao || '').trim()).filter(Boolean))].join(' · ');
 }
 
-/* As tarefas do cronograma que a empresa não faz (prestadoras): é isto que se cota. Pode escolher várias. */
+/* As tarefas do cronograma que a empresa não faz (prestadoras): é isto que se cota. Uma lista para escolher e uma grade com as escolhidas;
+ * a tarefa escolhida sai da lista e volta quando é retirada da grade. */
 function htmlTarefasDoProjeto(pj, escolhidas) {
-  const tarefas = [...new Set(((pj.cronograma || {}).tarefas || []).filter((t) => t.quem === 'terceiro' && String(t.nome || '').trim()).map((t) => t.nome.trim()))];
-  const fora = (escolhidas || []).filter((e) => !tarefas.includes(e));
-  const item = (e, extra) => '<label class="check pequeno"><input type="checkbox" name="etapas" value="' + esc(e) + '"' + ((escolhidas || []).includes(e) ? ' checked' : '') + '> ' + esc(e) + (extra || '') + '</label>';
-  return '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Tarefas a cotar * (das prestadoras)') + '</legend>' +
-    (tarefas.length || fora.length ? tarefas.map((e) => item(e)).join('') + fora.map((e) => item(e, ' <span class="mudo">' + tr('(não está mais no cronograma)') + '</span>')).join('')
+  const todas = ((pj.cronograma || {}).tarefas || []).filter((t) => t.quem === 'terceiro' && String(t.nome || '').trim());
+  const unicas = [];
+  for (const t of todas) if (!unicas.some((u) => u.nome === t.nome.trim())) unicas.push({ nome: t.nome.trim(), inicio: t.inicio || '', dias: Number(t.dias) || '' });
+  const jaEscolhidas = (escolhidas || []).map((e) => ({ nome: e, ...(unicas.find((u) => u.nome === e) || { fora: true, inicio: '', dias: '' }) }));
+  const livres = unicas.filter((u) => !(escolhidas || []).includes(u.nome));
+  const opcao = (u) => '<option value="' + esc(u.nome) + '" data-inicio="' + esc(u.inicio) + '" data-dias="' + esc(u.dias) + '">' + esc(u.nome) + '</option>';
+  return '<div class="co-tarefas" id="co-tarefas"><span class="rotulo-pequeno">' + tr('Tarefas a cotar * (das prestadoras)') + '</span>' +
+    (unicas.length || jaEscolhidas.length
+      ? '<div class="co-tarefa-add"><select id="co-tarefa-sel" aria-label="' + esc(tr('Tarefa')) + '"><option value="">' + tr('Escolha uma tarefa…') + '</option>' + livres.map(opcao).join('') + '</select>' +
+        '<button type="button" class="btn btn-contorno" data-acao="co-tarefa-add">' + icone('mais', 16) + tr('Adicionar') + '</button></div>'
       : '<p class="vazio">' + tr('Nenhuma tarefa de prestadora no cronograma. Em Schedule, marque a tarefa como Subcontractor.') + ' <a href="#/measure/projeto/' + pj.id + '/schedule">' + tr('Abrir o cronograma') + '</a></p>') +
-    '</fieldset><p class="mudo pequeno">' + tr('Cada tarefa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas. Dá para escolher mais de uma.') + '</p>';
+    '<div class="tabela-rolagem"><table class="tabela" id="co-tarefas-grade"' + (jaEscolhidas.length ? '' : ' hidden') + '><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Data de início') + '</th><th>' + tr('Dias') + '</th><th></th></tr></thead><tbody>' +
+      jaEscolhidas.map((u) => linhaDeTarefa(u)).join('') + '</tbody></table></div>' +
+    '<p class="mudo pequeno" id="co-tarefas-vazio"' + (jaEscolhidas.length ? ' hidden' : '') + '>' + tr('Nenhuma tarefa adicionada ainda.') + '</p>' +
+    '<p class="mudo pequeno">' + tr('Cada tarefa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas. Dá para adicionar mais de uma.') + '</p></div>';
+}
+function linhaDeTarefa(u) {
+  return '<tr data-tarefa="' + esc(u.nome) + '" data-inicio="' + esc(u.inicio) + '" data-dias="' + esc(u.dias) + '"><td><b>' + esc(u.nome) + '</b>' + (u.fora ? ' <span class="mudo pequeno">' + tr('(não está mais no cronograma)') + '</span>' : '') + '<input type="hidden" name="etapas" value="' + esc(u.nome) + '"></td>' +
+    '<td>' + (u.inicio ? dataCurta(u.inicio) : '—') + '</td><td>' + (u.dias || '—') + '</td>' +
+    '<td class="num"><button type="button" class="link-botao pequeno" data-acao="co-tarefa-tirar">' + tr('Remover') + '</button></td></tr>';
+}
+/* O título da concorrência acompanha as tarefas escolhidas, enquanto a pessoa não escrever o dela. */
+function sugerirTitulo() {
+  const campo = document.getElementById('co-servico');
+  if (!campo) return;
+  const nomes = Array.from(document.querySelectorAll('#co-tarefas-grade tbody tr')).map((tr_) => tr_.dataset.tarefa.split('·').pop().trim());
+  const sugestao = nomes.join(' + ');
+  if (!campo.value || campo.value === campo.dataset.auto) { campo.value = sugestao; campo.dataset.auto = sugestao; }
 }
 
 /* Os PDFs distintos das folhas de um projeto (uma folha por página, vários por PDF). */
@@ -910,6 +932,31 @@ export const acoesConcorrencias = {
     if (k[0] === 'n') anexosNovos.splice(Number(k.slice(1)), 1);
     else { const a = atuaisDoForm(); a.splice(Number(k.slice(1)), 1); document.querySelector('#form-concorrencia [name="desenhosAtuais"]').value = JSON.stringify(a); }
     desenharAnexos();
+  },
+  'co-tarefa-add'() {
+    const sel = document.getElementById('co-tarefa-sel');
+    const op = sel && sel.selectedOptions[0];
+    if (!op || !op.value) { toast(tr('Escolha uma tarefa na lista.')); return; }
+    const corpo = document.querySelector('#co-tarefas-grade tbody');
+    corpo.insertAdjacentHTML('beforeend', linhaDeTarefa({ nome: op.value, inicio: op.dataset.inicio || '', dias: op.dataset.dias || '' }));
+    op.remove();
+    sel.value = '';
+    document.getElementById('co-tarefas-grade').hidden = false;
+    document.getElementById('co-tarefas-vazio').hidden = true;
+    sugerirTitulo();
+  },
+  'co-tarefa-tirar'(el) {
+    const linha = el.closest('tr'), sel = document.getElementById('co-tarefa-sel');
+    if (sel && !linha.querySelector('.mudo')) {
+      const o = document.createElement('option');
+      o.value = linha.dataset.tarefa; o.textContent = linha.dataset.tarefa; o.dataset.inicio = linha.dataset.inicio; o.dataset.dias = linha.dataset.dias;
+      sel.appendChild(o);
+    }
+    linha.remove();
+    const vazio = !document.querySelector('#co-tarefas-grade tbody tr');
+    document.getElementById('co-tarefas-grade').hidden = vazio;
+    document.getElementById('co-tarefas-vazio').hidden = !vazio;
+    sugerirTitulo();
   },
   async 'co-salvar'(el) {
     if (el.disabled) return;

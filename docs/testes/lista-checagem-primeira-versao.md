@@ -367,8 +367,8 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 - [ ] **T158** · `pv.c1.admin` — Bids › New bid (sem escolher projeto antes)  
   _Esperado:_ Primeiro passo: lista para escolher UM projeto; ao escolher, abre o formulário já ligado ao projeto (empresas sem projetos continuam com o formulário da obra)
-- [ ] **T159** · `pv.c1.admin` — New bid: olhar 'Tasks to bid' (das prestadoras)  
-  _Esperado:_ Lista só as tarefas do Schedule marcadas como Subcontractor; dá para marcar mais de uma; tarefa de 'Us' não aparece; sem nenhuma, aparece o aviso com o link para o cronograma
+- [ ] **T159** · `pv.c1.admin` — New bid: escolher tarefas em 'Tasks to bid' (lista + botão Add + grade)  
+  _Esperado:_ A lista traz só as tarefas do Schedule marcadas como Subcontractor; Add põe a tarefa na grade (com início e dias) e ela sai da lista; Remove devolve para a lista; dá para adicionar várias; o 'Bid title' sugere o nome das tarefas enquanto você não digita o seu; sem tarefas de prestadora, aparece o aviso com o link para o cronograma
 - [ ] **T160** · `pv.c1.admin` — New bid: uma tarefa que já tem concorrência aberta  
   _Esperado:_ Pode ser escolhida de novo (segunda rodada de preços)
 - [ ] **T161** · `pv.c1.admin` — New bid: olhar o campo Scope  
