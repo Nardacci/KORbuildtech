@@ -5,7 +5,7 @@
 import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
 import { esc, toast, confirmar, dataHora } from './util.js';
 import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
-import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL } from './plataforma.js';
+import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario } from './plataforma.js';
 import { icone, marca, logotipo } from './icones.js';
 import { PERMISSOES, permissao } from './settings.js';
 import { ATUACOES } from './contatos.js';
@@ -168,6 +168,14 @@ function telaNovaEmpresa() {
 /* ---------- Área da conta ---------- */
 
 const ICONES_DO_SETTINGS = { obras: 'obras', contatos: 'crew', funcionarios: 'crew', regras: 'settings', usuarios: 'crew', perfis: 'aprovacoes', empresa: 'conta', perfil: 'settings' };
+/* O lado direito do cabeçalho: na 1ª versão, o mesmo do Takeoff (sininho, módulos e o menu do usuário, com idioma e Sair dentro);
+ * enquanto o espelho da empresa não carregou (ou fora da 1ª versão), o seletor de idioma e o botão Sair. */
+function ladoDireitoDoTopo() {
+  const u = PRIMEIRA_VERSAO && espelho.pronto && estado() && estado().oficial ? usuarioAtual() : null;
+  if (u) return sino(u) + botaoModulos(u) + menuUsuario(u);
+  return htmlSeletorIdioma('oficial-idioma') + (PRIMEIRA_VERSAO ? botaoModulos(null) : '') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button>';
+}
+
 /* A moldura da área da conta. Na 1ª versão: o Início é o painel, em tela cheia (opcoes.cheio), e as outras telas do Settings têm o menu
  * lateral, como o Takeoff (no celular o menu vira as abas de sempre). */
 function moldura(ativa, conteudo, opcoes = {}) {
@@ -175,7 +183,7 @@ function moldura(ativa, conteudo, opcoes = {}) {
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
   const topo = '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ ' + (opcoes.cheio ? tr('Início') : 'Settings') + '</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
-      htmlSeletorIdioma('oficial-idioma') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button></header>';
+      ladoDireitoDoTopo() + '</header>';
   const href = (k) => '#/conta' + (k === 'inicio' ? '' : '/' + k);
   const avisos = htmlAvisoDoPlano() + htmlAvisoInstalar();
   if (PRIMEIRA_VERSAO && opcoes.cheio) return topo + '<main class="oficial-pagina ini-pagina">' + avisos + conteudo + '</main>';

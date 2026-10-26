@@ -204,6 +204,8 @@ try {
   verificar(aud[0].n >= 5, 'tudo ficou na auditoria da empresa (' + aud[0].n + ' registros)');
 
   console.log('Sair');
+  // na 1ª versão o Sair fica dentro do menu do usuário (o avatar), como no Takeoff
+  if (!(await a.locator('[data-acao="of-sair"]').first().isVisible().catch(() => false))) await a.click('.menu-usuario:not(.sino) summary');
   await a.click('[data-acao="of-sair"]');
   await a.waitForURL((u) => String(u).includes('#/entrar'), { timeout: ESPERA }).catch(() => null);
   verificar(a.url().includes('#/entrar'), 'sair volta para a entrada', a.url());

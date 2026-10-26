@@ -154,7 +154,7 @@ function quandoFoi(ts) {
   return tr('{dia} às {hora}', { dia: dias === 0 ? tr('hoje') : dias === 1 ? tr('ontem') : dataCurta(iso), hora: horaCurta(ts) });
 }
 
-function sino(u) {
+export function sino(u) {
   const lista = notificacoesDe(u);
   const naoLidas = lista.filter((n) => !n.lida).length;
   return '<details class="menu-usuario sino"><summary aria-label="' + (naoLidas ? tn(naoLidas, 'Notificações: {n} não lida', 'Notificações: {n} não lidas') : tr('Notificações')) + '"><span class="topo-botao">' + icone('sino') +
@@ -198,7 +198,7 @@ export function casca(o) {
       '<span class="topo-espaco"></span>' +
       (o.topoExtra || '') +
       sino(u) +
-      (modulosLiberados(u).length > 1 ? ('<a class="topo-botao" href="#/inicio" aria-label="' + tr('Módulos') + '" title="' + tr('Módulos') + '">') + icone('modulos') + '</a>' : '') +
+      botaoModulos(u) +
       menuUsuario(u) +
     '</div></header>' +
     '<div class="corpo' + (nav.length ? ' com-lateral' : '') + (abas ? ' com-abas' : '') + '">' +
@@ -214,7 +214,13 @@ export function casca(o) {
     (o.rodape || '');
 }
 
-function menuUsuario(u) {
+/* O botão de módulos (a grade): na 1ª versão leva ao Início da conta (Takeoff e Settings); nas outras, à escolha de módulos. */
+export function botaoModulos(u) {
+  if (!PRIMEIRA_VERSAO && modulosLiberados(u).length <= 1) return '';
+  return '<a class="topo-botao" href="' + (PRIMEIRA_VERSAO ? '#/conta' : '#/inicio') + '" aria-label="' + tr('Módulos') + '" title="' + tr('Módulos') + '">' + icone('modulos') + '</a>';
+}
+
+export function menuUsuario(u) {
   return '<details class="menu-usuario"><summary aria-label="' + tr('Menu de {nome}', { nome: esc(u.nome) }) + '"><span class="avatar">' + esc(iniciais(u.nome)) + '</span></summary>' +
     '<div class="menu">' +
       '<div class="menu-quem"><span class="avatar grande">' + esc(iniciais(u.nome)) + '</span><div><b>' + esc(u.nome) + '</b><span>' + esc(u.email) + '</span>' +
