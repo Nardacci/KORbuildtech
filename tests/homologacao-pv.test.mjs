@@ -96,7 +96,8 @@ try {
     let projetoComLista = null;
     const candidatos = [];
     for (const h of hrefs) {
-      await abrir(p, h, () => !!document.querySelector('#mz-enviar, .mz-condicao, .cartao'));
+      // as condições e seus assemblies ficam na aba Takeoff do projeto
+      await abrir(p, h + '/takeoff', () => !!document.querySelector('#mz-enviar, .mz-condicao, .cartao'));
       const t = await texto(p);
       const asmNoProjeto = fam.assemblies.filter(([n]) => t.includes(n)).length;
       if (asmNoProjeto >= 2) candidatos.push(h);
