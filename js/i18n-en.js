@@ -3605,6 +3605,7 @@ export const EN = {
   '{n} muda de ativo/inativo': '{n} changes active/inactive',
   '{n} mudam de ativo/inativo': '{n} change active/inactive',
   '… e mais {n}.': '… and {n} more.',
+  'Vem das tarefas escolhidas; dá para mudar.': 'Comes from the chosen tasks; you can change it.',
   'Atualizar a base': 'Update baseline',
   'Confirmar cronograma': 'Confirm schedule',
   'Cronograma confirmado como base da obra.': 'Schedule confirmed as the job baseline.',

@@ -3,7 +3,7 @@
  * prorrogar, convidar mais, fechar e cancelar. O motor e as regras estão em concorrencias.js. */
 
 import { PRIMEIRA_VERSAO } from './versao.js';
-import { esc, toast, abrirDialogo, confirmar, dataCurta, dataHora, isoDoDia, diasEntre, hoje } from './util.js';
+import { esc, toast, abrirDialogo, confirmar, dataCurta, dataHora, isoDoDia, diasEntre, somarDias, hoje } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar, obra as acharObra } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
@@ -178,7 +178,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
       '<section class="cartao" data-aba="prazos" hidden><h2 class="cartao-titulo">' + tr('Prazos') + '</h2><div class="grade-campos">' +
         campo('co-prazoData', tr('Prazo da proposta *'), '<input type="date" id="co-prazoData" name="prazoData" value="' + esc(prazoData) + '">') +
         campo('co-prazoHora', tr('Hora'), '<input type="time" id="co-prazoHora" name="prazoHora" value="' + esc(prazoHora || '17:00') + '">') +
-        campo('co-inicio', tr('Início previsto do serviço'), '<input type="date" id="co-inicio" name="inicio" value="' + esc(d.inicio) + '">') +
+        campo('co-inicio', tr('Início previsto do serviço'), '<input type="date" id="co-inicio" name="inicio" value="' + esc(d.inicio) + '"><span class="mudo pequeno">' + tr('Vem das tarefas escolhidas; dá para mudar.') + '</span>') +
         campo('co-termino', tr('Término previsto'), '<input type="date" id="co-termino" name="termino" value="' + esc(d.termino) + '">') + '</div>' +
       '</section>' +
       '<section class="cartao" data-aba="prazos" hidden><h2 class="cartao-titulo">' + tr('Orçamento e exigências') + '</h2><div class="grade-campos">' +
@@ -233,6 +233,17 @@ function linhaDeTarefa(u) {
   return '<tr data-tarefa="' + esc(u.nome) + '" data-inicio="' + esc(u.inicio) + '" data-dias="' + esc(u.dias) + '"><td><b>' + esc(u.nome) + '</b>' + (u.fora ? ' <span class="mudo pequeno">' + tr('(não está mais no cronograma)') + '</span>' : '') + '<input type="hidden" name="etapas" value="' + esc(u.nome) + '"></td>' +
     '<td>' + (u.inicio ? dataCurta(u.inicio) : '—') + '</td><td>' + (u.dias || '—') + '</td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="co-tarefa-tirar">' + tr('Remover') + '</button></td></tr>';
+}
+/* Início e término previstos vêm do cronograma: do começo da primeira tarefa escolhida ao fim da última (some só enquanto a pessoa não digitar outra data). */
+function sugerirDatas() {
+  const ini = document.getElementById('co-inicio'), fim = document.getElementById('co-termino');
+  if (!ini || !fim) return;
+  const linhas = Array.from(document.querySelectorAll('#co-tarefas-grade tbody tr')).filter((l) => l.dataset.inicio);
+  const comeco = linhas.map((l) => l.dataset.inicio).sort()[0] || '';
+  const fimes = linhas.map((l) => somarDias(l.dataset.inicio, Math.max(0, (Number(l.dataset.dias) || 1) - 1))).sort();
+  const termino = fimes[fimes.length - 1] || '';
+  if (!ini.value || ini.value === ini.dataset.auto) { ini.value = comeco; ini.dataset.auto = comeco; }
+  if (!fim.value || fim.value === fim.dataset.auto) { fim.value = termino; fim.dataset.auto = termino; }
 }
 /* O título da concorrência acompanha as tarefas escolhidas, enquanto a pessoa não escrever o dela. */
 function sugerirTitulo() {
@@ -944,6 +955,7 @@ export const acoesConcorrencias = {
     document.getElementById('co-tarefas-grade').hidden = false;
     document.getElementById('co-tarefas-vazio').hidden = true;
     sugerirTitulo();
+    sugerirDatas();
   },
   'co-tarefa-tirar'(el) {
     const linha = el.closest('tr'), sel = document.getElementById('co-tarefa-sel');
@@ -957,6 +969,7 @@ export const acoesConcorrencias = {
     document.getElementById('co-tarefas-grade').hidden = vazio;
     document.getElementById('co-tarefas-vazio').hidden = !vazio;
     sugerirTitulo();
+    sugerirDatas();
   },
   async 'co-salvar'(el) {
     if (el.disabled) return;
