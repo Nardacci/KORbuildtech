@@ -1,15 +1,16 @@
 /* KORbuild Takeoff — o projeto como espaço de trabalho: abas, Overview (com o checklist), Scope & delivery (quem faz cada etapa)
  * e Schedule (cronograma preliminar com marcos). Os dados novos ficam no próprio projeto:
  *   p.entrega    = { padrao: 'tudo' | 'misto' | 'terceirizar', etapas: [{ id, etapa, quem: 'proprio' | 'terceiro' | 'decidir', takeoff: 'detalhado' | 'nenhum' | 'quantidades' }] }
- *   p.cronograma = { tarefas: [{ id, nome, quem, inicio, dias }], marcos: [{ id, nome, data, nota }] }
+ *   p.cronograma = { tarefas: [{ id, nome, quem, inicio, dias, pct }], marcos: [{ id, nome, data, nota }] }   (pct = % feito, informado pela equipe)
  * No app com conta, estes dois campos só vão para o banco depois da migração 0016 (supabase/migrations): ver PERSISTE_ESPACO em measure-oficial.js. */
 
 import { esc, toast, hoje, diasEntre, somarDias, dataCurta, novoId } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
-import { projeto, folhasDo, condicoesDo, assembly, item, itens } from './measure.js';
+import { projeto, projetos, folhasDo, condicoesDo, assembly, item, itens } from './measure.js';
 import { dinheiro } from './crew.js';
 import { icone } from './icones.js';
+import { andamentoDoCronograma, pctFeito, pctPrevisto, tarefaAtrasada, ORDEM_SITUACAO } from './andamento.js';
 
 let app = { desenhar() {}, ir() {} };
 export function ligarEspaco(funcoes) { app = { ...app, ...funcoes }; }
@@ -121,6 +122,7 @@ export function htmlCronograma(p, ajudas) {
     '<td><input type="date" data-pj-tarefa="inicio" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.inicio || '') + '" aria-label="' + esc(tr('Início')) + '"></td>' +
     '<td><input type="number" min="1" class="mz-t-dias" data-pj-tarefa="dias" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.dias || '') + '" aria-label="' + esc(tr('Duração em dias')) + '"></td>' +
     '<td>' + (fimDe(t) ? dataCurta(fimDe(t)) : '—') + '</td>' +
+    '<td><span class="mz-t-pct' + (tarefaAtrasada(t, hoje()) ? ' atrasada' : '') + '"><input type="number" min="0" max="100" step="5" data-pj-tarefa="pct" data-id="' + p.id + '" data-t="' + t.id + '" value="' + pctFeito(t) + '" aria-label="' + esc(tr('% feito')) + '"><span>%</span></span></td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-tarefa" data-id="' + p.id + '" data-t="' + t.id + '">' + tr('Remover') + '</button></td></tr>').join('');
   const marcos = c.marcos.map((m) => '<tr><td><input type="text" data-pj-marco="nome" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nome) + '" aria-label="' + esc(tr('Marco')) + '"></td>' +
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +
@@ -134,7 +136,7 @@ export function htmlCronograma(p, ajudas) {
   return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (etapasDasCondicoes(p).length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-tarefa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar tarefa') + '</button></div></div>' +
-    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Data de início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
+    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Data de início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th>' + tr('% feito') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
       : '<p class="vazio">' + tr('Nenhuma tarefa ainda. Gere a partir das medições, ou adicione à mão.') + '</p>') + '</section>' +
     '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Marcos') + '</h2><p class="mudo pequeno">' + tr('Datas-chave que vão na proposta e na obra (ex.: licença aprovada).') + '</p></div>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-marco" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar marco') + '</button></div>' +
@@ -144,8 +146,17 @@ export function htmlCronograma(p, ajudas) {
 
 /* Linha do tempo: uma linha por tarefa e por marco, eixo de meses e dias, linha de hoje e detalhe ao passar o mouse. */
 function htmlLinhaDoTempo(p) {
-  const c = cronogramaDe(p);
-  const tarefas = c.tarefas.filter((t) => t.inicio), marcos = c.marcos.filter((m) => m.data);
+  const g = htmlGantt(p);
+  if (!g) return '';
+  return '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Linha do tempo') + '</h2><p class="mudo pequeno">' + tr('Uma linha por tarefa. A linha vertical marca hoje. Passe o mouse sobre uma barra para ver o detalhe.') + '</p></div>' +
+    '<div class="btn-linha">' + legendaGantt() + '<a class="btn btn-contorno btn-pequeno" href="#/measure/gantt/' + p.id + '">' + icone('expandir', 16) + tr('Tela inteira') + '</a></div></div>' + g + '</section>';
+}
+const legendaGantt = () => '<div class="mz-g-legenda"><span><i class="mz-g-barra proprio"></i>' + tr('Nós') + '</span><span><i class="mz-g-barra sub"></i>' + tr('Prestadora') + '</span><span><i class="mz-g-barra decidir"></i>' + tr('A decidir') + '</span><span><i class="mz-g-barra proprio"><i class="mz-g-feito" style="width:50%"></i></i>' + tr('% feito') + '</span><span><i class="mz-g-barra atrasada"></i>' + tr('Atrasada') + '</span><span><i class="mz-g-losango"></i>' + tr('Marco') + '</span></div>';
+
+/* O gráfico de Gantt em si: uma linha por tarefa (com o % feito preenchido e a atrasada em vermelho) e por marco, eixo de meses e dias, linha de hoje. */
+export function htmlGantt(p) {
+  const c = p.cronograma || { tarefas: [], marcos: [] };
+  const tarefas = c.tarefas.filter((t) => t.inicio), marcos = (c.marcos || []).filter((m) => m.data);
   if (!tarefas.length && !marcos.length) return '';
   const datas = tarefas.flatMap((t) => [t.inicio, fimDe(t)]).concat(marcos.map((m) => m.data));
   const ordem = datas.slice().sort();
@@ -169,16 +180,56 @@ function htmlLinhaDoTempo(p) {
   const classe = (q) => (q === 'terceiro' ? 'sub' : q === 'proprio' ? 'proprio' : 'decidir');
   const quemTxt = (q) => (q === 'terceiro' ? tr('Prestadora') : q === 'proprio' ? tr('Nós') : tr('A decidir'));
   const linhasT = tarefas.map((t) => {
-    const f = fimDe(t), dur = Math.max(1, Number(t.dias) || 1);
-    const dica = t.nome + ' · ' + dataCurta(t.inicio) + ' → ' + dataCurta(f) + ' · ' + tn(dur, '{n} dia', '{n} dias') + ' · ' + quemTxt(t.quem);
-    return '<div class="mz-g-linha"><div class="mz-g-nome" title="' + esc(t.nome) + '">' + esc(t.nome) + '</div><div class="mz-g-pista">' + linhaHoje +
-      '<span class="mz-g-barra ' + classe(t.quem) + '" style="left:' + pct(t.inicio) + '%;width:' + Math.max(0.8, dur * 100 / total).toFixed(2) + '%" title="' + esc(dica) + '" tabindex="0"><em>' + esc(t.nome) + '</em></span></div></div>';
+    const f = fimDe(t), dur = Math.max(1, Number(t.dias) || 1), feito = pctFeito(t), prev = pctPrevisto(t, hojeIso), atrasada = tarefaAtrasada(t, hojeIso);
+    const dica = t.nome + ' · ' + dataCurta(t.inicio) + ' → ' + dataCurta(f) + ' · ' + tn(dur, '{n} dia', '{n} dias') + ' · ' + quemTxt(t.quem) + ' · ' + tr('{a}% feito, {b}% previsto', { a: feito, b: prev }) + (atrasada ? ' · ' + tr('Atrasada') : '');
+    return '<div class="mz-g-linha' + (atrasada ? ' atrasada' : '') + '"><div class="mz-g-nome" title="' + esc(t.nome) + '"><span>' + esc(t.nome) + '</span><small class="mz-g-pct">' + feito + '%</small></div><div class="mz-g-pista">' + linhaHoje +
+      '<span class="mz-g-barra ' + classe(t.quem) + (atrasada ? ' atrasada' : '') + '" style="left:' + pct(t.inicio) + '%;width:' + Math.max(0.8, dur * 100 / total).toFixed(2) + '%" title="' + esc(dica) + '" tabindex="0"><i class="mz-g-feito" style="width:' + feito + '%"></i><em>' + esc(t.nome) + '</em></span></div></div>';
   }).join('');
   const linhasM = marcos.map((m) => '<div class="mz-g-linha"><div class="mz-g-nome" title="' + esc(m.nome) + '"><i class="mz-g-losango"></i>' + esc(m.nome) + '</div><div class="mz-g-pista">' + linhaHoje +
     '<span class="mz-g-marco" style="left:' + pct(m.data) + '%" title="' + esc(m.nome + ' · ' + dataCurta(m.data)) + '" tabindex="0"></span></div></div>').join('');
-  return '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Linha do tempo') + '</h2><p class="mudo pequeno">' + tr('Uma linha por tarefa. A linha vertical marca hoje. Passe o mouse sobre uma barra para ver o detalhe.') + '</p></div>' +
-    '<div class="mz-g-legenda"><span><i class="mz-g-barra proprio"></i>' + tr('Nós') + '</span><span><i class="mz-g-barra sub"></i>' + tr('Prestadora') + '</span><span><i class="mz-g-barra decidir"></i>' + tr('A decidir') + '</span><span><i class="mz-g-losango"></i>' + tr('Marco') + '</span></div></div>' +
-    '<div class="mz-gantt"><div class="mz-g-cab"><div class="mz-g-nome"></div><div class="mz-g-escala"><div class="mz-g-meses">' + meses.map((m) => '<span style="width:' + (m.dias * 100 / total).toFixed(2) + '%">' + esc(m.rotulo) + '</span>').join('') + '</div><div class="mz-g-dias">' + dias.join('') + '</div></div></div>' + linhasT + linhasM + '</div></section>';
+  return '<div class="mz-gantt"><div class="mz-g-cab"><div class="mz-g-nome"></div><div class="mz-g-escala"><div class="mz-g-meses">' + meses.map((m) => '<span style="width:' + (m.dias * 100 / total).toFixed(2) + '%">' + esc(m.rotulo) + '</span>').join('') + '</div><div class="mz-g-dias">' + dias.join('') + '</div></div></div>' + linhasT + linhasM + '</div>';
+}
+
+/* ---------- A página do Gantt: um projeto por vez, o gráfico no tamanho da página ---------- */
+
+export const SITUACAO_ANDAMENTO = () => ({
+  atrasado: [tr('Atrasado'), 'etiqueta-alerta'], 'em-dia': [tr('Em dia'), 'etiqueta-verde'], 'nao-iniciado': [tr('Não iniciado'), 'etiqueta-azul'],
+  concluido: [tr('Concluído'), 'etiqueta-neutro'], 'sem-cronograma': [tr('Sem cronograma'), 'etiqueta-neutro'],
+});
+export const etiquetaAndamento = (sit) => { const [n, cl] = SITUACAO_ANDAMENTO()[sit]; return '<span class="etiqueta ' + cl + '">' + n + '</span>'; };
+
+/* Os projetos que têm cronograma (perdidos de fora), os atrasados primeiro. */
+export function projetosComCronograma() {
+  const h = hoje();
+  return projetos().filter((p) => p.situacao !== 'perdida').map((p) => ({ p, a: andamentoDoCronograma(p.cronograma, h) }))
+    .filter((x) => x.a.tarefas > 0 || ((x.p.cronograma || {}).marcos || []).some((m) => m.data))
+    .sort((x, y) => ORDEM_SITUACAO[x.a.situacao] - ORDEM_SITUACAO[y.a.situacao] || x.p.nome.localeCompare(y.p.nome));
+}
+
+export function telaGantt(moldura, id) {
+  const lista = projetosComCronograma();
+  const atual = lista.find((x) => x.p.id === id) || lista[0];
+  const combo = '<label class="gantt-escolha"><span class="rotulo-pequeno">' + tr('Projeto') + '</span><select id="gantt-projeto" aria-label="' + esc(tr('Projeto')) + '">' +
+    lista.map((x) => '<option value="' + x.p.id + '"' + (atual && x.p.id === atual.p.id ? ' selected' : '') + '>' + esc(x.p.nome) + (x.a.situacao === 'atrasado' ? ' · ' + tr('Atrasado') : '') + '</option>').join('') + '</select></label>';
+  if (!atual) {
+    return moldura({ ativo: 'gantt', largura: 'larga', titulo: tr('Gantt'), subtitulo: tr('O andamento de cada projeto, no tamanho da página'),
+      conteudo: '<p class="vazio">' + tr('Nenhum projeto com cronograma ainda. Monte o cronograma na aba Schedule do projeto.') + ' <a href="#/measure">' + tr('Abrir os projetos') + '</a></p>' });
+  }
+  const { p, a } = atual;
+  const kpi = (rot, val, sub) => '<div class="co-kpi"><span>' + rot + '</span><b>' + val + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>';
+  const kpis = '<div class="co-kpis co-kpis-4 gantt-kpis">' +
+    kpi(tr('Situação'), etiquetaAndamento(a.situacao), a.atrasadas.length ? tn(a.atrasadas.length, '{n} tarefa atrasada', '{n} tarefas atrasadas') : tn(a.concluidas, '{n} de {total} tarefa concluída', '{n} de {total} tarefas concluídas', { total: a.tarefas })) +
+    kpi(tr('Feito'), a.feito + '%', tr('{n}% previsto para hoje', { n: a.previsto })) +
+    kpi(tr('Início → término'), (a.inicio ? dataCurta(a.inicio) : '—') + ' → ' + (a.fim ? dataCurta(a.fim) : '—'), a.fim ? (a.fim >= hoje() ? tn(diasEntre(hoje(), a.fim), 'falta {n} dia', 'faltam {n} dias') : tn(diasEntre(a.fim, hoje()), 'terminava há {n} dia', 'terminava há {n} dias')) : '') +
+    kpi(tr('Tarefas'), String(a.tarefas), tn(a.emAndamento, '{n} em andamento', '{n} em andamento')) + '</div>';
+  return moldura({
+    ativo: 'gantt', largura: 'larga', titulo: tr('Gantt'), subtitulo: tr('O andamento de cada projeto, no tamanho da página'),
+    acoes: '<a class="btn btn-contorno btn-pequeno" href="' + href(p, 'schedule') + '">' + tr('Editar o cronograma') + '</a>',
+    conteudo: '<div class="gantt-topo">' + combo + legendaGantt() + '</div>' + kpis + '<div class="gantt-grande">' + htmlGantt(p) + '</div>',
+  });
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('change', (ev) => { if (ev.target && ev.target.id === 'gantt-projeto') app.ir('#/measure/gantt/' + ev.target.value); });
 }
 
 /* ---------- Ações ---------- */
@@ -233,7 +284,7 @@ if (typeof document !== 'undefined') {
     if (el.matches('[data-pj-tarefa]')) {
       const c = cronogramaDe(projeto(el.dataset.id)), t = c.tarefas.find((y) => y.id === el.dataset.t);
       if (!t) return;
-      t[el.dataset.pjTarefa] = el.dataset.pjTarefa === 'dias' ? Math.max(1, Number(el.value) || 1) : el.value;
+      t[el.dataset.pjTarefa] = el.dataset.pjTarefa === 'dias' ? Math.max(1, Number(el.value) || 1) : el.dataset.pjTarefa === 'pct' ? Math.max(0, Math.min(100, Math.round(Number(el.value) || 0))) : el.value;
       terminou();
       return;
     }

@@ -107,6 +107,46 @@ try {
     await ctx.close();
   }
 
+  console.log('Prestadora (pv.p1.admin): andamento dos projetos no Início (tarefa com % feito no Schedule)');
+  {
+    const { ctx, p } = await painel('p1', 'admin');
+    verificar('sem cronograma, o bloco Andamento dos projetos diz que não há cronograma', /Andamento dos projetos/.test(await texto(p)) && /Nenhum projeto com cronograma/.test(await texto(p)));
+    const [emp] = await sql(`select e.id from public.empresas e join public.membros m on m.empresa_id = e.id join auth.users u on u.id = m.user_id where u.email = '${emailDe('p1', 'admin')}' limit 1`);
+    const [pj] = await sql(`select id from public.projetos where empresa_id = '${emp.id}' and situacao <> 'perdida' order by criado_em limit 1`);
+    await p.goto(BASE + '#/measure/projeto/' + pj.id + '/schedule');
+    await p.waitForSelector('[data-acao="pj-add-tarefa"]', { timeout: 40000 });
+    await p.click('[data-acao="pj-add-tarefa"]');
+    await p.waitForSelector('input[data-pj-tarefa="nome"]');
+    // cada campo redesenha a tela ao mudar: um de cada vez, esperando o redesenho
+    const noBanco = async () => (await sql(`select cronograma from public.projetos where id = '${pj.id}'`))[0].cronograma;
+    let c = null;
+    for (const [campo, valor, pronto] of [['nome', 'Drywall', (t) => t.nome === 'Drywall'], ['inicio', '2026-01-05', (t) => t.inicio === '2026-01-05'], ['pct', '40', (t) => t.pct === 40]]) {
+      await p.locator('input[data-pj-tarefa="' + campo + '"]').first().fill(valor);
+      await p.locator('input[data-pj-tarefa="' + campo + '"]').first().dispatchEvent('change');
+      for (let i = 0; i < 30; i++) { await p.waitForTimeout(500); c = await noBanco(); if (c && c.tarefas && c.tarefas[0] && pronto(c.tarefas[0])) break; }
+    }
+    await p.waitForTimeout(800);
+    verificar('o % feito da tarefa chega ao banco, no cronograma do projeto', !!(c && c.tarefas && c.tarefas[0] && c.tarefas[0].pct === 40 && c.tarefas[0].inicio === '2026-01-05'), JSON.stringify(c).slice(0, 200));
+    verificar('a tarefa que devia ter terminado fica atrasada no Schedule', await p.locator('.mz-t-pct.atrasada').count() === 1 && await p.locator('.mz-gantt .mz-g-barra.atrasada').count() === 1);
+    await p.goto(BASE + '#/measure/gantt/' + pj.id);
+    await p.waitForSelector('#gantt-projeto', { timeout: 40000 });
+    verificar('a página do Gantt abre o projeto, atrasado', /atrasado/i.test(await p.locator('.gantt-kpis').innerText()) && await p.locator('.gantt-grande .mz-g-barra').count() === 1);
+    await p.goto(BASE + '#/conta');
+    await p.waitForSelector('.ini-painel', { timeout: 40000 });
+    await p.waitForTimeout(500);
+    const t = await texto(p);
+    verificar('o Início mostra o projeto atrasado, com o feito e o previsto', /Andamento dos projetos 1 projeto atrasado/.test(t) && /Drywall · \d+ dias de atraso/.test(t) && /40% feito · 100% previsto/.test(t), t.match(/Andamento dos projetos.{0,300}/));
+    verificar('o bloco leva ao Gantt do projeto', await p.locator('.ini-andamento a[href="#/measure/gantt/' + pj.id + '"]').count() === 1);
+    await p.screenshot({ path: process.env.PRINT_P1_ANDAMENTO || '/tmp/inicio-p1-andamento.png', fullPage: true });
+    // deixa a massa como estava
+    await p.goto(BASE + '#/measure/projeto/' + pj.id + '/schedule');
+    await p.waitForSelector('[data-acao="pj-tirar-tarefa"]', { timeout: 40000 });
+    await p.click('[data-acao="pj-tirar-tarefa"]');
+    for (let i = 0; i < 20; i++) { await p.waitForTimeout(500); c = await noBanco(); if (!c || !(c.tarefas || []).length) break; }
+    verificar('a tarefa de teste foi removida', !c || !(c.tarefas || []).length);
+    await ctx.close();
+  }
+
   console.log('Ambas (pv.a2.admin)');
   {
     const { ctx, p } = await painel('a2', 'admin');
@@ -157,7 +197,7 @@ try {
     await p.click('.ini-botao-takeoff');
     await p.waitForSelector('.lateral-item:has-text("Início")', { timeout: 30000 });
     const takeoff = (await p.locator('.lateral-item').allInnerTexts()).map((t) => t.trim());
-    verificar('o Takeoff também tem o Início no menu lateral, junto com Projetos e Concorrências', takeoff.includes('Início') && takeoff.includes('Projetos') && takeoff.some((t) => /Concorr/.test(t)), takeoff.join(' | '));
+    verificar('o Takeoff também tem o Início no menu lateral, junto com Projetos, Gantt e Licitações', takeoff.includes('Início') && takeoff.includes('Projetos') && takeoff.includes('Gantt') && takeoff.some((t) => /Concorr|Licita/.test(t)), takeoff.join(' | '));
     await ctx.close();
   }
 

@@ -5,6 +5,7 @@ import { esc, dataCurta } from './util.js';
 import { tr, tn, idioma } from './i18n.js';
 import { icone } from './icones.js';
 import { SITUACOES_DO_PROJETO } from './inicio-calculo.js';
+import { etiquetaAndamento } from './projeto-espaco.js';
 
 const num = (n) => new Intl.NumberFormat(idioma() === 'en' ? 'en-US' : 'pt-BR').format(Math.round(n));
 const usd = (n) => 'US$ ' + num(n);
@@ -138,8 +139,24 @@ function htmlPrecos(p, dinheiro) {
 }
 
 /* calc: o que calcularInicio() devolveu; o: { ver } */
+/* Andamento dos projetos: o principal do painel. Uma linha por projeto com cronograma: situação, barra do feito (o tracejado é o previsto para hoje) e a tarefa mais atrasada. */
+function htmlAndamento(a) {
+  if (!a) return '';
+  if (!a.total) return bloco('ini-andamento-bloco', tr('Andamento dos projetos'), '#/measure/gantt', '<p class="ini-vazio">' + tr('Nenhum projeto com cronograma. Monte o cronograma na aba Schedule do projeto e o andamento aparece aqui.') + '</p>', tr('Nenhum cronograma'));
+  const linhas = a.lista.map((x) => '<div class="ini-and-linha"><div class="ini-and-nome"><a href="#/measure/gantt/' + x.id + '">' + esc(x.nome) + '</a><small>' +
+      (x.maisAtrasada ? esc(x.maisAtrasada.nome) + ' · ' + tn(x.maisAtrasada.diasAtraso, '{n} dia de atraso', '{n} dias de atraso') + (x.atrasadas > 1 ? ' · ' + tr('+{n} atrasadas', { n: x.atrasadas - 1 }) : '')
+        : x.situacao === 'nao-iniciado' ? tr('Começa em {data}', { data: dataCurta(x.inicio) }) : tr('Término previsto: {data}', { data: dataCurta(x.fim) })) + '</small></div>' +
+    etiquetaAndamento(x.situacao) +
+    '<div class="ini-and-barra">' + barra(x.feito, x.situacao === 'atrasado' ? 'ini-barra-atraso' : x.situacao === 'concluido' ? 'ini-barra-verde' : '') + '<i class="ini-and-prev" style="left:' + x.previsto + '%" title="' + esc(tr('{n}% previsto para hoje', { n: x.previsto })) + '"></i></div>' +
+    '<span class="ini-and-pct">' + tr('{a}% feito · {b}% previsto', { a: x.feito, b: x.previsto }) + '</span></div>').join('');
+  const resumo = '<div class="ini-and-resumo"><span><b>' + a.atrasados + '</b> ' + tr('atrasados') + '</span><span><b>' + a.emDia + '</b> ' + tr('em dia') + '</span><span><b>' + a.naoIniciados + '</b> ' + tr('não iniciados') + '</span><span><b>' + a.concluidos + '</b> ' + tr('concluídos') + '</span>' +
+    (a.semCronograma ? '<span class="mudo">' + tn(a.semCronograma, '{n} projeto ganho sem cronograma', '{n} projetos ganhos sem cronograma') + '</span>' : '') + '</div>';
+  return bloco('ini-andamento-bloco', tr('Andamento dos projetos'), '#/measure/gantt', resumo + '<div class="ini-andamento">' + linhas + '</div>' + (a.total > a.lista.length ? '<p class="mudo pequeno">' + tr('… e mais {n}.', { n: a.total - a.lista.length }) + '</p>' : ''),
+    a.atrasados ? tn(a.atrasados, '{n} projeto atrasado', '{n} projetos atrasados') : tr('Tudo em dia'));
+}
+
 export function htmlPainelInicio(calc, o) {
-  return '<div class="ini-painel">' + (o.cabeca || '') + htmlAcao(calc.acao) +
+  return '<div class="ini-painel">' + (o.cabeca || '') + htmlAcao(calc.acao) + htmlAndamento(calc.andamento) +
     '<div class="ini-grade ini-g3">' + (calc.projetos ? htmlProjetos(calc.projetos) : '') + htmlDinheiro(calc.projetos) + htmlCotacoes(calc.cotacoes) + '</div>' +
     '<div class="ini-grade ini-g2">' + htmlConcorrencias(calc.concorrencias, o.ver) + htmlPrazos(calc.prazos) + '</div>' +
     '<div class="ini-grade ini-g2b">' + htmlParceiras(calc.parceiras) + htmlPrecos(calc.precos, o.ver.dinheiro) + '</div>' + (o.rodape || '') + '</div>';

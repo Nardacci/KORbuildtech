@@ -611,10 +611,25 @@ export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = 
       { id: 'pj-galpao', nome: tr('Galpão Logístico · ampliação do mezanino'), contratanteId: galpao.contratanteId, donoId: galpao.donoId, endereco: '45 Northeastern Blvd', cidade: 'Nashua', estado: 'NH', zip: '03062', tipo: 'industrial', situacao: 'enviada',
         descricao: tr('Mezanino metálico de 2.400 sq ft com piso de concreto'), obraId: galpao.obraId, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
       { id: 'pj-cozinha', nome: tr('Reforma de cozinha · Mitchell'), contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
-        descricao: tr('Troca de armários, piso LVP e drywall'), obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now() },
+        descricao: tr('Troca de armários, piso LVP e drywall'), obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now(),
+        // cronograma em andamento: demolição pronta, drywall atrasado, o resto por vir — para o Início e a página do Gantt terem o que mostrar
+        cronograma: { tarefas: [
+          { id: 'tf-cz-1', nome: tr('Demolição e remoção'), quem: 'proprio', inicio: somarDias(hoje(), -16), dias: 3, pct: 100 },
+          { id: 'tf-cz-2', nome: tr('Elétrica e hidráulica'), quem: 'terceiro', inicio: somarDias(hoje(), -13), dias: 4, pct: 100 },
+          { id: 'tf-cz-3', nome: tr('Drywall: fixar e acabar'), quem: 'proprio', inicio: somarDias(hoje(), -9), dias: 5, pct: 60 },
+          { id: 'tf-cz-4', nome: tr('Piso LVP'), quem: 'proprio', inicio: somarDias(hoje(), -3), dias: 4, pct: 25 },
+          { id: 'tf-cz-5', nome: tr('Armários e bancadas'), quem: 'terceiro', inicio: somarDias(hoje(), 2), dias: 5, pct: 0 },
+          { id: 'tf-cz-6', nome: tr('Pintura e limpeza final'), quem: 'proprio', inicio: somarDias(hoje(), 8), dias: 3, pct: 0 },
+        ], marcos: [{ id: 'mc-cz-1', nome: tr('Entrega ao cliente'), data: somarDias(hoje(), 12), nota: '' }] } },
       // repetição: a mesma casa seis vezes (dois blocos de três) — a planta é medida uma vez e vale × 6
       { id: 'pj-townhouses', nome: tr('Townhouses Elm Row · 6 unidades'), contratanteId: 'ct-merrimack', donoId: 'ct-horizonte', endereco: '300 Elm Row', cidade: 'Manchester', estado: 'NH', zip: '03104', tipo: 'residencial-multi', situacao: 'orcamento',
-        descricao: tr('Seis casas iguais em dois blocos: framing e siding'), obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), 12), criadoEm: Date.now() },
+        descricao: tr('Seis casas iguais em dois blocos: framing e siding'), obraId: null, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), 12), criadoEm: Date.now(),
+        cronograma: { tarefas: [
+          { id: 'tf-th-1', nome: tr('Fundações'), quem: 'terceiro', inicio: somarDias(hoje(), 30), dias: 15, pct: 0 },
+          { id: 'tf-th-2', nome: tr('Framing · Bloco A'), quem: 'proprio', inicio: somarDias(hoje(), 46), dias: 20, pct: 0 },
+          { id: 'tf-th-3', nome: tr('Framing · Bloco B'), quem: 'proprio', inicio: somarDias(hoje(), 67), dias: 20, pct: 0 },
+          { id: 'tf-th-4', nome: tr('Siding'), quem: 'proprio', inicio: somarDias(hoje(), 88), dias: 25, pct: 0 },
+        ], marcos: [] } },
     ],
     folhas: [
       ['fl-a101', 'A-101 · First Floor Plan', 1], ['fl-a201', 'A-201 · Elevations', 2], ['fl-a301', 'A-301 · Section A', 3],

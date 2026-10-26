@@ -4,6 +4,8 @@
  * Situação do projeto, para o gráfico: rascunho (ainda sem medição), em medição, proposta emitida, ganho, perdido.
  * "Aberto" = rascunho, em medição ou proposta emitida; "fechado" = ganho ou perdido. */
 
+import { andamentoDoCronograma, ORDEM_SITUACAO } from './andamento.js';
+
 const DIA = 864e5;
 const isoDe = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 const dias = (a, b) => Math.round((new Date(b + 'T12:00:00Z') - new Date(a + 'T12:00:00Z')) / DIA);
@@ -184,6 +186,18 @@ function blocoPrecos(d, ctx) {
   };
 }
 
+/* Andamento dos projetos com cronograma (perdidos de fora): os atrasados primeiro. */
+function blocoAndamento(d, ctx) {
+  const projetos = ((d.measure && d.measure.projetos) || []).filter((p) => p.situacao !== 'perdida');
+  const lista = projetos.map((p) => ({ id: p.id, nome: p.nome, ganho: p.situacao === 'ganha', ...andamentoDoCronograma(p.cronograma, ctx.hoje) }))
+    .filter((x) => x.tarefas > 0)
+    .sort((a, b) => ORDEM_SITUACAO[a.situacao] - ORDEM_SITUACAO[b.situacao] || (a.fim || '').localeCompare(b.fim || ''))
+    .map((x) => ({ ...x, atrasadas: x.atrasadas.length, maisAtrasada: x.atrasadas.slice().sort((a, b) => b.diasAtraso - a.diasAtraso)[0] || null }));
+  const conta = (s) => lista.filter((x) => x.situacao === s).length;
+  return { lista: lista.slice(0, 8), total: lista.length, atrasados: conta('atrasado'), emDia: conta('em-dia'), naoIniciados: conta('nao-iniciado'), concluidos: conta('concluido'),
+    semCronograma: projetos.filter((p) => p.situacao === 'ganha' && !lista.some((x) => x.id === p.id)).length };
+}
+
 /* ctx: { eu, agora (ms), hoje ('AAAA-MM-DD'), ver: { medir, dinheiro, concorrenciasEnviadas, concorrenciasRecebidas, obras }, itensDaLista(projetoId) } */
 export function calcularInicio(d, ctx) {
   const c = { ...ctx, hoje: ctx.hoje || isoDe(new Date(ctx.agora)), agora: ctx.agora || Date.now() };
@@ -193,6 +207,7 @@ export function calcularInicio(d, ctx) {
   return {
     acao: blocoAcao(d, c, projetos, cotacoes),
     projetos, cotacoes, concorrencias,
+    andamento: c.ver.medir ? blocoAndamento(d, c) : null,
     prazos: c.ver.obras || c.ver.medir ? blocoPrazos(d, c) : null,
     parceiras: c.ver.concorrenciasEnviadas ? blocoParceiras(d, c) : null,
     precos: c.ver.medir ? blocoPrecos(d, c) : null,

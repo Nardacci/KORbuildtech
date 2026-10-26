@@ -28,7 +28,7 @@ import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta,
 import { telaItens, telaItem, acoesItens, ligarItens, aposDesenharItens } from './itens-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
-import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlCronograma, andamentoDoProjeto, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
+import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlCronograma, andamentoDoProjeto, telaGantt, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -37,6 +37,7 @@ export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; ligarEspac
 export function navMeasure() {
   return (PRIMEIRA_VERSAO ? [{ id: 'inicio', href: '#/conta', rotulo: tr('Início'), icone: 'painel' }] : []).concat([
     { id: 'projetos', href: '#/measure', rotulo: tr('Projetos'), icone: 'obras' },
+    { id: 'gantt', href: '#/measure/gantt', rotulo: tr('Gantt'), icone: 'historico' },
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
   ]).concat(PRIMEIRA_VERSAO
@@ -68,6 +69,7 @@ export function telaMeasure(q) {
     if (q[2] === 'proposta') return telaProposta(q[1], moldura);
     return telaProjeto(q[1], ABA_ANTIGA[q[2]] || (ABAS_PROJETO.includes(q[2]) ? q[2] : 'overview'));
   }
+  if (q[0] === 'gantt') return telaGantt(moldura, q[1]);
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
   if (q[0] === 'convites' && podeResponder()) return telaConvites(moldura);
   if (q[0] === 'convite' && podeResponder()) return telaConvite(moldura, q[1]) || { trocar: '#/measure/convites' };

@@ -146,6 +146,38 @@ await p.waitForTimeout(200);
 verificar(await p.locator('input[data-pj-marco="nome"]').count() === 1, 'dá para adicionar um marco');
 verificar(await p.locator('.mz-gantt .mz-g-barra').count() === 2 && await p.locator('.mz-g-meses span').count() >= 1, 'a linha do tempo desenha uma barra por tarefa, com eixo de meses');
 verificar((await p.locator('.mz-gantt .mz-g-barra').first().getAttribute('title')).includes('9'), 'a barra mostra o detalhe (datas e duração) ao passar o mouse', await p.locator('.mz-gantt .mz-g-barra').first().getAttribute('title'));
+// % feito por tarefa: entra no Schedule, aparece na barra; tarefa que devia ter acabado e não chegou a 100% fica atrasada
+verificar(await p.locator('input[data-pj-tarefa="pct"]').count() === 2 && await p.locator('input[data-pj-tarefa="pct"]').first().inputValue() === '0', 'cada tarefa tem o % feito (começa em 0)');
+await p.locator('input[data-pj-tarefa="inicio"]').first().fill('2026-01-05');
+await p.locator('input[data-pj-tarefa="inicio"]').first().dispatchEvent('change');
+await p.waitForTimeout(300);
+verificar(await p.locator('.mz-gantt .mz-g-barra.atrasada').count() === 1 && await p.locator('.mz-t-pct.atrasada').count() === 1, 'tarefa que devia ter terminado e não está em 100% aparece como atrasada (barra vermelha e % em vermelho)');
+await p.locator('input[data-pj-tarefa="pct"]').first().fill('100');
+await p.locator('input[data-pj-tarefa="pct"]').first().dispatchEvent('change');
+await p.waitForTimeout(300);
+verificar(await p.locator('.mz-gantt .mz-g-barra.atrasada').count() === 0 && (await p.locator('.mz-gantt .mz-g-feito').first().getAttribute('style')).includes('100%'), 'em 100% a tarefa deixa de estar atrasada e a barra fica toda preenchida');
+await p.locator('input[data-pj-tarefa="pct"]').first().fill('250');
+await p.locator('input[data-pj-tarefa="pct"]').first().dispatchEvent('change');
+await p.waitForTimeout(300);
+verificar(await p.locator('input[data-pj-tarefa="pct"]').first().inputValue() === '100', 'o % feito fica entre 0 e 100');
+await p.locator('input[data-pj-tarefa="inicio"]').first().fill(inicio);
+await p.locator('input[data-pj-tarefa="inicio"]').first().dispatchEvent('change');
+await p.waitForTimeout(300);
+verificar(await p.locator('a[href="#/measure/gantt/' + id + '"]').count() === 1, 'a linha do tempo tem o atalho Tela inteira para a página do Gantt');
+
+console.log('Página do Gantt');
+await p.goto(BASE + '#/measure/gantt/' + id);
+await p.waitForSelector('#gantt-projeto');
+verificar(await p.locator('#gantt-projeto').inputValue() === id && await p.locator('.gantt-grande .mz-gantt').count() === 1, 'a página abre no projeto pedido, com o Gantt grande');
+verificar(await p.locator('.lateral-item:has-text("Gantt"), nav a:has-text("Gantt")').count() >= 1, 'o menu tem a página Gantt');
+verificar(/feito/i.test(await textoDe('.gantt-kpis')) && /\d+% previsto para hoje/i.test(await textoDe('.gantt-kpis')), 'os indicadores mostram o feito e o previsto para hoje');
+verificar(await p.locator('#gantt-projeto option').count() >= 2, 'a lista de projetos tem mais de um projeto com cronograma (os de demonstração)');
+await p.selectOption('#gantt-projeto', 'pj-cozinha');
+await p.waitForTimeout(400);
+verificar(p.url().endsWith('#/measure/gantt/pj-cozinha') && /atrasado/i.test(await textoDe('.gantt-kpis')) && await p.locator('.mz-g-barra.atrasada').count() >= 1, 'trocar o projeto na lista muda o endereço e o gráfico: a Reforma de cozinha está atrasada');
+verificar(await p.locator('#gantt-projeto option:has-text("Atrasado")').count() >= 1 && (await p.locator('#gantt-projeto option').first().innerText()).includes('Atrasado'), 'a lista avisa quem está atrasado, e os atrasados vêm primeiro');
+await p.goto(BASE + '#/measure/projeto/' + id + '/schedule');
+await p.waitForSelector('.tabela-cronograma');
 
 verificar(await p.locator('[data-acao="pj-confirmar-cronograma"]').count() === 0, 'projeto ainda em orçamento: sem pedido de confirmação do cronograma');
 await p.goto(BASE + '#/measure/projeto/' + id + '/editar');

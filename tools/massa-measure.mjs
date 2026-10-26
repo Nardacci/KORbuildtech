@@ -84,16 +84,23 @@ for (const c of CONFIG) {
     for (const [nome, codigo, unidade, etapa, preco] of c.itens) {
       let item = (await sql(`select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`))[0];
       if (!item) {
-        await abrir(p, '#/measure/itens', '[data-acao="mz-item"][data-id=""]');
-        await p.click('[data-acao="mz-item"][data-id=""]');
-        await p.fill('dialog input[name="nome"]', nome); await p.fill('dialog input[name="codigo"]', codigo);
-        await p.fill('dialog input[name="unidade"]', unidade); await p.fill('dialog input[name="etapa"]', etapa);
-        await noDialogo(p, 'Criar item');
-        if (!(await esperarAte(async () => (await sql(`select 1 from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`)).length === 1))) throw new Error('o item ' + codigo + ' não chegou ao banco');
+        // a tela do item (Items › New item): nome, código, unidade e etapa; o preço vai depois, pela lista.
+        // Se a tela abriu antes do espelho do banco, o item gravado some ao recarregar: tenta de novo.
+        const noBanco = async () => (await sql(`select 1 from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`)).length === 1;
+        for (let tentativa = 0; tentativa < 3 && !(await noBanco()); tentativa++) {
+          await abrir(p, '#/measure/item/novo', '#form-item');
+          await p.waitForTimeout(1500);
+          await p.fill('#it-nome', nome); await p.fill('#it-codigo', codigo);
+          await p.fill('#it-un', unidade); await p.fill('#it-etapa', etapa);
+          if ((await p.inputValue('#it-nome').catch(() => '')) !== nome) continue;   // a tela foi redesenhada no meio: de novo
+          await p.click('[data-acao="item-salvar"]');
+          await esperarAte(noBanco, 20000);
+        }
+        if (!(await noBanco())) throw new Error('o item ' + codigo + ' não chegou ao banco');
         item = (await sql(`select id from public.itens where empresa_id = '${emp.id}' and codigo = '${codigo}'`))[0];
       }
       if (!(await sql(`select 1 from public.item_precos where empresa_id = '${emp.id}' and item_id = '${item.id}'`)).length) {
-        await abrir(p, '#/measure/precos', '[data-acao="preco-novo"][data-id="' + item.id + '"]');
+        await abrir(p, '#/measure/itens', '[data-acao="preco-novo"][data-id="' + item.id + '"]');
         await p.click('[data-acao="preco-novo"][data-id="' + item.id + '"]');
         await p.fill('dialog input[name="valor"]', String(preco));
         await noDialogo(p, 'Salvar preço');
@@ -116,7 +123,7 @@ for (const c of CONFIG) {
       if (!(await esperarAte(async () => (await sql(`select 1 from public.assemblies where empresa_id = '${emp.id}'`)).length > 0))) throw new Error('o assembly não chegou ao banco');
     }
     if (!(await sql(`select 1 from public.margens_versoes where empresa_id = '${emp.id}'`)).length) {
-      await abrir(p, '#/measure/precos', '[data-acao="margens-nova"]');
+      await abrir(p, '#/measure/itens', '[data-acao="margens-nova"]');
       await p.click('[data-acao="margens-nova"]');
       await p.fill('dialog input[name="overheadPct"]', String(c.margens[0]));
       await p.fill('dialog input[name="lucroPct"]', String(c.margens[1]));
@@ -137,7 +144,6 @@ for (const c of CONFIG) {
           await p.waitForTimeout(3000);
           await abrir(p, '#/measure/projeto/novo', '#form-projeto');
           await p.fill('#pj-nome', pr.nome);
-          await p.selectOption('#pj-tipo', 'residencial-uni');
           const contato = (await sql(`select id from public.contatos where empresa_id = '${emp.id}' and nome = '${pr.cliente.replace(/'/g, "''")}'`))[0];
           if (contato) await p.selectOption('#pj-contratanteId', contato.id);
           await p.fill('#pj-cidade', pr.cidade); await p.fill('#pj-estado', pr.estado);
@@ -150,7 +156,7 @@ for (const c of CONFIG) {
       }
       const pjId = st.id;
       if (st.folhas < 3) {
-        await abrir(p, '#/measure/projeto/' + pjId, '#mz-enviar');
+        await abrir(p, '#/measure/projeto/' + pjId + '/plans', '#mz-enviar');
         await p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
         await p.waitForFunction(() => /3 sheets added/.test((document.getElementById('toast') || {}).textContent || ''), null, { timeout: 90000 });
         await esperarAte(async () => (await estado()).folhas === 3);
