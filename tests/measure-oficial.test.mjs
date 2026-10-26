@@ -116,7 +116,7 @@ try {
   verificar(folhas.every((f) => f.arquivo_path.startsWith(A + '/' + pj.id + '/')), 'as folhas apontam a planta na pasta da empresa e do projeto', folhas);
   const noStorage = await arquivosDaPasta(A + '/' + pj.id + '/', 'plantas');
   verificar(noStorage.length === 1, 'o PDF foi para o Storage (um arquivo, três páginas)', noStorage);
-  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
+  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/takeoff'; });
   await a.p.click('a:has-text("casa-modelo · página 1")');
   await esperaDesenho(a.p);
   await a.p.click('[data-acao="mz-escala"]');
@@ -177,7 +177,7 @@ try {
   await a.p.waitForSelector('.mz-dados', { timeout: 30000 });
   const dados = await a.p.locator('body').innerText();
   verificar(dados.includes('Casa Thompson') && dados.includes('Proposta enviada') && dados.includes(numero), 'projeto, situação e número da proposta voltam do banco', dados.slice(0, 200));
-  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
+  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/takeoff'; });
   await a.p.click('a:has-text("casa-modelo · página 1")');
   await esperaDesenho(a.p);
   verificar((await a.p.locator('.mz-cond').count()) === 1 && (await a.p.locator('#mz-painel').innerText()).includes('Piso térreo'), 'a folha abre do Storage com a condição medida');

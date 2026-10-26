@@ -40,7 +40,7 @@ const id = p.url().split('/projeto/')[1].split('/')[0];
 
 console.log('Abas');
 const abas = await p.locator('.abas-sublinhadas a').allInnerTexts();
-verificar(abas.length === 8, 'oito abas no projeto', abas);
+verificar(abas.length === 6, 'seis abas no projeto', abas);
 await p.goto(BASE + '#/measure/projeto/' + id);
 await p.waitForSelector('.mz-checklist', { timeout: 10000 });
 verificar(await p.locator('.mz-checklist li').count() === 6, 'a visão geral tem o checklist de 6 passos');
@@ -65,7 +65,7 @@ const obs = await p.locator('[data-mz-folha-obs]').evaluateAll((els) => els.map(
 verificar(obs.filter((v) => v === 'Rev. C: fachadas').length >= 1, 'a referência digitada no envio vai para as folhas do arquivo novo', obs);
 
 console.log('Escopo e execução');
-await p.goto(BASE + '#/measure/projeto/' + id + '/scope');
+await p.goto(BASE + '#/measure/projeto/' + id + '/takeoff');
 await p.waitForSelector('.mz-padroes', { timeout: 10000 });
 await p.fill('#pj-nova-etapa', '07 46 33 · Siding');
 await p.click('[data-acao="pj-add-etapa"]');

@@ -14,7 +14,9 @@ import { icone } from './icones.js';
 let app = { desenhar() {}, ir() {} };
 export function ligarEspaco(funcoes) { app = { ...app, ...funcoes }; }
 
-export const ABAS = ['overview', 'plans', 'scope', 'takeoff', 'materials', 'schedule', 'bids'];
+export const ABAS = ['overview', 'plans', 'takeoff', 'materials', 'schedule', 'summary'];
+/* Endereços antigos (Scope & delivery e Bids) agora são parte do Takeoff. */
+export const ABA_ANTIGA = { scope: 'takeoff', bids: 'takeoff' };
 const fimDe = (t) => (t.inicio ? somarDias(t.inicio, Math.max(0, (Number(t.dias) || 1) - 1)) : '');
 const href = (p, aba) => '#/measure/projeto/' + p.id + (aba === 'overview' ? '' : '/' + aba);
 
@@ -44,8 +46,8 @@ export function passosDoProjeto(p) {
   const fs = folhasDo(p.id), cs = condicoesDo(p.id), e = p.entrega, c = p.cronograma;
   return [
     { id: 'plans', feito: fs.length > 0, aba: 'plans' },
-    { id: 'scale', feito: fs.length > 0 && fs.every((f) => f.escala), aba: 'plans' },
-    { id: 'delivery', feito: !!e && e.etapas.length > 0 && e.etapas.every((x) => x.quem !== 'decidir'), aba: 'scope' },
+    { id: 'scale', feito: fs.length > 0 && fs.every((f) => f.escala), aba: 'takeoff' },
+    { id: 'delivery', feito: !!e && e.etapas.length > 0 && e.etapas.every((x) => x.quem !== 'decidir'), aba: 'takeoff' },
     { id: 'measure', feito: cs.some((x) => (x.medicoes || []).length > 0), aba: 'takeoff' },
     { id: 'schedule', feito: !!c && c.tarefas.length > 0, aba: 'schedule' },
     { id: 'proposal', feito: (p.propostas || []).length > 0, aba: 'proposta' },
@@ -58,15 +60,13 @@ export function andamentoDoProjeto(p) {
 
 /* ---------- As abas ---------- */
 
-export function htmlAbas(p, ativa, nBids) {
+export function htmlAbas(p, ativa) {
   const itensAba = [
-    ['overview', tr('Visão geral')], ['plans', tr('Plantas'), folhasDo(p.id).length || ''], ['scope', tr('Escopo e execução')], ['takeoff', tr('Takeoff')],
-    ['materials', tr('Materiais')], ['schedule', tr('Cronograma')], ['bids', tr('Licitações'), nBids || ''], ['proposta', tr('Proposta')],
+    ['overview', tr('Visão geral')], ['plans', tr('Plantas'), folhasDo(p.id).length || ''], ['takeoff', tr('Takeoff')],
+    ['materials', tr('Materiais')], ['schedule', tr('Cronograma')], ['summary', tr('Resumo do projeto')],
   ];
-  return '<nav class="abas-sublinhadas" aria-label="' + esc(tr('Seções do projeto')) + '">' + itensAba.map(([k, r, n]) => {
-    const alvo = k === 'proposta' ? '#/measure/projeto/' + p.id + '/proposta' : href(p, k);
-    return '<a href="' + alvo + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + esc(r) + (n ? ' <span class="mz-contagem">' + n + '</span>' : '') + '</a>';
-  }).join('') + '</nav>';
+  return '<nav class="abas-sublinhadas" aria-label="' + esc(tr('Seções do projeto')) + '">' + itensAba.map(([k, r, n]) =>
+    '<a href="' + href(p, k) + '"' + (k === ativa ? ' class="ativa" aria-current="page"' : '') + '>' + esc(r) + (n ? ' <span class="mz-contagem">' + n + '</span>' : '') + '</a>').join('') + '</nav>';
 }
 
 /* ---------- Overview ---------- */

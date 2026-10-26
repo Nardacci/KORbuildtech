@@ -15,7 +15,7 @@ import { dinheiro } from './crew.js';
 import { projeto, quantidadesDoProjeto, enderecoDoProjeto } from './measure.js';
 import { custoDe, margensEm, textoMargens } from './precos.js';
 import { empresa, enderecoDaEmpresa, contato, contatosCom, contratanteDe, donoDe } from './contatos.js';
-import { botaoEnviarPelaPlataforma, licitacoesDoProjeto } from './concorrencias-telas.js';
+import { botaoEnviarPelaPlataforma } from './concorrencias-telas.js';
 import { htmlAbas } from './projeto-espaco.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
@@ -100,7 +100,7 @@ export function telaCotacao(id, moldura) {
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: tr('Lista para cotação'), subtitulo: p.nome + (' ' + tr('· materiais na unidade de compra, sem preço, separados por fornecedor')),
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
-    conteudo: htmlAbas(p, 'materials', licitacoesDoProjeto(p).length) + (l.total ? '' : '<p class="aviso-info">' + icone('measure', 16) + (tr('Ainda não há materiais: meça as condições que têm assemblies.') + '</p>')) +
+    conteudo: htmlAbas(p, 'materials') + (l.total ? '' : '<p class="aviso-info">' + icone('measure', 16) + (tr('Ainda não há materiais: meça as condições que têm assemblies.') + '</p>')) +
       '<section class="cartao"><form id="form-cotacao" class="form-settings" data-projeto="' + id + '" data-sem-envio><div class="grade-campos">' +
         ('<div class="campo"><label class="rotulo-pequeno" for="cot-ate">' + tr('Responder até') + '</label><input type="date" id="cot-ate" name="responderAte" value="') + prazoResposta(p) + '"></div>' +
         ('<div class="campo"><label class="rotulo-pequeno" for="cot-entrega">' + tr('Entregar em') + '</label><input type="text" id="cot-entrega" value="') + esc(enderecoDoProjeto(p)) + '" disabled></div></div>' +
@@ -176,7 +176,7 @@ function rascunho(p) {
   r.linhas = r.linhas || {};
   return r;
 }
-function totais(p) {
+export function totais(p) {
   const linhas = linhasDaProposta(p).filter((l) => l.incluir);
   const extras = rascunho(p).extras.filter((x) => x.descricao);
   const soma = linhas.reduce((t, l) => t + (l.valor || 0), 0) + extras.reduce((t, x) => t + (x.valor || 0), 0);
@@ -204,7 +204,7 @@ export function telaProposta(id, moldura) {
     voltar: { href: '#/measure/projeto/' + id, rotulo: p.nome },
     acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + id + '/proposta/imprimir">' + icone('olho', 16) + (tr('Ver o documento') + '</a>') +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="prop-emitir" data-projeto="' + id + '">' + icone('aprovacoes', 16) + (tr('Emitir proposta') + '</button></div>'),
-    conteudo: htmlAbas(p, 'proposta', licitacoesDoProjeto(p).length) + '<form id="form-proposta" class="form-settings" data-projeto="' + id + '" data-sem-envio>' +
+    conteudo: htmlAbas(p, 'summary') + '<form id="form-proposta" class="form-settings" data-projeto="' + id + '" data-sem-envio>' +
       (ct ? '' : '<p class="aviso-info">' + icone('conta', 16) + (tr('O projeto ainda não tem contratante: escolha em Editar projeto.') + '</p>')) +
       ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><textarea name="escopo" rows="2" aria-label="' + tr('Escopo') + '">') + esc(r.escopo) + '</textarea></section>' +
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Itens da proposta') + '</h2>') +

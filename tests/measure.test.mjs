@@ -79,7 +79,7 @@ verificar((await textoDe('.mz-dados')).includes('Residencial unifamiliar'), 'pro
 verificar((await textoDe('.pagina')).includes('sem escala'), 'folha começa sem escala');
 
 console.log('Escala da lista e conferência');
-await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
+await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/takeoff'; });
 await page.click('a:has-text("A-101 · First Floor Plan")');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
 const caixaPainel = await page.locator('#mz-painel').boundingBox(), caixaArea = await page.locator('#mz-area').boundingBox();
@@ -211,7 +211,7 @@ await print('2-projeto');
 await page.locator('#mz-materiais').screenshot({ path: (SAIDA || '/tmp') + '/measure-2b-materiais.png' }).catch(() => {});
 
 console.log('Fachadas: siding e vãos (janelas e porta)');
-await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
+await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/takeoff'; });
 await page.click('a:has-text("A-201 · Elevations")');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
 await page.click('[data-acao="mz-escala"]');
@@ -292,7 +292,7 @@ verificar(Math.abs(varSiding('NetArea') - (sidingBruto - 76)) < 1, 'a W2 desenha
 await print('6-materiais-vaos');
 
 console.log('Corte em outra escala');
-await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/plans'; });
+await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/takeoff'; });
 await page.click('a:has-text("A-301 · Section A")');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
 await page.click('[data-acao="mz-escala"]');
@@ -542,7 +542,7 @@ await noDialogo('Criar typical');
 const sidingTh2 = numeroDe(await painel('Siding (fachadas)').locator('.mz-total').textContent(), 'sq ft');
 verificar(perto(sidingTh1, 710, 0.01) && perto(sidingTh2 - sidingTh1, 360 * 5, 0.01), 'região marcada: só o que está dentro (fachada sul, 360 sq ft) vale × 6; a leste continua × 1 (' + sidingTh1 + ' → ' + sidingTh2 + ')');
 await print('20-typical');
-await page.goto(BASE + '#/measure/projeto/pj-townhouses/plans');
+await page.goto(BASE + '#/measure/projeto/pj-townhouses/takeoff');
 await page.waitForSelector('#mz-typicais-projeto');
 const resumoTy = await textoDe('#mz-typicais-projeto');
 verificar(resumoTy.includes('Bloco A (× 3)') && resumoTy.includes('Bloco B (× 4)') && resumoTy.includes('Paredes externas') && resumoTy.includes('Fachada sul'), 'projeto: cada typical com a quebra por ocorrência (Bloco A, Bloco B)');
@@ -642,6 +642,7 @@ console.log('Enviar PDF e calibrar por uma cota');
 await page.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
 await page.waitForFunction(() => /3 folhas adicionadas/.test((document.getElementById('toast') || {}).textContent || ''));
 verificar(true, 'PDF de 3 páginas vira 3 folhas');
+await page.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/takeoff'; });
 await page.click('a:has-text("casa-modelo · página 1")');
 await page.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 20000 });
 await page.click('[data-acao="mz-escala"]');

@@ -85,7 +85,7 @@ await ir('#/measure/projeto/pj-casa/cotacao');
 await ir('#/measure/projeto/pj-casa/proposta');
 
 // ações do escopo e do cronograma
-await ir('#/measure/projeto/pj-casa/scope');
+await ir('#/measure/projeto/pj-casa/takeoff');
 for (const sel of ['[data-acao="pj-padrao"][data-padrao="tudo"]', '[data-acao="pj-padrao"][data-padrao="terceirizar"]', '[data-acao="pj-padrao"][data-padrao="misto"]', '[data-acao="pj-sugerir-etapas"]', '[data-acao="pj-add-etapa"]']) {
   await page.locator(sel).first().click().catch(() => {}); await sondar('escopo: ' + sel);
 }
@@ -116,7 +116,7 @@ for (const r of ['#/measure/assemblies', '#/measure/assemblies/novo', '#/measure
 // licitações
 for (const r of ['#/daily/concorrencias', '#/daily/concorrencias/nova', '#/daily/concorrencias/nova/projeto/pj-casa', '#/daily/concorrencias/recebidas']) await ir(r);
 // projeto com concorrência e na versão sem projeto aberto
-for (const u of ['u-rita']) { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), u); await ir('#/measure'); await ir('#/measure/projeto/pj-casa/scope'); }
+for (const u of ['u-rita']) { await page.evaluate((x) => localStorage.setItem('kbt.sessao', x), u); await ir('#/measure'); await ir('#/measure/projeto/pj-casa/takeoff'); }
 
 console.log('  telas lidas: ' + nColetadas + ' linhas; ' + vistas.join(' · '));
 verificar(nColetadas > 800, 'o teste leu o fluxo de verdade (' + nColetadas + ' linhas)');

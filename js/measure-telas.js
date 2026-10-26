@@ -23,11 +23,11 @@ import {
 } from './measure.js';
 import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
-import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta } from './measure-relatorios.js';
+import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta, totais as totaisDaProposta } from './measure-relatorios.js';
 import { telaPrecos } from './precos-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
-import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlEscopo, htmlCronograma, andamentoDoProjeto, ABAS as ABAS_PROJETO } from './projeto-espaco.js';
+import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlEscopo, htmlCronograma, andamentoDoProjeto, entregaDe, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -66,7 +66,7 @@ export function telaMeasure(q) {
     if (q[2] === 'cotacao') return telaCotacao(q[1], moldura);
     if (q[2] === 'proposta' && q[3] === 'imprimir') return telaImpressaoProposta(q[1], q[4] ? decodeURIComponent(q[4]) : null);
     if (q[2] === 'proposta') return telaProposta(q[1], moldura);
-    return telaProjeto(q[1], ABAS_PROJETO.includes(q[2]) ? q[2] : 'overview');
+    return telaProjeto(q[1], ABA_ANTIGA[q[2]] || (ABAS_PROJETO.includes(q[2]) ? q[2] : 'overview'));
   }
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
   if (q[0] === 'convites' && podeResponder()) return telaConvites(moldura);
@@ -218,12 +218,19 @@ function telaProjeto(id, abaPedida) {
         (p.situacao === 'ganha' && !(p.obraId && obra(p.obraId)) && pode(usuarioAtual(), 'settings.obras')
           ? '<div class="aviso aviso-verde"><b>' + tr('Projeto ganho') + '</b><span>' + (PRIMEIRA_VERSAO ? tr('Cadastre a obra: ela liga a concorrência e a contratada. Nome, endereço e partes já vão preenchidos.') : tr('Cadastre a obra para o diário, o ponto e o cronograma. Nome, endereço e partes já vão preenchidos.')) + '</span><a class="btn btn-primario btn-pequeno" href="' + (estado().oficial ? '#/conta/obras/nova/' : '#/settings/obra/nova/') + p.id + '">' + icone('obras', 16) + tr('Criar obra a partir deste projeto') + '</a></div>' : '') +
         '</section>';
-  const secFolhas = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th>' + tr('Observação') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>') +
-        fs.map((f) => {
-          const n = cs.reduce((t, c) => t + c.medicoes.filter((m) => m.folhaId === f.id).length, 0);
-          return '<tr><td><a href="#/measure/folha/' + f.id + '"><b>' + esc(f.nome) + '</b></a><span class="mudo pequeno bloco">' + esc(f.arquivo.nome || '') + (f.pagina > 1 ? (' ' + tr('· página') + ' ') + f.pagina : '') + '</span></td>' +
-            '<td>' + escalaTxt(f) + '</td><td class="mz-obs"><textarea rows="2" maxlength="500" data-mz-folha-obs="' + f.id + '" placeholder="' + esc(tr('Referência desta planta (ex.: revisão, o que mostra)')) + '" aria-label="' + esc(tr('Observação')) + '">' + esc(f.observacao || '') + '</textarea></td><td class="num">' + n + '</td><td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/folha/' + f.id + ('">' + tr('Abrir') + '</a></td></tr>');
-        }).join('') + '</tbody></table></div>' : ('<p class="vazio">' + tr('Nenhuma folha ainda. Envie o PDF do jogo de plantas: cada página vira uma folha.') + '</p>')) + '</section>';
+  const secFolhas = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Folhas') + '</h2>') + (fs.length ? ('<div class="tabela-rolagem"><table class="tabela tabela-plantas"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Arquivo') + '</th><th>' + tr('Escala') + '</th><th>' + tr('Observação') + '</th></tr></thead><tbody>') +
+        fs.map((f) => '<tr><td><b>' + esc(f.nome) + '</b></td>' +
+          '<td>' + esc(f.arquivo.nome || '') + (f.pagina > 1 ? ' <span class="mudo pequeno">' + tr('· página') + ' ' + f.pagina + '</span>' : '') + '</td>' +
+          '<td>' + escalaTxt(f) + '</td><td class="mz-obs"><textarea rows="2" maxlength="500" data-mz-folha-obs="' + f.id + '" placeholder="' + esc(tr('Referência desta planta (ex.: revisão, o que mostra)')) + '" aria-label="' + esc(tr('Observação')) + '">' + esc(f.observacao || '') + '</textarea></td></tr>').join('') + '</tbody></table></div>' : ('<p class="vazio">' + tr('Nenhuma folha ainda. Envie o PDF do jogo de plantas: cada página vira uma folha.') + '</p>')) + '</section>';
+  // Takeoff: escolher a planta e ir para a medição
+  const secMedir = '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Medir') + '</h2><p class="mudo pequeno">' + tr('Escolha a planta que vai medir. Na tela de medição você troca de planta quando quiser.') + '</p></div></div>' +
+    (fs.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Folha') + '</th><th>' + tr('Escala') + '</th><th class="num">' + tr('Medições') + '</th><th></th></tr></thead><tbody>' +
+      fs.map((f) => {
+        const n = cs.reduce((t, c) => t + c.medicoes.filter((m) => m.folhaId === f.id).length, 0);
+        return '<tr><td><a href="#/measure/folha/' + f.id + '"><b>' + esc(f.nome) + '</b></a>' + (f.observacao ? '<span class="mudo pequeno bloco">' + esc(f.observacao) + '</span>' : '') + '</td><td>' + escalaTxt(f) + '</td><td class="num">' + n + '</td>' +
+          '<td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/folha/' + f.id + '">' + icone('measure', 16) + tr('Medir') + '</a></td></tr>';
+      }).join('') + '</tbody></table></div>'
+      : '<p class="vazio">' + tr('Nenhuma folha ainda.') + ' <a href="' + '#/measure/projeto/' + p.id + '/plans' + '">' + tr('Envie as plantas') + '</a></p>') + '</section>';
   const secQuantidades = ('<section class="cartao"><h2 class="cartao-titulo">' + tr('Quantidades') + '</h2><div class="tabela-rolagem"><table class="tabela tabela-quantidades"><thead><tr><th>' + tr('Condição') + '</th><th>' + tr('Medido') + '</th><th>' + tr('Derivadas') + '</th><th class="num">' + tr('Medições') + '</th></tr></thead><tbody>') +
         cs.map((c) => {
           const t = totaisDaCondicao(c);
@@ -233,7 +240,6 @@ function telaProjeto(id, abaPedida) {
             '<td>' + (t.medicoes ? t.derivados.map((d) => '<span class="bloco">' + esc(d.nome) + ': <b>' + textoDerivado(d) + '</b></span>').join('') : '') + '</td>' +
             '<td class="num">' + t.medicoes + '</td></tr>';
         }).join('') + (cs.length ? '' : ('<tr><td colspan="4" class="mudo">' + tr('Nada medido ainda. Abra uma folha e inclua os assemblies que vai medir.') + '</td></tr>')) + '</tbody></table></div></section>';
-  const nBids = licitacoesDoProjeto(p).length;
   const aviso = estado().oficial ? tr('Esta parte fica guardada neste aparelho até a próxima atualização do banco.') : '';
   const ajudas = {
     detalhes,
@@ -246,18 +252,46 @@ function telaProjeto(id, abaPedida) {
   };
   const conteudos = {
     overview: htmlOverview(p, ajudas),
-    plans: '<section class="cartao mz-envio"><div><h2 class="cartao-titulo">' + tr('Enviar as plantas') + '</h2><p class="mudo pequeno">' + tr('Somente PDF. Cada página vira uma folha que você pode medir.') + '</p></div><div class="mz-envio-campos"><input type="text" id="mz-enviar-obs" maxlength="500" placeholder="' + esc(tr('Referência do arquivo (opcional): ex.: Rev. B')) + '" aria-label="' + esc(tr('Observação')) + '"><label class="btn btn-primario">' + icone('mais', 16) + tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></div></section>' + secFolhas + htmlTypicaisDoProjeto(p),
-    scope: htmlEscopo(p, ajudas),
-    takeoff: secQuantidades,
+    plans: '<section class="cartao mz-envio"><div><h2 class="cartao-titulo">' + tr('Enviar as plantas') + '</h2><p class="mudo pequeno">' + tr('Somente PDF. Cada página vira uma folha que você pode medir.') + '</p></div><div class="mz-envio-campos"><input type="text" id="mz-enviar-obs" maxlength="500" placeholder="' + esc(tr('Referência do arquivo (opcional): ex.: Rev. B')) + '" aria-label="' + esc(tr('Observação')) + '"><label class="btn btn-primario">' + icone('mais', 16) + tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></div></section>' + secFolhas,
+    takeoff: htmlEscopo(p, ajudas) + secMedir + secQuantidades + htmlTypicaisDoProjeto(p),
     materials: htmlMateriais(id) + '<p><a class="btn btn-contorno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + tr('Lista para cotação') + '</a></p>',
     schedule: htmlCronograma(p, ajudas),
-    bids: htmlConcorrenciasDoProjeto(p),
+    summary: htmlResumo(p, ajudas),
   };
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: p.nome, subtitulo: textoPartes(p) + ' · ' + enderecoDoProjeto(p), voltar: { href: '#/measure', rotulo: tr('Projetos') },
     acoes: '<div class="btn-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + ('/editar">' + tr('Editar projeto') + '</a>') + '</div>',
-    conteudo: htmlFaixaConcorrencia(p) + htmlAbas(p, aba, nBids) + conteudos[aba] + (aba === 'takeoff' ? '<p class="dica">' + tr('Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.') + '</p>' : ''),
+    conteudo: htmlFaixaConcorrencia(p) + htmlAbas(p, aba) + conteudos[aba] + (aba === 'takeoff' ? '<p class="dica">' + tr('Tudo é guardado em polegadas (e polegadas², polegadas³) e mostrado em pés e polegadas, sq ft e cu yd. Os pontos ficam na página do PDF, não em pixels: mudar o zoom não muda a medida.') + '</p>' : ''),
   });
+}
+
+/* Resumo do projeto: situação, números, quem faz cada parte, concorrências e cronograma, com a saída para a proposta. */
+function htmlResumo(p, ajudas) {
+  const e = entregaDe(p), c = p.cronograma || { tarefas: [], marcos: [] };
+  const t = totaisDaProposta(p);
+  const ultima = (p.propostas || [])[(p.propostas || []).length - 1];
+  const dinheiroOk = podeCatalogo();
+  const preco = ultima ? ultima.total : t.total;
+  const margem = preco > 0 ? Math.round((preco - t.custo) * 1000 / preco) / 10 : null;
+  const kpis = '<div class="co-kpis co-kpis-4">' +
+    '<div class="co-kpi"><span>' + tr('Situação') + '</span><b>' + etiquetaSituacao(p) + '</b><small>' + (p.prazoProposta ? tr('Prazo da proposta') + ' ' + dataCurta(p.prazoProposta) : '') + '</small></div>' +
+    '<div class="co-kpi"><span>' + (ultima ? tr('Proposta emitida') : tr('Proposta (rascunho)')) + '</span><b>' + (dinheiroOk ? dinheiro(preco) : '—') + '</b><small>' + (ultima ? esc(ultima.numero) : tr('Ainda não emitida')) + '</small></div>' +
+    '<div class="co-kpi"><span>' + tr('Custo estimado') + '</span><b>' + (dinheiroOk ? dinheiro(t.custo) : '—') + '</b><small>' + tr('Partes executadas por nós') + '</small></div>' +
+    '<div class="co-kpi"><span>' + tr('Margem') + '</span><b>' + (dinheiroOk && margem != null ? margem.toLocaleString('en-US') + '%' : '—') + '</b><small>' + tr('Sobre a venda') + '</small></div></div>';
+  const quemTxt = { proprio: tr('Executo eu'), terceiro: tr('Subcontrato'), decidir: tr('Decidir depois') };
+  const origem = (x) => { if (x.quem === 'terceiro') { const l = ajudas.licitacoesDa(p, x.etapa); return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : tr('Preço do sub: ainda sem proposta'); } return x.quem === 'proprio' ? tr('Nossa estimativa') : '—'; };
+  const partes = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Quem faz cada parte') + '</h2>' + (e.etapas.length
+    ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Etapa') + '</th><th>' + tr('Quem faz') + '</th><th>' + tr('De onde vem o preço') + '</th></tr></thead><tbody>' +
+      e.etapas.map((x) => '<tr><td><b>' + esc(x.etapa) + '</b></td><td>' + quemTxt[x.quem] + '</td><td>' + origem(x) + '</td></tr>').join('') + '</tbody></table></div>'
+    : '<p class="vazio">' + tr('Nenhuma etapa ainda. Defina quem faz cada parte na aba Takeoff.') + '</p>') + '</section>';
+  const inicios = c.tarefas.map((x) => x.inicio).filter(Boolean).sort(), fins = c.tarefas.filter((x) => x.inicio).map((x) => { const d = new Date(x.inicio + 'T00:00:00'); d.setDate(d.getDate() + Math.max(0, (Number(x.dias) || 1) - 1)); return d.toISOString().slice(0, 10); }).sort();
+  const crono = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' + (c.tarefas.length
+    ? '<dl class="mz-dados"><div><dt>' + tr('Início previsto') + '</dt><dd>' + (inicios.length ? dataCurta(inicios[0]) : '—') + '</dd></div><div><dt>' + tr('Término previsto') + '</dt><dd>' + (fins.length ? dataCurta(fins[fins.length - 1]) : '—') + '</dd></div><div><dt>' + tr('Tarefas') + '</dt><dd>' + c.tarefas.length + '</dd></div><div><dt>' + tr('Marcos') + '</dt><dd>' + c.marcos.length + '</dd></div>' +
+      (c.confirmado ? '<div><dt>' + tr('Base da obra') + '</dt><dd>' + tr('confirmada em') + ' ' + dataCurta(c.confirmado.em) + '</dd></div>' : '') + '</dl>'
+    : '<p class="vazio">' + tr('Ainda sem cronograma.') + ' <a href="#/measure/projeto/' + p.id + '/schedule">' + tr('Montar o cronograma') + '</a></p>') + '</section>';
+  const acoes = '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Proposta') + '</h2><p class="mudo pequeno">' + tr('Revise as linhas e o preço, e emita a proposta para o cliente.') + '</p></div>' +
+    '<div class="btn-linha"><a class="btn btn-primario" href="#/measure/projeto/' + p.id + '/proposta">' + icone('tabela', 16) + (ultima ? tr('Abrir a proposta') : tr('Montar a proposta')) + '</a></div></div></section>';
+  return kpis + acoes + '<div class="mz-duas-colunas">' + partes + '<div>' + crono + '</div></div>' + htmlConcorrenciasDoProjeto(p);
 }
 
 /* O que se repete no projeto: cada typical, as ocorrências e quanto cada condição mede por unidade. */

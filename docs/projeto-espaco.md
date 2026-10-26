@@ -43,3 +43,13 @@ Os campos `entrega` e `cronograma` dependem da migração 0016 (`supabase/penden
 - Ao ganhar, o dono confirma o cronograma no projeto; a base fica guardada no projeto (`cronograma.confirmado`). O cadastro da obra da 1ª versão não tem cronograma, então a base **não** passa para a obra por ora.
 - Na versão completa, ao criar a obra a partir do projeto ganho, a opção "Cronograma confirmado no projeto" já vem escolhida e cria as etapas e as datas da obra. Na conta com banco, isso depende de uma função nova no servidor (não feita).
 - Quando o módulo de obras for liberado, a base confirmada passa para a obra sem refazer nada.
+
+## Estrutura das abas (revisão do dono, 26/10)
+
+Overview · Plans · Takeoff · Materials · Schedule · Project summary.
+
+- **Plans:** só o arquivo e as especificações de cada desenho (nome da folha, arquivo, escala, observação) e o envio do PDF (com referência opcional do arquivo). Sem botão de abrir/medir.
+- **Takeoff:** "quem faz cada parte" (antes Scope & delivery) no topo, o cartão **Measure** (escolhe a planta e abre a tela de medição, onde se troca de planta), as quantidades e os typicals.
+- **Materials** e **Schedule:** como antes.
+- **Project summary** (última): situação, proposta, custo, margem, quem faz cada parte e de onde vem o preço, resumo do cronograma, concorrências do projeto e a saída para a proposta.
+- **Bids:** não há aba; as concorrências ficam no menu **Bids** e, em cada etapa subcontratada, o link New bid / Open bid. Os endereços antigos `/scope` e `/bids` abrem o Takeoff.
