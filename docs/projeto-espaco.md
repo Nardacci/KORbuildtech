@@ -71,3 +71,7 @@ As **tarefas** (antes "etapas"/cost codes) são cadastradas **só no Schedule**,
 O escopo do projeto é escrito num **editor de texto estilo Word**, em uma aba **Scope** dentro de **Novo projeto** e **Editar projeto** (abas Project e Scope no mesmo formulário, um só botão de salvar). Barra: negrito, itálico, sublinhado, título e subtítulo, parágrafo, listas, recuo, alinhamento, link, desfazer, refazer e limpar formatação. O texto é guardado como HTML simples **sempre limpo** (`js/texto-rico.js`): só ficam as marcações permitidas; scripts, imagens, estilos e classes são removidos ao salvar, ao colar e ao exibir. Cabe no campo `descricao` que já existia (sem migração); textos antigos em texto simples viram parágrafos.
 
 Na **Proposal** o escopo **não é editável**: o botão **Load the project scope** traz o texto formatado do projeto (no primeiro acesso ele já vem carregado). A Overview mostra um resumo em texto, e o documento da proposta imprime o texto formatado. Fora desta versão: tabelas e imagens dentro do escopo.
+
+## Project summary: só leitura (decisão do dono, 26/10)
+
+A aba **Project summary** só mostra: status, proposta, custo e margem, dados do projeto, escopo formatado, quem faz cada tarefa e a origem do preço, cronograma e as concorrências do projeto (lista). Não tem campo para editar e **não cria concorrência**: a nova concorrência fica só no menu **Bids** (e na tarefa da prestadora, no Schedule). O botão para abrir a proposta é a única saída da aba.

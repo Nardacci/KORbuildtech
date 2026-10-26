@@ -535,7 +535,7 @@ verificar(cadeia.paiId === cadeia.pai, 'a concorrência da Northfield fica ligad
 r = await rodar((m, a, h, x) => h.como(h.RD, () => m.enviarProposta(x.sub, { porEtapa: { '09 51 00 · Acoustical ceilings': 20000 }, prazoExecucaoDias: 15 }, 'Sandra Lopes')), cadeia);
 verificar(r.ok, 'a Ridgeline (com conta) recebe o convite da Northfield e manda proposta');
 await ir('u-tom', '#/measure/projeto/' + cadeia.pj + '/summary');
-verificar((await page.locator('main').innerText()).includes('Forro: instalação') && await page.locator('a[href="#/daily/concorrencias/nova/projeto/' + cadeia.pj + '"]').count() === 1, 'o projeto mostra as concorrências que saíram dele e "Nova concorrência"');
+verificar((await page.locator('main').innerText()).includes('Forro: instalação') && await page.locator('a[href="#/daily/concorrencias/nova/projeto/' + cadeia.pj + '"]').count() === 0, 'o resumo do projeto mostra as concorrências que saíram dele, só para ler (sem "Nova concorrência")');
 await ir('u-tom', '#/daily/concorrencias/' + cadeia.sub + '/comparar');
 await page.locator('[data-acao="co-usar"]').first().click();
 await page.waitForTimeout(300);

@@ -83,6 +83,15 @@ await p.click('[data-acao="prop-carregar-escopo"]');
 await p.waitForSelector('.prop-escopo h2');
 verificar((await p.locator('.prop-escopo').innerHTML()).includes('<b>Siding</b>') && await p.locator('.prop-escopo li').count() === 2, 'o botão Carregar o escopo traz o texto formatado do projeto');
 
+console.log('Resumo do projeto: só leitura');
+await p.goto('about:blank');
+await p.goto(BASE + '#/measure/projeto/pj-casa/summary');
+await p.waitForSelector('.co-kpis', { timeout: 10000 });
+verificar(await p.locator('main input, main textarea, main select, main [contenteditable="true"]').count() === 0, 'o resumo não tem campo para editar');
+verificar(await p.locator('a[href*="concorrencias/nova"]').count() === 0, 'o resumo não oferece criar concorrência (isso fica no menu Bids)');
+const resumo = await textoDe('main');
+verificar(resumo.includes('Thompson Family') && resumo.includes('Bridge St') && resumo.includes('Escopo'), 'o resumo reúne cliente, local e escopo do projeto');
+
 console.log('Observação das plantas');
 await p.goto('about:blank');
 await p.goto(BASE + '#/measure/projeto/pj-casa/plans');

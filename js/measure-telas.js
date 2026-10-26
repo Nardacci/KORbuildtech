@@ -23,7 +23,7 @@ import {
 } from './measure.js';
 import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
-import { htmlEditorRico, valorDoEditor, escopoTexto } from './texto-rico.js';
+import { htmlEditorRico, valorDoEditor, escopoTexto, escopoHtml } from './texto-rico.js';
 import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta, totais as totaisDaProposta } from './measure-relatorios.js';
 import { telaPrecos } from './precos-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
@@ -293,10 +293,18 @@ function htmlResumo(p, ajudas) {
   const crono = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' + (c.tarefas.length
     ? '<dl class="mz-dados"><div><dt>' + tr('Início previsto') + '</dt><dd>' + (inicios.length ? dataCurta(inicios[0]) : '—') + '</dd></div><div><dt>' + tr('Término previsto') + '</dt><dd>' + (fins.length ? dataCurta(fins[fins.length - 1]) : '—') + '</dd></div><div><dt>' + tr('Tarefas') + '</dt><dd>' + c.tarefas.length + '</dd></div><div><dt>' + tr('Marcos') + '</dt><dd>' + c.marcos.length + '</dd></div>' +
       (c.confirmado ? '<div><dt>' + tr('Base da obra') + '</dt><dd>' + tr('confirmada em') + ' ' + dataCurta(c.confirmado.em) + '</dd></div>' : '') + '</dl>'
-    : '<p class="vazio">' + tr('Ainda sem cronograma.') + ' <a href="#/measure/projeto/' + p.id + '/schedule">' + tr('Montar o cronograma') + '</a></p>') + '</section>';
+    : '<p class="vazio">' + tr('Ainda sem cronograma.') + '</p>') + '</section>';
   const acoes = '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Proposta') + '</h2><p class="mudo pequeno">' + tr('Revise as linhas e o preço, e emita a proposta para o cliente.') + '</p></div>' +
     '<div class="btn-linha"><a class="btn btn-primario" href="#/measure/projeto/' + p.id + '/proposta">' + icone('tabela', 16) + (ultima ? tr('Abrir a proposta') : tr('Montar a proposta')) + '</a></div></div></section>';
-  return kpis + acoes + '<div class="mz-duas-colunas">' + partes + '<div>' + crono + '</div></div>' + htmlConcorrenciasDoProjeto(p);
+  const fs = folhasDo(p.id), cs = condicoesDo(p.id);
+  const d = (r, v) => v ? '<div><dt>' + r + '</dt><dd>' + v + '</dd></div>' : '';
+  const dados = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2><dl class="mz-dados">' +
+    d(tr('Contratante'), contratanteDe(p) ? esc(contratanteDe(p).nome) : '') + d(tr('Dono da obra'), p.donoId && contato(p.donoId) ? esc(contato(p.donoId).nome) : '') +
+    d(tr('Local'), esc(enderecoDoProjeto(p))) + d(tr('Tipo'), esc(TIPOS_PROJETO[p.tipo] || '')) + d(tr('Estimador'), esc(nomeUsuario(p.estimadorId))) +
+    d(tr('Plantas'), tn(fs.length, '{n} folha', '{n} folhas') + (fs.length && fs.some((f) => !f.escala) ? ' · ' + tr('{n} sem escala', { n: fs.filter((f) => !f.escala).length }) : '')) +
+    d(tr('Medições'), tn(cs.filter((c) => (c.medicoes || []).length).length, '{n} condição medida', '{n} condições medidas')) + '</dl></section>';
+  const escopo = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2>' + (p.descricao ? '<div class="doc-rico prop-escopo">' + escopoHtml(p.descricao) + '</div>' : '<p class="vazio">' + tr('O projeto ainda não tem escopo.') + '</p>') + '</section>';
+  return kpis + '<div class="mz-duas-colunas">' + '<div>' + dados + escopo + '</div><div>' + partes + crono + '</div></div>' + htmlConcorrenciasDoProjeto(p, true) + acoes;
 }
 
 /* O que se repete no projeto: cada typical, as ocorrências e quanto cada condição mede por unidade. */

@@ -325,7 +325,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T138** · `pv.p1.admin` — Schedule (Won): confirmar; depois mudar uma data e confirmar de novo  
   _Esperado:_ Mostra 'Schedule confirmed' com a data e o número de tarefas; o botão vira 'Update baseline' e regrava
 - [ ] **T139** · `pv.p1.admin` — Project summary: abrir a última aba  
-  _Esperado:_ Quatro cartões (Status, Proposal, Estimated cost, Margin); botão para montar/abrir a proposta; tabela 'Who does each part' com a origem do preço; resumo do cronograma; concorrências do projeto com 'New bid'
+  _Esperado:_ Só leitura (nenhum campo para editar): quatro cartões (Status, Proposal, Estimated cost, Margin); dados do projeto (cliente, local, tipo, estimador, plantas, medições); escopo formatado; quem faz cada tarefa e de onde vem o preço; resumo do cronograma; concorrências do projeto (só a lista, sem botão de criar); botão para abrir a proposta
 - [ ] **T140** · `pv.p1.admin` — Project summary: abrir a proposta e emitir  
   _Esperado:_ A faixa de abas aparece no topo (Project summary marcada); a proposta sai com as linhas e o total; voltar leva ao projeto
 - [ ] **T141** · `pv.p1.admin` — Endereços antigos: abrir #/measure/projeto/<id>/scope e /bids  

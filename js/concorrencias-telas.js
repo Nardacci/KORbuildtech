@@ -497,13 +497,16 @@ export function telaConvite(moldura, id) {
 /* As licitações (enviadas) que nasceram deste projeto. */
 export function licitacoesDoProjeto(p) { return enviadas().filter((c) => doProjeto(c) && c.origem.id === p.id); }
 
-export function htmlConcorrenciasDoProjeto(p) {
+export function htmlConcorrenciasDoProjeto(p, somenteLeitura) {
   if (!podeGerir()) return '';
   const lista = enviadas().filter((c) => doProjeto(c) && c.origem.id === p.id);
+  const itens = lista.map((c) => '<li><a href="#/daily/concorrencias/' + c.id + '"><b>' + esc(c.servico) + '</b></a> ' + etiqueta(situacaoDe(c)) +
+    '<span class="mudo pequeno bloco">' + tn(c.convites.filter((v) => v.propostas.length).length, '{n} proposta', '{n} propostas') + '</span></li>').join('');
+  // no resumo do projeto: só leitura (a nova concorrência é criada no menu Bids)
+  if (somenteLeitura) return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Concorrências do projeto') + '</h2>' + (lista.length ? '<ul class="lista-simples">' + itens + '</ul>' : '<p class="vazio">' + tr('Nenhuma concorrência deste projeto ainda.') + '</p>') + '</section>';
   return '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Cotar com prestadoras') + '</h2>' +
     '<a class="btn btn-contorno btn-pequeno" href="#/daily/concorrencias/nova/projeto/' + p.id + '">' + icone('mais', 16) + tr('Nova concorrência') + '</a></div>' +
-    (lista.length ? '<ul class="lista-simples">' + lista.map((c) => '<li><a href="#/daily/concorrencias/' + c.id + '"><b>' + esc(c.servico) + '</b></a> ' + etiqueta(situacaoDe(c)) +
-      '<span class="mudo pequeno bloco">' + tn(c.convites.filter((v) => v.propostas.length).length, '{n} proposta', '{n} propostas') + '</span></li>').join('') + '</ul>'
+    (lista.length ? '<ul class="lista-simples">' + itens + '</ul>'
       : '<p class="mudo">' + tr('Parte do serviço vai para outra prestadora? Convide as suas prestadoras para cotar e use o preço delas neste orçamento.') + '</p>') + '</section>';
 }
 
