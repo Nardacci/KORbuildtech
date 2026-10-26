@@ -305,7 +305,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T128** · `pv.p1.admin` — Overview: conferir os 4 cartões do topo e o checklist 'Set up this project'  
   _Esperado:_ Bid due (com 'em N dias'), Progress (N de 6 passos e o próximo), Plans and measuring, Proposal; os 6 passos mostram feito/próximo/pendente com o botão certo
 - [ ] **T129** · `pv.p1.admin` — Overview: clicar nos botões do checklist (View plans, Set scales, Review, Open takeoff, Open schedule, Open proposal)  
-  _Esperado:_ Plans leva a Plans; Set scales, Review e Open takeoff levam a Takeoff; Open schedule, a Schedule; Open proposal, à proposta; ao concluir o passo, a marca verde aparece e o progresso sobe
+  _Esperado:_ Plans leva a Plans; Set scales e Open takeoff levam a Takeoff; Review e Open schedule levam a Schedule; Open proposal, à proposta; ao concluir o passo, a marca verde aparece e o progresso sobe
 - [ ] **T130** · `pv.p1.admin` — Edit project: mudar dono da obra, obra vinculada, situação e estimador; salvar  
   _Esperado:_ Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado
 - [ ] **T131** · `pv.p1.admin` — Takeoff: cartão 'Measure' — escolher uma planta e clicar em Measure  
