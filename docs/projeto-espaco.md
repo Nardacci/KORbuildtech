@@ -61,3 +61,7 @@ Os três cartões "Como este projeto será executado?" (Fazemos tudo / Misto / S
 ## Linha do tempo (Schedule)
 
 A aba Schedule abre com uma **Timeline** (estilo Gantt, sem dependências): uma linha por tarefa e por marco, eixo de meses e dias, linha tracejada de hoje, barras por quem faz (verde = nós, âmbar = prestadora, cinza = a decidir), losangos nos marcos e detalhe ao passar o mouse. A tabela de edição fica logo abaixo. O Gantt completo da obra (linha de base, avanço pelo Daily) continua sendo o módulo de cronograma da versão completa.
+
+## Tarefas num só lugar (decisão do dono, 26/10)
+
+As **tarefas** (antes "etapas"/cost codes) são cadastradas **só no Schedule**, na hora de montar o cronograma, e podem ser editadas a qualquer momento. Cada tarefa tem **Who** (Us, Subcontractor, To decide), início e duração. O Takeoff não cadastra etapas nem pergunta quem faz: tem só o cartão Measure, as quantidades e os typicals. Tarefa de Subcontractor mostra **Request bids** (ou o resumo das propostas) e a Timeline pinta a barra de âmbar. "Generate from cost codes" cria as tarefas a partir dos assemblies das medições. O Project summary lê as mesmas tarefas. O campo antigo `entrega` fica sem uso.

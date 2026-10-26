@@ -27,7 +27,7 @@ import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta,
 import { telaPrecos } from './precos-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
-import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlEscopo, htmlCronograma, andamentoDoProjeto, entregaDe, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
+import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlCronograma, andamentoDoProjeto, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -253,7 +253,7 @@ function telaProjeto(id, abaPedida) {
   const conteudos = {
     overview: htmlOverview(p, ajudas),
     plans: '<section class="cartao mz-envio"><div><h2 class="cartao-titulo">' + tr('Enviar as plantas') + '</h2><p class="mudo pequeno">' + tr('Somente PDF. Cada página vira uma folha que você pode medir.') + '</p></div><div class="mz-envio-campos"><input type="text" id="mz-enviar-obs" maxlength="500" placeholder="' + esc(tr('Referência do arquivo (opcional): ex.: Rev. B')) + '" aria-label="' + esc(tr('Observação')) + '"><label class="btn btn-primario">' + icone('mais', 16) + tr('Enviar PDF') + '<input type="file" accept="application/pdf,.pdf" id="mz-enviar" data-projeto="' + p.id + '" class="visualmente-oculto"></label></div></section>' + secFolhas,
-    takeoff: htmlEscopo(p, ajudas) + secMedir + secQuantidades + htmlTypicaisDoProjeto(p),
+    takeoff: secMedir + secQuantidades + htmlTypicaisDoProjeto(p),
     materials: htmlMateriais(id) + '<p><a class="btn btn-contorno" href="#/measure/projeto/' + p.id + '/cotacao">' + icone('tabela', 16) + tr('Lista para cotação') + '</a></p>',
     schedule: htmlCronograma(p, ajudas),
     summary: htmlResumo(p, ajudas),
@@ -267,7 +267,7 @@ function telaProjeto(id, abaPedida) {
 
 /* Resumo do projeto: situação, números, quem faz cada parte, concorrências e cronograma, com a saída para a proposta. */
 function htmlResumo(p, ajudas) {
-  const e = entregaDe(p), c = p.cronograma || { tarefas: [], marcos: [] };
+  const c = p.cronograma || { tarefas: [], marcos: [] };
   const t = totaisDaProposta(p);
   const ultima = (p.propostas || [])[(p.propostas || []).length - 1];
   const dinheiroOk = podeCatalogo();
@@ -278,12 +278,12 @@ function htmlResumo(p, ajudas) {
     '<div class="co-kpi"><span>' + (ultima ? tr('Proposta emitida') : tr('Proposta (rascunho)')) + '</span><b>' + (dinheiroOk ? dinheiro(preco) : '—') + '</b><small>' + (ultima ? esc(ultima.numero) : tr('Ainda não emitida')) + '</small></div>' +
     '<div class="co-kpi"><span>' + tr('Custo estimado') + '</span><b>' + (dinheiroOk ? dinheiro(t.custo) : '—') + '</b><small>' + tr('Partes executadas por nós') + '</small></div>' +
     '<div class="co-kpi"><span>' + tr('Margem') + '</span><b>' + (dinheiroOk && margem != null ? margem.toLocaleString('en-US') + '%' : '—') + '</b><small>' + tr('Sobre a venda') + '</small></div></div>';
-  const quemTxt = { proprio: tr('Executo eu'), terceiro: tr('Subcontrato'), decidir: tr('Decidir depois') };
-  const origem = (x) => { if (x.quem === 'terceiro') { const l = ajudas.licitacoesDa(p, x.etapa); return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : tr('Preço do sub: ainda sem proposta'); } return x.quem === 'proprio' ? tr('Nossa estimativa') : '—'; };
-  const partes = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Quem faz cada parte') + '</h2>' + (e.etapas.length
-    ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Etapa') + '</th><th>' + tr('Quem faz') + '</th><th>' + tr('De onde vem o preço') + '</th></tr></thead><tbody>' +
-      e.etapas.map((x) => '<tr><td><b>' + esc(x.etapa) + '</b></td><td>' + quemTxt[x.quem] + '</td><td>' + origem(x) + '</td></tr>').join('') + '</tbody></table></div>'
-    : '<p class="vazio">' + tr('Nenhuma etapa ainda. Defina quem faz cada parte na aba Takeoff.') + '</p>') + '</section>';
+  const quemTxt = { proprio: tr('Nós'), terceiro: tr('Prestadora'), decidir: tr('A decidir') };
+  const origem = (x) => { if (x.quem === 'terceiro') { const l = ajudas.licitacoesDa(p, x.nome); return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : tr('Preço do sub: ainda sem proposta'); } return x.quem === 'proprio' ? tr('Nossa estimativa') : '—'; };
+  const partes = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Quem faz cada tarefa') + '</h2>' + (c.tarefas.length
+    ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem faz') + '</th><th>' + tr('De onde vem o preço') + '</th></tr></thead><tbody>' +
+      c.tarefas.map((x) => '<tr><td><b>' + esc(x.nome || '—') + '</b></td><td>' + quemTxt[x.quem] + '</td><td>' + origem(x) + '</td></tr>').join('') + '</tbody></table></div>'
+    : '<p class="vazio">' + tr('Nenhuma tarefa ainda. Cadastre as tarefas na aba Schedule.') + '</p>') + '</section>';
   const inicios = c.tarefas.map((x) => x.inicio).filter(Boolean).sort(), fins = c.tarefas.filter((x) => x.inicio).map((x) => { const d = new Date(x.inicio + 'T00:00:00'); d.setDate(d.getDate() + Math.max(0, (Number(x.dias) || 1) - 1)); return d.toISOString().slice(0, 10); }).sort();
   const crono = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' + (c.tarefas.length
     ? '<dl class="mz-dados"><div><dt>' + tr('Início previsto') + '</dt><dd>' + (inicios.length ? dataCurta(inicios[0]) : '—') + '</dd></div><div><dt>' + tr('Término previsto') + '</dt><dd>' + (fins.length ? dataCurta(fins[fins.length - 1]) : '—') + '</dd></div><div><dt>' + tr('Tarefas') + '</dt><dd>' + c.tarefas.length + '</dd></div><div><dt>' + tr('Marcos') + '</dt><dd>' + c.marcos.length + '</dd></div>' +

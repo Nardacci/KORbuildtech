@@ -308,47 +308,45 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Plans leva a Plans; Set scales, Review e Open takeoff levam a Takeoff; Open schedule, a Schedule; Open proposal, à proposta; ao concluir o passo, a marca verde aparece e o progresso sobe
 - [ ] **T130** · `pv.p1.admin` — Edit project: mudar dono da obra, obra vinculada, situação e estimador; salvar  
   _Esperado:_ Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado
-- [ ] **T131** · `pv.p1.admin` — Takeoff: clicar em 'Mark all as self-performed'  
-  _Esperado:_ Todas as etapas viram Self-perform com takeoff detalhado; o botão fica desabilitado quando não há etapas; não existem mais cartões de padrão (Fazemos tudo / Misto / Subcontratamos tudo) no Takeoff nem no Novo/Editar projeto
-- [ ] **T132** · `pv.p1.admin` — Takeoff: adicionar uma etapa (ex.: 07 46 33 · Siding) e usar 'Bring in from takeoff'  
-  _Esperado:_ A etapa entra na tabela; 'Bring in from takeoff' traz as etapas dos assemblies já aplicados, sem duplicar
-- [ ] **T133** · `pv.p1.admin` — Takeoff: mudar 'Who does it' de uma etapa para Subcontract  
-  _Esperado:_ Takeoff da etapa passa a 'None' com a opção 'also measure quantities'; a linha oferece criar a bid request; Decide later fica tracejado
-- [ ] **T134** · `pv.p1.admin` — Takeoff: em uma etapa Subcontract, abrir 'New bid' pelo link da linha  
-  _Esperado:_ Abre a nova concorrência já ligada ao projeto
-- [ ] **T135** · `pv.p1.admin` — Takeoff: cartão 'Measure' — escolher uma planta e clicar em Measure  
+- [ ] **T131** · `pv.p1.admin` — Takeoff: cartão 'Measure' — escolher uma planta e clicar em Measure  
   _Esperado:_ Lista as folhas com escala e número de medições; Measure abre a tela de medição daquela folha; nela dá para trocar de folha pela lista no topo; o link de volta leva ao Takeoff
-- [ ] **T136** · `pv.p1.admin` — Takeoff: medir algo e voltar  
+- [ ] **T132** · `pv.p1.admin` — Takeoff: medir algo e voltar  
   _Esperado:_ A tabela Quantities mostra medido, derivadas e número de medições; os typicals, vãos e o rastro do cálculo aparecem como antes
-- [ ] **T137** · `pv.p1.admin` — Materials: abrir a aba; clicar 'Lista para cotação'  
+- [ ] **T133** · `pv.p1.admin` — Materials: abrir a aba; clicar 'Lista para cotação'  
   _Esperado:_ Mostra os materiais calculados; a Lista para cotação abre com a faixa de abas no topo (Materials marcada)
-- [ ] **T138** · `pv.p1.admin` — Schedule: 'Gerar a partir das etapas' e mudar início e dias de uma tarefa  
-  _Esperado:_ Uma tarefa por etapa, com início e duração; o término e a barra de tempo acompanham a mudança
-- [ ] **T139** · `pv.p1.admin` — Schedule: adicionar tarefa, adicionar marco, remover cada um  
+- [ ] **T134** · `pv.p1.admin` — Schedule: cadastrar tarefas (Add task) e, se houver medições com assemblies, usar 'Generate from cost codes'  
+  _Esperado:_ As tarefas são cadastradas só aqui (o Takeoff não tem mais tabela de etapas); cada uma tem início e duração; o término e as barras da Timeline acompanham
+- [ ] **T135** · `pv.p1.admin` — Schedule: adicionar tarefa, adicionar marco, remover cada um  
   _Esperado:_ Linhas novas editáveis; remover tira só a linha escolhida
-- [ ] **T140** · `pv.p1.admin` — Schedule: projeto ainda em Estimating  
+- [ ] **T136** · `pv.p1.admin` — Schedule: projeto ainda em Estimating  
   _Esperado:_ Não aparece pedido de confirmação do cronograma
-- [ ] **T141** · `pv.p1.admin` — Edit project: mudar a situação para Won e abrir Schedule  
+- [ ] **T137** · `pv.p1.admin` — Edit project: mudar a situação para Won e abrir Schedule  
   _Esperado:_ Aparece 'Confirm the schedule' com o botão 'Confirm schedule' (desabilitado se não há tarefas)
-- [ ] **T142** · `pv.p1.admin` — Schedule (Won): confirmar; depois mudar uma data e confirmar de novo  
+- [ ] **T138** · `pv.p1.admin` — Schedule (Won): confirmar; depois mudar uma data e confirmar de novo  
   _Esperado:_ Mostra 'Schedule confirmed' com a data e o número de tarefas; o botão vira 'Update baseline' e regrava
-- [ ] **T143** · `pv.p1.admin` — Project summary: abrir a última aba  
+- [ ] **T139** · `pv.p1.admin` — Project summary: abrir a última aba  
   _Esperado:_ Quatro cartões (Status, Proposal, Estimated cost, Margin); botão para montar/abrir a proposta; tabela 'Who does each part' com a origem do preço; resumo do cronograma; concorrências do projeto com 'New bid'
-- [ ] **T144** · `pv.p1.admin` — Project summary: abrir a proposta e emitir  
+- [ ] **T140** · `pv.p1.admin` — Project summary: abrir a proposta e emitir  
   _Esperado:_ A faixa de abas aparece no topo (Project summary marcada); a proposta sai com as linhas e o total; voltar leva ao projeto
-- [ ] **T145** · `pv.p1.admin` — Endereços antigos: abrir #/measure/projeto/<id>/scope e /bids  
+- [ ] **T141** · `pv.p1.admin` — Endereços antigos: abrir #/measure/projeto/<id>/scope e /bids  
   _Esperado:_ Caem na aba Takeoff (os links antigos não quebram)
-- [ ] **T146** · `pv.p1.admin` — Trocar o idioma para inglês (padrão) e percorrer todas as abas do projeto  
+- [ ] **T142** · `pv.p1.admin` — Trocar o idioma para inglês (padrão) e percorrer todas as abas do projeto  
   _Esperado:_ Nenhum texto em português (menus, botões, avisos, tabelas)
-- [ ] **T147** · `pv.p1.orcamentista` — Entrar como orçamentista e abrir um projeto  
+- [ ] **T143** · `pv.p1.orcamentista` — Entrar como orçamentista e abrir um projeto  
   _Esperado:_ Consegue ver e editar o projeto conforme o perfil; nada de módulos ocultos na 1ª versão
-- [ ] **T148** · `pv.p1.gestor` — Entrar como gestor e abrir um projeto  
+- [ ] **T144** · `pv.p1.gestor` — Entrar como gestor e abrir um projeto  
   _Esperado:_ Mede e vê quantidades, mas não vê dinheiro (preços e proposta)
-- [ ] **T149** · `pv.p1.admin` — Conta real: mudar quem faz uma etapa em Takeoff e recarregar a página  
+- [ ] **T145** · `pv.p1.admin` — Conta real: mudar quem faz uma etapa em Takeoff e recarregar a página  
   _Esperado:_ A escolha continua depois de recarregar; o aviso 'só neste navegador' não aparece
-- [ ] **T150** · `pv.p1.admin` — Conta real: criar tarefas no Schedule, recarregar e abrir em outro navegador  
+- [ ] **T146** · `pv.p1.admin` — Conta real: criar tarefas no Schedule, recarregar e abrir em outro navegador  
   _Esperado:_ Tarefas, marcos e a confirmação continuam; aparecem no outro navegador
-- [ ] **T151** · `pv.p1.admin` — Conta real (só depois da migração 0017): escrever observações em folhas e recarregar  
+- [ ] **T147** · `pv.p1.admin` — Conta real (só depois da migração 0017): escrever observações em folhas e recarregar  
   _Esperado:_ As observações continuam depois de recarregar (antes da 0017 ficam só neste aparelho)
-- [ ] **T152** · `pv.p1.admin` — Schedule: olhar a Timeline no topo da aba, com tarefas e marcos preenchidos  
+- [ ] **T148** · `pv.p1.admin` — Schedule: olhar a Timeline no topo da aba, com tarefas e marcos preenchidos  
   _Esperado:_ Uma linha por tarefa e por marco; eixo de meses e dias; barras verdes (nós), âmbar (prestadora) e cinza (a decidir); losangos para os marcos; linha tracejada marca hoje (se estiver no período); ao passar o mouse na barra aparecem nome, datas, duração e quem faz; mudar início ou dias na tabela move a barra
+- [ ] **T149** · `pv.p1.admin` — Schedule: mudar 'Who' de uma tarefa (Us, Subcontractor, To decide) e voltar a mudar depois  
+  _Esperado:_ A escolha vale na hora e pode ser editada a qualquer momento; a barra da Timeline muda de cor (verde, âmbar, cinza); uma tarefa de Subcontractor mostra 'Request bids' (ou o resumo das propostas) na coluna Bids
+- [ ] **T150** · `pv.p1.admin` — Schedule: clicar em 'Request bids' numa tarefa da prestadora  
+  _Esperado:_ Abre a nova concorrência já ligada ao projeto
+- [ ] **T151** · `pv.p1.admin` — Takeoff: conferir que não há mais tabela de etapas nem pergunta 'quem faz'  
+  _Esperado:_ Só o cartão Measure (plantas), as quantidades e os typicals

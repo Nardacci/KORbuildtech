@@ -32,22 +32,15 @@ function etapasDasCondicoes(p) {
   return [...vistas].sort();
 }
 
-export function entregaDe(p) {
-  if (!p.entrega) {
-    p.entrega = { padrao: 'misto', etapas: etapasDasCondicoes(p).map((e) => ({ id: novoId('et'), etapa: e, quem: 'proprio', takeoff: 'detalhado' })) };
-    salvar();
-  }
-  return p.entrega;
-}
 const cronogramaDe = (p) => { if (!p.cronograma) { p.cronograma = { tarefas: [], marcos: [] }; salvar(); } return p.cronograma; };
 
 /* Os seis passos do projeto: o que já está feito e o que vem a seguir. */
 export function passosDoProjeto(p) {
-  const fs = folhasDo(p.id), cs = condicoesDo(p.id), e = p.entrega, c = p.cronograma;
+  const fs = folhasDo(p.id), cs = condicoesDo(p.id), c = p.cronograma;
   return [
     { id: 'plans', feito: fs.length > 0, aba: 'plans' },
     { id: 'scale', feito: fs.length > 0 && fs.every((f) => f.escala), aba: 'takeoff' },
-    { id: 'delivery', feito: !!e && e.etapas.length > 0 && e.etapas.every((x) => x.quem !== 'decidir'), aba: 'takeoff' },
+    { id: 'delivery', feito: !!c && c.tarefas.length > 0 && c.tarefas.every((x) => x.quem !== 'decidir'), aba: 'schedule' },
     { id: 'measure', feito: cs.some((x) => (x.medicoes || []).length > 0), aba: 'takeoff' },
     { id: 'schedule', feito: !!c && c.tarefas.length > 0, aba: 'schedule' },
     { id: 'proposal', feito: (p.propostas || []).length > 0, aba: 'proposta' },
@@ -74,7 +67,7 @@ export function htmlAbas(p, ativa) {
 const NOMES_PASSO = () => ({
   plans: [tr('Enviar as plantas'), (p) => tn(folhasDo(p.id).length, '{n} folha', '{n} folhas')],
   scale: [tr('Definir a escala de cada folha'), (p) => { const n = folhasDo(p.id).filter((f) => !f.escala).length; return n ? tn(n, '{n} folha sem escala', '{n} folhas sem escala') : tr('Todas as folhas têm escala'); }],
-  delivery: [tr('Decidir quem faz cada parte'), (p) => { const e = p.entrega; if (!e || !e.etapas.length) return tr('Nenhuma etapa ainda'); const n = (q) => e.etapas.filter((x) => x.quem === q).length; return tr('{a} próprias · {b} subcontratadas · {c} a decidir', { a: n('proprio'), b: n('terceiro'), c: n('decidir') }); }],
+  delivery: [tr('Decidir quem faz cada tarefa'), (p) => { const t = (p.cronograma || {}).tarefas || []; if (!t.length) return tr('Nenhuma tarefa ainda'); const n = (q) => t.filter((x) => x.quem === q).length; return tr('{a} próprias · {b} subcontratadas · {c} a decidir', { a: n('proprio'), b: n('terceiro'), c: n('decidir') }); }],
   measure: [tr('Medir as partes que são suas'), (p) => tn(condicoesDo(p.id).filter((c) => (c.medicoes || []).length).length, '{n} condição medida', '{n} condições medidas')],
   schedule: [tr('Montar o cronograma'), () => tr('Datas e marcos (opcional, pode ficar para depois)')],
   proposal: [tr('Emitir a proposta'), (p) => ((p.propostas || []).length ? p.propostas[p.propostas.length - 1].numero : tr('Precisa de preço para cada parte'))],
@@ -115,45 +108,20 @@ function htmlMarcos(p) {
     : '<p class="mudo pequeno">' + tr('Os marcos aparecem aqui quando você monta o cronograma.') + '</p>') + '</section>';
 }
 
-/* ---------- Scope & delivery ---------- */
-
-const QUEM = () => [['proprio', tr('Executo eu')], ['terceiro', tr('Subcontrato')], ['decidir', tr('Decidir depois')]];
-const TAKEOFF = () => ({ detalhado: tr('Detalhado'), nenhum: tr('Nenhum'), quantidades: tr('Só quantidades') });
-
-export function htmlEscopo(p, ajudas) {
-  const e = entregaDe(p);
-  const conhecidas = [...new Set(itens().map((i) => i.etapa).filter(Boolean))].sort();
-  const linhas = e.etapas.map((x) => {
-    const bids = ajudas.licitacoesDa(p, x.etapa);
-    return '<tr><td><b>' + esc(x.etapa) + '</b></td>' +
-      '<td><select class="mz-quem ' + x.quem + '" data-pj-quem data-id="' + p.id + '" data-et="' + x.id + '" aria-label="' + esc(tr('Quem faz')) + '">' + QUEM().map(([k, n]) => '<option value="' + k + '"' + (x.quem === k ? ' selected' : '') + '>' + esc(n) + '</option>').join('') + '</select></td>' +
-      '<td>' + (x.quem === 'proprio' ? esc(TAKEOFF().detalhado) : x.quem === 'terceiro' ? esc(TAKEOFF()[x.takeoff === 'quantidades' ? 'quantidades' : 'nenhum']) + ' <button type="button" class="link-botao pequeno" data-acao="pj-takeoff" data-id="' + p.id + '" data-et="' + x.id + '">' + (x.takeoff === 'quantidades' ? tr('não medir') : tr('medir quantidades')) + '</button>' : '<span class="mudo">—</span>') + '</td>' +
-      '<td>' + (x.quem === 'proprio' ? tr('Nossa estimativa') : x.quem === 'terceiro' ? tr('Proposta da prestadora') : '<span class="mudo">—</span>') + '</td>' +
-      '<td>' + (x.quem === 'terceiro' ? (bids ? '<a href="' + bids.href + '">' + esc(bids.texto) + '</a>' : '<a class="btn btn-contorno btn-pequeno" href="#/daily/concorrencias/nova/projeto/' + p.id + '">' + tr('Pedir propostas') + '</a>') : '') + '</td>' +
-      '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-etapa" data-id="' + p.id + '" data-et="' + x.id + '" aria-label="' + esc(tr('Remover')) + '">' + tr('Remover') + '</button></td></tr>';
-  }).join('');
-  const tabela = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Quem faz cada etapa?') + '</h2><p class="mudo pequeno">' + tr('Etapa própria tem medição, materiais e cotação de fornecedores. Etapa subcontratada tem pedido de propostas, e o preço da prestadora entra na sua proposta.') + '</p>' +
-    (e.etapas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-escopo"><thead><tr><th>' + tr('Etapa') + '</th><th>' + tr('Quem faz') + '</th><th>' + tr('Takeoff') + '</th><th>' + tr('Origem do preço') + '</th><th>' + tr('Propostas') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
-      : '<p class="vazio">' + tr('Nenhuma etapa ainda. Adicione abaixo, ou inclua assemblies nas condições para que elas apareçam sozinhas.') + '</p>') +
-    '<div class="mz-add-etapa"><input type="text" id="pj-nova-etapa" list="pj-etapas-conhecidas" placeholder="' + esc(tr('Ex.: 07 46 33 · Siding')) + '" aria-label="' + esc(tr('Nova etapa')) + '"><datalist id="pj-etapas-conhecidas">' + conhecidas.map((c) => '<option value="' + esc(c) + '">').join('') + '</datalist>' +
-    '<button type="button" class="btn btn-contorno" data-acao="pj-add-etapa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar etapa') + '</button>' +
-    '<button type="button" class="btn btn-contorno" data-acao="pj-sugerir-etapas" data-id="' + p.id + '">' + tr('Trazer das medições') + '</button>' +
-    '<button type="button" class="btn btn-contorno" data-acao="pj-todas-proprias" data-id="' + p.id + '"' + (e.etapas.length ? '' : ' disabled') + '>' + tr('Marcar todas como próprias') + '</button></div>' +
-    (ajudas.aviso ? '<p class="mudo pequeno">' + ajudas.aviso + '</p>' : '') + '</section>';
-  return tabela;
-}
+const QUEM = () => [['proprio', tr('Nós')], ['terceiro', tr('Prestadora')], ['decidir', tr('A decidir')]];
 
 /* ---------- Schedule ---------- */
 
 export function htmlCronograma(p, ajudas) {
-  const c = cronogramaDe(p), e = entregaDe(p);
+  const c = cronogramaDe(p);
   const tarefas = c.tarefas;
   const quemTxt = (t) => (t.quem === 'terceiro' ? tr('Prestadora') : t.quem === 'proprio' ? tr('Nós') : tr('A decidir'));
   const linhas = tarefas.map((t) => '<tr><td><input type="text" class="mz-t-nome" data-pj-tarefa="nome" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.nome) + '" aria-label="' + esc(tr('Tarefa')) + '"></td>' +
-    '<td><span class="etiqueta ' + (t.quem === 'terceiro' ? 'etiqueta-ambar' : t.quem === 'proprio' ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + quemTxt(t) + '</span></td>' +
+    '<td><select class="mz-quem ' + t.quem + '" data-pj-tarefa="quem" data-id="' + p.id + '" data-t="' + t.id + '" aria-label="' + esc(tr('Quem faz')) + '">' + QUEM().map(([k, n]) => '<option value="' + k + '"' + (k === t.quem ? ' selected' : '') + '>' + esc(n) + '</option>').join('') + '</select></td>' +
     '<td><input type="date" data-pj-tarefa="inicio" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.inicio || '') + '" aria-label="' + esc(tr('Início')) + '"></td>' +
     '<td><input type="number" min="1" class="mz-t-dias" data-pj-tarefa="dias" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.dias || '') + '" aria-label="' + esc(tr('Duração em dias')) + '"></td>' +
     '<td>' + (fimDe(t) ? dataCurta(fimDe(t)) : '—') + '</td>' +
+    '<td>' + (t.quem === 'terceiro' ? (() => { const l = t.nome ? ajudas.licitacoesDa(p, t.nome) : null; return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : '<a href="#/daily/concorrencias/nova/projeto/' + p.id + '">' + tr('Pedir propostas') + '</a>'; })() : '') + '</td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-tarefa" data-id="' + p.id + '" data-t="' + t.id + '">' + tr('Remover') + '</button></td></tr>').join('');
   const marcos = c.marcos.map((m) => '<tr><td><input type="text" data-pj-marco="nome" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nome) + '" aria-label="' + esc(tr('Marco')) + '"></td>' +
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +
@@ -165,10 +133,10 @@ export function htmlCronograma(p, ajudas) {
       : tr('O projeto foi ganho. Ajuste as datas abaixo e confirme: o cronograma vira a base da obra.')) + '</p></div>' +
     '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-confirmar-cronograma" data-id="' + p.id + '"' + (tarefas.length ? '' : ' disabled') + '>' + (c.confirmado ? tr('Atualizar a base') : tr('Confirmar cronograma')) + '</button></div></section>';
   return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
-    '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (e.etapas.length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
+    '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (etapasDasCondicoes(p).length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-tarefa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar tarefa') + '</button></div></div>' +
-    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
-      : '<p class="vazio">' + tr('Nenhuma tarefa ainda. Gere a partir das etapas de Escopo e execução, ou adicione à mão.') + '</p>') + '</section>' +
+    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th>' + tr('Propostas') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
+      : '<p class="vazio">' + tr('Nenhuma tarefa ainda. Gere a partir das medições, ou adicione à mão.') + '</p>') + '</section>' +
     '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Marcos') + '</h2><p class="mudo pequeno">' + tr('Datas-chave que vão na proposta e na obra (ex.: licença aprovada).') + '</p></div>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-marco" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar marco') + '</button></div>' +
     (c.marcos.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Marco') + '</th><th>' + tr('Data') + '</th><th>' + tr('Observação') + '</th><th></th></tr></thead><tbody>' + marcos + '</tbody></table></div>' : '<p class="vazio">' + tr('Nenhum marco ainda.') + '</p>') + '</section>' +
@@ -216,40 +184,9 @@ function htmlLinhaDoTempo(p) {
 
 /* ---------- Ações ---------- */
 
-function etapaDe(p, id) { return entregaDe(p).etapas.find((x) => x.id === id); }
 function terminou(msg) { salvar(); if (msg) toast(msg); app.desenhar(); }
 
 export const acoesEspaco = {
-  'pj-todas-proprias'(el) {
-    const e = entregaDe(projeto(el.dataset.id));
-    for (const x of e.etapas) { x.quem = 'proprio'; x.takeoff = 'detalhado'; }
-    e.padrao = 'tudo';
-    terminou();
-  },
-  'pj-takeoff'(el) {
-    const x = etapaDe(projeto(el.dataset.id), el.dataset.et);
-    if (x) x.takeoff = x.takeoff === 'quantidades' ? 'nenhum' : 'quantidades';
-    terminou();
-  },
-  'pj-add-etapa'(el) {
-    const p = projeto(el.dataset.id), campo = document.getElementById('pj-nova-etapa'), nome = (campo.value || '').trim();
-    if (!nome) { toast(tr('Escreva o nome da etapa.')); return; }
-    const e = entregaDe(p);
-    if (e.etapas.some((x) => x.etapa.toLowerCase() === nome.toLowerCase())) { toast(tr('Essa etapa já está na lista.')); return; }
-    e.etapas.push({ id: novoId('et'), etapa: nome, quem: e.padrao === 'terceirizar' ? 'terceiro' : e.padrao === 'tudo' ? 'proprio' : 'decidir', takeoff: e.padrao === 'terceirizar' ? 'nenhum' : 'detalhado' });
-    terminou();
-  },
-  'pj-sugerir-etapas'(el) {
-    const p = projeto(el.dataset.id), e = entregaDe(p);
-    const novas = etapasDasCondicoes(p).filter((n) => !e.etapas.some((x) => x.etapa === n));
-    for (const n of novas) e.etapas.push({ id: novoId('et'), etapa: n, quem: e.padrao === 'terceirizar' ? 'terceiro' : 'proprio', takeoff: e.padrao === 'terceirizar' ? 'nenhum' : 'detalhado' });
-    terminou(novas.length ? tn(novas.length, '{n} etapa trazida das medições.', '{n} etapas trazidas das medições.') : tr('Não há etapas novas nas medições.'));
-  },
-  'pj-tirar-etapa'(el) {
-    const p = projeto(el.dataset.id), e = entregaDe(p);
-    e.etapas = e.etapas.filter((x) => x.id !== el.dataset.et);
-    terminou();
-  },
   'pj-add-tarefa'(el) {
     const c = cronogramaDe(projeto(el.dataset.id));
     const ultima = c.tarefas.map(fimDe).filter(Boolean).sort().pop();
@@ -262,13 +199,13 @@ export const acoesEspaco = {
     terminou();
   },
   'pj-gerar-cronograma'(el) {
-    const p = projeto(el.dataset.id), c = cronogramaDe(p), e = entregaDe(p);
+    const p = projeto(el.dataset.id), c = cronogramaDe(p);
     let inicio = p.prazoProposta ? somarDias(p.prazoProposta, 7) : hoje();
     const ja = new Set(c.tarefas.map((t) => t.nome));
     let n = 0;
-    for (const x of e.etapas) {
-      if (ja.has(x.etapa)) continue;
-      c.tarefas.push({ id: novoId('tf'), nome: x.etapa, quem: x.quem, inicio, dias: 5 });
+    for (const nome of etapasDasCondicoes(p)) {
+      if (ja.has(nome)) continue;
+      c.tarefas.push({ id: novoId('tf'), nome, quem: 'proprio', inicio, dias: 5 });
       inicio = somarDias(inicio, 5); n++;
     }
     terminou(n ? tn(n, '{n} tarefa criada. Ajuste as datas e as durações.', '{n} tarefas criadas. Ajuste as datas e as durações.') : tr('As etapas já estão no cronograma.'));
@@ -294,15 +231,6 @@ if (typeof document !== 'undefined') {
   document.addEventListener('change', (ev) => {
     const el = ev.target;
     if (!el || !el.matches) return;
-    if (el.matches('[data-pj-quem]')) {
-      const p = projeto(el.dataset.id), x = p && etapaDe(p, el.dataset.et);
-      if (!x) return;
-      x.quem = el.value;
-      x.takeoff = x.quem === 'proprio' ? 'detalhado' : x.quem === 'terceiro' ? (x.takeoff === 'quantidades' ? 'quantidades' : 'nenhum') : 'detalhado';
-      const e = p.entrega; e.padrao = e.etapas.every((y) => y.quem === 'proprio') ? 'tudo' : e.etapas.every((y) => y.quem === 'terceiro') ? 'terceirizar' : 'misto';
-      terminou();
-      return;
-    }
     if (el.matches('[data-pj-tarefa]')) {
       const c = cronogramaDe(projeto(el.dataset.id)), t = c.tarefas.find((y) => y.id === el.dataset.t);
       if (!t) return;
