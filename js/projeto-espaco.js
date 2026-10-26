@@ -121,7 +121,6 @@ export function htmlCronograma(p, ajudas) {
     '<td><input type="date" data-pj-tarefa="inicio" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.inicio || '') + '" aria-label="' + esc(tr('Início')) + '"></td>' +
     '<td><input type="number" min="1" class="mz-t-dias" data-pj-tarefa="dias" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.dias || '') + '" aria-label="' + esc(tr('Duração em dias')) + '"></td>' +
     '<td>' + (fimDe(t) ? dataCurta(fimDe(t)) : '—') + '</td>' +
-    '<td>' + (t.quem === 'terceiro' ? (() => { const l = t.nome ? ajudas.licitacoesDa(p, t.nome) : null; return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : ''; })() : '') + '</td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-tarefa" data-id="' + p.id + '" data-t="' + t.id + '">' + tr('Remover') + '</button></td></tr>').join('');
   const marcos = c.marcos.map((m) => '<tr><td><input type="text" data-pj-marco="nome" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nome) + '" aria-label="' + esc(tr('Marco')) + '"></td>' +
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +
@@ -135,7 +134,7 @@ export function htmlCronograma(p, ajudas) {
   return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (etapasDasCondicoes(p).length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-tarefa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar tarefa') + '</button></div></div>' +
-    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th>' + tr('Propostas') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
+    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
       : '<p class="vazio">' + tr('Nenhuma tarefa ainda. Gere a partir das medições, ou adicione à mão.') + '</p>') + '</section>' +
     '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Marcos') + '</h2><p class="mudo pequeno">' + tr('Datas-chave que vão na proposta e na obra (ex.: licença aprovada).') + '</p></div>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-marco" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar marco') + '</button></div>' +
