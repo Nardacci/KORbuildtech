@@ -104,10 +104,12 @@ try {
   await a.p.click('[data-acao="mz-salvar-projeto"]');
   verificar(await esperarAte(async () => (await sql(`select nome, estado from public.projetos where empresa_id = '${A}'`)).some((x) => x.nome === 'Casa Thompson' && x.estado === 'NH')), 'o projeto chegou ao banco (estado em maiúsculas)');
   const pj = (await sql(`select id from public.projetos where empresa_id = '${A}'`))[0];
-  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/(overview|plans|scope|takeoff|materials|schedule|bids)$/, '') + '/scope'; });
-  await a.p.click('[data-acao="pj-padrao"][data-padrao="terceirizar"]');
-  verificar(await esperarAte(async () => (await sql(`select entrega->>'padrao' as p from public.projetos where id = '${pj.id}'`))[0].p === 'terceirizar'), 'o escopo e execução (quem faz) chegou ao banco');
-  await a.p.evaluate(() => { location.hash = location.hash.replace(/\/scope$/, '/plans'); });
+  await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/editar');
+  await a.p.waitForSelector('input[name="padrao"]', { timeout: 20000 });
+  await a.p.click('label.mz-padrao:has(input[value="terceirizar"])');
+  await a.p.click('[data-acao="mz-salvar-projeto"]');
+  verificar(await esperarAte(async () => (await sql(`select entrega->>'padrao' as p from public.projetos where id = '${pj.id}'`))[0].p === 'terceirizar'), 'como o projeto será executado (Editar projeto) chegou ao banco');
+  await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/plans');
   await a.p.waitForSelector('#mz-enviar', { timeout: 20000 });
   await a.p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
   await a.p.waitForFunction(() => /3 folhas adicionadas/.test((document.getElementById('toast') || {}).textContent || ''), null, { timeout: 30000 });

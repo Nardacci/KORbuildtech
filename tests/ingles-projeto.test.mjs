@@ -86,7 +86,7 @@ await ir('#/measure/projeto/pj-casa/proposta');
 
 // ações do escopo e do cronograma
 await ir('#/measure/projeto/pj-casa/takeoff');
-for (const sel of ['[data-acao="pj-padrao"][data-padrao="tudo"]', '[data-acao="pj-padrao"][data-padrao="terceirizar"]', '[data-acao="pj-padrao"][data-padrao="misto"]', '[data-acao="pj-sugerir-etapas"]', '[data-acao="pj-add-etapa"]']) {
+for (const sel of ['[data-acao="pj-sugerir-etapas"]', '[data-acao="pj-add-etapa"]']) {
   await page.locator(sel).first().click().catch(() => {}); await sondar('escopo: ' + sel);
 }
 await page.keyboard.press('Escape');
