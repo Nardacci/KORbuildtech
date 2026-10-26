@@ -112,8 +112,10 @@ try {
   verificar(await esperarAte(async () => { const e = (await sql(`select entrega from public.projetos where id = '${pj.id}'`))[0].entrega; return e.padrao === 'tudo' && e.etapas && e.etapas.length === 1 && e.etapas[0].quem === 'proprio'; }), 'quem faz cada etapa (Takeoff) chegou ao banco');
   await a.p.goto(BASE + '#/measure/projeto/' + pj.id + '/plans');
   await a.p.waitForSelector('#mz-enviar', { timeout: 20000 });
+  await a.p.fill('#mz-enviar-obs', 'Rev. B: térreo');
   await a.p.setInputFiles('#mz-enviar', 'assets/plantas/casa-modelo.pdf');
   await a.p.waitForFunction(() => /3 folhas adicionadas/.test((document.getElementById('toast') || {}).textContent || ''), null, { timeout: 30000 });
+  verificar(await esperarAte(async () => (await sql(`select observacao from public.folhas where projeto_id = '${pj.id}'`)).filter((f) => f.observacao === 'Rev. B: térreo').length === 3), 'a referência digitada no envio chegou ao banco nas 3 folhas');
   verificar(await esperarAte(async () => (await sql(`select arquivo_path, pagina from public.folhas where projeto_id = '${pj.id}'`)).length === 3), '3 folhas no banco');
   const folhas = await sql(`select arquivo_path, pagina from public.folhas where projeto_id = '${pj.id}' order by pagina`);
   verificar(folhas.every((f) => f.arquivo_path.startsWith(A + '/' + pj.id + '/')), 'as folhas apontam a planta na pasta da empresa e do projeto', folhas);

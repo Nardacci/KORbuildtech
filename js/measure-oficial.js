@@ -16,8 +16,8 @@ import { ligarServidorMeasure } from './measure-relatorios.js';
 const ESPERA_MS = 800;
 /* Os campos novos do projeto (entrega por etapa e cronograma preliminar) só sobem para o banco depois da migração 0016 (supabase/pendentes/). Antes dela, ficam só no aparelho: virar true junto com a migração. */
 export const PERSISTE_ESPACO = true;
-/** Observação de cada folha (migração 0017, em supabase/pendentes): só vai ao banco depois que ela for aplicada. */
-export const PERSISTE_OBS_FOLHA = false;
+/** Observação de cada folha (migração 0017): só vai ao banco depois que ela for aplicada. */
+export const PERSISTE_OBS_FOLHA = true;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;
