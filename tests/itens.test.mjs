@@ -107,6 +107,65 @@ await p.click('.abas-sublinhadas a:has-text("Usado em")');
 await p.waitForTimeout(400);
 verificar((await p.locator('main').innerText()).includes('Assemblies que usam este item'), 'a aba Usado em lista os assemblies do item');
 
+console.log('Exportar e importar');
+await ir('#/measure/itens', '#itens-tabela');
+const baixou = async (formato) => {
+  await p.click('[data-acao="itens-exportar"]');
+  await p.waitForSelector('dialog[open] input[name="formato"]');
+  await p.check('input[name="formato"][value="' + formato + '"]');
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('dialog[open] .btn-primario')]);
+  const fs = await import('node:fs'); const caminho = await dl.path();
+  return { nome: dl.suggestedFilename(), dados: fs.readFileSync(caminho) };
+};
+const csv = await baixou('csv');
+const csvTxt = csv.dados.toString('utf8');
+verificar(/^﻿Code,Name,Category,Purchase unit,Cost code,Note,Price,Price valid from,Price source,Active/.test(csvTxt), 'o CSV exportado tem o cabeçalho e o BOM', csvTxt.slice(0, 120));
+verificar(csvTxt.split('\r\n').length > 5 && /OSB/i.test(csvTxt), 'o CSV traz os itens do catálogo');
+const xl = await baixou('xlsx');
+verificar(xl.nome.endsWith('.xlsx') && xl.dados.slice(0, 2).toString() === 'PK', 'o Excel exportado é um .xlsx');
+
+// importar um CSV: 1 novo (com preço), 1 existente com preço novo, 1 inativo, 1 erro (sem unidade)
+const linhasOsb = csvTxt.split('\r\n').filter((l) => /OSB/i.test(l))[0];
+const nomeOsb = linhasOsb.split(',')[1].replace(/"/g, '');
+const codigoOsb = linhasOsb.split(',')[0];
+const planilha = 'Code,Name,Category,Purchase unit,Price,Price valid from\n' +
+  'IMP-1,Item importado,Material,box,12.50,2026-10-01\n' +
+  codigoOsb + ',,,,99.99,2026-10-20\n' +
+  'IMP-2,Sem unidade,Material,,5,\n';
+await p.click('[data-acao="itens-importar"]');
+await p.waitForSelector('dialog[open] input[type="file"]');
+await p.setInputFiles('dialog[open] input[type="file"]', { name: 'itens.csv', mimeType: 'text/csv', buffer: Buffer.from(planilha) });
+await p.click('dialog[open] .btn-primario');
+await p.waitForSelector('dialog[open] .co-kpis');
+const prev = await p.locator('dialog[open]').innerText();
+verificar(/Itens novos\s*1/i.test(prev.replace(/\n/g, ' ')) && /Com erro\s*1/i.test(prev.replace(/\n/g, ' ')), 'a conferência mostra 1 novo e 1 com erro', prev.slice(0, 300));
+verificar(prev.includes('Linha 4'), 'o erro aponta a linha da planilha');
+await p.click('dialog[open] .btn-primario');
+await p.waitForTimeout(500);
+await ir('#/measure/itens', '#itens-tabela');
+await p.fill('#itens-busca', 'Item importado');
+verificar(await visiveis() === 1, 'o item importado aparece na lista');
+await p.fill('#itens-busca', 'osb');
+await p.locator('#itens-tabela tbody tr:not([hidden]) a').first().click();
+await p.waitForSelector('.abas-sublinhadas');
+await p.click('.abas-sublinhadas a:has-text("Preços")');
+await p.waitForTimeout(400);
+const txtPrecos = await p.locator('main').innerText();
+verificar(txtPrecos.includes('99,99') || txtPrecos.includes('99.99'), 'o preço importado virou preço novo do item');
+verificar(await p.locator('.tabela-historico tbody tr').count() >= 2, 'o histórico anterior continua (nada foi sobrescrito)');
+
+// o Excel exportado, importado de volta, não muda nada (ida e volta)
+await ir('#/measure/itens', '#itens-tabela');
+const xl2 = await baixou('xlsx');
+await p.click('[data-acao="itens-importar"]');
+await p.waitForSelector('dialog[open] input[type="file"]');
+await p.setInputFiles('dialog[open] input[type="file"]', { name: 'itens.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: xl2.dados });
+await p.click('dialog[open] .btn-primario');
+await p.waitForSelector('dialog[open] .co-kpis');
+const volta = (await p.locator('dialog[open]').innerText()).replace(/\n/g, ' ');
+verificar(/Nada para importar/i.test(volta), 'exportar em Excel e importar de volta não muda nada', volta.slice(0, 400));
+await p.click('dialog[open] .btn-secundario, dialog[open] button:has-text("Cancelar")');
+
 verificar(erros.length === 0, 'sem erros de JavaScript' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
 await browser.close();
 console.log('\n' + (passos - falhas) + '/' + passos + ' verificações passaram');

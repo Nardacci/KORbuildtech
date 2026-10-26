@@ -398,3 +398,11 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Lista os assemblies que usam o item
 - [ ] **T172** · `pv.p1.admin` — Conta real: deixar um item inativo  
   _Esperado:_ O botão aparece desabilitado com o aviso 'depois da próxima atualização do banco' até a migração 0018 ser aplicada
+- [ ] **T173** · `pv.p1.admin` — Itens › Exportar › Excel  
+  _Esperado:_ Baixa um .xlsx com a aba Items (preço atual) e a aba Price history (histórico completo)
+- [ ] **T174** · `pv.p1.admin` — Itens › Exportar › CSV  
+  _Esperado:_ Baixa um .csv com os itens e o preço atual, que abre no Excel com acentos corretos
+- [ ] **T175** · `pv.p1.admin` — Itens › Importar › Baixar o modelo; preencher 1 item novo com preço, 1 item existente com preço diferente e 1 linha sem unidade; Conferir a planilha  
+  _Esperado:_ A conferência mostra 1 novo, 1 preço novo e 1 erro com o número da linha; só grava ao clicar Importar; o preço antigo continua no histórico
+- [ ] **T176** · `pv.p1.admin` — Itens › Exportar em Excel e Importar o mesmo arquivo  
+  _Esperado:_ Diz 'Nada para importar': a planilha é igual ao catálogo

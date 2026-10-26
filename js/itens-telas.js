@@ -15,6 +15,7 @@ import { precoEm, registrarPreco, historicoComVariacao, situacaoDoItem, margensE
 import { dialogoPreco, dialogoMargens } from './precos-telas.js';
 import { PERSISTE_ATIVO_ITEM } from './measure-oficial.js';
 import { lerValor } from './measure-relatorios.js';
+import { acoesPlanilha, dialogoImportar } from './itens-planilha.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarItens(funcoes) { app = { ...app, ...funcoes }; }
@@ -48,7 +49,8 @@ export function telaItens(moldura) {
   const opcoes = (lista, rot) => '<option value="">' + rot + '</option>' + lista.map(([v, n]) => '<option value="' + esc(v) + '">' + esc(n) + '</option>').join('');
   return moldura({
     ativo: 'itens', largura: 'larga', titulo: tr('Itens'), subtitulo: tr('Catálogo de materiais, mão de obra, equipamentos e subempreiteiros, com o preço de cada um'),
-    acoes: ed ? '<div class="btn-linha"><a class="btn btn-primario btn-pequeno" href="#/measure/item/novo">' + icone('mais', 16) + tr('Novo item') + '</a></div>' : '',
+    acoes: '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="itens-exportar">' + tr('Exportar') + '</button>' +
+      (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="itens-importar">' + tr('Importar') + '</button><a class="btn btn-primario btn-pequeno" href="#/measure/item/novo">' + icone('mais', 16) + tr('Novo item') + '</a>' : '') + '</div>',
     conteudo:
       '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Markups') + '</h2>' +
         '<p class="margens-atual"><b>' + esc(textoMargens(m)) + '</b> <span class="mudo pequeno">' + tr('desde {data}', { data: dataCurta(m.desde) }) + '</span></p></div>' +
@@ -160,6 +162,8 @@ export function telaItem(moldura, id, abaPedida) {
 }
 
 export const acoesItens = {
+  ...acoesPlanilha,
+  async 'itens-importar'() { if (await dialogoImportar()) app.desenhar(); },
   'item-salvar'() {
     const form = document.getElementById('form-item');
     const dados = Object.fromEntries(new FormData(form).entries());
