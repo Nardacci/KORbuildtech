@@ -64,7 +64,7 @@ A aba Schedule abre com uma **Timeline** (estilo Gantt, sem dependências): uma 
 
 ## Tarefas num só lugar (decisão do dono, 26/10)
 
-As **tarefas** (antes "etapas"/cost codes) são cadastradas **só no Schedule**, na hora de montar o cronograma, e podem ser editadas a qualquer momento. Cada tarefa tem **Who** (Us, Subcontractor, To decide), início e duração. O Takeoff não cadastra etapas nem pergunta quem faz: tem só o cartão Measure, as quantidades e os typicals. Tarefa de Subcontractor mostra **Request bids** (ou o resumo das propostas) e a Timeline pinta a barra de âmbar. "Generate from cost codes" cria as tarefas a partir dos assemblies das medições. O Project summary lê as mesmas tarefas. O campo antigo `entrega` fica sem uso.
+As **tarefas** (antes "etapas"/cost codes) são cadastradas **só no Schedule**, na hora de montar o cronograma, e podem ser editadas a qualquer momento. Cada tarefa tem **Who** (Us, Subcontractor, To decide), início e duração. O Takeoff não cadastra etapas nem pergunta quem faz: tem só o cartão Measure, as quantidades e os typicals. Tarefa de Subcontractor mostra na coluna Bids o resumo das propostas (quando já existe concorrência) e a Timeline pinta a barra de âmbar. O cronograma **não cria concorrência**: isso é só no menu Bids. "Generate from cost codes" cria as tarefas a partir dos assemblies das medições. O Project summary lê as mesmas tarefas. O campo antigo `entrega` fica sem uso.
 
 ## Escopo com texto formatado (decisão do dono, 26/10)
 

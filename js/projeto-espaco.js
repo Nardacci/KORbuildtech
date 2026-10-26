@@ -121,7 +121,7 @@ export function htmlCronograma(p, ajudas) {
     '<td><input type="date" data-pj-tarefa="inicio" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.inicio || '') + '" aria-label="' + esc(tr('Início')) + '"></td>' +
     '<td><input type="number" min="1" class="mz-t-dias" data-pj-tarefa="dias" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.dias || '') + '" aria-label="' + esc(tr('Duração em dias')) + '"></td>' +
     '<td>' + (fimDe(t) ? dataCurta(fimDe(t)) : '—') + '</td>' +
-    '<td>' + (t.quem === 'terceiro' ? (() => { const l = t.nome ? ajudas.licitacoesDa(p, t.nome) : null; return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : '<a href="#/daily/concorrencias/nova/projeto/' + p.id + '">' + tr('Pedir propostas') + '</a>'; })() : '') + '</td>' +
+    '<td>' + (t.quem === 'terceiro' ? (() => { const l = t.nome ? ajudas.licitacoesDa(p, t.nome) : null; return l ? '<a href="' + l.href + '">' + esc(l.texto) + '</a>' : ''; })() : '') + '</td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-tarefa" data-id="' + p.id + '" data-t="' + t.id + '">' + tr('Remover') + '</button></td></tr>').join('');
   const marcos = c.marcos.map((m) => '<tr><td><input type="text" data-pj-marco="nome" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nome) + '" aria-label="' + esc(tr('Marco')) + '"></td>' +
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +

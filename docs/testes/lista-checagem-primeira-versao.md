@@ -6,26 +6,26 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 ## 1 Entrada e conta
 
-- [ ] **T01** · `pv.p1.admin` — Abrir o endereço de homologação com ?versao=primeira e entrar  
+- [ ] **T1** · `pv.p1.admin` — Abrir o endereço de homologação com ?versao=primeira e entrar  
   _Esperado:_ Entra; o menu mostra Measure Takeoff e Settings; nada de Daily, Crew nem Cronograma
-- [ ] **T02** · `pv.p1.admin` — Errar a senha de propósito e depois digitar certo (usar 'Mostrar')  
+- [ ] **T2** · `pv.p1.admin` — Errar a senha de propósito e depois digitar certo (usar 'Mostrar')  
   _Esperado:_ Mensagem clara no erro; o botão Mostrar revela a senha; entra na segunda tentativa
-- [ ] **T03** · `pv.p1.trabalhador` — Entrar  
+- [ ] **T3** · `pv.p1.trabalhador` — Entrar  
   _Esperado:_ Só Início, Company e My profile; sem Measure, Users, Access roles nem Jobs
-- [ ] **T04** · `pv.p1.contatos` — Entrar e abrir Contacts  
+- [ ] **T4** · `pv.p1.contatos` — Entrar e abrir Contacts  
   _Esperado:_ Só a lista de contatos; consegue criar e editar um contato; não vê Measure nem Concorrências
-- [ ] **T05** · `pv.p1.admin` — Abrir My profile; trocar o idioma PT/EN  
+- [ ] **T5** · `pv.p1.admin` — Abrir My profile; trocar o idioma PT/EN  
   _Esperado:_ Os textos mudam sem recarregar errado; volta a entrar sem perder a sessão
 
 ## 2 Settings e papéis
 
-- [ ] **T06** · `pv.p1.admin` — Users: abrir a lista  
+- [ ] **T6** · `pv.p1.admin` — Users: abrir a lista  
   _Esperado:_ Vê os 5 logins da Maple Siding com seus perfis (Administrador, Gestor, Estimator, Contacts only, Trabalhador)
-- [ ] **T07** · `pv.p1.admin` — Access roles: abrir Estimator e comparar com Gestor de obras  
+- [ ] **T7** · `pv.p1.admin` — Access roles: abrir Estimator e comparar com Gestor de obras  
   _Esperado:_ Estimator tem medir, catálogo e responder convites; Gestor não tem catálogo
-- [ ] **T08** · `pv.p1.admin` — Jobs: abrir a lista; criar uma obra nova simples  
+- [ ] **T8** · `pv.p1.admin` — Jobs: abrir a lista; criar uma obra nova simples  
   _Esperado:_ Obra criada com contratante e local; sem seção de equipe; aparece na lista
-- [ ] **T09** · `pv.p1.admin` — Jobs: editar o nome da obra criada e salvar  
+- [ ] **T9** · `pv.p1.admin` — Jobs: editar o nome da obra criada e salvar  
   _Esperado:_ Nome atualizado na lista
 - [ ] **T10** · `pv.p1.gestor` — Entrar; abrir Jobs e Concorrências  
   _Esperado:_ Vê e gerencia obras e concorrências; não vê Access roles
@@ -345,22 +345,20 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T148** · `pv.p1.admin` — Schedule: olhar a Timeline no topo da aba, com tarefas e marcos preenchidos  
   _Esperado:_ Uma linha por tarefa e por marco; eixo de meses e dias; barras verdes (nós), âmbar (prestadora) e cinza (a decidir); losangos para os marcos; linha tracejada marca hoje (se estiver no período); ao passar o mouse na barra aparecem nome, datas, duração e quem faz; mudar início ou dias na tabela move a barra
 - [ ] **T149** · `pv.p1.admin` — Schedule: mudar 'Who' de uma tarefa (Us, Subcontractor, To decide) e voltar a mudar depois  
-  _Esperado:_ A escolha vale na hora e pode ser editada a qualquer momento; a barra da Timeline muda de cor (verde, âmbar, cinza); uma tarefa de Subcontractor mostra 'Request bids' (ou o resumo das propostas) na coluna Bids
-- [ ] **T150** · `pv.p1.admin` — Schedule: clicar em 'Request bids' numa tarefa da prestadora  
-  _Esperado:_ Abre a nova concorrência já ligada ao projeto
-- [ ] **T151** · `pv.p1.admin` — Takeoff: conferir que não há mais tabela de etapas nem pergunta 'quem faz'  
+  _Esperado:_ A escolha vale na hora e pode ser editada a qualquer momento; a barra da Timeline muda de cor (verde, âmbar, cinza); uma tarefa de Subcontractor mostra, na coluna Bids, o resumo das propostas quando já existe concorrência (o cronograma não cria concorrência: isso é no menu Bids)
+- [ ] **T150** · `pv.p1.admin` — Takeoff: conferir que não há mais tabela de etapas nem pergunta 'quem faz'  
   _Esperado:_ Só o cartão Measure (plantas), as quantidades e os typicals
-- [ ] **T152** · `pv.p1.admin` — New project e Edit project: olhar as abas Project e Scope no topo do formulário  
+- [ ] **T151** · `pv.p1.admin` — New project e Edit project: olhar as abas Project e Scope no topo do formulário  
   _Esperado:_ Duas abas; Project tem os campos de sempre (sem a caixa de texto simples do escopo); Scope tem só o editor de texto com barra de formatação; um único botão Save/Continue grava as duas
-- [ ] **T153** · `pv.p1.admin` — Scope: escrever com título (H1/H2), negrito, itálico, sublinhado, lista com marcadores e numerada, recuo, alinhamento, link, desfazer/refazer e limpar formatação  
+- [ ] **T152** · `pv.p1.admin` — Scope: escrever com título (H1/H2), negrito, itálico, sublinhado, lista com marcadores e numerada, recuo, alinhamento, link, desfazer/refazer e limpar formatação  
   _Esperado:_ Cada botão age no texto selecionado; o texto fica formatado no editor
-- [ ] **T154** · `pv.p1.admin` — Scope: colar um trecho do Word (ou de uma página da web)  
+- [ ] **T153** · `pv.p1.admin` — Scope: colar um trecho do Word (ou de uma página da web)  
   _Esperado:_ Entram título, negrito, listas e links; fontes, cores e estilos do Word não entram; nada de imagem
-- [ ] **T155** · `pv.p1.admin` — Scope: salvar, reabrir o projeto e olhar a Overview  
+- [ ] **T154** · `pv.p1.admin` — Scope: salvar, reabrir o projeto e olhar a Overview  
   _Esperado:_ O escopo volta formatado no editor; a Overview mostra um resumo em texto
-- [ ] **T156** · `pv.p1.admin` — Project summary › Proposal: abrir a proposta; clicar 'Load the project scope'  
+- [ ] **T155** · `pv.p1.admin` — Project summary › Proposal: abrir a proposta; clicar 'Load the project scope'  
   _Esperado:_ Não há caixa para editar o escopo; o botão traz o texto formatado do projeto; o primeiro acesso já vem com ele
-- [ ] **T157** · `pv.p1.admin` — Proposal: emitir e abrir o documento  
+- [ ] **T156** · `pv.p1.admin` — Proposal: emitir e abrir o documento  
   _Esperado:_ O escopo sai formatado (título, negrito, listas) no documento da proposta
-- [ ] **T158** · `pv.p1.admin` — Escopos antigos (texto simples)  
+- [ ] **T157** · `pv.p1.admin` — Escopos antigos (texto simples)  
   _Esperado:_ Aparecem no editor como parágrafos normais e continuam indo para a proposta

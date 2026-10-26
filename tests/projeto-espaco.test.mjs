@@ -133,7 +133,7 @@ verificar(await p.locator('select[data-pj-tarefa="quem"]').count() === 2 && awai
 await p.locator('select[data-pj-tarefa="quem"]').nth(1).selectOption('terceiro');
 await p.waitForTimeout(300);
 verificar(await p.locator('select[data-pj-tarefa="quem"]').nth(1).inputValue() === 'terceiro', 'a segunda tarefa passa a ser da prestadora');
-verificar(await p.locator('.tabela-cronograma a[href*="concorrencias/nova/projeto"]').count() === 1, 'a tarefa da prestadora oferece "pedir propostas"');
+verificar(await p.locator('.tabela-cronograma a[href*="concorrencias/nova"]').count() === 0, 'o cronograma não oferece criar concorrência (isso fica no menu Bids)');
 verificar(await p.locator('.mz-gantt .mz-g-barra.sub').count() === 1 && await p.locator('.mz-gantt .mz-g-barra.proprio').count() === 1, 'a linha do tempo pinta a barra da prestadora de outra cor');
 const inicio = await p.locator('input[data-pj-tarefa="inicio"]').first().inputValue();
 verificar(/^\d{4}-\d{2}-\d{2}$/.test(inicio), 'cada tarefa tem data de início', inicio);
