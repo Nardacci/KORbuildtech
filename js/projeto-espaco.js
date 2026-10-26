@@ -215,17 +215,11 @@ export function telaGantt(moldura, id) {
     return moldura({ ativo: 'gantt', largura: 'larga', titulo: tr('Gantt'), subtitulo: tr('O andamento de cada projeto, no tamanho da página'),
       conteudo: '<p class="vazio">' + tr('Nenhum projeto com cronograma ainda. Monte o cronograma na aba Schedule do projeto.') + ' <a href="#/measure">' + tr('Abrir os projetos') + '</a></p>' });
   }
-  const { p, a } = atual;
-  const kpi = (rot, val, sub) => '<div class="co-kpi"><span>' + rot + '</span><b>' + val + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>';
-  const kpis = '<div class="co-kpis co-kpis-4 gantt-kpis">' +
-    kpi(tr('Situação'), etiquetaAndamento(a.situacao), a.atrasadas.length ? tn(a.atrasadas.length, '{n} tarefa atrasada', '{n} tarefas atrasadas') : tn(a.concluidas, '{n} de {total} tarefa concluída', '{n} de {total} tarefas concluídas', { total: a.tarefas })) +
-    kpi(tr('Feito'), a.feito + '%', tr('{n}% previsto para hoje', { n: a.previsto })) +
-    kpi(tr('Início → término'), (a.inicio ? dataCurta(a.inicio) : '—') + ' → ' + (a.fim ? dataCurta(a.fim) : '—'), a.fim ? (a.fim >= hoje() ? tn(diasEntre(hoje(), a.fim), 'falta {n} dia', 'faltam {n} dias') : tn(diasEntre(a.fim, hoje()), 'terminava há {n} dia', 'terminava há {n} dias')) : '') +
-    kpi(tr('Tarefas'), String(a.tarefas), tn(a.emAndamento, '{n} em andamento', '{n} em andamento')) + '</div>';
+  const { p } = atual;
   return moldura({
     ativo: 'gantt', largura: 'larga', titulo: tr('Gantt'), subtitulo: tr('O andamento de cada projeto, no tamanho da página'),
     acoes: '<a class="btn btn-contorno btn-pequeno" href="' + href(p, 'schedule') + '">' + tr('Editar o cronograma') + '</a>',
-    conteudo: '<div class="gantt-topo">' + combo + legendaGantt() + '</div>' + kpis + '<div class="gantt-grande">' + htmlGantt(p) + '</div>',
+    conteudo: '<div class="gantt-topo">' + combo + legendaGantt() + '</div><div class="gantt-grande">' + htmlGantt(p) + '</div>',
   });
 }
 if (typeof document !== 'undefined') {

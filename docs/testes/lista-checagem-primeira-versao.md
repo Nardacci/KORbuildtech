@@ -413,9 +413,9 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T178** · `pv.p1.admin` — Projeto › Schedule › tarefa com término já passado e % abaixo de 100  
   _Esperado:_ A tarefa aparece atrasada: nome e barra em vermelho; em 100% deixa de estar atrasada
 - [ ] **T179** · `pv.p1.admin` — Menu › Gantt  
-  _Esperado:_ Abre a página do Gantt no projeto mais urgente (atrasados primeiro), com a lista de projetos, os indicadores (situação, feito × previsto, início → término, tarefas) e o gráfico no tamanho da página
+  _Esperado:_ Abre a página do Gantt no projeto mais urgente (atrasados primeiro), com a lista de projetos e o gráfico no tamanho da página
 - [ ] **T180** · `pv.p1.admin` — Gantt › trocar o projeto na lista  
-  _Esperado:_ O endereço muda (#/measure/gantt/<projeto>) e o gráfico e os indicadores passam a ser do projeto escolhido; a lista marca quem está Atrasado
+  _Esperado:_ O endereço muda (#/measure/gantt/<projeto>) e o gráfico passa a ser do projeto escolhido; a lista marca quem está Atrasado
 - [ ] **T181** · `pv.p1.admin` — Gantt › Editar o cronograma / Linha do tempo › Tela inteira  
   _Esperado:_ Vai e volta entre a aba Schedule do projeto e a página do Gantt
 - [ ] **T182** · `pv.p1.admin` — Início › Andamento dos projetos  

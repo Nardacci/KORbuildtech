@@ -130,7 +130,7 @@ try {
     verificar('a tarefa que devia ter terminado fica atrasada no Schedule', await p.locator('.mz-t-pct.atrasada').count() === 1 && await p.locator('.mz-gantt .mz-g-barra.atrasada').count() === 1);
     await p.goto(BASE + '#/measure/gantt/' + pj.id);
     await p.waitForSelector('#gantt-projeto', { timeout: 40000 });
-    verificar('a página do Gantt abre o projeto, atrasado', /atrasado/i.test(await p.locator('.gantt-kpis').innerText()) && await p.locator('.gantt-grande .mz-g-barra').count() === 1);
+    verificar('a página do Gantt abre o projeto, com a tarefa atrasada', await p.locator('.gantt-grande .mz-gantt .mz-g-barra.atrasada').count() === 1);
     await p.goto(BASE + '#/conta');
     await p.waitForSelector('.ini-painel', { timeout: 40000 });
     await p.waitForTimeout(500);

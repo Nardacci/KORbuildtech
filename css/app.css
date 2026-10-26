@@ -1771,8 +1771,7 @@ td.mz-obs textarea { width: 100%; min-height: 52px; resize: vertical; font: inhe
 .mz-t-pct { display: inline-flex; align-items: center; gap: 3px; } .mz-t-pct input { width: 76px; } .mz-t-pct.atrasada input { border-color: #B91C1C; color: #B91C1C; font-weight: 700; }
 .gantt-topo { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: end; justify-content: space-between; }
 .gantt-escolha { display: flex; flex-direction: column; gap: 4px; min-width: 280px; max-width: 520px; flex: 1; } .gantt-escolha select { font-size: 15px; font-weight: 600; }
-.gantt-kpis { margin-top: 14px; }
-.gantt-grande .mz-gantt { margin-top: 14px; min-height: calc(100vh - 360px); }
+.gantt-grande .mz-gantt { margin-top: 14px; min-height: calc(100vh - 230px); }
 .gantt-grande .mz-g-cab, .gantt-grande .mz-g-linha { grid-template-columns: 260px minmax(640px, 1fr); }
 .gantt-grande .mz-g-linha { min-height: 46px; } .gantt-grande .mz-g-barra { top: 10px; height: 28px; font-size: 13px; }
 .gantt-grande .mz-g-nome { font-size: 14px; }

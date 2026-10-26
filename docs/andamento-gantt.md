@@ -11,7 +11,7 @@ Pedido do dono (27/10): o Início precisa mostrar uma prévia do andamento dos p
 
 ## Onde aparece
 - **Schedule do projeto:** coluna % feito; na linha do tempo, a barra preenche o % e a tarefa atrasada fica vermelha (nome e barra); atalho **Tela inteira** para a página do Gantt.
-- **Página Gantt** (`#/measure/gantt/<projeto>`, item Gantt no menu): lista de projetos com cronograma (atrasados primeiro, com "· Atrasado" no nome), quatro indicadores (situação, feito × previsto, início → término, tarefas) e o gráfico no tamanho da página. Botão **Editar o cronograma** leva à aba Schedule.
+- **Página Gantt** (`#/measure/gantt/<projeto>`, item Gantt no menu): lista de projetos com cronograma (atrasados primeiro, com "· Atrasado" no nome), e o gráfico no tamanho da página. Botão **Editar o cronograma** leva à aba Schedule.
 - **Início › Andamento dos projetos:** primeiro bloco do painel. Uma linha por projeto: situação, barra do feito com o tracejado do previsto, a tarefa mais atrasada (ou o término previsto / data de início); resumo com atrasados, em dia, não iniciados, concluídos e projetos ganhos sem cronograma. Cada linha abre o Gantt do projeto.
 
 ## Dados de demonstração
