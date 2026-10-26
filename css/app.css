@@ -1784,3 +1784,13 @@ td.mz-obs textarea { width: 100%; min-height: 52px; resize: vertical; font: inhe
 .co-tarefa-add { display: flex; gap: 10px; align-items: center; margin: 6px 0 12px; flex-wrap: wrap; }
 .co-tarefa-add select { flex: 1; min-width: 240px; max-width: 520px; }
 .co-tarefas .tabela { margin-bottom: 6px; }
+/* Itens: lista com filtros e página do item */
+.itens-filtros { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 14px 0; }
+.itens-filtros select { min-width: 180px; }
+.itens-filtros .mz-busca-campo { flex: 1; min-width: 240px; max-width: 420px; }
+.itens-preco-grande { font-size: 28px; margin: 4px 0; }
+.itens-preco-grande b { font-weight: 800; }
+.itens-grafico { width: 100%; max-width: 640px; height: auto; margin: 6px 0 14px; display: block; }
+.itens-queda { color: #15803D; font-weight: 600; }
+.tabela-historico tr.atual td { background: #FFF9F4; }
+.itens-filtros select { width: auto; }

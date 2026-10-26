@@ -58,7 +58,7 @@ export function telaPrecos(moldura) {
   });
 }
 
-async function dialogoPreco(it) {
+export async function dialogoPreco(it) {
   const atual = precoEm(it);
   const crew = it.categoria === 'mao-de-obra' ? custoHoraDoCrew() : null;
   const res = await abrirDialogo({
@@ -76,7 +76,7 @@ async function dialogoPreco(it) {
   if (r.ok) app.desenhar();
 }
 
-async function dialogoMargens() {
+export async function dialogoMargens() {
   const m = margensEm();
   const res = await abrirDialogo({
     titulo: tr('Nova versão das margens'),

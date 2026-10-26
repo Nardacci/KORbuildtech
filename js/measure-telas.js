@@ -15,7 +15,7 @@ import {
 import {
   projetos, projeto, folha, folhasDo, condicao, condicoesDo, TIPOS, definirEscala, registrarConferencia,
   salvarCondicao, excluirCondicao, adicionarMedicao, excluirMedicao, totaisDaCondicao, valorDaMedicao, verticeProximo, criarFolhas,
-  CATEGORIAS, itens, item, salvarItem, excluirItem, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
+  CATEGORIAS, itens, item, assemblies, assembly, salvarAssembly, excluirAssembly, aplicarAssembly, removerAssembly,
   quantidadesDoProjeto, variaveisDaCondicao, mostrarCondicao, adicionarVao,
   condicoesDaFolha, incluirNaFolha, tirarDaFolha, folhasDaCondicao,
   typicaisDo, typicaisDaFolha, typical, repeticoes, fatorDaMedicao, typicalDaMedicao, salvarTypical, excluirTypical, medidoNoTypical,
@@ -25,21 +25,20 @@ import { contratanteDe, contato, textoPartes, PAPEIS } from './contatos.js';
 import { htmlEscolhaContato } from './contatos-telas.js';
 import { htmlEditorRico, valorDoEditor, escopoTexto, escopoHtml } from './texto-rico.js';
 import { telaCotacao, telaImpressaoCotacao, telaProposta, telaImpressaoProposta, totais as totaisDaProposta } from './measure-relatorios.js';
-import { telaPrecos } from './precos-telas.js';
+import { telaItens, telaItem, acoesItens, ligarItens, aposDesenharItens } from './itens-telas.js';
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
 import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlCronograma, andamentoDoProjeto, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
-export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; ligarEspaco(funcoes); }
+export function ligarMeasure(funcoes) { app = { ...app, ...funcoes }; ligarEspaco(funcoes); ligarItens(funcoes); }
 
 export function navMeasure() {
   return (PRIMEIRA_VERSAO ? [{ id: 'inicio', href: '#/conta', rotulo: tr('Início'), icone: 'painel' }] : []).concat([
     { id: 'projetos', href: '#/measure', rotulo: tr('Projetos'), icone: 'obras' },
     { id: 'assemblies', href: '#/measure/assemblies', rotulo: tr('Assemblies'), icone: 'tabela' },
     { id: 'itens', href: '#/measure/itens', rotulo: tr('Itens'), icone: 'measure' },
-    { id: 'precos', href: '#/measure/precos', rotulo: tr('Preços'), icone: 'dinheiro' },
   ]).concat(PRIMEIRA_VERSAO
     // 1ª versão: um item só, Bids, com as abas Sent (quem convida) e Received (quem responde)
     ? (pode(usuarioAtual(), 'concorrencias.gerir') || podeResponder() ? [{ id: 'bids', href: pode(usuarioAtual(), 'concorrencias.gerir') ? '#/daily/concorrencias' : '#/measure/convites', rotulo: tr('Licitações'), icone: 'tabela', contador: convitesPendentes() }] : [])
@@ -72,8 +71,8 @@ export function telaMeasure(q) {
   if (q[0] === 'folha' && folha(q[1])) return telaFolha(q[1]);
   if (q[0] === 'convites' && podeResponder()) return telaConvites(moldura);
   if (q[0] === 'convite' && podeResponder()) return telaConvite(moldura, q[1]) || { trocar: '#/measure/convites' };
-  if (q[0] === 'itens') return telaItens();
-  if (q[0] === 'precos') return telaPrecos(moldura);
+  if (q[0] === 'itens' || q[0] === 'precos') return telaItens(moldura);
+  if (q[0] === 'item') return telaItem(moldura, q[1], q[2]) || telaItens(moldura);
   if (q[0] === 'assemblies') return telaAssemblies();
   if (q[0] === 'assembly' && (q[1] === 'novo' || assembly(q[1]))) return telaAssembly(q[1] === 'novo' ? null : q[1]);
   return { trocar: '#/measure' };
@@ -343,25 +342,6 @@ function htmlMateriais(projetoId) {
     '</section>';
 }
 
-/* ---------- Itens (catálogo) ---------- */
-
-function telaItens() {
-  const pc = podeCatalogo();
-  return moldura({
-    ativo: 'itens', largura: 'larga', titulo: tr('Itens'), subtitulo: tr('Catálogo de materiais, mão de obra, equipamentos e subempreiteiros, na unidade de compra'),
-    acoes: pc ? '<button type="button" class="btn btn-primario btn-pequeno" data-acao="mz-item" data-id="">' + icone('mais', 16) + (tr('Novo item') + '</button>') : '',
-    conteudo: Object.entries(CATEGORIAS).map(([cat, nome]) => {
-      const lista = itens().filter((i) => i.categoria === cat);
-      if (!lista.length) return '';
-      return '<section class="cartao"><h2 class="cartao-titulo">' + nome + ('</h2><div class="tabela-rolagem"><table class="tabela tabela-itens"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Item') + '</th><th>' + tr('Unidade de compra') + '</th><th>' + tr('Etapa (cost code)') + '</th><th></th></tr></thead><tbody>') +
-        lista.map((i) => '<tr><td class="mudo">' + esc(i.codigo) + '</td><td><b>' + esc(i.nome) + '</b>' + (i.nota ? '<span class="mudo pequeno bloco">' + esc(i.nota) + '</span>' : '') + '</td><td>' + esc(i.unidade) + '</td><td>' + esc(i.etapa) + '</td>' +
-          '<td class="num">' + (pc ? '<button type="button" class="link-botao pequeno" data-acao="mz-item" data-id="' + i.id + ('">' + tr('Editar') + '</button> <button type="button" class="link-botao pequeno" data-acao="mz-excluir-item" data-id="') + i.id + ('">' + tr('Excluir') + '</button>') : '') + '</td></tr>').join('') +
-        '</tbody></table></div></section>';
-    }).join('') +
-      ('<p class="dica">' + tr('Preço não fica aqui: ele terá vigência (data de início) e entra na próxima etapa, a estimativa. As coberturas nas notas são exemplos.') + '</p>'),
-  });
-}
-
 /* ---------- Assemblies ---------- */
 
 function telaAssemblies() {
@@ -390,7 +370,7 @@ function htmlEscolhaCor(cor) {
 function htmlLinhaAssembly(l, tipo, i, editavel) {
   const dis = editavel ? '' : ' disabled';
   return '<tr class="mz-linha" data-i="' + i + '"><td><select name="item"' + dis + ('><option value="">' + tr('Escolha o item') + '</option>') +
-      Object.entries(CATEGORIAS).map(([cat, nome]) => '<optgroup label="' + nome + '">' + itens().filter((x) => x.categoria === cat).map((x) => '<option value="' + x.id + '"' + (x.id === l.itemId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + esc(x.unidade) + ')</option>').join('') + '</optgroup>').join('') + '</select></td>' +
+      Object.entries(CATEGORIAS).map(([cat, nome]) => '<optgroup label="' + nome + '">' + itens().filter((x) => x.categoria === cat && (x.ativo !== false || x.id === l.itemId)).map((x) => '<option value="' + x.id + '"' + (x.id === l.itemId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + esc(x.unidade) + ')</option>').join('') + '</optgroup>').join('') + '</select></td>' +
     '<td><input type="text" name="formula" class="mz-formula" value="' + esc(l.formula || '') + ('" placeholder="' + tr('Ex.: MeasuredArea / 32') + '" spellcheck="false" autocomplete="off"') + dis + '></td>' +
     '<td><span class="campo-pct"><input type="number" name="perda" min="0" max="100" step="0.5" value="' + (l.perda != null ? l.perda : 0) + '"' + dis + '>%</span></td>' +
     '<td><select name="passo"' + dis + '>' + ARREDONDAMENTOS.map(([p, n]) => '<option value="' + p + '"' + (p === (l.passo || 0) ? ' selected' : '') + '>' + n + '</option>').join('') + '</select></td>' +
@@ -888,6 +868,7 @@ document.addEventListener('keyup', (ev) => { if (ev.key === ' ') visor.espaco = 
 
 /* Chamado depois de desenhar uma tela do Measure. */
 export async function aposDesenharMeasure() {
+  aposDesenharItens();
   const fa = document.getElementById('form-assembly');
   if (fa) {
     fa.addEventListener('input', testarLinhas);
@@ -1126,35 +1107,9 @@ async function dialogoVao() {
   atualizarInterface();
 }
 
-async function dialogoItem(it) {
-  const v = it || { categoria: 'material' };
-  const res = await abrirDialogo({
-    titulo: it ? tr('Editar item') : tr('Novo item'),
-    corpo: ('<label class="rotulo-pequeno" for="it-nome">' + tr('Nome') + '</label><input type="text" id="it-nome" name="nome" value="') + esc(v.nome || '') + ('" placeholder="' + tr('Ex.: Drywall 5/8&quot; tipo X 4\'×8\'') + '">') +
-      ('<label class="rotulo-pequeno" for="it-codigo">' + tr('Código') + '</label><input type="text" id="it-codigo" name="codigo" value="') + esc(v.codigo || '') + '">' +
-      ('<label class="rotulo-pequeno" for="it-cat">' + tr('Categoria') + '</label><select id="it-cat" name="categoria">') + Object.entries(CATEGORIAS).map(([c, n]) => '<option value="' + c + '"' + (c === v.categoria ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>' +
-      ('<label class="rotulo-pequeno" for="it-un">' + tr('Unidade de compra') + '</label><input type="text" id="it-un" name="unidade" value="') + esc(v.unidade || '') + ('" placeholder="' + tr('chapa, caixa, rolo, peça, cu yd, hora…') + '">') +
-      ('<label class="rotulo-pequeno" for="it-etapa">' + tr('Etapa (cost code)') + '</label><input type="text" id="it-etapa" name="etapa" value="') + esc(v.etapa || '') + ('" placeholder="' + tr('Ex.: 09 29 00 · Gypsum board') + '">') +
-      ('<label class="rotulo-pequeno" for="it-nota">' + tr('Nota') + '</label><input type="text" id="it-nota" name="nota" value="') + esc(v.nota || '') + ('" placeholder="' + tr('Ex.: cobre 32 sq ft') + '">'),
-    acoes: [{ rotulo: tr('Cancelar'), valor: false }, { rotulo: it ? tr('Salvar') : tr('Criar item'), valor: true, classe: 'btn-primario' }],
-  });
-  if (!res || !res.valor) return;
-  const r = salvarItem(it ? it.id : null, res.campos);
-  if (r.erro) { toast(r.erro); return; }
-  toast(it ? tr('Item atualizado.') : tr('Item criado.'));
-  app.desenhar();
-}
-
 export const acoesMeasure = {
   ...acoesEspaco,
-  async 'mz-item'(el) { await dialogoItem(el.dataset.id ? item(el.dataset.id) : null); },
-  async 'mz-excluir-item'(el) {
-    const it = item(el.dataset.id);
-    if (!(await confirmar(tr('Excluir "') + it.nome + '"?', tr('O item sai do catálogo.'), tr('Excluir')))) return;
-    const r = excluirItem(it.id);
-    toast(r.erro || tr('Item excluído.'));
-    app.desenhar();
-  },
+  ...acoesItens,
   'mz-nova-linha'() {
     const corpo = document.getElementById('as-linhas');
     const tipo = document.querySelector('#form-assembly [name="tipo"]').value;

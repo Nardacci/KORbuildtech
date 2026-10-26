@@ -179,7 +179,7 @@ export function aplicarMeasure(d, lido) {
     folhas: lido.folhas.map((f) => ({ id: f.id, projetoId: f.projeto_id, nome: f.nome, arquivo: { tipo: 'storage', path: f.arquivo_path, id: nomeDoArquivo(f.arquivo_path), nome: f.arquivo_nome }, pagina: f.pagina, escala: f.escala || null, observacao: f.observacao || '', criadaEm: ms(f.criada_em) })),
     condicoes: lido.condicoes.map((c) => ({ id: c.id, projetoId: c.projeto_id, nome: c.nome, tipo: c.tipo, cor: c.cor, props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: c.oculta, medicoes: c.medicoes || [], _banco: { versao: c.versao } })),
     typicais: lido.typicais.map((t) => ({ id: t.id, projetoId: t.projeto_id, folhaId: t.folha_id, nome: t.nome, regiao: t.regiao, ocorrencias: t.ocorrencias, por: t.por_nome, em: ms(t.em) })),
-    itens: lido.itens.map((i) => ({ id: i.id, codigo: i.codigo, nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa, nota: i.nota, precos: precosPor.get(i.id) || [] })),
+    itens: lido.itens.map((i) => ({ id: i.id, codigo: i.codigo, nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa, nota: i.nota, ativo: i.ativo !== false, precos: precosPor.get(i.id) || [] })),
     assemblies: lido.assemblies.map((a) => ({ id: a.id, nome: a.nome, tipo: a.tipo, descricao: a.descricao, linhas: a.linhas })),
     margens: lido.margens.map((m) => ({ id: m.id, overheadPct: Number(m.overhead_pct), lucroPct: Number(m.lucro_pct), modo: m.modo, impostoMaterialPct: Number(m.imposto_material_pct), desde: m.desde, motivo: m.motivo, por: m.por_nome, em: ms(m.em), _banco: true })),
   };

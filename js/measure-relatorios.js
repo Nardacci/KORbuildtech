@@ -213,7 +213,7 @@ export function telaProposta(id, moldura) {
       ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Itens da proposta') + '</h2>') +
         '<label class="check pequeno"><input type="checkbox" name="mostrarQuantidades"' + (r.mostrarQuantidades ? ' checked' : '') + ('> ' + tr('Mostrar as quantidades de material no documento') + '</label></div>') +
         ('<p class="mudo pequeno">' + tr('Uma linha por etapa (material e mão de obra juntos). O preço é') + ' <b>' + tr('calculado') + '</b>' + tr(': quantidades × preços do catálogo (com vigência) +') + ' ') + esc(textoMargens(m)) +
-          (' (<a href="#/measure/precos">' + tr('Preços') + '</a>' + tr('). Digite outro valor quando quiser; apagar o que foi digitado volta ao calculado.') + '</p>') +
+          (' (<a href="#/measure/itens">' + tr('Preços') + '</a>' + tr('). Digite outro valor quando quiser; apagar o que foi digitado volta ao calculado.') + '</p>') +
         (linhas.some((l) => l.digitado != null) ? ('<button type="button" class="link-botao pequeno" data-acao="prop-recalcular">' + tr('Usar os preços calculados em todas as linhas') + '</button>') : '') +
         (linhas.length ? ('<div class="tabela-rolagem"><table class="tabela prop-linhas"><thead><tr><th></th><th>' + tr('Etapa') + '</th><th>' + tr('Base do cálculo') + '</th><th class="num">' + tr('Preço') + '</th></tr></thead><tbody>') +
           linhas.map((l) => '<tr class="' + (l.incluir ? '' : 'prop-fora') + '"><td><input type="checkbox" name="incluir" data-etapa="' + esc(l.etapa) + '"' + (l.incluir ? ' checked' : '') + (' aria-label="' + tr('Incluir') + ' ') + esc(l.titulo) + '"></td>' +

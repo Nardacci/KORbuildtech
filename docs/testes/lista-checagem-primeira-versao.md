@@ -46,9 +46,9 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Quantidades de material calculadas pelas fórmulas
 - [ ] **T17** · `pv.p1.admin` — Emitir a proposta e baixar o PDF  
   _Esperado:_ Proposta com número; PDF baixa e abre; valores batem com o catálogo
-- [ ] **T18** · `pv.p1.admin` — Itens/Preços: criar um item novo, dar preço, mudar o preço  
+- [ ] **T18** · `pv.p1.admin` — Itens: criar um item novo (com preço inicial), depois mudar o preço na aba Preços do item  
   _Esperado:_ Histórico de preço guardado; a proposta antiga não muda
-- [ ] **T19** · `pv.p1.admin` — Preços: criar nova versão das margens  
+- [ ] **T19** · `pv.p1.admin` — Itens › Markups: criar nova versão das markups  
   _Esperado:_ Versão nova aparece; propostas anteriores mantêm a margem antiga
 - [ ] **T20** · `pv.c1.admin` — Abrir 'Northgate Tower — Level 5 fit-out'  
   _Esperado:_ Construtora abre o Measure e a proposta emitida (liberado pela migração 0015)
@@ -220,7 +220,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T90** · `pv.c1.admin` — Clicar em cada item do menu lateral do Settings  
   _Esperado:_ Cada um abre a tela certa; 'Início' volta ao painel
 - [ ] **T91** · `pv.c1.admin` — No Takeoff, olhar o menu lateral  
-  _Esperado:_ Tem Início, Projetos, Assemblies, Itens, Preços, Convites e Concorrências; 'Início' volta ao painel
+  _Esperado:_ Tem Início, Projetos, Assemblies, Itens (os preços ficam dentro de Itens), Convites e Concorrências; 'Início' volta ao painel
 - [ ] **T92** · `pv.c1.admin` — Abrir o Settings numa janela estreita (celular)  
   _Esperado:_ O menu lateral some e aparecem as abas de antes (Início, Obras, Contatos...)
 
@@ -232,8 +232,8 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ 4 linhas de material com fórmula, perda % e unidade; as quantidades de exemplo calculam sem erro
 - [ ] **T95** · `pv.p1.admin` — Takeoff › Itens: conferir o catálogo  
   _Esperado:_ 8 itens (2 básicos + 6 novos) por etapa (Siding, Trim, Fasteners, Flashing, Finish, Sealants), com unidade de compra
-- [ ] **T96** · `pv.p1.admin` — Takeoff › Preços: abrir o histórico de um item (por exemplo Corner trim)  
-  _Esperado:_ Dois preços: o de 120 dias atrás (menor) e o atual; o item 'Exterior sealant tube' só tem preço de 200 dias atrás
+- [ ] **T96** · `pv.p1.admin` — Takeoff › Itens: abrir o item Corner trim e a aba Preços  
+  _Esperado:_ Histórico com dois preços: o de 120 dias atrás (menor) e o atual, com a variação em %; o item 'Exterior sealant tube' só tem preço de 200 dias atrás
 - [ ] **T97** · `pv.p1.admin` — Abrir o projeto 'Canal Street Lofts — Siding bid'  
   _Esperado:_ Várias condições medidas, uma por assembly, com áreas diferentes e as quantidades de material de cada uma
 - [ ] **T98** · `pv.p1.admin` — No projeto, abrir a lista de materiais / quantidades por item  
@@ -379,3 +379,22 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ As plantas vão com as observações; o escopo formatado aparece para quem recebe (convite e link) e na página da concorrência (Details)
 - [ ] **T164** · `pv.c1.admin` — Concorrência antiga (escopo em listas Incluso/Excluso): abrir para editar  
   _Esperado:_ As listas aparecem dentro do editor de Scope e continuam sendo mostradas normalmente
+
+## 17 Itens e preços (tela única)
+
+- [ ] **T165** · `pv.p1.admin` — Itens: olhar a lista  
+  _Esperado:_ Uma tela só com itens e preços: código, item, categoria, cost code, unidade, preço atual, desde quando e situação (Em dia, Desatualizado, Sem preço, Inativo); no topo, o cartão Markups; não existe mais o menu Preços
+- [ ] **T166** · `pv.p1.admin` — Itens: usar a busca, o filtro de categoria, o de cost code e o de situação  
+  _Esperado:_ A lista filtra na hora; os contadores da situação (Sem preço, Desatualizado, Inativos) batem com o que aparece; 'Ativos' é o padrão
+- [ ] **T167** · `pv.p1.admin` — Itens › Novo item: criar com e sem preço inicial  
+  _Esperado:_ Com preço, abre a aba Preços já com ele; sem preço, avisa que falta e o item aparece em 'Sem preço'
+- [ ] **T168** · `pv.p1.admin` — Itens › abrir um item › aba Preços: registrar dois preços com datas diferentes  
+  _Esperado:_ O histórico lista todos, com a variação em % sobre o anterior, a origem, o fornecedor e quem registrou; o mais recente vira o atual; nenhum preço é apagado
+- [ ] **T169** · `pv.p1.admin` — Itens: item cujo preço vale desde mais de 12 meses  
+  _Esperado:_ Aparece como Desatualizado e no filtro Desatualizado
+- [ ] **T170** · `pv.p1.admin` — Itens › abrir um item › Deixar inativo (e depois Reativar)  
+  _Esperado:_ Não existe botão de excluir; o inativo some da lista padrão, aparece em Inativos e não é oferecido em assemblies novos; o histórico de preços continua; reativar devolve o item
+- [ ] **T171** · `pv.p1.admin` — Itens › aba Usado em  
+  _Esperado:_ Lista os assemblies que usam o item
+- [ ] **T172** · `pv.p1.admin` — Conta real: deixar um item inativo  
+  _Esperado:_ O botão aparece desabilitado com o aviso 'depois da próxima atualização do banco' até a migração 0018 ser aplicada

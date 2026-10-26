@@ -398,6 +398,16 @@ export function salvarItem(id, dados) {
   return { ok: true, id: novo.id };
 }
 
+/* Nunca se apaga um item: ele fica inativo (some das listas e dos assemblies novos, e o histórico fica). */
+export const itemAtivo = (it) => it && it.ativo !== false;
+export function definirAtivoItem(id, ativo) {
+  const it = item(id);
+  if (!it) return { erro: tr('Item não encontrado.') };
+  it.ativo = !!ativo;
+  salvar();
+  return { ok: true };
+}
+
 export function excluirItem(id) {
   const usado = assemblies().filter((a) => a.linhas.some((l) => l.itemId === id));
   if (usado.length) return { erro: (tr('Item usado em:') + ' ') + usado.map((a) => a.nome).join(', ') + tr('. Tire do assembly antes.') };

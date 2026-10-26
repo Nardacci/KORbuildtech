@@ -11,7 +11,7 @@
 
 import { estado, salvar } from './armazem.js';
 import { tr, tn } from './i18n.js';
-import { hoje, numTexto, dataCurta } from './util.js';
+import { hoje, numTexto, dataCurta, diasEntre } from './util.js';
 import { auditar, encargosEm } from './settings.js';
 import { item } from './measure.js';
 
@@ -24,6 +24,21 @@ export function historicoDePrecos(it) { return (it.precos || []).slice().sort((a
 /* O preço que vale numa data (o mais recente com "desde" até a data). */
 export function precoEm(it, iso = hoje()) {
   return historicoDePrecos(it).find((p) => p.desde <= iso) || null;
+}
+
+/* Preço com mais de 12 meses é tratado como desatualizado. */
+export const PRAZO_DESATUALIZADO_DIAS = 365;
+/* A situação do item para o catálogo: inativo, sem preço, desatualizado ou ok. */
+export function situacaoDoItem(it, iso = hoje()) {
+  if (it.ativo === false) return 'inativo';
+  const p = precoEm(it, iso);
+  if (!p) return 'sem-preco';
+  return diasEntre(p.desde, iso) > PRAZO_DESATUALIZADO_DIAS ? 'desatualizado' : 'ok';
+}
+/* O histórico, do mais novo ao mais antigo, com a variação (%) sobre o preço anterior. */
+export function historicoComVariacao(it) {
+  const h = historicoDePrecos(it);
+  return h.map((x, i) => { const ant = h[i + 1]; return { ...x, variacao: ant && ant.valor > 0 ? Math.round((x.valor - ant.valor) * 1000 / ant.valor) / 10 : null }; });
 }
 
 export function registrarPreco(itemId, dados, por) {

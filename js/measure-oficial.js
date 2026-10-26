@@ -18,6 +18,8 @@ const ESPERA_MS = 800;
 export const PERSISTE_ESPACO = true;
 /** Observação de cada folha (migração 0017): só vai ao banco depois que ela for aplicada. */
 export const PERSISTE_OBS_FOLHA = true;
+/** Item ativo/inativo (migração 0018, em supabase/pendentes): só vai ao banco depois que ela for aplicada. */
+export const PERSISTE_ATIVO_ITEM = false;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;
@@ -32,7 +34,7 @@ const linha = {
   folhas: (f) => ({ id: f.id, projeto_id: f.projetoId, nome: f.nome, arquivo_path: f.arquivo.path, arquivo_nome: f.arquivo.nome || '', pagina: f.pagina, escala: f.escala || null, ...(PERSISTE_OBS_FOLHA ? { observacao: f.observacao || '' } : {}) }),
   condicoes: (c) => ({ id: c.id, projeto_id: c.projetoId, nome: c.nome, tipo: c.tipo, cor: c.cor || '', props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: !!c.oculta, medicoes: c.medicoes || [] }),
   typicais: (t) => ({ id: t.id, projeto_id: t.projetoId, folha_id: t.folhaId, nome: t.nome, regiao: t.regiao || null, ocorrencias: t.ocorrencias }),
-  itens: (i) => ({ id: i.id, codigo: i.codigo || '', nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa || '', nota: i.nota || '' }),
+  itens: (i) => ({ id: i.id, codigo: i.codigo || '', nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa || '', nota: i.nota || '', ...(PERSISTE_ATIVO_ITEM ? { ativo: i.ativo !== false } : {}) }),
   assemblies: (a) => ({ id: a.id, nome: a.nome, tipo: a.tipo, descricao: a.descricao || '', linhas: a.linhas }),
 };
 const ORDEM = ['projetos', 'folhas', 'condicoes', 'typicais', 'itens', 'assemblies'];   // pais antes dos filhos

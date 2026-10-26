@@ -127,14 +127,14 @@ function htmlParceiras(lista) {
 
 function htmlPrecos(p, dinheiro) {
   if (!p) return '';
-  if (!p.itensTotal) return bloco('ini-precos', tr('Catálogo e preços'), '#/measure/precos', '<p class="ini-vazio">' + tr('Cadastre os itens e os preços para montar as propostas.') + '</p>');
+  if (!p.itensTotal) return bloco('ini-precos', tr('Catálogo e preços'), '#/measure/itens', '<p class="ini-vazio">' + tr('Cadastre os itens e os preços para montar as propostas.') + '</p>');
   const kpis = '<div class="ini-kpis ini-kpis2">' + kpi(p.semPrecoNovo, tn(p.semPrecoNovo, 'item sem preço novo', 'itens sem preço novo'), tr('há mais de 90 dias')) +
     (dinheiro ? kpi(p.margem ? dec(p.margem.total) + '%' : '—', tr('Margem vigente'), p.margem ? tr('overhead {o}% + lucro {l}%', { o: dec(p.margem.overhead), l: dec(p.margem.lucro) }) : tr('Sem margem definida')) : '') + '</div>';
   const tabela = p.lista.length
     ? '<h3 class="ini-sub-titulo">' + tr('Itens sem preço novo (há mais de 90 dias)') + '</h3><div class="tabela-rolagem"><table class="ini-tabela"><thead><tr><th>' + tr('Item') + '</th><th>' + tr('Última atualização') + '</th><th>' + tr('Unidade') + '</th></tr></thead><tbody>' +
       p.lista.map((x) => '<tr><td>' + esc(x.nome) + '</td><td>' + dataCurta(x.desde) + '</td><td>' + esc(x.unidade) + '</td></tr>').join('') + '</tbody></table></div>'
     : '<p class="ini-vazio">' + tr('Todos os preços estão atualizados.') + '</p>';
-  return bloco('ini-precos', tr('Catálogo e preços'), '#/measure/precos', kpis + tabela);
+  return bloco('ini-precos', tr('Catálogo e preços'), '#/measure/itens', kpis + tabela);
 }
 
 /* calc: o que calcularInicio() devolveu; o: { ver } */
