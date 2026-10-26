@@ -3458,6 +3458,7 @@ export const EN = {
   'Define o padrão de cada etapa. Você pode mudar cada uma na aba Takeoff.': 'Sets the default for each cost code. You can change each one in the Takeoff tab.',
   'Trocar para "Fazemos tudo" ou "Subcontratamos tudo" muda as etapas já listadas.': 'Switching to "We do it all" or "We subcontract it all" changes the cost codes already listed.',
   'Marcar todas como próprias': 'Mark all as self-performed',
+  'Uma linha por tarefa. A linha vertical marca hoje. Passe o mouse sobre uma barra para ver o detalhe.': 'One row per task. The dashed line marks today. Hover a bar for details.',
   'Atualizar a base': 'Update baseline',
   'Confirmar cronograma': 'Confirm schedule',
   'Cronograma confirmado como base da obra.': 'Schedule confirmed as the job baseline.',

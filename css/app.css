@@ -1735,3 +1735,28 @@ select.mz-quem.decidir { border-style: dashed; color: var(--mudo); }
 .mz-envio-campos input[type="text"] { flex: 1; min-width: 240px; max-width: 460px; }
 td.mz-obs { min-width: 240px; }
 td.mz-obs textarea { width: 100%; min-height: 52px; resize: vertical; font: inherit; font-size: 13px; }
+/* Linha do tempo do cronograma do projeto */
+.mz-gantt { overflow-x: auto; border: 1px solid var(--borda); border-radius: 12px; background: #fff; margin-top: 14px; }
+.mz-g-cab, .mz-g-linha { display: grid; grid-template-columns: 200px minmax(520px, 1fr); }
+.mz-g-cab { background: #F8F9FB; border-bottom: 1px solid var(--borda); position: sticky; top: 0; }
+.mz-g-linha { border-bottom: 1px solid #EDF0F4; min-height: 40px; }
+.mz-g-linha:last-child { border-bottom: 0; }
+.mz-g-nome { padding: 10px 12px; font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-right: 1px solid var(--borda); }
+.mz-g-escala { position: relative; }
+.mz-g-meses { display: flex; border-bottom: 1px solid var(--borda); }
+.mz-g-meses span { font-size: 12px; font-weight: 700; padding: 5px 8px; border-left: 1px solid var(--borda); white-space: nowrap; overflow: hidden; }
+.mz-g-meses span:first-child { border-left: 0; }
+.mz-g-dias { position: relative; height: 22px; }
+.mz-g-dias span { position: absolute; top: 3px; font-size: 11px; color: var(--mudo); transform: translateX(-30%); }
+.mz-g-pista { position: relative; }
+.mz-g-hoje { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed var(--primario); z-index: 1; }
+.mz-g-barra { position: absolute; top: 8px; height: 24px; border-radius: 8px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; font-weight: 600; color: #fff; overflow: hidden; white-space: nowrap; box-sizing: border-box; }
+.mz-g-barra em { font-style: normal; overflow: hidden; text-overflow: ellipsis; }
+.mz-g-barra.proprio { background: #15803D; }
+.mz-g-barra.sub { background: #D97706; }
+.mz-g-barra.decidir { background: #64748B; }
+.mz-g-legenda .mz-g-barra { position: static; display: inline-block; width: 22px; height: 12px; border-radius: 4px; padding: 0; vertical-align: middle; margin-right: 6px; }
+.mz-g-legenda { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--mudo); align-items: center; }
+.mz-g-losango, .mz-g-marco { width: 12px; height: 12px; background: var(--primario); transform: rotate(45deg); display: inline-block; flex: none; }
+.mz-g-marco { position: absolute; top: 14px; margin-left: -6px; }
+.mz-g-legenda .mz-g-losango { margin-right: 6px; vertical-align: middle; }

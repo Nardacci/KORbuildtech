@@ -57,3 +57,7 @@ Overview · Plans · Takeoff · Materials · Schedule · Project summary.
 ## Padrão de execução (decisão do dono, 26/10)
 
 Os três cartões "Como este projeto será executado?" (Fazemos tudo / Misto / Subcontratamos tudo) foram **retirados**: não ajudam a decidir, só pedem uma escolha cedo. Vale a decisão por etapa, na tabela "Quem faz cada etapa?" do Takeoff. Para quem faz tudo sozinho, o botão **Mark all as self-performed** marca todas de uma vez. O campo interno `entrega.padrao` continua existindo, mas é calculado a partir das etapas.
+
+## Linha do tempo (Schedule)
+
+A aba Schedule abre com uma **Timeline** (estilo Gantt, sem dependências): uma linha por tarefa e por marco, eixo de meses e dias, linha tracejada de hoje, barras por quem faz (verde = nós, âmbar = prestadora, cinza = a decidir), losangos nos marcos e detalhe ao passar o mouse. A tabela de edição fica logo abaixo. O Gantt completo da obra (linha de base, avanço pelo Daily) continua sendo o módulo de cronograma da versão completa.

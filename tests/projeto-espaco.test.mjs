@@ -99,6 +99,8 @@ verificar((await p.locator('.tabela-cronograma tbody tr').first().innerText()).l
 await p.click('[data-acao="pj-add-marco"]');
 await p.waitForTimeout(200);
 verificar(await p.locator('input[data-pj-marco="nome"]').count() === 1, 'dá para adicionar um marco');
+verificar(await p.locator('.mz-gantt .mz-g-barra').count() === 2 && await p.locator('.mz-g-meses span').count() >= 1, 'a linha do tempo desenha uma barra por tarefa, com eixo de meses');
+verificar((await p.locator('.mz-gantt .mz-g-barra').first().getAttribute('title')).includes('9'), 'a barra mostra o detalhe (datas e duração) ao passar o mouse', await p.locator('.mz-gantt .mz-g-barra').first().getAttribute('title'));
 
 verificar(await p.locator('[data-acao="pj-confirmar-cronograma"]').count() === 0, 'projeto ainda em orçamento: sem pedido de confirmação do cronograma');
 await p.goto(BASE + '#/measure/projeto/' + id + '/editar');

@@ -350,3 +350,5 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Tarefas, marcos e a confirmação continuam; aparecem no outro navegador
 - [ ] **T151** · `pv.p1.admin` — Conta real (só depois da migração 0017): escrever observações em folhas e recarregar  
   _Esperado:_ As observações continuam depois de recarregar (antes da 0017 ficam só neste aparelho)
+- [ ] **T152** · `pv.p1.admin` — Schedule: olhar a Timeline no topo da aba, com tarefas e marcos preenchidos  
+  _Esperado:_ Uma linha por tarefa e por marco; eixo de meses e dias; barras verdes (nós), âmbar (prestadora) e cinza (a decidir); losangos para os marcos; linha tracejada marca hoje (se estiver no período); ao passar o mouse na barra aparecem nome, datas, duração e quem faz; mudar início ou dias na tabela move a barra

@@ -148,15 +148,12 @@ export function htmlEscopo(p, ajudas) {
 export function htmlCronograma(p, ajudas) {
   const c = cronogramaDe(p), e = entregaDe(p);
   const tarefas = c.tarefas;
-  const min = tarefas.map((t) => t.inicio).filter(Boolean).sort()[0], max = tarefas.map(fimDe).filter(Boolean).sort().pop();
-  const total = min && max ? Math.max(1, diasEntre(min, max) + 1) : 1;
-  const barra = (t) => { if (!t.inicio) return ''; const ini = diasEntre(min, t.inicio), dur = Math.max(1, Number(t.dias) || 1); return '<div class="mz-linha-tempo" aria-hidden="true"><span style="left:' + (ini * 100 / total).toFixed(1) + '%;width:' + Math.max(2, dur * 100 / total).toFixed(1) + '%"></span></div>'; };
   const quemTxt = (t) => (t.quem === 'terceiro' ? tr('Prestadora') : t.quem === 'proprio' ? tr('Nós') : tr('A decidir'));
   const linhas = tarefas.map((t) => '<tr><td><input type="text" class="mz-t-nome" data-pj-tarefa="nome" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.nome) + '" aria-label="' + esc(tr('Tarefa')) + '"></td>' +
     '<td><span class="etiqueta ' + (t.quem === 'terceiro' ? 'etiqueta-ambar' : t.quem === 'proprio' ? 'etiqueta-verde' : 'etiqueta-neutro') + '">' + quemTxt(t) + '</span></td>' +
     '<td><input type="date" data-pj-tarefa="inicio" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.inicio || '') + '" aria-label="' + esc(tr('Início')) + '"></td>' +
     '<td><input type="number" min="1" class="mz-t-dias" data-pj-tarefa="dias" data-id="' + p.id + '" data-t="' + t.id + '" value="' + esc(t.dias || '') + '" aria-label="' + esc(tr('Duração em dias')) + '"></td>' +
-    '<td>' + (fimDe(t) ? dataCurta(fimDe(t)) : '—') + '</td><td>' + barra(t) + '</td>' +
+    '<td>' + (fimDe(t) ? dataCurta(fimDe(t)) : '—') + '</td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-tarefa" data-id="' + p.id + '" data-t="' + t.id + '">' + tr('Remover') + '</button></td></tr>').join('');
   const marcos = c.marcos.map((m) => '<tr><td><input type="text" data-pj-marco="nome" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nome) + '" aria-label="' + esc(tr('Marco')) + '"></td>' +
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +
@@ -167,15 +164,54 @@ export function htmlCronograma(p, ajudas) {
     (c.confirmado ? tn(c.confirmado.tarefas.length, 'Base da obra desde {data}: {n} tarefa.', 'Base da obra desde {data}: {n} tarefas.', { data: dataCurta(c.confirmado.em) }) + ' ' + tr('Se mudar algo, confirme de novo para atualizar a base.')
       : tr('O projeto foi ganho. Ajuste as datas abaixo e confirme: o cronograma vira a base da obra.')) + '</p></div>' +
     '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-confirmar-cronograma" data-id="' + p.id + '"' + (tarefas.length ? '' : ' disabled') + '>' + (c.confirmado ? tr('Atualizar a base') : tr('Confirmar cronograma')) + '</button></div></section>';
-  return faixaGanho + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
+  return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (e.etapas.length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-tarefa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar tarefa') + '</button></div></div>' +
-    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th>' + tr('Linha do tempo') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
+    (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
       : '<p class="vazio">' + tr('Nenhuma tarefa ainda. Gere a partir das etapas de Escopo e execução, ou adicione à mão.') + '</p>') + '</section>' +
     '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Marcos') + '</h2><p class="mudo pequeno">' + tr('Datas-chave que vão na proposta e na obra (ex.: licença aprovada).') + '</p></div>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-marco" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar marco') + '</button></div>' +
     (c.marcos.length ? '<div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Marco') + '</th><th>' + tr('Data') + '</th><th>' + tr('Observação') + '</th><th></th></tr></thead><tbody>' + marcos + '</tbody></table></div>' : '<p class="vazio">' + tr('Nenhum marco ainda.') + '</p>') + '</section>' +
     (ajudas.aviso ? '<p class="mudo pequeno">' + ajudas.aviso + '</p>' : '');
+}
+
+/* Linha do tempo: uma linha por tarefa e por marco, eixo de meses e dias, linha de hoje e detalhe ao passar o mouse. */
+function htmlLinhaDoTempo(p) {
+  const c = cronogramaDe(p);
+  const tarefas = c.tarefas.filter((t) => t.inicio), marcos = c.marcos.filter((m) => m.data);
+  if (!tarefas.length && !marcos.length) return '';
+  const datas = tarefas.flatMap((t) => [t.inicio, fimDe(t)]).concat(marcos.map((m) => m.data));
+  const ordem = datas.slice().sort();
+  const ini = somarDias(ordem[0], -2), fim = somarDias(ordem[ordem.length - 1], 3);
+  const total = diasEntre(ini, fim) + 1;
+  const pct = (d) => (diasEntre(ini, d) * 100 / total).toFixed(2);
+  const lang = (document.documentElement.lang || 'en');
+  const mesFmt = new Intl.DateTimeFormat(lang, { month: 'short', year: 'numeric', timeZone: 'UTC' });
+  // meses: um bloco por mês, com a largura proporcional aos dias dele
+  const meses = [];
+  for (let i = 0; i < total; i++) {
+    const d = somarDias(ini, i), chave = d.slice(0, 7);
+    if (!meses.length || meses[meses.length - 1].chave !== chave) meses.push({ chave, dias: 0, rotulo: mesFmt.format(new Date(d + 'T00:00:00Z')) });
+    meses[meses.length - 1].dias++;
+  }
+  const passo = total <= 31 ? 1 : total <= 70 ? 7 : 14;
+  const dias = [];
+  for (let i = 0; i < total; i += passo) dias.push('<span style="left:' + (i * 100 / total).toFixed(2) + '%">' + Number(somarDias(ini, i).slice(8)) + '</span>');
+  const hojeIso = hoje();
+  const linhaHoje = hojeIso >= ini && hojeIso <= fim ? '<i class="mz-g-hoje" style="left:' + pct(hojeIso) + '%" title="' + esc(tr('Hoje')) + '"></i>' : '';
+  const classe = (q) => (q === 'terceiro' ? 'sub' : q === 'proprio' ? 'proprio' : 'decidir');
+  const quemTxt = (q) => (q === 'terceiro' ? tr('Prestadora') : q === 'proprio' ? tr('Nós') : tr('A decidir'));
+  const linhasT = tarefas.map((t) => {
+    const f = fimDe(t), dur = Math.max(1, Number(t.dias) || 1);
+    const dica = t.nome + ' · ' + dataCurta(t.inicio) + ' → ' + dataCurta(f) + ' · ' + tn(dur, '{n} dia', '{n} dias') + ' · ' + quemTxt(t.quem);
+    return '<div class="mz-g-linha"><div class="mz-g-nome" title="' + esc(t.nome) + '">' + esc(t.nome) + '</div><div class="mz-g-pista">' + linhaHoje +
+      '<span class="mz-g-barra ' + classe(t.quem) + '" style="left:' + pct(t.inicio) + '%;width:' + Math.max(0.8, dur * 100 / total).toFixed(2) + '%" title="' + esc(dica) + '" tabindex="0"><em>' + esc(t.nome) + '</em></span></div></div>';
+  }).join('');
+  const linhasM = marcos.map((m) => '<div class="mz-g-linha"><div class="mz-g-nome" title="' + esc(m.nome) + '"><i class="mz-g-losango"></i>' + esc(m.nome) + '</div><div class="mz-g-pista">' + linhaHoje +
+    '<span class="mz-g-marco" style="left:' + pct(m.data) + '%" title="' + esc(m.nome + ' · ' + dataCurta(m.data)) + '" tabindex="0"></span></div></div>').join('');
+  return '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Linha do tempo') + '</h2><p class="mudo pequeno">' + tr('Uma linha por tarefa. A linha vertical marca hoje. Passe o mouse sobre uma barra para ver o detalhe.') + '</p></div>' +
+    '<div class="mz-g-legenda"><span><i class="mz-g-barra proprio"></i>' + tr('Nós') + '</span><span><i class="mz-g-barra sub"></i>' + tr('Prestadora') + '</span><span><i class="mz-g-barra decidir"></i>' + tr('A decidir') + '</span><span><i class="mz-g-losango"></i>' + tr('Marco') + '</span></div></div>' +
+    '<div class="mz-gantt"><div class="mz-g-cab"><div class="mz-g-nome"></div><div class="mz-g-escala"><div class="mz-g-meses">' + meses.map((m) => '<span style="width:' + (m.dias * 100 / total).toFixed(2) + '%">' + esc(m.rotulo) + '</span>').join('') + '</div><div class="mz-g-dias">' + dias.join('') + '</div></div></div>' + linhasT + linhasM + '</div></section>';
 }
 
 /* ---------- Ações ---------- */
