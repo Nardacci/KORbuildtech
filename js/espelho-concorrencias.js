@@ -11,6 +11,7 @@
  * Os links dos convidados sem conta: o banco entrega o token uma vez, ao enviar; o app guarda no aparelho para o
  * botão "Copiar o link" (js/concorrencias-oficial.js). */
 
+import { separarEscopo } from './texto-rico.js';
 import { tr } from './i18n.js';
 import { cliente } from './conta.js';
 import { lerTudo } from './espelho-crew.js';
@@ -60,7 +61,7 @@ export function aplicarConcorrencias(d, lido, vizinhas, novaEmpresa, minhaEmpres
   const enviadas = lido.concorrencias.map((c) => ({
     id: c.id, contratanteId: c.empresa_id,
     origem: { tipo: c.origem_tipo, id: c.origem_tipo === 'projeto' ? c.projeto_id : c.obra_id }, obraId: c.obra_id || null, paiId: c.pai_id || null,
-    servico: c.servico, etapas: c.etapas || [], incluso: c.incluso || [], excluso: c.excluso || [], observacoes: c.observacoes || '',
+    servico: c.servico, etapas: c.etapas || [], ...separarEscopo(c.incluso || []), excluso: c.excluso || [], observacoes: c.observacoes || '',
     desenhos: (desenhosPor[c.id] || []).map((x) => ({ id: x.id, nome: x.nome, path: x.arquivo_path, tamanho: x.tamanho, em: ms(x.em) })),
     prazo: prazoLocal(c.prazo), inicio: c.inicio || '', termino: c.termino || '',
     orcamento: orcamentoDe(c.orcamento), exigencias: c.exigencias || {}, quarteirizacao: c.quarteirizacao,
@@ -85,7 +86,7 @@ export function aplicarConcorrencias(d, lido, vizinhas, novaEmpresa, minhaEmpres
     if (x.obra && !viz.obras.some((o) => o.id === obraId)) viz.obras.push({ id: obraId, nome: x.obra.nome, endereco: x.obra.endereco || '', municipio: x.obra.cidade || '', estado: x.obra.estado || '', zip: x.obra.zip || '', cidade: [x.obra.cidade, x.obra.estado].filter(Boolean).join(', '), situacao: 'andamento', diasTrabalho: [] });
     return {
       id: x.id, contratanteId: x.contratanteId, origem: { tipo: 'obra', id: obraId }, obraId, paiId: null,
-      servico: x.servico, etapas: x.etapas || [], incluso: x.incluso || [], excluso: x.excluso || [], observacoes: x.observacoes || '',
+      servico: x.servico, etapas: x.etapas || [], ...separarEscopo(x.incluso || []), excluso: x.excluso || [], observacoes: x.observacoes || '',
       desenhos: (x.desenhos || []).map((y) => ({ id: y.id, nome: y.nome, path: y.path, url: y.url || null, observacao: y.observacao || '', tamanho: y.tamanho, em: ms(y.em) })),
       prazo: prazoLocal(x.prazo), inicio: x.inicio || '', termino: x.termino || '',
       orcamento: orcamentoDe(x.orcamento), exigencias: x.exigencias || {}, quarteirizacao: x.quarteirizacao,

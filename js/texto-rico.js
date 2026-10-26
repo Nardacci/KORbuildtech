@@ -39,12 +39,28 @@ function limparNo(no, doc) {
   return saida;
 }
 
+/* Texto solto no nível de cima (sem parágrafo) vira parágrafo: o escopo é sempre uma sequência de blocos. */
+const EM_LINHA = new Set(['B', 'I', 'U', 'A', 'BR']);
+function embrulhar(html) {
+  if (typeof DOMParser === 'undefined') return html;
+  const corpo = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html').body;
+  let saida = '', solto = '';
+  const fecha = () => { if (solto.replace(/<br>/g, '').trim()) saida += '<p>' + solto + '</p>'; solto = ''; };
+  for (const f of Array.from(corpo.childNodes)) {
+    if (f.nodeType === 3) solto += esc(f.textContent);
+    else if (f.nodeType === 1 && EM_LINHA.has(f.nodeName)) solto += f.outerHTML;
+    else if (f.nodeType === 1) { fecha(); saida += f.outerHTML; }
+  }
+  fecha();
+  return saida;
+}
+
 /* Limpa um HTML qualquer (colado do Word, digitado no editor, vindo do banco). */
 export function limparHtml(entrada) {
   const bruto = String(entrada == null ? '' : entrada);
   if (typeof DOMParser === 'undefined') return esc(bruto.replace(/<[^>]*>/g, ''));
   const doc = new DOMParser().parseFromString('<body>' + bruto + '</body>', 'text/html');
-  const html = limparNo(doc.body, doc).replace(/<(p|h2|h3|li)([^>]*)><\/\1>/g, '').trim();
+  const html = embrulhar(limparNo(doc.body, doc)).replace(/<(p|h2|h3|li)([^>]*)><\/\1>/g, '').trim();
   return html.length > MAX ? html.slice(0, MAX) : html;
 }
 
@@ -127,4 +143,22 @@ if (typeof document !== 'undefined') {
     const limpo = html ? limparHtml(html) : escopoHtml(cd.getData('text/plain'));
     document.execCommand('insertHTML', false, limpo);
   });
+}
+
+/* O escopo de uma concorrência viaja no campo `incluso` (lista de textos) do banco: um único item em HTML é o escopo formatado. */
+const PARECE_HTML = /^\s*<(p|h2|h3|ul|ol|blockquote)[\s>]/i;
+export function separarEscopo(incluso) {
+  const l = Array.isArray(incluso) ? incluso : [];
+  if (l.length === 1 && PARECE_HTML.test(l[0])) return { escopo: limparHtml(l[0]), incluso: [] };
+  return { escopo: '', incluso: l };
+}
+export function juntarEscopo(escopo, incluso) {
+  const e = limparHtml(escopo || '');
+  return e ? [e] : (incluso || []);
+}
+
+/* Escopo antigo (listas Incluso/Excluso) como texto formatado, para editar no mesmo editor. */
+export function escopoDeListas(incluso, excluso) {
+  const lista = (t, itens) => (itens && itens.length ? '<h3>' + esc(t) + '</h3><ul>' + itens.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '');
+  return lista(tr('Incluso'), incluso) + lista(tr('Excluso'), excluso);
 }

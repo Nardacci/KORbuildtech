@@ -362,3 +362,20 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ O escopo sai formatado (título, negrito, listas) no documento da proposta
 - [ ] **T157** · `pv.p1.admin` — Escopos antigos (texto simples)  
   _Esperado:_ Aparecem no editor como parágrafos normais e continuam indo para a proposta
+
+## 16 Concorrência a partir do projeto (tarefas, plantas e escopo)
+
+- [ ] **T158** · `pv.c1.admin` — Bids › New bid (sem escolher projeto antes)  
+  _Esperado:_ Primeiro passo: lista para escolher UM projeto; ao escolher, abre o formulário já ligado ao projeto (empresas sem projetos continuam com o formulário da obra)
+- [ ] **T159** · `pv.c1.admin` — New bid: olhar 'Tasks to bid' (das prestadoras)  
+  _Esperado:_ Lista só as tarefas do Schedule marcadas como Subcontractor; dá para marcar mais de uma; tarefa de 'Us' não aparece; sem nenhuma, aparece o aviso com o link para o cronograma
+- [ ] **T160** · `pv.c1.admin` — New bid: uma tarefa que já tem concorrência aberta  
+  _Esperado:_ Pode ser escolhida de novo (segunda rodada de preços)
+- [ ] **T161** · `pv.c1.admin` — New bid: olhar o campo Scope  
+  _Esperado:_ Editor de texto formatado já preenchido com o escopo do projeto; editar aqui não muda o escopo do projeto; há também o campo Notes (observações)
+- [ ] **T162** · `pv.c1.admin` — New bid › Documents: olhar 'Project drawings'  
+  _Esperado:_ Os arquivos de plantas do projeto aparecem marcados, com a lista de folhas e a observação da aba Plans em campo editável; ajustar a observação vale só para esta concorrência
+- [ ] **T163** · `pv.c1.admin` — New bid: salvar e enviar para uma prestadora com conta e outra por link  
+  _Esperado:_ As plantas vão com as observações; o escopo formatado aparece para quem recebe (convite e link) e na página da concorrência (Details)
+- [ ] **T164** · `pv.c1.admin` — Concorrência antiga (escopo em listas Incluso/Excluso): abrir para editar  
+  _Esperado:_ As listas aparecem dentro do editor de Scope e continuam sendo mostradas normalmente

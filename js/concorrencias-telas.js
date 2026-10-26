@@ -9,7 +9,8 @@ import { estado, salvar, obra as acharObra } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
 import { icone } from './icones.js';
 import { contatosCom, contatos, salvarContato } from './contatos.js';
-import { salvarProjeto, projeto as acharProjeto, folhasDo } from './measure.js';
+import { salvarProjeto, projeto as acharProjeto, folhasDo, projetos as todosProjetos } from './measure.js';
+import { htmlEditorRico, valorDoEditor, escopoHtml, escopoTexto, escopoDeListas } from './texto-rico.js';
 import { importarPdfNoProjeto } from './measure-telas.js';
 import { bytesDaPlanta } from './measure-oficial.js';
 import { lerFoto } from './armazem.js';
@@ -116,6 +117,17 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   if (id && (!c || c.situacao !== 'rascunho')) return null;
   const pj = acharProjeto(projetoId || (c && doProjeto(c) ? c.origem.id : null));
   if (projetoId && !pj) return null;
+  if (!c && !pj && !obraId && todosProjetos().length) {
+    // passo 1: quem trabalha com projetos (Takeoff) cota a partir de um projeto; quem só tem obras segue o formulário da obra
+    const lista = todosProjetos().filter((x) => x.situacao !== 'perdida').sort((a, b) => a.nome.localeCompare(b.nome));
+    return moldura({
+      ativo: ativoBids('concorrencias'), largo: true, titulo: tr('Nova concorrência'), subtitulo: tr('Escolha o projeto: as tarefas das prestadoras, as plantas e o escopo vêm dele.'),
+      voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') },
+      conteudo: '<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2>' + (lista.length
+        ? campo('co-escolher-projeto', tr('Projeto *'), '<select id="co-escolher-projeto" data-co-projeto><option value="">' + tr('Escolha…') + '</option>' + lista.map((x) => '<option value="' + x.id + '">' + esc(x.nome) + '</option>').join('') + '</select>') + '<p class="mudo pequeno">' + tr('Ao escolher, o formulário abre com as tarefas subcontratadas do cronograma, as plantas e o escopo do projeto.') + '</p>'
+        : '<p class="vazio">' + tr('Ainda não há projetos. Crie um projeto no Takeoff primeiro.') + '</p>') + '</section>',
+    });
+  }
   const d = c || { origem: pj ? { tipo: 'projeto', id: pj.id } : null, obraId: obraId || '', servico: '', etapas: [], incluso: [], excluso: [], observacoes: '', desenhos: [], prazo: '', inicio: '', termino: '', orcamento: { valor: null, mostrar: 'nao' }, exigencias: {}, quarteirizacao: 'permitida', convites: [] };
   const obras = estado().obras.filter((o) => o.situacao !== 'concluida' || o.id === d.obraId);
   anexosNovos = [];
@@ -142,15 +154,14 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
       '<section class="cartao" data-aba="servico"><h2 class="cartao-titulo">' + tr('Serviço') + '</h2><div class="grade-campos">' +
         (pj ? campo('co-projeto', tr('Projeto'), '<input type="text" id="co-projeto" value="' + esc(pj.nome) + '" readonly>') : campo('co-obraId', tr('Obra *'), '<select id="co-obraId" name="obraId"><option value="">' + tr('Escolha…') + '</option>' + obras.map((o) => '<option value="' + o.id + '"' + (o.id === d.obraId ? ' selected' : '') + '>' + esc(o.nome) + '</option>').join('') + '</select>')) +
         campo('co-servico', tr('Serviço *'), '<input type="text" id="co-servico" name="servico" value="' + esc(d.servico) + '" placeholder="' + esc(tr('Ex.: Framing e drywall')) + '">') + '</div>' +
-        '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Etapas a cotar * (cost codes)') + '</legend>' +
+        (pj ? htmlTarefasDoProjeto(pj, d.etapas) : '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Etapas a cotar * (cost codes)') + '</legend>' +
           conhecidas.map((e) => '<label class="check pequeno"><input type="checkbox" name="etapas" value="' + esc(e) + '"' + (d.etapas.includes(e) ? ' checked' : '') + '> ' + esc(e) + '</label>').join('') + '</fieldset>' +
-        campo('co-outrasEtapas', tr('Outras etapas (uma por linha)'), '<textarea id="co-outrasEtapas" name="outrasEtapas" rows="2" placeholder="' + esc(tr('Ex.: 09 91 00 · Painting')) + '">' + esc(outras.join('\n')) + '</textarea>') +
-        '<p class="mudo pequeno">' + tr('Cada etapa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas.') + '</p>' +
+          campo('co-outrasEtapas', tr('Outras etapas (uma por linha)'), '<textarea id="co-outrasEtapas" name="outrasEtapas" rows="2" placeholder="' + esc(tr('Ex.: 09 91 00 · Painting')) + '">' + esc(outras.join('\n')) + '</textarea>') +
+          '<p class="mudo pequeno">' + tr('Cada etapa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas.') + '</p>') +
         (pj ? '<p class="pequeno">' + tr('Cotando antes da sua proposta: o prazo precisa vencer antes do seu ({data}). Você usa os preços no orçamento e só fecha depois de ganhar o projeto.', { data: pj.prazoProposta ? dataCurta(pj.prazoProposta) : '—' }) + '</p>' : '') +
       '</section>' +
-      '<section class="cartao" data-aba="servico"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><div class="grade-campos">' +
-        campo('co-incluso', tr('Incluso * (um item por linha)'), '<textarea id="co-incluso" name="incluso" rows="4">' + esc(d.incluso.join('\n')) + '</textarea>') +
-        campo('co-excluso', tr('Excluso (um item por linha)'), '<textarea id="co-excluso" name="excluso" rows="4">' + esc(d.excluso.join('\n')) + '</textarea>') + '</div>' +
+      '<section class="cartao" data-aba="servico"><h2 class="cartao-titulo">' + tr('Escopo do serviço *') + '</h2><p class="mudo pequeno">' + tr('O que está incluso (e o que não está) neste serviço. Vem do escopo do projeto; edite à vontade para esta concorrência.') + '</p>' +
+        htmlEditorRico({ id: 'co-escopo-ed', valor: d.escopo || escopoDeListas(d.incluso, d.excluso) || (pj ? pj.descricao : ''), placeholder: tr('Descreva o escopo do serviço…') }) +
         campo('co-observacoes', tr('Observações'), '<textarea id="co-observacoes" name="observacoes" rows="2" placeholder="' + esc(tr('Horário de trabalho, acesso ao canteiro, visita…')) + '">' + esc(d.observacoes) + '</textarea>') +
       '</section>' +
       '<section class="cartao" data-aba="docs" hidden><h2 class="cartao-titulo">' + tr('Documentos anexos') + '</h2>' +
@@ -160,7 +171,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
           campo('co-descricao', tr('Descrição'), '<input type="text" id="co-descricao" placeholder="' + esc(tr('Vazio: usa o nome do arquivo')) + '">') + '</div>' +
         campo('co-obs-anexo', tr('Observação'), '<textarea id="co-obs-anexo" rows="2"></textarea>') +
         '<p><button type="button" class="btn btn-contorno" data-acao="co-anexar">' + icone('mais', 18) + tr('Anexar') + '</button></p>' +
-        (pdfsDoProjeto.length ? '<p class="pequeno"><b>' + tr('Plantas do projeto') + '</b></p><div class="lista-marcar">' + pdfsDoProjeto.map((a) => '<label class="check"><input type="checkbox" name="plantasProjeto" value="' + esc(a.id) + '"' + (c ? '' : ' checked') + '> ' + esc(a.nome) + '</label>').join('') + '</div>' : '') +
+        (pdfsDoProjeto.length ? '<p class="pequeno"><b>' + tr('Plantas do projeto') + '</b></p><div class="tabela-rolagem"><table class="tabela co-plantas"><thead><tr><th></th><th>' + tr('Arquivo') + '</th><th>' + tr('Observação') + '</th></tr></thead><tbody>' + pdfsDoProjeto.map((a) => '<tr><td><input type="checkbox" name="plantasProjeto" value="' + esc(a.id) + '"' + (c ? '' : ' checked') + ' aria-label="' + esc(a.nome) + '"></td><td><b>' + esc(a.nome) + '</b><span class="mudo pequeno bloco">' + esc(folhasDo(pj.id).filter((f) => f.arquivo && f.arquivo.id === a.id).map((f) => f.nome).join(' · ')) + '</span></td><td><input type="text" name="obsPlanta:' + esc(a.id) + '" maxlength="500" value="' + esc(observacaoDaPlanta(pj.id, a.id)) + '" placeholder="' + esc(tr('Observação para quem vai cotar')) + '" aria-label="' + esc(tr('Observação')) + '"></td></tr>').join('') + '</tbody></table></div><p class="mudo pequeno">' + tr('A observação vem da aba Plans do projeto e pode ser ajustada aqui, só para esta concorrência.') + '</p>' : '') +
         '<div class="tabela-rolagem"><table class="tabela" id="co-anexos"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Descrição') + '</th><th>' + tr('Arquivo') + '</th><th>' + tr('Tamanho') + '</th><th>' + tr('Observação') + '</th><th></th></tr></thead><tbody>' + linhasDeAnexos(d.desenhos) + '</tbody></table></div>' +
         '<p class="mudo pequeno">' + (estado().oficial ? tr('Os PDFs vão para a pasta da concorrência; quem cotar abre os arquivos pelo convite e recebe uma cópia no projeto do Takeoff.') : tr('No protótipo, só o nome de cada arquivo é guardado.')) + '</p>' +
       '</section>' +
@@ -194,6 +205,22 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
   });
 }
 
+/* A observação de um arquivo de plantas: as observações (diferentes) das folhas dele, da aba Plans. */
+function observacaoDaPlanta(projetoId, arquivoId) {
+  return [...new Set(folhasDo(projetoId).filter((f) => f.arquivo && f.arquivo.id === arquivoId).map((f) => (f.observacao || '').trim()).filter(Boolean))].join(' · ');
+}
+
+/* As tarefas do cronograma que a empresa não faz (prestadoras): é isto que se cota. Pode escolher várias. */
+function htmlTarefasDoProjeto(pj, escolhidas) {
+  const tarefas = [...new Set(((pj.cronograma || {}).tarefas || []).filter((t) => t.quem === 'terceiro' && String(t.nome || '').trim()).map((t) => t.nome.trim()))];
+  const fora = (escolhidas || []).filter((e) => !tarefas.includes(e));
+  const item = (e, extra) => '<label class="check pequeno"><input type="checkbox" name="etapas" value="' + esc(e) + '"' + ((escolhidas || []).includes(e) ? ' checked' : '') + '> ' + esc(e) + (extra || '') + '</label>';
+  return '<fieldset class="co-etapas"><legend class="rotulo-pequeno">' + tr('Tarefas a cotar * (das prestadoras)') + '</legend>' +
+    (tarefas.length || fora.length ? tarefas.map((e) => item(e)).join('') + fora.map((e) => item(e, ' <span class="mudo">' + tr('(não está mais no cronograma)') + '</span>')).join('')
+      : '<p class="vazio">' + tr('Nenhuma tarefa de prestadora no cronograma. Em Schedule, marque a tarefa como Subcontractor.') + ' <a href="#/measure/projeto/' + pj.id + '/schedule">' + tr('Abrir o cronograma') + '</a></p>') +
+    '</fieldset><p class="mudo pequeno">' + tr('Cada tarefa vira uma linha na comparação. A prestadora pode cotar todas ou só algumas. Dá para escolher mais de uma.') + '</p>';
+}
+
 /* Os PDFs distintos das folhas de um projeto (uma folha por página, vários por PDF). */
 function pdfsDe(projetoId) {
   const vistos = new Map();
@@ -201,12 +228,12 @@ function pdfsDe(projetoId) {
   return Array.from(vistos.values()).map((a) => ({ id: a.id, nome: a.nome || a.id, arquivo: a }));
 }
 
-async function arquivosDasPlantas(projetoId, ids) {
+async function arquivosDasPlantas(projetoId, ids, observacoes) {
   const out = [];
   for (const a of pdfsDe(projetoId).filter((x) => ids.includes(x.id))) {
     try {
       const bytes = a.arquivo.tipo === 'storage' ? await bytesDaPlanta(a.arquivo) : new Uint8Array(await (await lerFoto(a.arquivo.id)).arrayBuffer());
-      out.push({ nome: a.nome.replace(/\.pdf$/i, ''), arquivo: new File([bytes], a.nome, { type: 'application/pdf' }) });
+      out.push({ nome: a.nome.replace(/\.pdf$/i, ''), arquivo: new File([bytes], a.nome, { type: 'application/pdf' }), observacao: String((observacoes || {})[a.id] || '').trim() });
     } catch (e) { console.error('planta ' + a.nome + ': ' + (e && e.message ? e.message : e)); }
   }
   return out;
@@ -236,6 +263,8 @@ function dadosDoForm() {
   const fd = new FormData(form);
   const anexos = anexosNovos.slice();
   const plantas = fd.getAll('plantasProjeto');
+  const obsPlantas = Object.fromEntries(plantas.map((pid) => [pid, fd.get('obsPlanta:' + pid)]));
+  const escopoRico = valorDoEditor('co-escopo-ed');
   let atuais = [];
   try { atuais = JSON.parse(fd.get('desenhosAtuais') || '[]'); } catch (e) { atuais = []; }
   const visitaAntes = (concorrenciaEnviada(form.dataset.id) || { exigencias: {} }).exigencias.visita || {};
@@ -244,7 +273,7 @@ function dadosDoForm() {
     dados: {
       obraId: fd.get('obraId'), origem: fd.get('origemProjeto') ? { tipo: 'projeto', id: fd.get('origemProjeto') } : null, servico: fd.get('servico'),
       etapas: fd.getAll('etapas').concat(String(fd.get('outrasEtapas') || '').split('\n')),
-      incluso: fd.get('incluso'), excluso: fd.get('excluso'), observacoes: fd.get('observacoes'),
+      escopo: escopoRico, incluso: escopoRico != null ? [] : fd.get('incluso'), excluso: escopoRico != null ? [] : fd.get('excluso'), observacoes: fd.get('observacoes'), observacoesPlantas: obsPlantas,
       desenhos: atuais.concat(anexos.map((a) => ({ nome: a.nome, observacao: a.observacao }))), desenhosNovos: anexos, plantasProjeto: plantas, desenhosMantidos: atuais.map((x) => x.id).filter(Boolean),
       prazo: fd.get('prazoData') ? fd.get('prazoData') + 'T' + (fd.get('prazoHora') || '17:00') : '',
       inicio: fd.get('inicio'), termino: fd.get('termino'),
@@ -405,12 +434,20 @@ function htmlComparar(c, ativa) {
     '<p class="mudo pequeno">' + tr('Em verde, o menor valor de cada etapa. Etapa não cotada nunca conta como zero: compare o total só entre propostas completas. ⚠ marca uma exclusão que está no seu escopo incluso.') + '</p></section>';
 }
 
+/* O escopo: o texto formatado e, nas concorrências antigas, as listas Incluso/Excluso. */
+function blocoEscopo(c, lista) {
+  const rico = c.escopo ? '<div class="doc-rico">' + escopoHtml(c.escopo) + '</div>' : '';
+  const antigas = c.incluso.length || c.excluso.length || !rico
+    ? '<h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(c.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(c.excluso) : '';
+  return rico + antigas;
+}
+
 function htmlDetalhes(c) {
   const ex = c.exigencias || {};
   const lista = (itens) => (itens.length ? '<ul>' + itens.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '<p class="mudo">—</p>');
   const exig = [ex.glMinimo ? tr('GL mínimo de {valor}', { valor: dinheiro(ex.glMinimo) }) : '', ex.wcObrigatorio ? tr("Workers' comp obrigatório") : '', ex.licenca ? tr('Licença: {l}', { l: ex.licenca }) : '', ex.visita && ex.visita.obrigatoria ? tr('Visita à obra obrigatória') : ''].filter(Boolean);
   return '<div class="grade-2">' +
-    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(c.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(c.excluso) +
+    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2>' + blocoEscopo(c, lista) +
       (c.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(c.observacoes) + '</p>' : '') + '</section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
       '<dt>' + tr('Etapas a cotar') + '</dt><dd>' + c.etapas.map(esc).join('<br>') + '</dd>' +
@@ -475,7 +512,7 @@ export function telaConvite(moldura, id) {
     voltar: { href: '#/measure/convites', rotulo: tr('Convites') },
     conteudo: situacao +
       '<div class="grade-2">' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(x.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(x.excluso) +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2>' + blocoEscopo(x, lista) +
         (x.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(x.observacoes) + '</p>' : '') + '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
@@ -585,7 +622,7 @@ async function criarProjetoDoConvite(x) {
   const o = x.obra || {};
   const r = salvarProjeto(null, {
     nome: x.servico + (o.nome ? ' · ' + o.nome : ''), contratanteId: ct, endereco: o.endereco, cidade: o.cidade, estado: o.estado, zip: o.zip,
-    tipo: 'outro', situacao: 'orcamento', descricao: x.incluso.join('; '), estimadorId: (usuarioAtual() || {}).id, prazoProposta: x.prazo ? x.prazo.slice(0, 10) : '',
+    tipo: 'outro', situacao: 'orcamento', descricao: x.escopo || x.incluso.join('; '), estimadorId: (usuarioAtual() || {}).id, prazoProposta: x.prazo ? x.prazo.slice(0, 10) : '',
   });
   if (r.erro) return r;
   acharProjeto(r.id).concorrencia = { id: x.id, conviteId: x.convite.id, contratanteId: x.contratanteId };
@@ -688,7 +725,7 @@ export function telaConvitePublico(token, marca) {
         '<div class="co-kpi"><span>' + tr('Serviço previsto') + '</span><b>' + (x.inicio ? dataCurta(x.inicio) : '—') + ' → ' + (x.termino ? dataCurta(x.termino) : '—') + '</b></div></div>' +
       situacao +
       '<div class="grade-2">' +
-      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2><h3 class="rotulo-pequeno">' + tr('Incluso') + '</h3>' + lista(x.incluso) + '<h3 class="rotulo-pequeno">' + tr('Excluso') + '</h3>' + lista(x.excluso) +
+      '<section class="cartao"><h2 class="cartao-titulo">' + tr('Escopo') + '</h2>' + blocoEscopo(x, lista) +
         (x.observacoes ? '<h3 class="rotulo-pequeno">' + tr('Observações') + '</h3><p>' + esc(x.observacoes) + '</p>' : '') + '</section>' +
       '<section class="cartao"><h2 class="cartao-titulo">' + tr('O pacote') + '</h2><dl class="lista-dados">' +
         '<dt>' + tr('Prazo da proposta') + '</dt><dd><b>' + (x.prazo ? textoPrazo(x) : '—') + '</b></dd>' +
@@ -881,8 +918,8 @@ export const acoesConcorrencias = {
       // arquivo escolhido mas ainda sem clicar em Anexar: entra junto, para não se perder
       if ((document.getElementById('co-arquivo') || { files: [] }).files.length) await acoesConcorrencias['co-anexar']();
       const { id, dados } = dadosDoForm();
-      if (dados.plantasProjeto.length && dados.origem) dados.desenhosNovos = dados.desenhosNovos.concat(await arquivosDasPlantas(dados.origem.id, dados.plantasProjeto));
-      dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome })));
+      if (dados.plantasProjeto.length && dados.origem) dados.desenhosNovos = dados.desenhosNovos.concat(await arquivosDasPlantas(dados.origem.id, dados.plantasProjeto, dados.observacoesPlantas));
+      dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome, observacao: n.observacao })));
       const r = await salvarRascunho(id, dados, quem());
       if (r.id) document.getElementById('form-concorrencia').dataset.id = r.id;   // se falhou depois de criar, a próxima tentativa atualiza o mesmo rascunho
       if (r.erro) { toast(r.erro); return; }
@@ -970,3 +1007,10 @@ export const acoesConcorrencias = {
   },
 };
 
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('change', (ev) => {
+    const el = ev.target;
+    if (el && el.matches && el.matches('[data-co-projeto]') && el.value) location.hash = '#/daily/concorrencias/nova/projeto/' + el.value;
+  });
+}

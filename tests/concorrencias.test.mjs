@@ -268,11 +268,23 @@ verificar(txt.includes('Andaimes e equipamentos de acesso') && txt.includes('Con
 
 await ir('u-ana', '#/daily/obras/atlantico');
 verificar((await page.locator('main').innerText()).includes('Framing e drywall') && await page.locator('a[href="#/daily/concorrencias/nova/atlantico"]').count() === 1, 'a página da obra mostra as concorrências dela e "Nova concorrência"');
-await page.locator('a[href="#/daily/concorrencias/nova/atlantico"]').click();
-await page.waitForTimeout(400);
-verificar(await page.locator('#co-obraId').inputValue() === 'atlantico', 'a nova concorrência já vem com a obra');
+await page.evaluate(async () => { const m = await import('/js/measure.js'); const a = await import('/js/armazem.js'); const ct = await import('/js/contatos.js'); const r = m.salvarProjeto(null, { nome: 'Atlântico · pintura', contratanteId: ct.contatos()[0].id, cidade: 'Concord', estado: 'NH', tipo: 'outro', situacao: 'orcamento' }); const p = m.projeto(r.id); const fl = m.criarFolhas(r.id, 'pdf-atl', 'atlantico.pdf', 2); fl[0].observacao = 'Rev. B: pintura'; p.cronograma = { tarefas: [{ id: 'tf1', nome: '09 91 00 · Painting', quem: 'terceiro', inicio: '2026-11-02', dias: 5 }, { id: 'tf2', nome: '07 31 13 · Roofing', quem: 'terceiro', inicio: '2026-11-09', dias: 5 }, { id: 'tf3', nome: 'Mobilization', quem: 'proprio', inicio: '2026-11-02', dias: 2 }], marcos: [] }; p.descricao = '<h2>Scope</h2><p>Paint <b>common areas</b></p>'; a.salvar(); });
+await page.goto(BASE + '#/daily/concorrencias/nova');
+await page.waitForSelector('#co-escolher-projeto');
+verificar(await page.locator('#form-concorrencia').count() === 0, 'a nova concorrência começa escolhendo o projeto (não há mais caminho só pela obra)');
+await page.selectOption('#co-escolher-projeto', { index: 1 });
+await page.waitForSelector('#form-concorrencia');
+verificar(await page.locator('input[name="etapas"]').count() === 2 && await page.locator('input[name="etapas"][value="Mobilization"]').count() === 0, 'as tarefas a cotar são só as das prestadoras (Subcontractor) do cronograma do projeto');
+verificar((await page.locator('#co-escopo-ed').innerHTML()).includes('<b>common areas</b>'), 'o escopo vem do projeto, no editor de texto formatado');
 await page.fill('#co-servico', 'Pintura das áreas comuns');
+await page.check('input[name="etapas"][value="09 91 00 · Painting"]');
+await page.check('input[name="etapas"][value="07 31 13 · Roofing"]');
+verificar(await page.locator('input[name="etapas"]:checked').count() === 2, 'dá para escolher mais de uma tarefa na mesma concorrência');
+await page.uncheck('input[name="etapas"][value="07 31 13 · Roofing"]');
 await page.locator('[data-acao="co-aba"][data-aba="docs"]').click();
+verificar(await page.locator('input[name="plantasProjeto"]').count() === 1 && await page.locator('input[name="obsPlanta:pdf-atl"]').inputValue() === 'Rev. B: pintura', 'as plantas do projeto vêm com a observação da aba Plans, em campo editável');
+await page.fill('input[name="obsPlanta:pdf-atl"]', 'Rev. C: só as áreas comuns');
+verificar(await page.locator('input[name="obsPlanta:pdf-atl"]').inputValue() === 'Rev. C: só as áreas comuns', 'a observação pode ser ajustada para esta concorrência');
 await page.setInputFiles('#co-arquivo', [{ name: 'planta-a.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%%EOF') }, { name: 'planta-b.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n%%EOF') }]);
 await page.fill('#co-obs-anexo', 'Ver revisão 2');
 await page.locator('[data-acao="co-anexar"]').click();
@@ -287,8 +299,9 @@ verificar(page.url().includes('#/daily/concorrencias/co-') && (await page.locato
 verificar(await page.locator('[data-acao="co-enviar"]').isDisabled(), 'com pendências, "Enviar convites" fica desabilitado');
 await page.locator('a', { hasText: 'Editar' }).first().click();
 await page.waitForTimeout(400);
-await page.fill('#co-outrasEtapas', '09 91 00 · Painting');
-await page.fill('#co-incluso', 'Pintura de paredes e tetos\nFundo preparador');
+await page.click('#co-escopo-ed');
+await page.keyboard.press('Control+A');
+await page.keyboard.type('Pintura de paredes e tetos. Fundo preparador.');
 await page.locator('[data-acao="co-aba"][data-aba="prazos"]').click();
 await page.fill('#co-prazoData', '2026-10-15');
 await page.fill('#co-orcamento', '42000');
@@ -319,6 +332,8 @@ await page.waitForTimeout(400);
 verificar((await page.locator('body').innerText()).includes('19/10/2026 às 17:00'), 'Prorrogar: o novo prazo aparece no topo');
 // a Northfield manda proposta (pelo motor; a tela dela é a fatia 3) e a construtora fecha pela tela
 await rodar((m, a, h) => h.como(h.NF, () => m.enviarProposta(m.recebidas().find((x) => x.servico.startsWith('Pintura')).id, { porEtapa: { '09 91 00 · Painting': 39800 }, prazoExecucaoDias: 30 }, 'Tom Reilly', null)));
+// a concorrência saiu de um projeto: só fecha depois que o projeto é ganho e tem obra (CO-24)
+await page.evaluate(async () => { const m = await import('/js/measure.js'); const a = await import('/js/armazem.js'); const p = m.projetos().find((x) => x.nome.startsWith('Atlântico')); p.situacao = 'ganha'; p.obraId = 'atlantico'; a.salvar(); });
 await page.goto(novaUrl + '/comparar');
 await page.waitForTimeout(400);
 await page.locator('[data-acao="co-fechar"]').first().click();

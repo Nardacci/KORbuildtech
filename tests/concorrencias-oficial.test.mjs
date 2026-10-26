@@ -70,7 +70,7 @@ const toastTexto = async (p) => (await p.locator('#toast').textContent().catch((
 /* O espelho do banco pode terminar de ler depois de a tela aparecer (e a tela é redesenhada): espera assentar antes de preencher. */
 const esperaEspelho = (p) => p.waitForFunction(async () => { const m = await import('./js/espelho.js'); return m.espelho.pronto && !m.espelho.lendo; }, null, { timeout: 30000 }).then(() => p.waitForTimeout(300));
 const esperaToast = (p, re, ms = 30000) => p.waitForFunction((fonte) => new RegExp(fonte).test((document.getElementById('toast') || {}).textContent || ''), re.source, { timeout: ms });
-const conc = () => sql(`select id, situacao, obra_id, etapas, prazo, fechamento, enviada_em from public.concorrencias where empresa_id = '${B}'`);
+const conc = () => sql(`select id, situacao, obra_id, etapas, incluso, prazo, fechamento, enviada_em from public.concorrencias where empresa_id = '${B}'`);
 
 try {
   console.log('Tom: a concorrência (rascunho direto, PDF no Storage) e o envio');
@@ -83,7 +83,8 @@ try {
   await t.p.selectOption('#co-obraId', obraB.id);
   await t.p.fill('#co-servico', 'Framing e drywall');
   await t.p.fill('#co-outrasEtapas', '06 10 00\n09 21 16');
-  await t.p.fill('#co-incluso', 'Paredes\nForro');
+  await t.p.click('#co-escopo-ed');
+  await t.p.keyboard.type('Paredes e forro em drywall');
   await t.p.click('[data-acao="co-aba"][data-aba="prazos"]');
   await t.p.fill('#co-prazoData', isoDaqui(5));
   await t.p.fill('#co-prazoHora', '17:00');
@@ -98,7 +99,7 @@ try {
   await esperaToast(t.p, /Rascunho salvo/);
   verificar(await esperarAte(async () => (await conc()).length === 1), 'o rascunho chegou ao banco');
   const c = (await conc())[0];
-  verificar(c.situacao === 'rascunho' && c.etapas.length === 2 && c.obra_id === obraB.id, 'rascunho com a obra e as 2 etapas', c);
+  verificar(c.situacao === 'rascunho' && c.etapas.length === 2 && c.obra_id === obraB.id && /^<p>Paredes e forro em drywall<\/p>$/.test(c.incluso[0] || ''), 'rascunho com a obra, as 2 etapas e o escopo formatado', c);
   const convites = await sql(`select id, nome, convidada_id, situacao, token_hash from public.concorrencia_convites where concorrencia_id = '${c.id}' order by nome`);
   verificar(convites.length === 2 && convites.find((v) => v.nome === 'Bayside Local').convidada_id === null && convites.find((v) => v.nome !== 'Bayside Local').convidada_id === A, 'os 2 convites: a Ana com conta, a Bayside pelo link', convites);
 

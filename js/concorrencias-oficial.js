@@ -6,6 +6,7 @@
  * de enviada em diante só as funções mudam. O link sem conta (CO-07) passa pela função de borda convite-publico, que
  * é quem fala com o banco com a chave de serviço: a página pública monta um banco só em memória com o que ela devolve. */
 
+import { juntarEscopo } from './texto-rico.js';
 import { tr } from './i18n.js';
 import { estado, mostrarSemGuardar } from './armazem.js';
 import { cliente, traduzir, conta } from './conta.js';
@@ -40,7 +41,7 @@ async function salvarRascunho(id, d, contatoIds, arquivos) {
   const sb = cliente();
   const linha = {
     origem_tipo: d.origem && d.origem.tipo === 'projeto' ? 'projeto' : 'obra', obra_id: d.obraId || null, projeto_id: d.origem && d.origem.tipo === 'projeto' ? d.origem.id : null,
-    servico: d.servico, etapas: d.etapas, incluso: d.incluso, excluso: d.excluso, observacoes: d.observacoes,
+    servico: d.servico, etapas: d.etapas, incluso: juntarEscopo(d.escopo, d.incluso), excluso: d.excluso, observacoes: d.observacoes,
     prazo: iso(d.prazo), inicio: d.inicio || null, termino: d.termino || null,
     orcamento: { valor: d.orcamento.valor, porEtapa: d.orcamento.porEtapa || {}, mostrar: d.orcamento.mostrar }, exigencias: d.exigencias || {}, quarteirizacao: d.quarteirizacao,
   };

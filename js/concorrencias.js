@@ -6,6 +6,7 @@
 import { novoId } from './util.js';
 import { bancoDeDados, estado, salvar, empresaAtualId, empresaPorId } from './armazem.js';
 import { tr } from './i18n.js';
+import { limparHtml, escopoTexto } from './texto-rico.js';
 import { auditar } from './settings.js';
 import { contato } from './contatos.js';
 
@@ -86,7 +87,7 @@ function visaoDoConvidado(c, v) {
   const o = (dados.obras || []).find((x) => x.id === c.obraId) || (c.origem && c.origem.tipo === 'projeto' ? (({ nome, endereco, cidade, estado: uf, zip }) => ({ nome, endereco, municipio: cidade, estado: uf, zip }))(projetoDe(dados, c.origem.id) || {}) : null);
   return {
     id: c.id, contratanteId: c.contratanteId, contratante: dados.empresa || null,
-    obraId: c.obraId, obra: o ? { nome: o.nome, endereco: o.endereco || '', cidade: o.municipio || o.cidade || '', estado: o.estado || '', zip: o.zip || '' } : null, servico: c.servico, etapas: c.etapas.slice(), incluso: c.incluso.slice(), excluso: c.excluso.slice(),
+    obraId: c.obraId, obra: o ? { nome: o.nome, endereco: o.endereco || '', cidade: o.municipio || o.cidade || '', estado: o.estado || '', zip: o.zip || '' } : null, servico: c.servico, etapas: c.etapas.slice(), escopo: c.escopo || '', incluso: c.incluso.slice(), excluso: c.excluso.slice(),
     observacoes: c.observacoes, desenhos: c.desenhos.slice(), prazo: c.prazo, inicio: c.inicio, termino: c.termino,
     exigencias: JSON.parse(JSON.stringify(c.exigencias || {})), quarteirizacao: c.quarteirizacao, orcamento,
     situacao: c.situacao === 'fechada' ? 'fechada' : c.situacao === 'cancelada' ? 'cancelada' : situacaoDe(c),
@@ -129,7 +130,7 @@ export function salvarRascunho(id, dados, por) {
     origem: dados.origem && dados.origem.id ? { tipo: dados.origem.tipo === 'projeto' ? 'projeto' : 'obra', id: dados.origem.id } : null,
     servico: String(dados.servico || '').trim(),
     etapas: [...new Set(textoItens(dados.etapas))],
-    incluso: textoItens(dados.incluso), excluso: textoItens(dados.excluso), observacoes: String(dados.observacoes || '').trim(),
+    escopo: limparHtml(dados.escopo || ''), incluso: textoItens(dados.incluso), excluso: textoItens(dados.excluso), observacoes: String(dados.observacoes || '').trim(),
     desenhos: (dados.desenhos || []).map((x) => ({ nome: String(x.nome || '').trim(), arquivoId: x.arquivoId || null, observacao: String(x.observacao || '').trim() })).filter((x) => x.nome),
     prazo: String(dados.prazo || '').trim(), inicio: String(dados.inicio || '').trim(), termino: String(dados.termino || '').trim(),
     orcamento: { valor: orc.valor === '' || orc.valor == null ? null : valor(orc.valor), porEtapa: {}, mostrar: MOSTRAR_ORCAMENTO[orc.mostrar] ? orc.mostrar : 'nao' },
@@ -184,7 +185,7 @@ export function pendenciasDeEnvio(c, agora = Date.now()) {
   if (!c.obraId && !(c.origem && c.origem.tipo === 'projeto')) p.push(tr('Escolha a obra.'));
   if (!c.servico) p.push(tr('Dê um nome ao serviço.'));
   if (!c.etapas.length) p.push(tr('Escolha pelo menos uma etapa a cotar.'));
-  if (!c.incluso.length) p.push(tr('Descreva o que está incluso no escopo.'));
+  if (!c.incluso.length && !escopoTexto(c.escopo)) p.push(tr('Descreva o que está incluso no escopo.'));
   if (!c.prazo) p.push(tr('Informe o prazo da proposta.'));
   else if (instante(c.prazo) <= agora) p.push(tr('O prazo da proposta precisa ser no futuro.'));
   if (!c.convites.length) p.push(tr('Convide pelo menos uma prestadora.'));
@@ -254,7 +255,8 @@ export function comparar(c) {
   const colunas = c.convites.filter((v) => ultimaProposta(v)).map((v) => {
     const p = ultimaProposta(v);
     const naoCotadas = c.etapas.filter((e) => p.porEtapa[e] == null);
-    const exclusoesNoEscopo = p.exclusoes.filter((x) => c.incluso.some((i) => contem(i, x) || contem(x, i)));
+    const itensDoEscopo = c.incluso.concat(c.escopo ? [escopoTexto(c.escopo)] : []);
+    const exclusoesNoEscopo = p.exclusoes.filter((x) => itensDoEscopo.some((i) => contem(i, x) || contem(x, i)));
     return { conviteId: v.id, nome: v.nome, comConta: !!v.empresaId, rev: p.rev, numero: p.numero, enviadaEm: p.enviadaEm, total: p.total, outros: p.outros || 0, prazoExecucaoDias: p.prazoExecucaoDias, exclusoes: p.exclusoes.slice(), naoCotadas, exclusoesNoEscopo };
   });
   const linhas = c.etapas.map((e) => {

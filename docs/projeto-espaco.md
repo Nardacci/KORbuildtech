@@ -75,3 +75,15 @@ Na **Proposal** o escopo **não é editável**: o botão **Load the project scop
 ## Project summary: só leitura (decisão do dono, 26/10)
 
 A aba **Project summary** só mostra: status, proposta, custo e margem, dados do projeto, escopo formatado, quem faz cada tarefa e a origem do preço, cronograma e as concorrências do projeto (lista). Não tem campo para editar e **não cria concorrência**: a nova concorrência fica só no menu **Bids** (e na tarefa da prestadora, no Schedule). O botão para abrir a proposta é a única saída da aba.
+
+## Concorrência a partir do projeto (decisão do dono, 26/10)
+
+**New bid** começa pela escolha de **um projeto**. O formulário traz:
+- **Tarefas a cotar:** as tarefas do Schedule marcadas como Subcontractor (várias por concorrência; pode escolher de novo uma tarefa que já foi cotada).
+- **Escopo:** o mesmo editor de texto formatado do projeto, já preenchido com o escopo dele e editável só para esta concorrência. **Não vai anexo de escopo**: o texto formatado é parte do pacote que a prestadora vê (convite, link e página da concorrência).
+- **Plantas:** os arquivos da aba Plans, com a observação de cada um em campo editável (só para esta concorrência). Vão como anexos junto com os desenhos.
+- **Notes:** observações gerais.
+
+Empresas sem projetos (ex.: a construtora que só tem obras) continuam usando o formulário da obra, agora também com o editor de escopo. A decisão sobre "obra sem projeto" fica para a análise posterior.
+
+Como o escopo viaja no banco: o texto formatado é guardado como um único item do campo `incluso` (lista de textos) da concorrência, sem migração nem mudança nas funções do servidor; ao ler, um item em HTML é tratado como escopo formatado, e listas antigas continuam funcionando.

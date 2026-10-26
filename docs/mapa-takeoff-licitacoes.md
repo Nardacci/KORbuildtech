@@ -299,5 +299,5 @@ Cada item abaixo foi observado nas telas ou nos documentos; a gravidade é a min
 | Medição, assemblies, preços | `docs/measure.md` (MZ-01 a MZ-33) | `tests/measure.test.mjs` |
 | Licitações | `docs/concorrencias.md` (CO-01 a CO-25) | `tests/concorrencias.test.mjs`, `tests/concorrencias-oficial.test.mjs` |
 | Cronograma | `docs/cronograma.md` | `tests/cronograma.test.mjs` |
-| Homologação 1ª versão | `docs/testes/lista-checagem-primeira-versao.md` (T01 a T157) | `tests/homologacao-pv.test.mjs` |
+| Homologação 1ª versão | `docs/testes/lista-checagem-primeira-versao.md` (T01 a T164) | `tests/homologacao-pv.test.mjs` |
 | Capturas deste documento | `tools/capturas-modulos.mjs` | (refazer quando as telas mudarem) |
