@@ -219,7 +219,7 @@ export function telaGantt(moldura, id) {
   return moldura({
     ativo: 'gantt', largura: 'larga', titulo: tr('Gantt'), subtitulo: tr('O andamento de cada projeto, no tamanho da página'),
     acoes: '<a class="btn btn-contorno btn-pequeno" href="' + href(p, 'schedule') + '">' + tr('Editar o cronograma') + '</a>',
-    conteudo: '<div class="gantt-topo">' + combo + legendaGantt() + '</div><div class="gantt-grande">' + htmlGantt(p) + '</div>',
+    conteudo: '<div class="gantt-topo">' + combo + '</div><div class="gantt-grande">' + htmlGantt(p) + '<div class="gantt-rodape">' + legendaGantt() + '</div></div>',
   });
 }
 if (typeof document !== 'undefined') {
