@@ -1,6 +1,6 @@
--- KORbuild — migração 0019 (PROPOSTA, NÃO APLICADA): fechar a concorrência de um projeto ganho sem obra cadastrada.
+-- KORbuild — migração 0019 (autorizada pelo dono em 27/10): fechar a concorrência de um projeto ganho sem obra cadastrada.
 -- Na 1ª versão o projeto ganho é a obra (docs/obra-na-primeira-versao.md): a obra só nasce na versão completa.
--- Só aplicar depois que o dono digitar "pode aplicar 0019". Muda só a função fechar_concorrencia: deixa de exigir
+-- Muda só a função fechar_concorrencia: deixa de exigir
 -- projetos.obra_id; se houver obra, continua ligando; se não, concorrencias.obra_id fica nulo (a coluna já aceita nulo).
 
 create or replace function public.fechar_concorrencia(p_id uuid, p_convite uuid, p_observacao text default '') returns jsonb

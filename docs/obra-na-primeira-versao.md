@@ -2,7 +2,7 @@
 
 **Para o usuário, só existe projeto.** Na 1ª versão (Takeoff + Bids + Settings) não há cadastro de obra:
 - Settings não tem a tela Obras (nem `#/conta/obras`); o botão Settings do Início abre Contatos.
-- Fechar uma concorrência que saiu de um projeto ganho não exige obra (a contratada fica ligada ao projeto). No banco: migração **0019** (`supabase/pendentes/`, aguardando "pode aplicar 0019"); até lá, na conta real o fechamento ainda pede a obra.
+- Fechar uma concorrência que saiu de um projeto ganho não exige obra (a contratada fica ligada ao projeto). No banco: migração **0019** (autorizada em 27/10); até ela ser aplicada, na conta real o fechamento ainda pede a obra.
 - A visão geral do projeto não mostra "Obra vinculada" nem o aviso "Projeto ganho: cadastre a obra"; o formulário Editar projeto não oferece "Obra vinculada".
 - O Início não conta obras, não tem o cartão "Projeto ganho sem obra" nem o bloco "Prazo das obras": o andamento é o bloco **Andamento dos projetos** (Gantt).
 - Quem venceu uma concorrência vê "Você venceu", sem "Criar obra a partir deste projeto".

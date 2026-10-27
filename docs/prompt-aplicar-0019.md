@@ -1,6 +1,6 @@
 # Prompt para a sessão local: aplicar a migração 0019 no Supabase real
 
-Só rodar depois que o dono escrever "pode aplicar 0019". Arquivo: `supabase/pendentes/20261028_0019_fechar_sem_obra.sql` (mover para `supabase/migrations/` junto).
+O dono autorizou (27/10). Arquivo: `supabase/migrations/20261028_0019_fechar_sem_obra.sql`.
 Só redefine a função `fechar_concorrencia`: deixa de exigir `projetos.obra_id` ao fechar uma concorrência vinda de projeto ganho. Não muda tabela, política nem dados.
 
 1. `git pull origin main`. Leia o arquivo e confirme que é só isso.
