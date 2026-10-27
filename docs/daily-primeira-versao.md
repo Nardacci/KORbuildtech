@@ -10,7 +10,7 @@ Depois do login, três módulos: **Daily**, **Takeoff** e **Settings**. O Settin
 - **Execução no cadastro do projeto** (Novo projeto e Editar projeto): local no mapa (latitude, longitude, raio da cerca) e dias de trabalho, todos opcionais, guardados em `p.execucao` (coluna `projetos.execucao`). Sem local, o clima do diário é marcado à mão; a cerca fica para quando o Crew entrar.
 - **Permissões:** por enquanto nada muda; quem tem as permissões do Daily no perfil vê o módulo (o Administrador tem todas).
 
-## Banco (migração 0020, em `supabase/pendentes/`, aguardando "pode aplicar 0020")
+## Banco (migração 0020, em `supabase/migrations/`, aplicada pela sessão local)
 `projetos.execucao` jsonb; `obras.lat/lon` opcionais; responsável pelo diário opcional; FK projetos→obras `on delete set null (obra_id)`; gatilho `projetos_obra` (cria e mantém a obra do projeto); `criar_obra_da_concorrencia` idempotente. Teste `supabase/testes/0013_obra_do_projeto.sql`. No app: `PERSISTE_EXECUCAO` em `js/measure-oficial.js` vira true junto com a migração.
 Até a migração entrar na conta real: o projeto ganho não vira obra no banco (o Daily fica vazio) e a seção Execução não é gravada.
 

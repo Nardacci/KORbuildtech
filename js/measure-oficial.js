@@ -21,7 +21,7 @@ export const PERSISTE_OBS_FOLHA = true;
 /** Item ativo/inativo (migração 0018, em supabase/pendentes): só vai ao banco depois que ela for aplicada. */
 export const PERSISTE_ATIVO_ITEM = true;
 /** Execução do projeto (local no mapa, dias de trabalho): coluna projetos.execucao da migração 0020 (supabase/pendentes). Virar true junto com ela. */
-export const PERSISTE_EXECUCAO = false;
+export const PERSISTE_EXECUCAO = true;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;
