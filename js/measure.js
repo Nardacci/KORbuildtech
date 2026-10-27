@@ -13,6 +13,7 @@ import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2
 import { calcularLinha, validar } from './formulas.js';
 import { contato } from './contatos.js';
 import { cancelarDoProjeto } from './concorrencias.js';
+import { garantirObraDoProjeto } from './obras.js';
 
 function mz() { return estado().measure; }
 export function projetos() { return mz().projetos; }
@@ -88,15 +89,26 @@ export function salvarProjeto(id, dados) {
   if (!TIPOS_PROJETO[d.tipo]) return { erro: tr('Escolha o tipo de obra.') };
   if (!SITUACOES[d.situacao]) return { erro: tr('Escolha a situação.') };
   if (d.prazoProposta && !/^\d{4}-\d{2}-\d{2}$/.test(d.prazoProposta)) return { erro: tr('Prazo da proposta inválido.') };
+  // execução (docs/daily-primeira-versao.md): local no mapa (opcional) e dias de trabalho; só entra o que veio no formulário
+  if (dados.lat !== undefined || dados.lon !== undefined || dados.raio !== undefined || dados.diasTrabalho !== undefined) {
+    const num = (v) => (String(v == null ? '' : v).trim() === '' ? null : Number(String(v).replace(',', '.')));
+    const ex = { lat: num(dados.lat), lon: num(dados.lon), raio: num(dados.raio), diasTrabalho: (Array.isArray(dados.diasTrabalho) ? dados.diasTrabalho : dados.diasTrabalho == null ? [] : [dados.diasTrabalho]).map(Number).filter((n) => n >= 0 && n <= 6) };
+    if ((ex.lat == null) !== (ex.lon == null)) return { erro: tr('Informe a latitude e a longitude (ou deixe as duas em branco).') };
+    if (ex.lat != null && (!Number.isFinite(ex.lat) || !Number.isFinite(ex.lon) || Math.abs(ex.lat) > 90 || Math.abs(ex.lon) > 180)) return { erro: tr('Latitude e longitude inválidas.') };
+    if (ex.raio != null && !(ex.raio >= 50 && ex.raio <= 2000)) return { erro: tr('Raio da cerca entre {min} e {max} m.', { min: 50, max: 2000 }) };
+    d.execucao = ex;
+  }
   if (id) {
     const perdeu = projeto(id).situacao !== 'perdida' && d.situacao === 'perdida';
     Object.assign(projeto(id), d, { alteradoEm: Date.now() });
     if (perdeu) cancelarDoProjeto(id); // docs/concorrencias.md CO-24
+    garantirObraDoProjeto(projeto(id));   // o projeto ganho é a obra
     salvar();
     return { ok: true, id };
   }
   const novo = { id: novoId('pj'), ...d, criadoEm: Date.now() };
   mz().projetos.push(novo);
+  garantirObraDoProjeto(novo);
   salvar();
   return { ok: true, id: novo.id };
 }

@@ -5,7 +5,7 @@
 import { chromium } from 'playwright';
 import { readFileSync } from 'node:fs';
 import { emailDe } from '../tools/massa-pv/dados.mjs';
-const { sql, sessao, rotear } = await import('./_supabase-local.mjs');
+const { sql, sqlExec, sessao, rotear } = await import('./_supabase-local.mjs');
 const BASE = process.argv.slice(2).find((a) => a.startsWith('http')) || 'http://localhost:8123/';
 const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
 let ok = 0, falhas = 0;
@@ -142,6 +142,28 @@ try {
     await p.click('[data-acao="pj-tirar-tarefa"]');
     for (let i = 0; i < 20; i++) { await p.waitForTimeout(500); c = await noBanco(); if (!c || !(c.tarefas || []).length) break; }
     verificar('a tarefa de teste foi removida', !c || !(c.tarefas || []).length);
+
+    console.log('Conta real: o projeto ganho vira a obra (migração 0020) e aparece no Daily');
+    const [pjo] = await sql(`select id, nome from public.projetos where empresa_id = '${emp.id}' and situacao = 'orcamento' and obra_id is null order by criado_em limit 1`);
+    await p.goto(BASE + '#/measure/projeto/' + pjo.id + '/editar');
+    await p.waitForSelector('#form-projeto', { timeout: 40000 });
+    await p.waitForTimeout(800);
+    verificar('o formulário do projeto tem a seção Execução (mapa, cerca e dias de trabalho)', await p.locator('#mapa-obra').count() === 1 && await p.locator('[name="diasTrabalho"]').count() === 7);
+    await p.selectOption('#pj-situacao', 'ganha');
+    await p.click('[data-acao="mz-salvar-projeto"]');
+    let ob = null;
+    for (let i = 0; i < 40 && !ob; i++) { await p.waitForTimeout(500); [ob] = await sql(`select o.id, o.nome, o.projeto_id, o.lat, p.obra_id from public.obras o join public.projetos p on p.id = o.projeto_id where o.projeto_id = '${pjo.id}'`); }
+    verificar('ao ficar Ganha, o banco criou a obra 1:1 do projeto e ligou projetos.obra_id', !!ob && ob.obra_id === ob.id && ob.lat == null, JSON.stringify(ob));
+    await p.waitForTimeout(3000);   // o app relê o espelho depois de gravar o projeto ganho (a obra vem do gatilho)
+    await p.goto(BASE + '#/daily/obras');
+    await p.waitForSelector('.cartao-obra, .vazio', { timeout: 40000 });
+    await p.waitForTimeout(1000);
+    let tdaily = await texto(p);
+    if (ob && !tdaily.includes(ob.nome)) { await p.reload(); await p.waitForSelector('.cartao-obra, .vazio', { timeout: 40000 }); await p.waitForTimeout(1500); tdaily = await texto(p); }
+    verificar('o Daily lista o projeto em "Projetos em execução", sem botão de nova obra', /Projetos em execução/.test(tdaily) && ob && tdaily.includes(ob.nome) && await p.locator('a[href*="obra/nova"]').count() === 0, tdaily.slice(0, 300));
+    verificar('o cabeçalho do Daily é "KORbuild / Daily", sem o selo Takeoff', await p.locator('.topo-modulo:has-text("Daily")').count() === 1 && await p.locator('.topo-marca .logo-produto').count() === 0);
+    // deixa a massa como estava
+    await sqlExec(`update public.projetos set situacao = 'orcamento', obra_id = null where id = '${pjo.id}'; delete from public.obras where projeto_id = '${pjo.id}';`);
     await ctx.close();
   }
 
@@ -176,9 +198,9 @@ try {
     const { ctx, p } = await painel('c1', 'admin');
     const largura = await p.evaluate(() => ({ painel: document.querySelector('.ini-painel').getBoundingClientRect().width, janela: window.innerWidth, abas: !!document.querySelector('.abas-segmento:not(.so-celular)') }));
     verificar('o painel ocupa a largura toda, sem abas nem menu no Início', largura.painel >= largura.janela - 20 && !largura.abas && await p.locator('.lateral').count() === 0, JSON.stringify(largura));
-    verificar('tudo dentro do painel: saudação, os dois botões e o manual', await p.locator('.ini-painel .ini-ola').count() === 1 && await p.locator('.ini-painel .ini-botao').count() === 2 && await p.locator('.ini-painel .ini-rodape a').count() === 1);
+    verificar('tudo dentro do painel: saudação, os três botões e o manual', await p.locator('.ini-painel .ini-ola').count() === 1 && await p.locator('.ini-painel .ini-botao').count() === 3 && await p.locator('.ini-painel .ini-rodape a').count() === 1);
     const botoes = await p.locator('.ini-botao').allInnerTexts();
-    verificar('os botões são Takeoff e Settings', /Takeoff/.test(botoes[0]) && /Settings/.test(botoes[1]), botoes.join(' | '));
+    verificar('os botões são Daily, Takeoff e Settings', botoes.length === 3 && /Daily/.test(botoes[0]) && /Takeoff/.test(botoes[1]) && /Settings/.test(botoes[2]), botoes.join(' | '));
     const fundo = await p.evaluate(() => getComputedStyle(document.querySelector('.ini-acao-bloco')).borderTopColor);
     verificar('o bloco "Precisa de você agora" tem moldura laranja própria', /243, 129, 58/.test(fundo), fundo);
     await p.screenshot({ path: process.env.PRINT_C1 || '/tmp/inicio-c1.png', fullPage: true });
@@ -206,7 +228,7 @@ try {
     verificar('os títulos saem em inglês', /Needs you now/.test(t) && /Projects by status/.test(t) && /Project progress/.test(t) && /My partners/.test(t) && /Catalog and prices/.test(t), t.slice(0, 300));
     verificar('nada sem tradução (sem português solto no painel)', !/Precisa de você|Dinheiro em jogo|Prazo das obras|Minhas parceiras/.test(await p.locator('.ini-painel').innerText()));
     const hrefs = await p.locator('.ini-painel a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^(#\/(measure|daily\/concorrencias|conta\/contatos)|portal)/.test(h)), hrefs.join(' '));
+    verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^(#\/(measure|daily|conta\/contatos)|portal)/.test(h)), hrefs.join(' '));
     await ctx.close();
   }
 } finally {

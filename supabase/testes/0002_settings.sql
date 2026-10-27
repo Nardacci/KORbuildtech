@@ -93,10 +93,9 @@ begin
   begin update public.encargos_versoes set motivo = 'outro'; raise exception 'FALHOU: alterou uma versão de encargos';
   exception when others then if sqlerrm like 'FALHOU%' then raise; end if; end;
 
-  -- Obras: prestadora precisa de quem preenche o diário; dono igual ao contratante vira vazio
-  begin insert into public.obras (nome, contratante_id, municipio, estado, lat, lon, inicio, prazo)
-    values ('Obra sem responsável', pg_temp.g('ct'), 'Manchester', 'NH', 42.99, -71.46, '2026-10-01', '2026-12-01'); raise exception 'FALHOU: obra de prestadora sem responsável';
-  exception when others then if sqlerrm like 'FALHOU%' then raise; end if; end;
+  -- Obras: o responsável pelo diário é opcional desde a 0020 (quem tem a permissão preenche); dono igual ao contratante vira vazio
+  insert into public.obras (nome, contratante_id, municipio, estado, lat, lon, inicio, prazo)
+    values ('Obra sem responsável', pg_temp.g('ct'), 'Manchester', 'NH', 42.99, -71.46, '2026-10-01', '2026-12-01');
   begin insert into public.obras (nome, contratante_id, municipio, estado, lat, lon, inicio, prazo, responsavel_id)
     values ('Prazo errado', pg_temp.g('ct'), 'Manchester', 'NH', 42.99, -71.46, '2026-10-01', '2026-09-01', pg_temp.g('ana')); raise exception 'FALHOU: prazo antes do início';
   exception when others then if sqlerrm like 'FALHOU%' then raise; end if; end;
@@ -140,7 +139,7 @@ end $$;
 reset role;
 select pg_temp.como('00000000-0000-4000-8000-0000000002c1', 'kb-teste2-jose@example.com');
 do $$ begin
-  if (select count(*) from public.funcionarios) <> 2 or (select count(*) from public.obras) <> 1 or (select count(*) from public.regras_jornada_versoes) <> 1
+  if (select count(*) from public.funcionarios) <> 2 or (select count(*) from public.obras) <> 2 or (select count(*) from public.regras_jornada_versoes) <> 1
      or (select count(*) from public.contatos) <> 2 or (select count(*) from public.alocacoes) <> 2 or (select count(*) from public.modelos_cronograma) <> 1 then
     raise exception 'FALHOU: o Trabalhador não lê os cadastros da empresa'; end if;
   if exists (select 1 from public.funcionario_valores) or exists (select 1 from public.encargos_versoes) then raise exception 'FALHOU: o Trabalhador vê valores em dinheiro'; end if;

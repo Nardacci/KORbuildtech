@@ -181,7 +181,7 @@ function ladoDireitoDoTopo() {
 function moldura(ativa, conteudo, opcoes = {}) {
   const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos')).map(([k, nome]) => [k, tr(nome)]))
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
-  const topo = '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ ' + (opcoes.cheio ? tr('Início') : 'Settings') + '</span>' : '') +
+  const topo = '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo({ produto: false }) + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ ' + (opcoes.cheio ? tr('Início') : 'Settings') + '</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
       ladoDireitoDoTopo() + '</header>';
   const href = (k) => '#/conta' + (k === 'inicio' ? '' : '/' + k);
@@ -228,9 +228,11 @@ function htmlPainel(cabeca, rodape) {
 function htmlInicioComPainel() {
   const rotaDoSettings = !PRIMEIRA_VERSAO && pode('settings.obras') ? '#/conta/obras' : pode('settings.contatos') ? '#/conta/contatos' : '#/conta/empresa';
   const rotaDoTakeoff = pode('measure.medir') ? '#/measure' : '#/measure/convites';
+  const temDaily = pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar');
   const cabeca = '<header class="ini-topo"><div class="ini-saudacao"><h1 class="ini-ola">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
       '<p class="ini-sub">' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</p></div>' +
-    '<div class="ini-botoes"><a class="ini-botao ini-botao-takeoff" href="' + rotaDoTakeoff + '">' + icone('tabela', 22) + '<span><b>Takeoff</b><small>' + tr('Plantas, quantidades e propostas') + '</small></span></a>' +
+    '<div class="ini-botoes">' + (temDaily ? '<a class="ini-botao ini-botao-daily" href="#/daily">' + icone('daily', 22) + '<span><b>Daily</b><small>' + tr('Diário de obra dos projetos em execução') + '</small></span></a>' : '') +
+      '<a class="ini-botao ini-botao-takeoff" href="' + rotaDoTakeoff + '">' + icone('tabela', 22) + '<span><b>Takeoff</b><small>' + tr('Plantas, quantidades e propostas') + '</small></span></a>' +
       '<a class="ini-botao ini-botao-settings" href="' + rotaDoSettings + '">' + icone('settings', 22) + '<span><b>Settings</b><small>' + tr(PRIMEIRA_VERSAO ? 'Contatos, usuários e empresa' : 'Obras, contatos, usuários e empresa') + '</small></span></a></div></header>';
   const rodape = '<footer class="ini-rodape"><a href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></footer>';
   return htmlPainel(cabeca, rodape);
@@ -241,7 +243,7 @@ function htmlInicio() {
       '<dl class="lista-dados"><dt>' + tr('Empresa') + '</dt><dd>' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + '</dd>' +
       '<dt>' + tr('Seu acesso') + '</dt><dd>' + esc(nomeDoPerfil(conta.perfil)) + ' · ' + esc(emailAtual()) + '</dd>' +
       '<dt>' + tr('Plano') + '</dt><dd>' + esc(nomeDoPlano((conta.empresa.plano || {}).nome)) + '</dd></dl></section>' +
-    (!PRIMEIRA_VERSAO && (pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar'))
+    ((pode('daily.preencher') || pode('daily.acompanhar') || pode('daily.aprovar'))
       ? '<section class="cartao"><h2 class="cartao-titulo">Daily</h2><p>' + tr('O diário de obra e o cronograma já funcionam com o banco de dados, com e sem internet: preencha no canteiro, envie, aprove, mande o link para o cliente e acompanhe as etapas da obra.') + '</p>' +
         '<div class="btn-linha"><a class="btn btn-primario" href="#/daily">' + icone('daily', 18) + tr('Abrir o Daily') + '</a></div></section>'
       : '') +

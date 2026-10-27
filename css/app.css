@@ -1570,6 +1570,7 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .ini-botoes { display: flex; flex-wrap: wrap; gap: 12px; }
 .ini-botao { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-radius: 12px; color: #fff !important; text-decoration: none !important; min-width: 250px; border: 1px solid transparent; }
 .ini-botao span { display: flex; flex-direction: column; line-height: 1.25; } .ini-botao b { font-size: 17px; } .ini-botao small { font-size: 12px; opacity: .85; }
+.ini-botao-daily { background: linear-gradient(180deg, #3b6fd8, #2a53ad); border-color: #4a7de6; }
 .ini-botao-takeoff { background: linear-gradient(180deg, #f3813a, #d9621b); } .ini-botao-settings { background: #2a2e35; border-color: #3d424b; }
 .ini-botao:hover { filter: brightness(1.1); }
 /* o bloco "Precisa de você agora" é o que chama primeiro: moldura e fundo próprios */

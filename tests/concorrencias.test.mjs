@@ -414,19 +414,9 @@ verificar(r.sit === 'ganha' && r.vinc.empresaId === 'construtora-exemplo' && r.v
 
 await ir('u-tom', '#/measure/convite/' + mezId);
 txt = await page.locator('main').innerText();
-verificar(txt.includes('Você venceu esta concorrência.') && await page.locator('a[href="#/settings/obra/nova/' + pjId + '"]').count() === 1, 'a Northfield vê que venceu, com "Criar obra a partir deste projeto"');
-await page.locator('a[href="#/settings/obra/nova/' + pjId + '"]').click();
-await page.waitForTimeout(800);
-await page.fill('#ob-lat', '43.0016');
-await page.fill('#ob-lon', '-71.4521');
-await page.fill('#ob-inicio', '2026-11-02');
-await page.fill('#ob-prazo', '2026-12-18');
-await page.selectOption('#ob-responsavelId', { index: 1 });
-for (const d of ['1', '2', '3', '4', '5']) await page.locator('[name="diasTrabalho"][value="' + d + '"]').check();
-await page.locator('[data-acao="obra-salvar"]').click();
-await page.waitForTimeout(600);
-r = await rodar((m, a, h, x) => h.como(h.NF, () => { const o = a.estado().obras.find((y) => y.projetoId === x); return o && { vinc: o.vinculo, cid: o.concorrenciaId }; }), pjId);
-verificar(r && r.vinc && r.vinc.empresaId === 'construtora-exemplo' && r.vinc.obraId === 'galpao' && r.cid === mezId, 'a obra da Northfield nasce ligada ao Galpão da construtora (CO-14)');
+verificar(txt.includes('Você venceu esta concorrência.') && txt.includes('A obra já está criada e ligada à da contratante.') && await page.locator('a[href^="#/daily/obras/"]').count() >= 1, 'a Northfield vê que venceu: a obra já nasceu com o projeto ganho (sem "Criar obra")');
+r = await rodar((m, a, h, x) => h.como(h.NF, () => { const o = a.estado().obras.find((y) => y.projetoId === x); return o && { vinc: o.vinculo, cid: o.concorrenciaId, nome: o.nome }; }), pjId);
+verificar(r && r.vinc && r.vinc.empresaId === 'construtora-exemplo' && r.vinc.obraId === 'galpao' && r.cid === mezId, 'a obra automática da Northfield nasce ligada ao Galpão da construtora (CO-14)', r);
 await ir('u-ana', '#/daily/obras/galpao');
 verificar((await page.locator('main').innerText()).includes('Northfield Framing & Siding'), 'e a Northfield passa a aparecer na obra da construtora');
 
@@ -569,20 +559,18 @@ r = await rodar((m, a, h, x) => h.como(h.NF, () => a.estado().measure.projetos.f
 verificar(r === 1, 'usar de novo troca a linha, não duplica');
 r = await rodar((m, a, h, x) => h.como(h.NF, () => m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, '', 'Tom Reilly')), cadeia);
 verificar(r.erro && r.erro.includes('ganho'), 'sem ganhar o projeto, a Northfield não fecha com a Ridgeline (CO-24)');
-// a Northfield ganha e cria a obra; ao fechar com a Ridgeline, a construtora precisa aprovar
+// a Northfield ganha: a obra nasce sozinha (ligada ao galpão); ao fechar com a Ridgeline, a construtora precisa aprovar
 r = await rodar(async (m, a, h, x) => {
-  const ob = await import('./js/obras.js');
   h.como(h.NF, () => m.enviarProposta(x.pai, { porEtapa: { '09 51 00 · Acoustical ceilings': 27500 } }, 'Tom Reilly'));
   h.como(h.GC, () => m.fechar(x.pai, m.concorrenciaEnviada(x.pai).convites[0].id, '', 'Ana Ribeiro'));
   return h.como(h.NF, () => {
-    const semObra = m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, '', 'Tom Reilly');
-    const o = ob.salvarObra(null, { nome: 'Forro do galpão', contratanteId: 'ct-construtora', municipio: 'Manchester', estado: 'NH', lat: '43.0', lon: '-71.45', raio: '150', inicio: '2026-11-02', prazo: '2026-11-30', responsavelId: 'u-jose', diasTrabalho: ['1', '2', '3', '4', '5'], situacao: 'andamento', projetoId: x.pj }, 'Tom Reilly');
+    const o = a.estado().obras.find((y) => y.projetoId === x.pj);
     const pedido = m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, 'equipe de forro', 'Tom Reilly');
     const c = m.concorrenciaEnviada(x.sub);
-    return { semObra: semObra.erro, obra: o.id, vinc: a.estado().obras.find((y) => y.id === o.id).vinculo, pedido: pedido.pendente, sit: c.situacao };
+    return { obra: o && o.id, vinc: o && o.vinculo, pedido: pedido.pendente, sit: c.situacao, quantas: a.estado().obras.filter((y) => y.projetoId === x.pj).length };
   });
 }, cadeia);
-verificar(r.semObra && r.semObra.includes('Crie a obra'), 'projeto ganho, mas sem obra: pede para criar a obra antes de fechar');
+verificar(r.obra && r.quantas === 1, 'projeto ganho: a obra nasce sozinha, uma só (ninguém cadastra obra)', r);
 verificar(r.vinc && r.vinc.obraId === 'galpao' && r.pedido && r.sit === 'aberta', 'com a obra (ligada ao galpão), o fechamento vira um pedido de aprovação à construtora (CO-23)');
 const obraNf = r.obra;
 await ir('u-ana', '#/daily/concorrencias/' + cadeia.pai);

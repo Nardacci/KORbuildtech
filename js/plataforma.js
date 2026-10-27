@@ -50,8 +50,8 @@ export const MODULOS = [
   },
 ];
 
-/* Na 1ª versão só o Measure Takeoff e o Settings existem para a pessoa. */
-export const moduloNaVersao = (id) => !PRIMEIRA_VERSAO || id === 'measure' || id === 'settings';
+/* Na 1ª versão existem o Daily (por projeto), o Measure Takeoff e o Settings. */
+export const moduloNaVersao = (id) => !PRIMEIRA_VERSAO || id === 'daily' || id === 'measure' || id === 'settings';
 
 export function modulo(id) { return MODULOS.find((m) => m.id === id); }
 
@@ -192,7 +192,7 @@ export function casca(o) {
       (it.contador ? '<span class="contador" aria-label="' + tn(it.contador, '{n} pendente', '{n} pendentes') + '">' + it.contador + '</span>' : '') + '</a>';
   }).join('');
   return '<header class="topo"><div class="topo-dentro">' +
-      ('<a class="topo-marca" href="#/inicio" aria-label="' + tr('KORbuild: módulos') + '">') + marca(26) + logotipo({ classe: 'topo-nome' }) + '</a>' +
+      ('<a class="topo-marca" href="#/inicio" aria-label="' + tr('KORbuild: módulos') + '">') + marca(26) + logotipo({ classe: 'topo-nome', produto: !!m && m.id === 'measure' }) + '</a>' +
       (m ? '<span class="topo-sep" aria-hidden="true"></span><a class="topo-modulo modulo-' + m.id + '" href="#/' + m.id + '">' + icone(m.id, 18) + '<span>' + m.nome + '</span></a>' : '') +
       (estado().oficial ? '' : '<span class="selo-prototipo" title="' + tr('Protótipo com dados fictícios') + '">' + tr('Protótipo') + '</span>') +
       '<span class="topo-espaco"></span>' +
@@ -217,7 +217,8 @@ export function casca(o) {
 /* O botão de módulos (a grade): na 1ª versão leva ao Início da conta (Takeoff e Settings); nas outras, à escolha de módulos. */
 export function botaoModulos(u) {
   if (!PRIMEIRA_VERSAO && modulosLiberados(u).length <= 1) return '';
-  return '<a class="topo-botao" href="' + (PRIMEIRA_VERSAO ? '#/conta' : '#/inicio') + '" aria-label="' + tr('Módulos') + '" title="' + tr('Módulos') + '">' + icone('modulos') + '</a>';
+  const d = estado();   // na área da conta o espelho pode ainda não existir: aí o destino é o Início da conta
+  return '<a class="topo-botao" href="' + (PRIMEIRA_VERSAO && !(d && !d.oficial) ? '#/conta' : '#/inicio') + '" aria-label="' + tr('Módulos') + '" title="' + tr('Módulos') + '">' + icone('modulos') + '</a>';
 }
 
 export function menuUsuario(u) {

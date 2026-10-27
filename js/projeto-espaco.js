@@ -11,6 +11,7 @@ import { projeto, projetos, folhasDo, condicoesDo, assembly, item, itens } from 
 import { dinheiro } from './crew.js';
 import { icone } from './icones.js';
 import { andamentoDoCronograma, pctFeito, pctPrevisto, tarefaAtrasada, ORDEM_SITUACAO } from './andamento.js';
+import { cronogramaDoProjetoNaObra } from './obras.js';
 
 let app = { desenhar() {}, ir() {} };
 export function ligarEspaco(funcoes) { app = { ...app, ...funcoes }; }
@@ -261,6 +262,7 @@ export const acoesEspaco = {
   'pj-confirmar-cronograma'(el) {
     const c = cronogramaDe(projeto(el.dataset.id));
     c.confirmado = { em: hoje(), tarefas: JSON.parse(JSON.stringify(c.tarefas)), marcos: JSON.parse(JSON.stringify(c.marcos)) };
+    cronogramaDoProjetoNaObra(projeto(el.dataset.id));   // o projeto ganho é a obra: as tarefas viram as etapas dela
     terminou(tr('Cronograma confirmado como base da obra.'));
   },
   'pj-tirar-marco'(el) {

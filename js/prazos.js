@@ -8,6 +8,10 @@
 import { hoje, somarDias, diaDaSemana } from './util.js';
 import { estado, rdoDoDia } from './armazem.js';
 import { tr, emIngles } from './i18n.js';
+import { PRIMEIRA_VERSAO } from './versao.js';
+
+/* Na 1ª versão o Daily só conhece as obras que nasceram de projetos (o projeto ganho é a obra). */
+const obrasDoDaily = () => (PRIMEIRA_VERSAO ? estado().obras.filter((o) => o.projetoId) : estado().obras);
 
 export const PRAZO_HORA = 18;          // prazo padrão do RDO
 export const LEMBRETE_HORA = 16;       // lembrete 2h antes
@@ -88,7 +92,7 @@ export function textoPrazo(iso) {
 
 /* Pendências do responsável: dias atrasados de todas as obras + obras sem RDO hoje. */
 export function pendenciasDoCampo(agora) {
-  const { obras, rdos } = estado();
+  const obras = obrasDoDaily(), { rdos } = estado();
   const atrasados = [];
   const hojeSemRdo = [];
   for (const o of obras) {
@@ -105,7 +109,7 @@ export function pendenciasDoCampo(agora) {
 export function semRdoOntem(agora) {
   const hora = new Date(agora || Date.now()).getHours();
   if (hora < ESCALADA_HORA) return [];
-  return estado().obras
+  return obrasDoDaily()
     .map((o) => ({ obra: o, data: diaDeTrabalhoAnterior(o, hoje()) }))
     .filter(({ obra, data }) => ehDiaDeTrabalho(obra, data) && !diaCumprido(obra, data));
 }

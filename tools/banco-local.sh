@@ -22,9 +22,9 @@ Q="psql -h $P -p $PORTA -U postgres -d kb -q -v ON_ERROR_STOP=1"
 $Q -f "$TMP/simulado.sql" >/dev/null || exit 1
 psql -h $P -p $PORTA -U postgres -d kb -q -f "$TMP/estrutura.sql" >/dev/null 2>&1   # cron/storage não existem aqui: ignorados
 cd "$R"
-for f in supabase/ajuste-criar-conta.sql supabase/migrations/*.sql supabase/testes/*.sql; do
+for f in supabase/ajuste-criar-conta.sql supabase/migrations/*.sql supabase/pendentes/*.sql supabase/testes/*.sql; do
   out=$($Q -f "$f" 2>&1); rc=$?
   if [ $rc -ne 0 ]; then echo "FALHOU  $f"; echo "$out" | tail -8; rm -rf "$TMP"; exit 1; fi
-  echo "ok      $f $(echo "$out" | grep -oE '(fatia .*|cascata: .*|segurança: .*|limite: .*)passaram')"
+  echo "ok      $f $(echo "$out" | grep -oE '(fatia .*|cascata: .*|segurança: .*|limite: .*|obra do projeto: .*)passaram')"
 done
 rm -rf "$TMP"

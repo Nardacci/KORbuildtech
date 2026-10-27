@@ -46,7 +46,7 @@ try {
     await p.goto(BASE + '?versao=primeira');
     await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
     const t = await texto(p);
-    verificar(/Takeoff/.test(t) && !/Daily|Crew/.test(t), 'a entrada fala do Takeoff e não do Daily nem do Crew', t.slice(0, 300));
+    verificar(/Takeoff/.test(t) && !/Crew/.test(t), 'a entrada fala do Takeoff e não do Crew', t.slice(0, 300));
     verificar(await p.locator('a[href*="demo"]').count() === 0 && await p.locator('a[href*="teste-"]').count() === 0, 'sem link do protótipo nem dos roteiros de teste no celular');
     verificar(await p.evaluate(() => localStorage.getItem('kbt.versao')) === 'primeira', 'o ?versao=primeira fica guardado neste navegador');
     await p.goto(BASE + '?versao=completa');
@@ -61,7 +61,8 @@ try {
     await a.p.goto(BASE + '#/conta');
     await a.p.waitForSelector('.oficial-titulo, .ini-ola', { timeout: 30000 });
     const t = await texto(a.p);
-    verificar(/Measure Takeoff|Takeoff/.test(t) && !/Daily|Crew/.test(t.replace(/Dados/g, '')), 'a área da conta oferece o Measure Takeoff e as concorrências, sem Daily nem Crew', t.slice(0, 400));
+    // 1ª versão: Daily (por projeto), Takeoff e Settings; o Crew fica de fora (docs/daily-primeira-versao.md)
+    verificar(/Measure Takeoff|Takeoff/.test(t) && !/Crew/.test(t.replace(/Dados/g, '')), 'a área da conta oferece o Takeoff e as concorrências, sem Crew', t.slice(0, 400));
     await a.p.goto(BASE + '#/conta/contatos');
     await a.p.waitForSelector('.lateral-item', { timeout: 30000 });
     const abas = (await a.p.locator('.lateral-item').allInnerTexts()).map((x) => x.trim());
@@ -71,18 +72,23 @@ try {
     await a.p.waitForSelector('.modulos, .oficial-titulo, .pagina, .ini-ola', { timeout: 30000 });
     await a.p.waitForTimeout(1500);
     const ti = await texto(a.p);
-    verificar(!/Daily|Crew|Em breve|Coming soon/.test(ti.replace(/Dados/g, '')), 'o início não mostra nenhum outro módulo', (await a.p.evaluate(() => location.hash)) + ' · ' + ti.slice(0, 200));
-    for (const rota of ['#/daily', '#/crew', '#/daily/painel', '#/daily/campo', '#/daily/obras', '#/settings/funcionarios', '#/conta/funcionarios', '#/conta/regras', '#/conta/obras', '#/conta/obras/modelos']) {
+    verificar(!/Crew|Em breve|Coming soon/.test(ti.replace(/Dados/g, '')), 'o início não mostra o Crew nem módulos "em breve"', (await a.p.evaluate(() => location.hash)) + ' · ' + ti.slice(0, 200));
+    for (const rota of ['#/crew', '#/settings/funcionarios', '#/conta/funcionarios', '#/conta/regras', '#/conta/obras', '#/conta/obras/modelos']) {
       await a.p.goto(BASE + rota);
       await a.p.waitForTimeout(1200);
       const tr = await texto(a.p);
-      verificar(!/Daily|Crew|Time clock|Employees|Em breve|Coming soon/.test(tr.replace(/Dados/g, '')) && !/^#\/(daily|crew)/.test(await a.p.evaluate(() => location.hash)), rota + ' não abre: volta para o que existe', (await a.p.evaluate(() => location.hash)) + ' · ' + tr.slice(0, 160));
+      verificar(!/Crew|Time clock|Employees|Em breve|Coming soon/.test(tr.replace(/Dados/g, '')) && !/^#\/crew/.test(await a.p.evaluate(() => location.hash)), rota + ' não abre: volta para o que existe', (await a.p.evaluate(() => location.hash)) + ' · ' + tr.slice(0, 160));
     }
     // as concorrências (quem convida) ficam, dentro do Measure Takeoff, sem o resto do Daily
     await a.p.goto(BASE + '#/daily/concorrencias');
     await a.p.waitForTimeout(1500);
     const tc = await texto(a.p);
-    verificar(/Bids/.test(tc) && /Takeoff/.test(tc) && !/Daily|Crew/.test(tc.replace(/Dados/g, '')) && /measure|concorrencias/.test(await a.p.evaluate(() => location.hash)), 'as concorrências abrem dentro do Measure Takeoff', (await a.p.evaluate(() => location.hash)) + ' · ' + tc.slice(0, 200));
+    verificar(/Bids/.test(tc) && /Takeoff/.test(tc) && !/Crew/.test(tc.replace(/Dados/g, '')) && /measure|concorrencias/.test(await a.p.evaluate(() => location.hash)), 'as concorrências abrem dentro do Measure Takeoff', (await a.p.evaluate(() => location.hash)) + ' · ' + tc.slice(0, 200));
+    // o Daily existe na 1ª versão: abre como módulo próprio (cabeçalho KORbuild / Daily), por projeto
+    await a.p.goto(BASE + '#/daily');
+    await a.p.waitForTimeout(2500);
+    const td = await texto(a.p);
+    verificar(/^#\/daily/.test(await a.p.evaluate(() => location.hash)) && /Daily/.test(td) && !/Crew/.test(td.replace(/Dados/g, '')), 'o Daily abre na 1ª versão', (await a.p.evaluate(() => location.hash)) + ' · ' + td.slice(0, 200));
     await a.p.goto(BASE + '#/conta/obras/nova');
     await a.p.waitForTimeout(1500);
     verificar(await a.p.locator('#form-obra').count() === 0 && !/obras/.test(await a.p.evaluate(() => location.hash)), 'não há cadastro de obra na 1ª versão: #/conta/obras volta para a conta', await a.p.evaluate(() => location.hash));

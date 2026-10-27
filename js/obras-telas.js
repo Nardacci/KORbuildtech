@@ -131,6 +131,26 @@ function atualizarPrevia() {
 }
 
 /* Mapa do formulário: clique marca o local; o círculo mostra a cerca. */
+/* Local no mapa + dias de trabalho, para o cadastro do projeto (o projeto ganho é a obra: docs/daily-primeira-versao.md).
+ * Usa os mesmos ids do cadastro da obra (mapa-obra, ob-lat, ob-lon, ob-raio): aposDesenharObras() e "obra-aqui" servem aos dois. */
+export function htmlLocalNoMapa({ lat, lon, raio, dias } = {}) {
+  const tem = Number.isFinite(Number(lat)) && Number.isFinite(Number(lon)) && lat !== '' && lat != null && lon !== '' && lon != null;
+  const centro = tem ? { lat: Number(lat), lon: Number(lon) } : CENTRO_PADRAO;
+  const r = Number.isFinite(Number(raio)) && raio !== '' && raio != null ? Number(raio) : 150;
+  const d = Array.isArray(dias) && dias.length ? dias.map(Number) : [1, 2, 3, 4, 5];
+  const campo = (id, rotulo, html) => '<div class="campo"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
+  return '<p class="mudo pequeno">' + tr('Opcional: marque no mapa onde fica a obra (ou use a localização atual). O local dá o clima do diário; o círculo é a cerca do ponto, para quando o ponto da equipe entrar.') + '</p>' +
+    '<div id="mapa-obra" class="mapa-obra" data-lat="' + centro.lat + '" data-lon="' + centro.lon + '" data-tem="' + (tem ? '1' : '') + '"><span class="mudo pequeno">' + tr('Carregando o mapa…') + '</span></div>' +
+    '<div class="grade-campos mapa-obra-campos">' +
+      campo('ob-lat', tr('Latitude'), '<input type="text" inputmode="decimal" id="ob-lat" name="lat" value="' + (tem ? centro.lat : '') + '">') +
+      campo('ob-lon', tr('Longitude'), '<input type="text" inputmode="decimal" id="ob-lon" name="lon" value="' + (tem ? centro.lon : '') + '">') +
+      campo('ob-raio', tr('Raio da cerca (m)'), '<input type="number" id="ob-raio" name="raio" min="' + RAIO_MIN + '" max="' + RAIO_MAX + '" step="10" value="' + r + '">') +
+    '</div>' +
+    '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="obra-aqui">' + icone('pino', 16) + tr('Usar a localização atual') + '</button>' +
+    '<fieldset class="dias-obra"><legend class="rotulo-pequeno">' + tr('Dias de trabalho (cobram o diário)') + '</legend>' +
+      [1, 2, 3, 4, 5, 6, 0].map((dia) => '<label class="check pequeno"><input type="checkbox" name="diasTrabalho" value="' + dia + '"' + (d.includes(dia) ? ' checked' : '') + '> ' + NOMES_DIAS[dia] + '</label>').join('') + '</fieldset>';
+}
+
 let mapaObra = null;
 export async function aposDesenharObras() {
   atualizarPrevia();
@@ -163,7 +183,7 @@ export async function aposDesenharObras() {
 }
 // campos digitados e raio refletem no mapa; datas e modelo, na prévia
 document.addEventListener('input', (ev) => {
-  if (!ev.target.closest || !ev.target.closest('#form-obra')) return;
+  if (!ev.target.closest || !ev.target.closest('#form-obra, #form-projeto')) return;
   if (['lat', 'lon', 'raio'].includes(ev.target.name) && mapaObra) {
     mapaObra.marcar(Number(String(document.getElementById('ob-lat').value).replace(',', '.')), Number(String(document.getElementById('ob-lon').value).replace(',', '.')), ev.target.name !== 'raio');
   }

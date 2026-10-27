@@ -236,20 +236,12 @@ try {
   await l.p.waitForFunction(() => /fechou com outra empresa/.test(document.body.textContent), null, { timeout: 30000 });
   verificar(!(await l.p.textContent('main')).includes('186'), 'a Bayside vê que a contratante fechou com outra, sem o valor');
 
-  console.log('Ana: a obra nasce ligada à obra da B (CO-14)');
+  console.log('Ana: a obra nasce sozinha com o projeto ganho, ligada à obra da B (CO-14, migração 0020)');
   await a.p.goto(BASE + '#/measure/convite/' + c.id);
   await a.p.reload();
-  await a.p.waitForSelector('a[href="#/conta/obras/nova/' + pjA.id + '"]', { timeout: 30000 });
-  verificar((await a.p.textContent('main')).includes('Você venceu'), 'o convite mostra que a Ana venceu');
-  await a.p.click('a[href="#/conta/obras/nova/' + pjA.id + '"]');
-  await a.p.waitForSelector('#form-obra', { timeout: 30000 });
-  await esperaEspelho(a.p);
-  verificar((await a.p.inputValue('#ob-nome')) === pjA.nome && (await a.p.inputValue('#ob-contratanteId')) === pjA.contratante_id, 'o cadastro da obra vem preenchido pelo projeto');
-  await a.p.fill('#ob-lat', '42.76'); await a.p.fill('#ob-lon', '-71.46');
-  await a.p.fill('#ob-prazo', '2027-06-30');
-  await a.p.selectOption('#ob-responsavelId', membroJose.id);
-  await a.p.click('[data-acao="cad-salvar-obra"]');
-  await esperaToast(a.p, /Obra criada/);
+  await a.p.waitForSelector('a[href^="#/daily/obras/"]', { timeout: 30000 });
+  const tv = await a.p.textContent('main');
+  verificar(tv.includes('Você venceu') && tv.includes('A obra já está criada e ligada à da contratante.') && (await a.p.locator('a[href="#/conta/obras/nova/' + pjA.id + '"]').count()) === 0, 'o convite mostra que a Ana venceu e que a obra já existe (sem "Criar obra")');
   const obraA = (await sql(`select id, nome, vinculo_empresa_id, vinculo_obra_id, concorrencia_id, projeto_id from public.obras where empresa_id = '${A}'`))[0];
   verificar(obraA && obraA.vinculo_empresa_id === B && obraA.vinculo_obra_id === obraB.id && obraA.concorrencia_id === c.id && obraA.projeto_id === pjA.id, 'a obra da Ana está ligada à obra da B pela concorrência', obraA);
   verificar((await sql(`select obra_id from public.projetos where id = '${pjA.id}'`))[0].obra_id === obraA.id, 'o projeto aponta a obra');

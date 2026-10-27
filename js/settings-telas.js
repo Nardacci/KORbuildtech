@@ -29,7 +29,7 @@ function nav() {
     itens.push({ id: 'funcionarios', href: '#/settings/funcionarios', rotulo: tr('Funcionários'), icone: 'crew', contador: alertas });
   }
   // encargos e jornada são do ponto (Crew): a construtora, que não bate ponto, não precisa (docs/saas.md HS-09)
-  if (pode(u, 'settings.regras') && estado().empresa.modulos.includes('crew')) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: tr('Encargos'), icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: tr('Jornada'), icone: 'relogio' });
+  if (pode(u, 'settings.regras') && estado().empresa.modulos.includes('crew') && !PRIMEIRA_VERSAO) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: tr('Encargos'), icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: tr('Jornada'), icone: 'relogio' });
   if (pode(u, 'settings.conta')) itens.push({ id: 'empresa', href: '#/settings/empresa', rotulo: tr('Empresa'), icone: 'obras' });
   if (pode(u, 'settings.obras') && !PRIMEIRA_VERSAO) itens.push({ id: 'obras', href: '#/settings/obras', rotulo: tr('Obras'), icone: 'obras' });
   if (pode(u, 'settings.contatos')) itens.push({ id: 'contatos', href: '#/settings/contatos', rotulo: tr('Contatos'), icone: 'link' });

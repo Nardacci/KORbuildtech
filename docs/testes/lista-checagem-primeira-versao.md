@@ -420,3 +420,21 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Vai e volta entre a aba Schedule do projeto e a página do Gantt
 - [ ] **T182** · `pv.p1.admin` — Início › Andamento dos projetos  
   _Esperado:_ Primeiro bloco do painel: uma linha por projeto com cronograma (atrasados primeiro) com a situação, a barra do feito e o tracejado do previsto para hoje, e a tarefa mais atrasada; o resumo conta atrasados/em dia/não iniciados/concluídos; cada linha abre o Gantt do projeto
+
+### 19 · Daily por projeto
+- [ ] **T183** · `pv.p1.admin` — Início (depois do login)  
+  _Esperado:_ Três módulos: Daily, Takeoff e Settings; o Settings abre com o cabeçalho 'KORbuild / Settings', fora do Takeoff
+- [ ] **T184** · `pv.p1.admin` — Takeoff › Novo projeto › seção Execução  
+  _Esperado:_ Mapa com cerca (latitude, longitude, raio), 'Usar a localização atual' e dias de trabalho; tudo opcional; fica salvo e aparece em Editar projeto
+- [ ] **T185** · `pv.p1.admin` — Takeoff › Editar projeto › situação Ganha › salvar  
+  _Esperado:_ O projeto aparece no Daily em Projetos (menu) e em 'Projetos em execução'; ninguém cadastra obra
+- [ ] **T186** · `pv.p1.admin` — Daily › Projetos › abrir o projeto  
+  _Esperado:_ Resumo do projeto (contratante, endereço), link 'Abrir o projeto' para o Takeoff; sem 'Editar a obra' nem 'Nova obra'
+- [ ] **T187** · `pv.p1.admin` — Daily › Hoje › projeto › Adicionar nova RDO › preencher e enviar  
+  _Esperado:_ O diário é criado e enviado como antes; sem local no mapa, o clima avisa para marcar à mão
+- [ ] **T188** · `pv.p1.admin` — Daily › Painel  
+  _Esperado:_ RDOs de hoje, aguardando aprovação, 'Projetos com RDO atrasado' e 'Farol dos projetos' com os projetos em execução
+- [ ] **T189** · `pv.p1.admin` — Bids › fechar uma concorrência de projeto ganho (vencedora com conta)  
+  _Esperado:_ Na vencedora, o projeto fica Ganha e a obra dela nasce sozinha, ligada à obra da contratante; o convite mostra 'Você venceu' e 'Abrir a obra'; o diário dela chega para a contratante aprovar
+- [ ] **T190** · `pv.p1.admin` — Conta real (depois da migração 0020): Editar projeto › Ganha  
+  _Esperado:_ A obra aparece no banco (projetos.obra_id preenchido) e no Daily

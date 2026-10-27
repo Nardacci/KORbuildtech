@@ -29,6 +29,7 @@ import { telaItens, telaItem, acoesItens, ligarItens, aposDesenharItens } from '
 import { enviarPlanta, bytesDaPlanta, apagarPlantasDoProjeto, PERSISTE_ESPACO } from './measure-oficial.js';
 import { telaConvites, telaConvite, htmlFaixaConcorrencia, htmlConcorrenciasDoProjeto, licitacoesDoProjeto, podeResponder, convitesPendentes } from './concorrencias-telas.js';
 import { ligarEspaco, acoesEspaco, htmlAbas, htmlOverview, htmlCronograma, andamentoDoProjeto, telaGantt, ABAS as ABAS_PROJETO, ABA_ANTIGA } from './projeto-espaco.js';
+import { htmlLocalNoMapa, aposDesenharObras } from './obras-telas.js';
 import { motorPronto, carregarMotor, variaveisDoTipo, FUNCOES, VALORES_DE_TESTE, calcularLinha, VARIAVEIS } from './formulas.js';
 
 let app = { desenhar: () => {}, ir: () => {}, topoExtra: () => '' };
@@ -162,6 +163,10 @@ function telaFormProjeto(id) {
   const estimadores = estado().usuarios.filter((u) => u.ativo !== false && pode(u, 'measure.medir'));
   const abasForm = '<nav class="abas-sublinhadas" aria-label="' + esc(tr('Seções')) + '"><button type="button" class="ativa" aria-current="page" data-acao="pj-form-aba" data-aba="dados">' + tr('Projeto') + '</button><button type="button" data-acao="pj-form-aba" data-aba="escopo">' + tr('Escopo') + '</button></nav>';
   const secEscopo = '<section class="cartao" data-pj-aba="escopo" hidden><h2 class="cartao-titulo">' + tr('Escopo do projeto') + '</h2><p class="mudo pequeno">' + tr('Descreva o que está incluído (e o que não está). Este texto vai para a proposta. Dá para colar do Word.') + '</p>' + htmlEditorRico({ id: 'pj-escopo-ed', valor: p.descricao, placeholder: tr('Ex.: Residência térrea, wood framing, siding vinil…') }) + '</section>';
+  // o projeto ganho é a obra (docs/daily-primeira-versao.md): o local no mapa e os dias de trabalho vão para a obra automática
+  const ex = p.execucao || {};
+  const secExecucao = '<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Execução') + '</h2><p class="mudo pequeno">' + tr('Quando o projeto for ganho, ele vira a obra do Daily com estes dados. Dá para preencher depois.') + '</p>' +
+    htmlLocalNoMapa({ lat: ex.lat, lon: ex.lon, raio: ex.raio, dias: ex.diasTrabalho }) + '</section>';
   if (!id) {
     // projeto novo: só o essencial; o resto (tipo, estimador, dono da obra…) fica para o Editar projeto
     return moldura({
@@ -175,7 +180,7 @@ function telaFormProjeto(id) {
           campo('prazoProposta', tr('Prazo da proposta (bid due date)'), '<input type="date" id="pj-prazoProposta" name="prazoProposta" value="">') + '</div></section>' +
       ('<section class="cartao" data-pj-aba="dados"><h2 class="cartao-titulo">' + tr('Local da obra') + '</h2>') + texto('endereco', tr('Endereço'), (' placeholder="' + tr('Ex.: 88 Bridge St') + '"')) +
           '<div class="grade-campos mz-grade-local">' + texto('cidade', tr('Cidade *')) + texto('estado', tr('Estado *'), ' maxlength="2" autocapitalize="characters"') + texto('zip', tr('ZIP code'), ' inputmode="numeric" maxlength="10"') + '</div></section>' +
-        secEscopo +
+        secExecucao + secEscopo +
         '<div class="rodape-form"><a class="btn btn-contorno" href="#/measure">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">' + tr('Continuar para as plantas') + ' ›</button></div>' +
       '</form>',
     });
@@ -200,7 +205,7 @@ function telaFormProjeto(id) {
         campo('estimadorId', tr('Estimador responsável'), '<select id="pj-estimadorId" name="estimadorId"><option value="">—</option>' + opcoes(estimadores.map((u) => [u.id, u.nome]), p.estimadorId) + '</select>') +
         (PRIMEIRA_VERSAO ? '<input type="hidden" name="obraId" value="' + esc(p.obraId || '') + '"></div></section>' :         campo('obraId', tr('Obra vinculada (opcional)'), ('<select id="pj-obraId" name="obraId"><option value="">' + tr('Nenhuma (obra nova)') + '</option>') + opcoes(estado().obras.map((o) => [o.id, o.nome]), p.obraId) + '</select>') +
       ('</div><p class="mudo pequeno">' + tr('Vincule a uma obra já cadastrada quando o orçamento for um aditivo ou uma ampliação.') + '</p></section>')) +
-      secEscopo +
+      secExecucao + secEscopo +
       '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="mz-excluir-projeto" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
         '<a class="btn btn-contorno" href="' + (id ? '#/measure/projeto/' + id : '#/measure') + ('">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">') + (id ? tr('Salvar') : tr('Criar projeto')) + '</button></div>' +
     '</form>',
@@ -871,6 +876,7 @@ document.addEventListener('keyup', (ev) => { if (ev.key === ' ') visor.espaco = 
 /* Chamado depois de desenhar uma tela do Measure. */
 export async function aposDesenharMeasure() {
   aposDesenharItens();
+  if (document.getElementById('form-projeto')) aposDesenharObras();   // o mapa da seção Execução
   const fa = document.getElementById('form-assembly');
   if (fa) {
     fa.addEventListener('input', testarLinhas);
@@ -1255,7 +1261,8 @@ export const acoesMeasure = {
   },
   'mz-salvar-projeto'() {
     const form = document.getElementById('form-projeto');
-    const dados = Object.fromEntries(new FormData(form).entries());
+    const fd = new FormData(form);
+    const dados = { ...Object.fromEntries(fd.entries()), diasTrabalho: fd.getAll('diasTrabalho') };
     const escopo = valorDoEditor('pj-escopo-ed');
     if (escopo != null) dados.descricao = escopo;
     const id = form.dataset.id || null;

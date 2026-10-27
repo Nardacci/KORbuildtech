@@ -10,6 +10,7 @@ import { contato } from './contatos.js';
 import { RAIO_CERCA } from './crew.js';
 import { DIAS_TRABALHO } from './prazos.js';
 import { cronogramaDe, novaBase, servidorCronograma } from './cronograma.js';
+import { PRIMEIRA_VERSAO } from './versao.js';
 
 export const SITUACOES_OBRA = {
   andamento: { nome: tr('Em andamento'), classe: 'etiqueta-verde' },
@@ -23,11 +24,13 @@ const t = (v) => String(v == null ? '' : v).trim();
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 export function obras() { return estado().obras; }
+/* Na 1ª versão o Daily só conhece as obras que nasceram de projetos (o projeto ganho é a obra); obras cadastradas à mão ficam para a versão completa. */
+export function obrasDaVersao(dados) { const lista = (dados || estado()).obras || []; return PRIMEIRA_VERSAO ? lista.filter((o) => o.projetoId) : lista; }
 /* Obra sem situação (dados antigos) está em andamento. */
 export function situacaoDaObra(o) { return (o && o.situacao) || 'andamento'; }
 /* Só obra em andamento cobra diário, aparece no campo e no ponto (OB-04). */
 export function emAndamento(o) { return situacaoDaObra(o) === 'andamento'; }
-export function obrasEmAndamento(dados) { return (dados || estado()).obras.filter(emAndamento); }
+export function obrasEmAndamento(dados) { return obrasDaVersao(dados).filter(emAndamento); }
 
 /* "Manchester, NH 03104": o texto que as telas mostram. */
 export function textoCidade(d) { return [d.municipio, [d.estado, d.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); }
@@ -94,6 +97,77 @@ export function salvarObra(id, dados, por) {
   else if (dados.modeloId) aplicarModelo(nova.id, dados.modeloId, por);
   salvar();
   return { ok: true, id: nova.id };
+}
+
+/* ---------- O projeto ganho é a obra (docs/daily-primeira-versao.md) ----------
+ * Quando o projeto fica "ganha", a obra nasce sozinha, 1 para 1, a partir dele: nome, partes, endereço, datas do cronograma,
+ * local no mapa e dias de trabalho (p.execucao = { lat, lon, raio, diasTrabalho }). Depois, o cadastro do projeto manda na obra.
+ * Na conta com banco, o gatilho projetos_obra (migração 0020) faz o mesmo. */
+function camposDoProjeto(pj) {
+  const ex = pj.execucao || {};
+  const lat = Number(ex.lat), lon = Number(ex.lon);
+  const temLocal = ex.lat !== '' && ex.lat != null && ex.lon !== '' && ex.lon != null && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+  const raio = Math.min(RAIO_MAX, Math.max(RAIO_MIN, Math.round(Number(ex.raio)) || RAIO_CERCA));
+  const dias = [...new Set((Array.isArray(ex.diasTrabalho) ? ex.diasTrabalho : []).map(Number).filter((n) => Number.isInteger(n) && n >= 0 && n <= 6))].sort();
+  const local = { municipio: t(pj.cidade), estado: t(pj.estado).toUpperCase(), zip: t(pj.zip) };
+  return {
+    contratanteId: pj.contratanteId || null, donoId: pj.donoId && pj.donoId !== pj.contratanteId ? pj.donoId : null,
+    endereco: t(pj.endereco), ...local, cidade: textoCidade(local),
+    lat: temLocal ? lat : null, lon: temLocal ? lon : null, cerca: temLocal ? { lat, lon, raio } : { raio },
+    diasTrabalho: dias.length ? dias : DIAS_TRABALHO.slice(),
+  };
+}
+const nomeLivreDeObra = (lista, nome, ignorarId) => {
+  const base = t(nome); let nm = base, n = 0;
+  while (lista.some((o) => o.id !== ignorarId && o.nome.toLowerCase() === nm.toLowerCase())) { n += 1; nm = base + ' (' + n + ')'; }
+  return nm;
+};
+export function garantirObraDoProjeto(pj, dados = estado(), por = '') {
+  if (!pj || pj.situacao !== 'ganha') return null;
+  if (dados.oficial) return null;   // na conta com banco, o gatilho projetos_obra (migração 0020) cria a obra; o espelho a traz depois
+  dados.obras = dados.obras || [];
+  const lista = dados.obras;
+  const campos = camposDoProjeto(pj);
+  const existente = pj.obraId && lista.find((o) => o.id === pj.obraId);
+  if (existente) {
+    if (existente.projetoId === pj.id) Object.assign(existente, campos, { nome: nomeLivreDeObra(lista, pj.nome, existente.id) });
+    return existente;
+  }
+  const tarefas = ((pj.cronograma || {}).tarefas || []).filter((x) => DATA.test(x.inicio || ''));
+  const inicio = tarefas.map((x) => x.inicio).sort()[0] || hoje();
+  const fins = tarefas.map((x) => somarDias(x.inicio, Math.max(0, (Number(x.dias) || 1) - 1))).sort();
+  const prazo = fins.length && fins[fins.length - 1] >= inicio ? fins[fins.length - 1] : somarDias(inicio, 89);
+  const nova = { id: novoId('ob'), ...campos, nome: nomeLivreDeObra(lista, pj.nome), inicio, prazo, responsavelId: null, situacao: 'andamento', projetoId: pj.id, criadoEm: Date.now() };
+  // ganho numa concorrência (CO-14): a obra já nasce ligada à obra de quem contratou
+  if (pj.concorrencia && pj.concorrencia.vinculo && pj.concorrencia.vinculo.obraId) { nova.vinculo = { ...pj.concorrencia.vinculo }; nova.concorrenciaId = pj.concorrencia.id; }
+  lista.push(nova);
+  pj.obraId = nova.id;
+  if (dados === estado()) {
+    auditar(tr('Obras'), tr('Obra criada a partir do projeto ganho: {nome}', { nome: nova.nome }), '', nova.cidade + ' · ' + inicio + ' → ' + prazo, '', por);
+    cronogramaDoProjetoNaObra(pj, por);
+  }
+  return nova;
+}
+/* O cronograma confirmado no projeto vira as etapas da obra automática (só enquanto a obra não tem etapas; no app com banco, o cronograma da obra é do servidor). */
+export function cronogramaDoProjetoNaObra(pj, por = '') {
+  const o = pj && pj.obraId && obras().find((x) => x.id === pj.obraId && x.projetoId === pj.id);
+  if (!o || servidorCronograma() || !baseDoProjeto(pj).length) return false;
+  const atual = (estado().cronogramas || {})[o.id];
+  if (atual && (atual.etapas || []).length) return false;
+  return !aplicarCronogramaDoProjeto(o.id, pj, por).erro;
+}
+
+/* Todos os projetos ganhos da empresa com a obra em dia (chamado ao desenhar, na 1ª versão: barato e idempotente). */
+export function garantirObrasDosProjetos(dados = estado()) {
+  let mudou = false;
+  for (const pj of ((dados.measure || {}).projetos || [])) {
+    if (pj.situacao !== 'ganha') continue;
+    const antes = JSON.stringify(dados.obras && dados.obras.find((o) => o.id === pj.obraId));
+    const o = garantirObraDoProjeto(pj, dados);
+    if (o && JSON.stringify(o) !== antes) mudou = true;
+  }
+  if (mudou && dados === estado()) salvar();
+  return mudou;
 }
 
 /* Projeto do Measure ligado à obra (o que virou obra, ou o primeiro que aponta para ela). */

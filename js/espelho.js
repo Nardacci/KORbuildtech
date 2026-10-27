@@ -99,6 +99,7 @@ function obraDoBanco(o, vinculo) {
     lat: o.lat, lon: o.lon, cerca: { lat: o.lat, lon: o.lon, raio: o.raio || 150 },
     inicio: o.inicio, prazo: o.prazo, responsavelId: o.responsavel_id || null, diasTrabalho: o.dias_trabalho || [1, 2, 3, 4, 5],
     situacao: o.situacao || 'andamento', vinculo: vinculo || (o.vinculo_empresa_id ? { empresaId: o.vinculo_empresa_id, obraId: o.vinculo_obra_id } : undefined),
+    projetoId: o.projeto_id || null, concorrenciaId: o.concorrencia_id || null,   // a obra que nasceu do projeto ganho (docs/daily-primeira-versao.md)
   };
 }
 

@@ -192,19 +192,13 @@ await p.click('[data-acao="pj-confirmar-cronograma"]');
 await p.waitForTimeout(300);
 verificar((await textoDe('.pagina')).includes('Cronograma confirmado') && (await textoDe('.pagina')).includes('2 tarefas'), 'confirmado: vira a base da obra, com a data e o número de tarefas');
 
-console.log('Criar a obra a partir do cronograma confirmado');
-await p.goto('about:blank');
-await p.goto(BASE + '&versao=completa#/settings/obra/nova/' + id); // na 1ª versão não há cronograma da obra: vale na versão completa
-await p.waitForSelector('#form-obra', { timeout: 10000 });
-const opcoes = await p.locator('#ob-modeloId option').evaluateAll((els) => els.map((e) => ({ v: e.value, t: e.textContent, s: e.selected })));
-verificar(opcoes.some((o) => o.v === 'projeto' && o.s && o.t.includes('2 etapas')), 'o cadastro da obra oferece o cronograma confirmado no projeto, já escolhido', opcoes);
-const iniObra = await p.inputValue('#ob-inicio');
-verificar(iniObra === inicio, 'o início da obra vem da primeira tarefa da base', iniObra + ' ≠ ' + inicio);
-await p.fill('#ob-lat', '43.2'); await p.fill('#ob-lon', '-71.5'); await p.selectOption('#ob-responsavelId', 'u-jose');
-await p.click('[data-acao="obra-salvar"]');
-await p.waitForTimeout(600);
-const nEtapas = await p.evaluate(() => { const achar = (o) => { if (!o || typeof o !== 'object') return null; if (o.cronogramas && Object.values(o.cronogramas).length) return Object.values(o.cronogramas).map((c) => c.etapas.length); for (const v of Object.values(o)) { const r = achar(v); if (r) return r; } return null; }; const r = achar(JSON.parse(localStorage.getItem('kbt.rdo.v1') || '{}')); return r ? r[r.length - 1] : -1; });
-verificar(nEtapas === 2, 'a obra nasce com as duas etapas do cronograma do projeto', nEtapas);
+console.log('O projeto ganho é a obra (obra automática)');
+const obraAuto = await p.evaluate((pid) => { const achar = (o) => { if (!o || typeof o !== 'object') return null; if (o.obras && o.measure) { const pj = o.measure.projetos.find((x) => x.id === pid); const ob = pj && o.obras.find((x) => x.id === pj.obraId); const cr = ob && o.cronogramas && o.cronogramas[ob.id]; return ob ? { nome: ob.nome, projetoId: ob.projetoId, inicio: ob.inicio, lat: ob.lat, etapas: cr ? cr.etapas.length : 0 } : null; } for (const v of Object.values(o)) { const r = achar(v); if (r) return r; } return null; }; return achar(JSON.parse(localStorage.getItem('kbt.dados') || localStorage.getItem('kbt-dados') || '{}')); }, id).catch(() => null);
+const obraAuto2 = obraAuto || await p.evaluate((pid) => { for (const k of Object.keys(localStorage)) { try { const d = JSON.parse(localStorage.getItem(k)); const achar = (o) => { if (!o || typeof o !== 'object') return null; if (o.obras && o.measure) { const pj = o.measure.projetos.find((x) => x.id === pid); const ob = pj && o.obras.find((x) => x.id === pj.obraId); const cr = ob && o.cronogramas && o.cronogramas[ob.id]; return ob ? { nome: ob.nome, projetoId: ob.projetoId, inicio: ob.inicio, lat: ob.lat, etapas: cr ? cr.etapas.length : 0 } : null; } for (const v of Object.values(o)) { const r = achar(v); if (r) return r; } return null; }; const r = achar(d); if (r) return r; } catch { /* */ } } return null; }, id);
+verificar(!!obraAuto2 && obraAuto2.projetoId === id, 'ao ficar Ganha, o projeto ganhou a obra automática (ninguém cadastra obra)', obraAuto2);
+verificar(!!obraAuto2 && obraAuto2.inicio === inicio, 'o início da obra vem da primeira tarefa do cronograma', obraAuto2 && obraAuto2.inicio + ' ≠ ' + inicio);
+verificar(!!obraAuto2 && obraAuto2.etapas === 2, 'o cronograma confirmado virou as duas etapas da obra', obraAuto2 && obraAuto2.etapas);
+verificar(!!obraAuto2 && obraAuto2.lat == null, 'sem local no mapa, a obra existe mesmo assim (clima à mão)');
 
 console.log('Visão geral depois do trabalho');
 await p.goto(BASE + '#/measure/projeto/' + id);

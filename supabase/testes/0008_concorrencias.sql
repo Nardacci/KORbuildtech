@@ -277,8 +277,9 @@ begin
   insert into pg_temp.guarda values ('obA', v_obra::text);
   if (select vinculo_empresa_id::text || '/' || vinculo_obra_id::text || '/' || concorrencia_id::text || '/' || projeto_id::text from public.obras where id = v_obra) <> pg_temp.g('B') || '/' || pg_temp.g('obB') || '/' || pg_temp.g('co') || '/' || pg_temp.g('pjA') then raise exception 'FALHOU: obra sem o vínculo'; end if;
   if (select obra_id from public.projetos where id = pg_temp.u('pjA')) <> v_obra then raise exception 'FALHOU: projeto sem a obra'; end if;
-  begin perform public.criar_obra_da_concorrencia(pg_temp.u('cvA'), '{"nome":"De novo"}'); raise exception 'FALHOU: criou a obra duas vezes';
-  exception when others then if sqlerrm not like 'A obra desta concorrência já existe%' then raise exception 'FALHOU: %', sqlerrm; end if; end;
+  -- 0020: a obra nasce com o projeto ganho e a função só a completa; chamar de novo não cria outra
+  if public.criar_obra_da_concorrencia(pg_temp.u('cvA'), '{"nome":"De novo"}') <> v_obra then raise exception 'FALHOU: criou a obra duas vezes'; end if;
+  if (select count(*) from public.obras where concorrencia_id = pg_temp.u('co')) <> 1 or (select nome from public.obras where id = v_obra) <> 'De novo' then raise exception 'FALHOU: obra duplicada ou sem o nome novo'; end if;
   -- o vínculo não se grava direto
   begin update public.obras set vinculo_obra_id = null where id = v_obra; raise exception 'FALHOU: mexeu no vínculo';
   exception when others then if sqlerrm like 'FALHOU%' then raise; end if; end;

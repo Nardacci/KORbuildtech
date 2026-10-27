@@ -70,7 +70,7 @@ try {
     const { ctx, p } = await entrar(chave);
     const E = (n, c, d) => verificar(nome, n, c, d);
 
-    E('o painel do Início aparece, com Takeoff e Settings', await p.locator('.ini-painel .ini-botao').count() === 2);
+    E('o painel do Início aparece, com Daily, Takeoff e Settings', await p.locator('.ini-painel .ini-botao').count() === 3);
     const painel = await texto(p);
     E('o painel mostra projetos, cotações e preços da empresa', /Projects by status/.test(painel) && /Material quotes/.test(painel) && /Catalog and prices/.test(painel), painel.slice(0, 200));
 

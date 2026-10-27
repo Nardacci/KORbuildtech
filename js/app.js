@@ -42,7 +42,7 @@ import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorre
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
-import { obrasEmAndamento, situacaoDaObra, SITUACOES_OBRA, projetoDaObra } from './obras.js';
+import { obrasEmAndamento, obrasDaVersao, situacaoDaObra, SITUACOES_OBRA, projetoDaObra, garantirObrasDosProjetos } from './obras.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra, prestadorasNaObra, presencaDaCadeia, horas, aoRegistrarBatida } from './crew.js';
 import { icone, marca } from './icones.js';
@@ -252,10 +252,10 @@ function desenharPrototipo() {
   const sinoEstavaAberto = sinoAberto();   // um redesenho no meio da leitura dos avisos não pode fechar o painel
   let html;
   let modo = p[0];
+  if (u && PRIMEIRA_VERSAO && !estado().oficial) garantirObrasDosProjetos();   // 1ª versão: o projeto ganho é a obra (no banco, o gatilho faz isso)
   if (p[0] === 'daily') {
     const q = rotaDaily();
-    // 1ª versão: do Daily só existem as concorrências (quem convida), dentro do Measure Takeoff; o resto volta para o início
-    if (PRIMEIRA_VERSAO ? q[0] !== 'concorrencias' : !modulosLiberados(u).includes('daily')) return trocarRota(inicioDoUsuario(u));
+    if (!modulosLiberados(u).includes('daily')) return trocarRota(inicioDoUsuario(u));
     // Dentro do Daily, cada perfil tem a sua área: quem acompanha (painel, aprovações, obras) e quem preenche (hoje, histórico).
     const inicioDoPapel = pode(u, 'daily.acompanhar') ? '#/daily/painel' : '#/daily/campo';
     if (!q.length) return trocarRota(inicioDoPapel);
@@ -316,7 +316,7 @@ function desenharPrototipo() {
   if (sinoEstavaAberto && chave === rotaAnterior) { const sino = document.querySelector('details.sino'); if (sino) sino.open = true; }
   document.body.dataset.modo = modo;
   // celular sem GPS (permissão negada ou sem resposta): recado no topo das telas que usam a localização, com o passo a passo
-  if (!PRIMEIRA_VERSAO && (p[0] === 'crew' || p[0] === 'inicio' || (p[0] === 'daily' && rotaDaily()[0] === 'campo'))) {
+  if ((!PRIMEIRA_VERSAO && (p[0] === 'crew' || p[0] === 'inicio')) || (p[0] === 'daily' && rotaDaily()[0] === 'campo')) {
     const aviso = htmlAvisoGps();
     const principal = aviso && app.querySelector('main');
     if (principal) principal.insertAdjacentHTML('afterbegin', aviso);
@@ -358,9 +358,9 @@ function navDaily() {
   if (pode(u, 'daily.acompanhar')) {
     itens.push({ id: 'painel', href: '#/daily/painel', rotulo: tr('Painel'), icone: 'painel' });
     if (pode(u, 'daily.aprovar')) itens.push({ id: 'aprovacoes', href: '#/daily/aprovacoes', rotulo: tr('Aprovações'), icone: 'aprovacoes', contador: rdos.filter((r) => recebido(r) && r.status === 'enviado').length });
-    itens.push({ id: 'obras', href: '#/daily/obras', rotulo: tr('Obras'), icone: 'obras' });
+    itens.push({ id: 'obras', href: '#/daily/obras', rotulo: PRIMEIRA_VERSAO ? tr('Projetos') : tr('Obras'), icone: 'obras' });
   }
-  if (pode(u, 'concorrencias.gerir')) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
+  if (!PRIMEIRA_VERSAO && pode(u, 'concorrencias.gerir')) itens.push({ id: 'concorrencias', href: '#/daily/concorrencias', rotulo: tr('Concorrências'), icone: 'tabela' });
   if (pode(u, 'daily.preencher')) {
     // Contador de Hoje: dias atrasados, obras sem RDO hoje e ajustes pedidos.
     itens.push({ id: 'hoje', href: '#/daily/campo', rotulo: tr('Hoje'), icone: 'hoje', contador: pendenciasDoCampo().total });
@@ -376,7 +376,8 @@ function botaoConexao() {
 }
 
 function moldura({ ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, largo, semAbas }) {
-  if (PRIMEIRA_VERSAO) return casca({ modulo: 'measure', nav: navMeasure(), ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, semAbas, largura: largo ? 'larga' : 'estreita', topoExtra: '' });   // as concorrências aparecem como parte do Measure Takeoff
+  // 1ª versão: as concorrências (Bids) aparecem como parte do Takeoff; o Daily é módulo próprio
+  if (PRIMEIRA_VERSAO && rotaDaily()[0] === 'concorrencias') return casca({ modulo: 'measure', nav: navMeasure(), ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, semAbas, largura: largo ? 'larga' : 'estreita', topoExtra: '' });
   return casca({
     modulo: 'daily', nav: navDaily(), ativo, titulo, subtitulo, voltar, acoes, conteudo, rodape, semAbas,
     largura: largo ? 'larga' : 'estreita', topoExtra: botaoConexao(),
@@ -452,7 +453,7 @@ function telaCampo() {
         return '<a class="aviso aviso-alerta aviso-ajustes" href="#/daily/campo/rdo/' + r.id + ('"><b>' + tr('O escritório pediu ajustes no RDO nº') + ' ') + r.numero + '</b>' +
           '<span>' + esc(o.nome) + ' · ' + dataCurta(r.data) + '</span><span class="aviso-citacao">"' + esc(r.motivoAjuste) + ('"</span><span class="aviso-link">' + tr('Corrigir agora →') + '</span></a>');
       }).join('') +
-      ('<h2 class="titulo-secao">' + tr('Suas obras') + '</h2>') +
+      ('<h2 class="titulo-secao">' + (PRIMEIRA_VERSAO ? tr('Seus projetos') : tr('Suas obras')) + '</h2>') +
       '<div class="lista">' + obras.map((o) => {
         const s = situacaoHoje(o);
         const atrasos = diasAtrasados(o);
@@ -939,12 +940,12 @@ function telaPainel() {
       '<div class="kpis">' +
         kpi(tr('RDOs de hoje'), tr('{n} de {total}', { n: deHoje.length, total: faroes.length }), deHoje.length === faroes.length ? 'verde' : '') +
         kpi(tr('Aguardando aprovação'), aguardando.length, aguardando.length ? 'azul' : '') +
-        kpi(tr('Obras com RDO atrasado'), atrasadas, atrasadas ? 'alerta' : 'verde') +
+        kpi(PRIMEIRA_VERSAO ? tr('Projetos com RDO atrasado') : tr('Obras com RDO atrasado'), atrasadas, atrasadas ? 'alerta' : 'verde') +
         kpi(tr('Fotos recebidas hoje'), fotosHoje, '') +
       '</div>' +
       blocoSemRdoOntem() +
       '<div class="painel-grade">' +
-        ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Farol das obras') + '</h2><a class="link" href="#/daily/obras">' + tr('Ver obras') + '</a></div>') +
+        ('<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Farol das obras') + '</h2><a class="link" href="#/daily/obras">' + (PRIMEIRA_VERSAO ? tr('Ver projetos') : tr('Ver obras')) + '</a></div>') +
           '<ul class="faroes">' + faroes.map((f) =>
             '<li><span class="farol farol-' + f.cor + '" role="img" aria-label="' + NOME_FAROL[f.cor] + '"></span><div><b>' + esc(f.o.nome) + '</b><span class="mudo">' + (f.empresa ? '<b class="farol-empresa">' + esc(f.empresa) + '</b> · ' : esc(f.o.cidade) + ' · ') + f.texto + '</span></div>' +
             '<a class="btn btn-contorno btn-pequeno" href="#/daily/obras/' + f.o.id + ('">' + tr('Abrir') + '</a></li>')).join('') + '</ul>' +
@@ -1010,17 +1011,18 @@ function telaAprovacoes() {
 /* ---------- Escritório: obras ---------- */
 
 function telaObrasAdmin(filtro) {
-  const todas = estado().obras;
+  const todas = obrasDaVersao();
   const ativas = obrasEmAndamento();
   const outras = todas.filter((o) => situacaoDaObra(o) !== 'andamento');
   const obras = filtro === 'encerradas' ? outras : ativas;
-  const podeCadastrar = pode(usuarioAtual(), 'settings.obras');
+  // 1ª versão: o projeto ganho é a obra, ninguém cadastra obra (docs/daily-primeira-versao.md)
+  const podeCadastrar = !PRIMEIRA_VERSAO && pode(usuarioAtual(), 'settings.obras');
   return moldura({
-    ativo: 'obras', largo: true, titulo: tr('Obras'), subtitulo: tn(ativas.length, '{n} obra ativa', '{n} obras ativas'),
+    ativo: 'obras', largo: true, titulo: PRIMEIRA_VERSAO ? tr('Projetos em execução') : tr('Obras'), subtitulo: PRIMEIRA_VERSAO ? tn(ativas.length, '{n} projeto em execução', '{n} projetos em execução') : tn(ativas.length, '{n} obra ativa', '{n} obras ativas'),
     acoes: podeCadastrar ? '<a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova">' + icone('mais', 16) + tr('Nova obra') + '</a>' : '',
     conteudo: (outras.length ? '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '"><a href="#/daily/obras"' + (filtro !== 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Em andamento') + ' <span class="mz-contagem">' + ativas.length + '</span></a>' +
         '<a href="#/daily/obras/encerradas"' + (filtro === 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Paralisadas e concluídas') + ' <span class="mz-contagem">' + outras.length + '</span></a></nav>' : '') +
-      (!obras.length ? '<p class="vazio">' + (filtro === 'encerradas' ? tr('Nenhuma obra paralisada ou concluída.') : tr('Nenhuma obra em andamento.')) + (podeCadastrar && filtro !== 'encerradas' ? ' <a href="#/settings/obra/nova">' + tr('Cadastrar a primeira obra') + '</a>' : '') + '</p>' : '') +
+      (!obras.length ? '<p class="vazio">' + (filtro === 'encerradas' ? tr('Nenhuma obra paralisada ou concluída.') : PRIMEIRA_VERSAO ? tr('Nenhum projeto em execução. No Takeoff, marque o projeto como Ganha: ele aparece aqui.') : tr('Nenhuma obra em andamento.')) + (podeCadastrar && filtro !== 'encerradas' ? ' <a href="#/settings/obra/nova">' + tr('Cadastrar a primeira obra') + '</a>' : '') + '</p>' : '') +
       '<div class="lista grade-obras">' + obras.map((o) => {
       const f = farolDaObra(o);
       const qtd = diariosDaObra(o).length;
@@ -1066,10 +1068,10 @@ function telaObraAdmin(id) {
   const lista = diariosDaObra(o);
   const item = (r) => itemRdo(r, { href: '#/daily/painel/rdo/' + r.id });
   return moldura({
-    ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: tr('Obras') },
+    ativo: 'obras', largo: true, titulo: o.nome, subtitulo: o.cidade + ' · ' + f.texto, voltar: { href: '#/daily/obras', rotulo: PRIMEIRA_VERSAO ? tr('Projetos') : tr('Obras') },
     conteudo: (situacaoDaObra(o) !== 'andamento' ? '<div class="aviso aviso-ambar"><b>' + tr('Obra {situacao}', { situacao: SITUACOES_OBRA[situacaoDaObra(o)].nome.toLowerCase() }) + '</b><span>' + tr('Não cobra o diário e não aparece no campo nem no ponto. O histórico continua aqui.') + '</span></div>' : '') +
-      resumoObra(o) + htmlCartaoCronograma(o) + htmlPrestadorasNaObra(o) + htmlCanalDaObra(o) + htmlConcorrenciasDaObra(o) +
-      (soAcompanha() ? (pode(usuarioAtual(), 'settings.obras') ? '<p class="dica"><a href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a></p>' : '') + htmlDiariosPorPrestadora(o, lista) : htmlRdoObrigatorio(o, lista, item)),
+      resumoObra(o) + (PRIMEIRA_VERSAO ? htmlCronogramaDoProjeto(o) : htmlCartaoCronograma(o)) + htmlPrestadorasNaObra(o) + htmlCanalDaObra(o) + (PRIMEIRA_VERSAO ? '' : htmlConcorrenciasDaObra(o)) +
+      (soAcompanha() ? linkEditarObra(o, 'dica') + htmlDiariosPorPrestadora(o, lista) : htmlRdoObrigatorio(o, lista, item)),
   });
 }
 
@@ -1085,9 +1087,28 @@ function htmlDiariosPorPrestadora(o, lista) {
   }).join('');
 }
 
+/* 1ª versão: o cronograma e as concorrências são do projeto (Takeoff): o cartão só aponta para lá. */
+function htmlCronogramaDoProjeto(o) {
+  const pj = projetoDaObra(o);
+  if (!pj) return '';
+  return '<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' +
+    '<a class="btn btn-contorno btn-pequeno" href="#/measure/gantt/' + pj.id + '">' + tr('Ver o Gantt') + '</a></div>' +
+    '<p class="mudo pequeno">' + tr('O cronograma, o % feito e as concorrências deste projeto ficam no Takeoff.') + ' <a href="#/measure/projeto/' + pj.id + '/schedule">' + tr('Abrir o cronograma') + '</a></p></section>';
+}
+
+/* "Editar a obra": na 1ª versão o cadastro é o do projeto (o projeto ganho é a obra). */
+function linkEditarObra(o, classe) {
+  if (PRIMEIRA_VERSAO) {
+    const pj = projetoDaObra(o);
+    return pj ? (classe === 'dica' ? '<p class="dica"><a href="#/measure/projeto/' + pj.id + '">' + tr('Abrir o projeto') + '</a></p>' : '<a class="link" href="#/measure/projeto/' + pj.id + '">' + tr('Abrir o projeto') + '</a>') : '';
+  }
+  if (!pode(usuarioAtual(), 'settings.obras')) return '';
+  return classe === 'dica' ? '<p class="dica"><a href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a></p>' : '<a class="link" href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a>';
+}
+
 function htmlRdoObrigatorio(o, lista, item) {
   return ('<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('RDO obrigatório') + '</h2>') +
-        (pode(usuarioAtual(), 'settings.obras') ? '<a class="link" href="#/settings/obra/' + o.id + '">' + tr('Editar a obra') + '</a>' : '') + '</div>' +
+        linkEditarObra(o, 'link') + '</div>' +
         ('<div class="linha-info"><span>' + tr('Responsável') + '</span><b>') + esc((estado().usuarios.find((u) => u.id === o.responsavelId) || {}).nome || '—') + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Prazo diário') + '</span><b>') + tr('{prazo} · lembrete às {lembrete} e alerta às {prazo} (sininho e celular)', { prazo: horaCheia(PRAZO_HORA), lembrete: horaCheia(LEMBRETE_HORA) }) + '</b></div>' +
         ('<div class="linha-info"><span>' + tr('Dias de trabalho') + '</span><b>') + primeiraMaiuscula(descreverDias(o)) + '</b></div>' +
@@ -1394,6 +1415,10 @@ function mudar(fn) {
 
 async function climaAutomatico(r, silencioso) {
   const o = acharObra(r.obraId);
+  if (!o || !Number.isFinite(Number(o.lat)) || !Number.isFinite(Number(o.lon)) || o.lat == null) {
+    if (!silencioso) toast(tr('O projeto não tem o local no mapa: marque o clima à mão (ou informe o local em Editar projeto).'));
+    return;
+  }
   if (semInternet()) {
     console.error('clima automático: sem internet (onLine=' + navigator.onLine + ', simulado=' + !!(bancoDeDados() && bancoDeDados().offlineSimulado) + ')');
     if (!silencioso) toast(tr('Sem internet: marque o clima à mão.'));
@@ -1920,7 +1945,7 @@ async function iniciar() {
       .concat(podeResponder() ? avisosDaConvidada().map((n) => ({ ...n, modulo: 'measure' })) : []);
     const doAparelho = (mods.includes('daily') ? notificacoesDaily(u) : []).concat(mods.includes('crew') ? notificacoesCrew(u) : []).concat(notificacoesSettings(u));
     // conta de verdade: o que acontece entre pessoas e empresas vem do servidor (avisos-oficial.js); no aparelho ficam só os lembretes do relógio
-    if (PRIMEIRA_VERSAO) return estado().oficial ? avisosDoServidor().map((n) => ((n.href || '').startsWith('#/daily/concorrencias') ? { ...n, modulo: 'measure' } : n)).filter((n) => n.modulo === 'measure' || n.modulo === 'settings') : [];   // 1ª versão: só avisos do Measure Takeoff (convites e concorrências) e do Settings
+    if (PRIMEIRA_VERSAO) return estado().oficial ? avisosDoServidor().map((n) => ((n.href || '').startsWith('#/daily/concorrencias') ? { ...n, modulo: 'measure' } : n)).filter((n) => n.modulo === 'measure' || n.modulo === 'daily' || n.modulo === 'settings') : [];   // 1ª versão: avisos do Daily, do Takeoff (convites e concorrências) e do Settings
     if (estado().oficial) return doAparelho.filter((n) => !/^(d-recebido-|d-ajuste-|d-aprovado-)/.test(n.id)).concat(avisosDoServidor());
     return doAparelho.concat(concorrencias);
   });

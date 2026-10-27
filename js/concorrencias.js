@@ -10,6 +10,7 @@ import { limparHtml, escopoTexto } from './texto-rico.js';
 import { auditar } from './settings.js';
 import { contato } from './contatos.js';
 import { PRIMEIRA_VERSAO } from './versao.js';
+import { garantirObraDoProjeto } from './obras.js';
 
 export const SITUACOES = {
   rascunho: { nome: tr('Rascunho'), classe: 'etiqueta-neutro' },
@@ -313,6 +314,7 @@ function concluirFechamento(c, v, p, observacao, por, agora) {
   if (pj) {
     pj.situacao = 'ganha';
     pj.concorrencia = { ...(pj.concorrencia || {}), id: c.id, conviteId: v.id, contratanteId: c.contratanteId, vinculo: { empresaId: c.contratanteId, obraId: c.obraId } };
+    garantirObraDoProjeto(pj, dadosDela);   // a obra nasce com o projeto ganho, já ligada à obra da contratante
   }
   salvar();
   return { ok: true };
