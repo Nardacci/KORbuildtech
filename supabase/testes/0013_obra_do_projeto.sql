@@ -1,4 +1,4 @@
--- KORbuild · teste da migração 0020 (supabase/pendentes/20261028_0020_obra_do_projeto.sql): o projeto ganho é a obra.
+-- KORbuild · teste das migrações 0020 e 0022: o projeto liberado para obra é a obra.
 -- Tudo dentro de uma transação que termina em ROLLBACK. Se chegar ao fim, imprime 'obra do projeto: todas as verificações passaram'.
 
 begin;
@@ -28,8 +28,8 @@ begin
   returning id into v_pj;
   if (select obra_id from public.projetos where id = v_pj) is not null then raise exception 'FALHOU: projeto em orçamento ganhou obra'; end if;
 
-  -- ganha: a obra nasce do projeto
-  update public.projetos set situacao = 'ganha' where id = v_pj;
+  -- liberado para obra: a obra nasce do projeto
+  update public.projetos set liberado_em = now(), liberado_por = 'Ana Treze' where id = v_pj;
   select * into o from public.obras where projeto_id = v_pj;
   if o.id is null then raise exception 'FALHOU: obra automática não foi criada'; end if;
   if (select obra_id from public.projetos where id = v_pj) <> o.id then raise exception 'FALHOU: projetos.obra_id não aponta para a obra'; end if;
@@ -45,7 +45,7 @@ begin
   if o.nome <> 'Reforma Treze · casa' or o.endereco <> '22 Pleasant St' or o.lat is not null or o.dias_trabalho <> '{1,2,3,4,5}'::smallint[] then raise exception 'FALHOU: obra não acompanhou o projeto (% / % / %)', o.nome, o.endereco, o.lat; end if;
 
   -- obra sem coordenadas pode existir; segundo projeto com o mesmo nome ganha "(1)"
-  insert into public.projetos (nome, contratante_id, cidade, estado, tipo, situacao) values ('Reforma Treze · casa', v_ct, 'Concord', 'NH', 'reforma', 'ganha') returning id into v_pj2;
+  insert into public.projetos (nome, contratante_id, cidade, estado, tipo, situacao, liberado_em) values ('Reforma Treze · casa', v_ct, 'Concord', 'NH', 'reforma', 'orcamento', now()) returning id into v_pj2;
   select * into o from public.obras where projeto_id = v_pj2;
   if o.id is null or o.nome <> 'Reforma Treze · casa (1)' or o.lat is not null then raise exception 'FALHOU: segundo projeto (%)', o.nome; end if;
   if o.inicio <> current_date or o.prazo <> current_date + 89 then raise exception 'FALHOU: datas padrão'; end if;
@@ -55,22 +55,27 @@ begin
   if (select obra_id from public.projetos where id = v_pj) is null or (select count(*) from public.obras where projeto_id = v_pj) <> 1 then raise exception 'FALHOU: obra_id vazio perdeu ou duplicou a obra'; end if;
   -- mudar a situação de novo não cria outra obra
   update public.projetos set situacao = 'enviada' where id = v_pj; update public.projetos set situacao = 'ganha' where id = v_pj;
+  update public.projetos set liberado_em = null where id = v_pj; update public.projetos set liberado_em = now() where id = v_pj;
   if (select count(*) from public.obras where empresa_id = v_emp) <> 2 then raise exception 'FALHOU: obra duplicada'; end if;
 
+  update public.projetos set liberado_em = null where id = v_pj2;
+  -- projeto perdido não fica liberado
+  update public.projetos set situacao = 'perdida', liberado_em = now() where id = v_pj2;
+  if (select liberado_em from public.projetos where id = v_pj2) is not null then raise exception 'FALHOU: perdido ficou liberado'; end if;
   update public.projetos set situacao = 'orcamento' where id = v_pj2;
   -- obra à mão continua possível, agora sem coordenadas e sem responsável
   insert into public.obras (nome, contratante_id, municipio, estado, inicio, prazo) values ('Manual Treze', v_ct, 'Bow', 'NH', current_date, current_date + 10);
 end $$;
 
 reset role;
--- apagar a obra do segundo projeto (como o banco, sem RLS) só limpa projetos.obra_id; em orçamento, a obra não renasce
+-- apagar a obra do segundo projeto (como o banco, sem RLS) só limpa projetos.obra_id; sem liberação, a obra não renasce
 do $$
 declare v_pj2 uuid := (select p.id from public.projetos p join public.obras o on o.id = p.obra_id where o.nome = 'Reforma Treze · casa (1)');
 begin
   if v_pj2 is null then raise exception 'FALHOU: segundo projeto não achado'; end if;
   delete from public.obras where projeto_id = v_pj2;
   if (select obra_id from public.projetos where id = v_pj2) is not null or (select empresa_id from public.projetos where id = v_pj2) is null then raise exception 'FALHOU: apagar a obra não limpou só obra_id'; end if;
-  if exists (select 1 from public.obras where projeto_id = v_pj2) then raise exception 'FALHOU: a obra renasceu em orçamento'; end if;
+  if exists (select 1 from public.obras where projeto_id = v_pj2) then raise exception 'FALHOU: a obra renasceu sem liberação'; end if;
 end $$;
 select 'obra do projeto: todas as verificações passaram' as resultado;
 rollback;

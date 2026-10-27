@@ -436,7 +436,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ RDOs de hoje, aguardando aprovação, 'Projetos com RDO atrasado' e 'Farol dos projetos' com os projetos em execução
 - [ ] **T189** · `pv.p1.admin` — Bids › fechar uma concorrência de projeto ganho (vencedora com conta)  
   _Esperado:_ Na vencedora, o projeto fica Ganha e a obra dela nasce sozinha, ligada à obra da contratante; o convite mostra 'Você venceu' e 'Abrir a obra'; o diário dela chega para a contratante aprovar
-- [ ] **T190** · `pv.p1.admin` — Conta real (depois da migração 0020): Editar projeto › Ganha  
+- [ ] **T190** · `pv.p1.admin` — Conta real (depois das migrações 0020/0022): Liberar para obra  
   _Esperado:_ A obra aparece no banco (projetos.obra_id preenchido) e no Daily
 - [ ] **T191** · `pv.p1.encarregado` — Daily › projeto ganho › Nova RDO › Atividades  
   _Esperado:_ A atividade tem 'Tarefa do cronograma' com as tarefas do projeto (Takeoff › Schedule) abaixo de 100% e, ao escolher uma, o campo '% feito da tarefa (hoje: n%)'
@@ -446,3 +446,11 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ 'Etapa atual' traz as tarefas do cronograma em andamento hoje; o sininho avisa 'Tarefa atrasada' com atalho para o Gantt quando uma tarefa passou do fim sem 100%
 - [ ] **T194** · `pv.p1.admin` — Conta real (depois da migração 0021): aprovar um diário que aponta uma tarefa  
   _Esperado:_ projetos.cronograma recebe o pct e o avanço (data, antes, pct, rdoNumero, por); o Gantt reflete depois de recarregar
+- [ ] **T195** · `pv.p1.admin` — Takeoff › projeto em orçamento › Visão geral › cartão Obra  
+  _Esperado:_ Etiqueta 'Em análise', 'Falta terminar: …' com as etapas que faltam e o botão 'Liberar para obra' desabilitado; a situação comercial não interfere (só Perdida bloqueia)
+- [ ] **T196** · `pv.p1.admin` — Takeoff › projeto com plantas, escalas, medição, entrega decidida e cronograma › Liberar para obra  
+  _Esperado:_ Botão habilita sem proposta; ao clicar: etiqueta 'Liberado para obra' com data e quem liberou, 'Abrir no Daily' e 'Voltar para análise'; o projeto aparece no Daily em 'Projetos em execução' (obra criada sozinha)
+- [ ] **T197** · `pv.p1.admin` — Takeoff › projeto liberado sem diário › Voltar para análise  
+  _Esperado:_ O projeto some do Daily sem apagar nada; liberar de novo traz a mesma obra. Com diário de obra, 'Voltar para análise' não aparece
+- [ ] **T198** · `pv.p1.admin` — Conta real (depois da migração 0022): liberar um projeto  
+  _Esperado:_ projetos.liberado_em preenchido, obra criada (obra_id) e o projeto no Daily; projeto Perdida não fica liberado; marcar Ganha sozinho não leva mais ao Daily

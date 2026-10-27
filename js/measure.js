@@ -13,7 +13,7 @@ import { comprimento, areaPoligono, fatorInclinacao, distancia, POL_POR_PE, POL2
 import { calcularLinha, validar } from './formulas.js';
 import { contato } from './contatos.js';
 import { cancelarDoProjeto } from './concorrencias.js';
-import { garantirObraDoProjeto } from './obras.js';
+import { garantirObraDoProjeto, liberadoParaObra } from './obras.js';
 
 function mz() { return estado().measure; }
 export function projetos() { return mz().projetos; }
@@ -111,6 +111,39 @@ export function salvarProjeto(id, dados) {
   garantirObraDoProjeto(novo);
   salvar();
   return { ok: true, id: novo.id };
+}
+
+/* ---------- Liberar para obra (docs/daily-primeira-versao.md) ----------
+ * A análise terminou quando as cinco etapas técnicas estão prontas: plantas, escala em todas as folhas, decisão de quem faz
+ * cada tarefa, pelo menos uma condição medida e o cronograma. A proposta é opcional (projeto de controle próprio pode não ter).
+ * Projeto perdido não libera. Liberado, o projeto vira obra e entra no Daily; "voltar para análise" tira do Daily sem apagar nada. */
+export const ETAPAS_PARA_OBRA = ['plans', 'scale', 'delivery', 'measure', 'schedule'];
+export function pendenciasParaObra(p) {
+  const fs = folhasDo(p.id), cs = condicoesDo(p.id), t = ((p.cronograma || {}).tarefas || []);
+  const feitos = { plans: fs.length > 0, scale: fs.length > 0 && fs.every((f) => f.escala), delivery: t.length > 0 && t.every((x) => x.quem !== 'decidir'), measure: cs.some((x) => (x.medicoes || []).length > 0), schedule: t.length > 0 };
+  return ETAPAS_PARA_OBRA.filter((k) => !feitos[k]);
+}
+export const prontoParaObra = (p) => !!p && p.situacao !== 'perdida' && pendenciasParaObra(p).length === 0;
+export function liberarProjeto(id, por = '') {
+  const p = projeto(id);
+  if (!p) return { erro: tr('Projeto não encontrado.') };
+  if (p.situacao === 'perdida') return { erro: tr('Projeto perdido não vai para obra.') };
+  if (pendenciasParaObra(p).length) return { erro: tr('Termine as etapas do projeto antes de liberar para obra.') };
+  if (liberadoParaObra(p)) return { ok: true, id };
+  p.liberado = { em: Date.now(), por: por || '' };
+  p.alteradoEm = Date.now();
+  garantirObraDoProjeto(p, estado(), por);
+  salvar();
+  return { ok: true, id };
+}
+export function voltarParaAnalise(id, temDiario = false) {
+  const p = projeto(id);
+  if (!p) return { erro: tr('Projeto não encontrado.') };
+  if (temDiario) return { erro: tr('Este projeto já tem diário de obra: não volta mais para análise.') };
+  p.liberado = null;
+  p.alteradoEm = Date.now();
+  salvar();
+  return { ok: true, id };
 }
 
 /* Excluir o projeto apaga as folhas e as condições (com as medições) dele. */
@@ -624,6 +657,7 @@ export function criarDadosMeasure({ projetos: comProjetos = true, estimadores = 
         descricao: tr('Mezanino metálico de 2.400 sq ft com piso de concreto'), obraId: galpao.obraId, estimadorId: estimadores[0], prazoProposta: somarDias(hoje(), -4), criadoEm: Date.now() },
       { id: 'pj-cozinha', nome: tr('Reforma de cozinha · Mitchell'), contratanteId: 'ct-mitchell', donoId: null, endereco: '22 Pleasant St', cidade: 'Concord', estado: 'NH', zip: '03301', tipo: 'reforma', situacao: 'ganha',
         descricao: tr('Troca de armários, piso LVP e drywall'), obraId: null, estimadorId: estimadores[1], prazoProposta: somarDias(hoje(), -21), criadoEm: Date.now(),
+        liberado: { em: Date.now() - 17 * 864e5, por: tr('Tom Reilly') },   // análise concluída: está no Daily
         // cronograma em andamento: demolição pronta, drywall atrasado, o resto por vir — para o Início e a página do Gantt terem o que mostrar
         cronograma: { tarefas: [
           { id: 'tf-cz-1', nome: tr('Demolição e remoção'), quem: 'proprio', inicio: somarDias(hoje(), -16), dias: 3, pct: 100 },

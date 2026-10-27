@@ -26,7 +26,15 @@ const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 export function obras() { return estado().obras; }
 /* Na 1ª versão o Daily só conhece as obras que nasceram de projetos (o projeto ganho é a obra); obras cadastradas à mão ficam para a versão completa. */
-export function obrasDaVersao(dados) { const lista = (dados || estado()).obras || []; return PRIMEIRA_VERSAO ? lista.filter((o) => o.projetoId) : lista; }
+/* O projeto está liberado para obra (docs/daily-primeira-versao.md): a análise terminou e o Daily pode começar. */
+export const liberadoParaObra = (pj) => !!(pj && pj.liberado && pj.liberado.em);
+/* 1ª versão: o Daily só vê obras que nasceram de projetos liberados para obra (o projeto "voltou para análise" some do Daily, sem apagar nada). */
+export function obrasDaVersao(dados) {
+  const d = dados || estado(), lista = d.obras || [];
+  if (!PRIMEIRA_VERSAO) return lista;
+  const projetos = (d.measure || {}).projetos || [];
+  return lista.filter((o) => o.projetoId && liberadoParaObra(projetos.find((p) => p.id === o.projetoId)));
+}
 /* Obra sem situação (dados antigos) está em andamento. */
 export function situacaoDaObra(o) { return (o && o.situacao) || 'andamento'; }
 /* Só obra em andamento cobra diário, aparece no campo e no ponto (OB-04). */
@@ -100,8 +108,8 @@ export function salvarObra(id, dados, por) {
   return { ok: true, id: nova.id };
 }
 
-/* ---------- O projeto ganho é a obra (docs/daily-primeira-versao.md) ----------
- * Quando o projeto fica "ganha", a obra nasce sozinha, 1 para 1, a partir dele: nome, partes, endereço, datas do cronograma,
+/* ---------- O projeto liberado para obra é a obra (docs/daily-primeira-versao.md) ----------
+ * Quando o projeto é liberado para obra (análise concluída), a obra nasce sozinha, 1 para 1, a partir dele: nome, partes, endereço, datas do cronograma,
  * local no mapa e dias de trabalho (p.execucao = { lat, lon, raio, diasTrabalho }). Depois, o cadastro do projeto manda na obra.
  * Na conta com banco, o gatilho projetos_obra (migração 0020) faz o mesmo. */
 function camposDoProjeto(pj) {
@@ -124,7 +132,7 @@ const nomeLivreDeObra = (lista, nome, ignorarId) => {
   return nm;
 };
 export function garantirObraDoProjeto(pj, dados = estado(), por = '') {
-  if (!pj || pj.situacao !== 'ganha') return null;
+  if (!liberadoParaObra(pj)) return null;
   if (dados.oficial) return null;   // na conta com banco, o gatilho projetos_obra (migração 0020) cria a obra; o espelho a traz depois
   dados.obras = dados.obras || [];
   const lista = dados.obras;
@@ -132,6 +140,8 @@ export function garantirObraDoProjeto(pj, dados = estado(), por = '') {
   const existente = pj.obraId && lista.find((o) => o.id === pj.obraId);
   if (existente) {
     if (existente.projetoId === pj.id) Object.assign(existente, campos, { nome: nomeLivreDeObra(lista, pj.nome, existente.id) });
+    // ganhou a concorrência depois de liberar: a obra que já existia recebe a ligação com a obra da contratante (CO-14)
+    if (existente.projetoId === pj.id && !existente.vinculo && pj.concorrencia && pj.concorrencia.vinculo && pj.concorrencia.vinculo.obraId) { existente.vinculo = { ...pj.concorrencia.vinculo }; existente.concorrenciaId = pj.concorrencia.id; }
     return existente;
   }
   const tarefas = ((pj.cronograma || {}).tarefas || []).filter((x) => DATA.test(x.inicio || ''));
@@ -144,7 +154,7 @@ export function garantirObraDoProjeto(pj, dados = estado(), por = '') {
   lista.push(nova);
   pj.obraId = nova.id;
   if (dados === estado()) {
-    auditar(tr('Obras'), tr('Obra criada a partir do projeto ganho: {nome}', { nome: nova.nome }), '', nova.cidade + ' · ' + inicio + ' → ' + prazo, '', por);
+    auditar(tr('Obras'), tr('Obra criada a partir do projeto liberado: {nome}', { nome: nova.nome }), '', nova.cidade + ' · ' + inicio + ' → ' + prazo, '', por);
     cronogramaDoProjetoNaObra(pj, por);
   }
   return nova;
@@ -158,11 +168,11 @@ export function cronogramaDoProjetoNaObra(pj, por = '') {
   return !aplicarCronogramaDoProjeto(o.id, pj, por).erro;
 }
 
-/* Todos os projetos ganhos da empresa com a obra em dia (chamado ao desenhar, na 1ª versão: barato e idempotente). */
+/* Todos os projetos liberados da empresa com a obra em dia (chamado ao desenhar, na 1ª versão: barato e idempotente). */
 export function garantirObrasDosProjetos(dados = estado()) {
   let mudou = false;
   for (const pj of ((dados.measure || {}).projetos || [])) {
-    if (pj.situacao !== 'ganha') continue;
+    if (!liberadoParaObra(pj)) continue;
     const antes = JSON.stringify(dados.obras && dados.obras.find((o) => o.id === pj.obraId));
     const o = garantirObraDoProjeto(pj, dados);
     if (o && JSON.stringify(o) !== antes) mudou = true;

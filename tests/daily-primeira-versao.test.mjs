@@ -25,6 +25,18 @@ await p.evaluate(() => localStorage.setItem('kbt.sessao', 'u-tom'));
 const ir = async (rota, espera) => { await p.goto('about:blank'); await p.goto(BASE + rota); await p.waitForSelector(espera, { timeout: 15000 }); };
 const texto = async (sel = 'main') => (await p.locator(sel).innerText()).replace(/\s+/g, ' ');
 
+/* Deixa o projeto com as cinco etapas técnicas prontas (plantas com escala, tarefa decidida, uma condição medida) para poder liberar para obra. */
+const deixarPronto = (pid) => p.evaluate(async (id) => {
+  const m = await import('/js/measure.js'); const a = await import('/js/armazem.js');
+  const d = a.estado(), pj = m.projeto(id);
+  d.measure.folhas.push({ id: 'fl-t-' + id, projetoId: id, nome: 'A-101', arquivo: { tipo: 'url', src: 'assets/plantas/casa-modelo.pdf', nome: 'casa-modelo.pdf' }, pagina: 1, escala: { nome: '1/4" = 1\'-0"', polPorPe: 0.25 } });
+  d.measure.condicoes.push({ id: 'cd-t-' + id, projetoId: id, nome: 'Piso', tipo: 'area', cor: '#2563EB', props: {}, assemblies: [], folhas: ['fl-t-' + id], medicoes: [{ id: 'md-t-' + id, folhaId: 'fl-t-' + id, pontos: [[0, 0], [100, 0], [100, 100]], valor: 1 }] });
+  pj.cronograma = pj.cronograma || { tarefas: [], marcos: [] };
+  if (!pj.cronograma.tarefas.length) pj.cronograma.tarefas.push({ id: 'tf-t-' + id, nome: 'Demolição', quem: 'proprio', inicio: new Date().toISOString().slice(0, 10), dias: 3 });
+  for (const t of pj.cronograma.tarefas) if (t.quem === 'decidir') t.quem = 'proprio';
+  a.salvar();
+}, pid);
+
 console.log('Depois do login: três módulos');
 await ir('#/inicio', '.modulo');
 const modulos = await p.locator('.modulo .modulo-nome').allInnerTexts();
@@ -60,21 +72,39 @@ await ir('#/daily/obras', 'main');
 verificar(!(await texto()).includes('Garagem Pereira'), 'em orçamento, o projeto ainda não está no Daily');
 await ir('#/measure/projeto/' + id + '/editar', '#form-projeto');
 verificar(await p.inputValue('#ob-lat') === '43.1339' && await p.inputValue('#ob-raio') === '200' && await p.locator('[name="diasTrabalho"][value="6"]').isChecked(), 'a Execução ficou salva no projeto');
-await p.selectOption('#pj-situacao', 'ganha');
-await p.click('[data-acao="mz-salvar-projeto"]');
+await ir('#/measure/projeto/' + id, '.mz-liberar');
+t = await texto('.mz-liberar');
+verificar(/Em análise/.test(t) && /Falta terminar:/.test(t) && await p.locator('[data-acao="pj-liberar"]').isDisabled(), 'na Visão geral, "Liberar para obra" fica desabilitado enquanto faltam etapas, e diz quais', t);
+await deixarPronto(id);
+await ir('#/measure/projeto/' + id, '.mz-liberar');
+verificar(/Tudo pronto/.test(await texto('.mz-liberar')) && await p.locator('[data-acao="pj-liberar"]').isEnabled(), 'com as cinco etapas técnicas prontas (sem proposta), o botão habilita');
+await p.click('[data-acao="pj-liberar"]');
+await p.waitForTimeout(600);
+t = await texto('.mz-liberar');
+verificar(/Liberado para obra/.test(t) && /Liberado em/.test(t) && await p.locator('[data-acao="pj-voltar-analise"]').count() === 1, 'liberado: etiqueta, data, quem liberou e "Voltar para análise"', t);
+await ir('#/daily/obras', 'main');
+t = await texto();
+verificar(t.includes('Garagem Pereira'), 'liberado para obra, o projeto aparece no Daily sem ninguém cadastrar obra (situação comercial ainda Em orçamento)', t.slice(0, 200));
+await ir('#/measure/projeto/' + id, '.mz-liberar');
+await p.click('[data-acao="pj-voltar-analise"]');
+await p.waitForTimeout(600);
+await ir('#/daily/obras', 'main');
+verificar(!(await texto()).includes('Garagem Pereira'), '"Voltar para análise" tira o projeto do Daily (sem apagar nada)');
+await ir('#/measure/projeto/' + id, '.mz-liberar');
+await p.click('[data-acao="pj-liberar"]');
 await p.waitForTimeout(600);
 await ir('#/daily/obras', 'main');
 t = await texto();
-verificar(t.includes('Garagem Pereira'), 'marcado como Ganha, o projeto aparece no Daily sem ninguém cadastrar obra', t.slice(0, 200));
+verificar(t.includes('Garagem Pereira') && (t.match(/Garagem Pereira/g) || []).length === 1, 'liberado de novo: volta ao Daily, com a mesma obra (uma só)', t.slice(0, 200));
 await p.locator('.cartao-obra:has-text("Garagem Pereira")').click();
 await p.waitForSelector('.obra-resumo');
 t = await texto();
 verificar(t.includes('Bow') && await p.locator('a[href="#/measure/projeto/' + id + '"]').count() >= 1 && !/Editar a obra|Nova obra/.test(t), 'a página do projeto no Daily mostra o resumo e o atalho "Abrir o projeto"', t.slice(0, 300));
 
-console.log('Cronograma do projeto (Takeoff): duas tarefas, uma em andamento hoje');
+console.log('Cronograma do projeto (Takeoff): duas tarefas, uma em andamento hoje (a Demolição já veio da liberação)');
 const hojeIso = new Date().toISOString().slice(0, 10);
 await ir('#/measure/projeto/' + id + '/schedule', '[data-acao="pj-add-tarefa"]');
-for (const [nome, inicio, dias] of [['Demolição', hojeIso, '3'], ['Pintura', '2030-01-07', '5']]) {
+for (const [nome, inicio, dias] of [['Pintura', '2030-01-07', '5']]) {
   await p.click('[data-acao="pj-add-tarefa"]');
   await p.waitForTimeout(300);
   const linha = p.locator('[data-pj-tarefa="nome"]').last();
@@ -127,6 +157,8 @@ const pcts = await p.locator('.mz-gantt .mz-g-pct').allInnerTexts();
 verificar(pcts.length === 2 && pcts[0] === '60%' && pcts[1] === '0%', 'no Gantt, Demolição está em 60% (veio do diário aprovado) e Pintura em 0%', pcts);
 await ir('#/measure/projeto/' + id + '/schedule', '[data-pj-tarefa="pct"]');
 verificar(await p.locator('[data-pj-tarefa="pct"]').first().inputValue() === '60', 'na aba Cronograma o % feito da tarefa é 60', await p.locator('[data-pj-tarefa="pct"]').first().inputValue());
+await ir('#/measure/projeto/' + id, '.mz-liberar');
+verificar(await p.locator('[data-acao="pj-voltar-analise"]').count() === 0, 'com diário de obra, o projeto não volta mais para análise');
 
 console.log('Projeto editado depois de ganho: a obra acompanha');
 await ir('#/measure/projeto/' + id + '/editar', '#form-projeto');

@@ -23,8 +23,8 @@ select pg_temp.como('00000000-0000-4000-8000-0000000014a1', 'kb-teste14-ana@exam
 select public.criar_empresa('{"nome":"Prestadora Catorze","atuacao":"prestadora"}');
 insert into pg_temp.guarda values ('tj', public.convidar_usuario('kb-teste14-jose@example.com', 'José Catorze', (select id from public.perfis_acesso where chave = 'encarregado')));
 insert into public.contatos (nome, papeis, email) values ('Cliente Catorze', array['cliente'], 'c14@example.com');
-insert into public.projetos (nome, contratante_id, cidade, estado, tipo, situacao, cronograma)
-  values ('Reforma Catorze', (select id from public.contatos where nome = 'Cliente Catorze'), 'Concord', 'NH', 'reforma', 'ganha',
+insert into public.projetos (nome, contratante_id, cidade, estado, tipo, situacao, liberado_em, cronograma)
+  values ('Reforma Catorze', (select id from public.contatos where nome = 'Cliente Catorze'), 'Concord', 'NH', 'reforma', 'ganha', now(),
           '{"tarefas":[{"id":"t1","nome":"Demolição","inicio":"2026-10-20","dias":3,"pct":20},{"id":"t2","nome":"Pintura","inicio":"2026-10-26","dias":5}],"marcos":[]}');
 insert into pg_temp.guarda select 'pj', id::text from public.projetos where nome = 'Reforma Catorze';
 insert into pg_temp.guarda select 'obra', obra_id::text from public.projetos where nome = 'Reforma Catorze';

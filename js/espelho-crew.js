@@ -174,6 +174,7 @@ export function aplicarMeasure(d, lido) {
       proposta: Object.keys(p.proposta_rascunho || {}).length ? p.proposta_rascunho : undefined, cotacao: Object.keys(p.cotacao || {}).length ? p.cotacao : undefined,
       entrega: Object.keys(p.entrega || {}).length ? p.entrega : undefined, cronograma: Object.keys(p.cronograma || {}).length ? p.cronograma : undefined,
       concorrencia: Object.keys(p.concorrencia || {}).length ? p.concorrencia : undefined, execucao: Object.keys(p.execucao || {}).length ? p.execucao : undefined,
+      liberado: p.liberado_em ? { em: new Date(p.liberado_em).getTime(), por: p.liberado_por || '' } : null,
       propostas: propostasPor.get(p.id) || [], criadoEm: ms(p.criado_em), alteradoEm: ms(p.atualizado_em),
     })),
     folhas: lido.folhas.map((f) => ({ id: f.id, projetoId: f.projeto_id, nome: f.nome, arquivo: { tipo: 'storage', path: f.arquivo_path, id: nomeDoArquivo(f.arquivo_path), nome: f.arquivo_nome }, pagina: f.pagina, escala: f.escala || null, observacao: f.observacao || '', criadaEm: ms(f.criada_em) })),

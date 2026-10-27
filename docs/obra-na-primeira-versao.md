@@ -1,4 +1,6 @@
-# Obra na 1ª versão: o projeto ganho é a obra (decisão do dono, 27/10)
+# Obra na 1ª versão: o projeto liberado para obra é a obra (decisões do dono, 27/10)
+
+> Atualização (27/10, mais tarde): a porta do Daily passou a ser **Liberar para obra** (análise concluída), não a situação Ganha. Veja `docs/daily-primeira-versao.md`.
 
 **Para o usuário, só existe projeto.** Na 1ª versão (Takeoff + Bids + Settings) não há cadastro de obra:
 - Settings não tem a tela Obras (nem `#/conta/obras`); o botão Settings do Início abre Contatos.

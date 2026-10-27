@@ -22,6 +22,8 @@ export const PERSISTE_OBS_FOLHA = true;
 export const PERSISTE_ATIVO_ITEM = true;
 /** Execução do projeto (local no mapa, dias de trabalho): coluna projetos.execucao da migração 0020 (supabase/pendentes). Virar true junto com ela. */
 export const PERSISTE_EXECUCAO = true;
+/* liberado_em / liberado_por (migração 0022): virar true junto com a migração. */
+export const PERSISTE_LIBERADO = false;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;
@@ -32,7 +34,7 @@ let dentroDeMim = false;       // salvar() chamado por aqui (ids e marcas): não
 const linha = {
   projetos: (p) => ({ id: p.id, nome: p.nome, contratante_id: p.contratanteId, dono_id: p.donoId || null, endereco: p.endereco || '', cidade: p.cidade, estado: p.estado, zip: p.zip || '',
     tipo: p.tipo, situacao: p.situacao, descricao: p.descricao || '', obra_id: p.obraId || null, estimador_id: p.estimadorId || null, prazo_proposta: p.prazoProposta || null,
-    proposta_rascunho: p.proposta || {}, cotacao: p.cotacao || {}, ...(PERSISTE_ESPACO ? { entrega: p.entrega || {}, cronograma: p.cronograma || {} } : {}), ...(PERSISTE_EXECUCAO ? { execucao: p.execucao || {} } : {}) }),
+    proposta_rascunho: p.proposta || {}, cotacao: p.cotacao || {}, ...(PERSISTE_ESPACO ? { entrega: p.entrega || {}, cronograma: p.cronograma || {} } : {}), ...(PERSISTE_EXECUCAO ? { execucao: p.execucao || {} } : {}), ...(PERSISTE_LIBERADO ? { liberado_em: p.liberado && p.liberado.em ? new Date(p.liberado.em).toISOString() : null, liberado_por: (p.liberado && p.liberado.por) || null } : {}) }),
   folhas: (f) => ({ id: f.id, projeto_id: f.projetoId, nome: f.nome, arquivo_path: f.arquivo.path, arquivo_nome: f.arquivo.nome || '', pagina: f.pagina, escala: f.escala || null, ...(PERSISTE_OBS_FOLHA ? { observacao: f.observacao || '' } : {}) }),
   condicoes: (c) => ({ id: c.id, projeto_id: c.projetoId, nome: c.nome, tipo: c.tipo, cor: c.cor || '', props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: !!c.oculta, medicoes: c.medicoes || [] }),
   typicais: (t) => ({ id: t.id, projeto_id: t.projetoId, folha_id: t.folhaId, nome: t.nome, regiao: t.regiao || null, ocorrencias: t.ocorrencias }),
@@ -88,7 +90,7 @@ async function subir() {
       const margens = (mz.margens || []).filter((m) => !m._banco).map((m) => { if (!m.id) m.id = crypto.randomUUID(); return { id: m.id, desde: m.desde, overhead_pct: m.overheadPct, lucro_pct: m.lucroPct, modo: m.modo, imposto_material_pct: m.impostoMaterialPct || 0, motivo: m.motivo }; });
       // tabelas: o que mudou, o que é novo e o que sumiu
       const atual = fotografar(mz);
-      let relerDepois = false;   // projeto ganho sem obra: o gatilho do banco cria a obra (0020) e o espelho precisa trazê-la
+      let relerDepois = false;   // projeto liberado sem obra: o gatilho do banco cria a obra (0020) e o espelho precisa trazê-la
       for (const t of ORDEM) {
         const novos = [];
         for (const x of lista(mz, t)) {
@@ -104,7 +106,7 @@ async function subir() {
           if (error) throw error;
           if (t === 'condicoes') for (const r of data || []) { const c = (mz.condicoes || []).find((x) => x.id === r.id); if (c) c._banco = { versao: r.versao }; }
           for (const r of novos) conhecido[t].set(r.id, atual[t].get(r.id));
-          if (t === 'projetos' && novos.some((r) => r.situacao === 'ganha' && !r.obra_id)) relerDepois = true;
+          if (t === 'projetos' && novos.some((r) => (r.liberado_em || r.situacao === 'ganha') && !r.obra_id)) relerDepois = true;
         }
       }
       if (precos.length) { const { error } = await sb.from('item_precos').upsert(precos, { onConflict: 'id', ignoreDuplicates: true }); if (error) throw error; }

@@ -7,11 +7,13 @@
 import { esc, toast, hoje, diasEntre, somarDias, dataCurta, novoId } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
-import { projeto, projetos, folhasDo, condicoesDo, assembly, item, itens } from './measure.js';
+import { projeto, projetos, folhasDo, condicoesDo, assembly, item, itens, pendenciasParaObra, prontoParaObra, liberarProjeto, voltarParaAnalise } from './measure.js';
+import { usuarioAtual } from './plataforma.js';
 import { dinheiro } from './crew.js';
 import { icone } from './icones.js';
 import { andamentoDoCronograma, pctFeito, pctPrevisto, tarefaAtrasada, ORDEM_SITUACAO } from './andamento.js';
-import { cronogramaDoProjetoNaObra } from './obras.js';
+import { cronogramaDoProjetoNaObra, liberadoParaObra } from './obras.js';
+import { PRIMEIRA_VERSAO } from './versao.js';
 
 let app = { desenhar() {}, ir() {} };
 export function ligarEspaco(funcoes) { app = { ...app, ...funcoes }; }
@@ -71,7 +73,7 @@ const NOMES_PASSO = () => ({
   scale: [tr('Definir a escala de cada folha'), (p) => { const n = folhasDo(p.id).filter((f) => !f.escala).length; return n ? tn(n, '{n} folha sem escala', '{n} folhas sem escala') : tr('Todas as folhas têm escala'); }],
   delivery: [tr('Decidir quem faz cada tarefa'), (p) => { const t = (p.cronograma || {}).tarefas || []; if (!t.length) return tr('Nenhuma tarefa ainda'); const n = (q) => t.filter((x) => x.quem === q).length; return tr('{a} próprias · {b} subcontratadas · {c} a decidir', { a: n('proprio'), b: n('terceiro'), c: n('decidir') }); }],
   measure: [tr('Medir as partes que são suas'), (p) => tn(condicoesDo(p.id).filter((c) => (c.medicoes || []).length).length, '{n} condição medida', '{n} condições medidas')],
-  schedule: [tr('Montar o cronograma'), () => tr('Datas e marcos (opcional, pode ficar para depois)')],
+  schedule: [tr('Montar o cronograma'), () => tr('Datas e marcos (precisa para liberar para obra)')],
   proposal: [tr('Emitir a proposta'), (p) => ((p.propostas || []).length ? p.propostas[p.propostas.length - 1].numero : tr('Precisa de preço para cada parte'))],
 });
 const ROTULO_ACAO = () => ({ plans: tr('Ver plantas'), scale: tr('Definir escalas'), delivery: tr('Revisar'), measure: tr('Abrir quantidades'), schedule: tr('Abrir cronograma'), proposal: tr('Abrir proposta') });
@@ -93,7 +95,21 @@ export function htmlOverview(p, ajudas) {
       return '<li><span class="mz-passo ' + (x.feito ? 'feito' : i === atual ? 'atual' : '') + '">' + (x.feito ? '✓' : i + 1) + '</span><span class="mz-passo-texto"><b>' + esc(titulo) + '</b><small>' + esc(detalhe(p)) + '</small></span>' +
         '<a class="btn btn-pequeno ' + (i === atual ? 'btn-primario' : 'btn-contorno') + '" href="' + alvo + '">' + esc(acoes[x.id]) + '</a></li>';
     }).join('') + '</ul></section>';
-  return kpis + '<div class="mz-duas-colunas">' + lista + '<div>' + ajudas.detalhes + htmlMarcos(p) + '</div></div>';
+  return kpis + '<div class="mz-duas-colunas">' + lista + '<div>' + htmlLiberarParaObra(p, nomes) + ajudas.detalhes + htmlMarcos(p) + '</div></div>';
+}
+
+/* Liberar para obra: a porta do Daily. Habilita quando as etapas técnicas estão prontas (a proposta é opcional). */
+export function htmlLiberarParaObra(p, nomes = NOMES_PASSO()) {
+  const liberado = liberadoParaObra(p), faltam = pendenciasParaObra(p), perdido = p.situacao === 'perdida';
+  const temDiario = (estado().rdos || []).some((r) => p.obraId && r.obraId === p.obraId);
+  const corpo = liberado
+    ? '<p class="mudo pequeno">' + tr('Liberado em {data} por {quem}. O projeto está no Daily: diário, histórico e painel.', { data: dataCurta(new Date(p.liberado.em).toISOString().slice(0, 10)), quem: esc(p.liberado.por || '—') }) + '</p>' +
+      '<div class="btn-linha">' + (PRIMEIRA_VERSAO ? '<a class="btn btn-primario btn-pequeno" href="' + (p.obraId ? '#/daily/obras/' + p.obraId : '#/daily/obras') + '">' + tr('Abrir no Daily') + '</a>' : '') +
+      (temDiario ? '' : '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-voltar-analise" data-id="' + p.id + '">' + tr('Voltar para análise') + '</button>') + '</div>'
+    : '<p class="mudo pequeno">' + (perdido ? tr('Projeto perdido não vai para obra.') : faltam.length ? tr('Falta terminar:') + ' ' + faltam.map((k) => esc(nomes[k][0].toLowerCase())).join(', ') + '.' : tr('Tudo pronto. Ao liberar, o projeto vira a obra e entra no Daily.')) + '</p>' +
+      '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-liberar" data-id="' + p.id + '"' + (prontoParaObra(p) ? '' : ' disabled') + '>' + tr('Liberar para obra') + '</button>';
+  return '<section class="cartao mz-liberar' + (liberado ? ' liberado' : '') + '"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Obra') + '</h2>' +
+    (liberado ? '<span class="etiqueta etiqueta-verde">' + tr('Liberado para obra') + '</span>' : '<span class="etiqueta etiqueta-neutro">' + tr('Em análise') + '</span>') + '</div>' + corpo + '</section>';
 }
 
 function htmlMarcos(p) {
@@ -129,10 +145,10 @@ export function htmlCronograma(p, ajudas) {
     '<td><input type="date" data-pj-marco="data" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.data || '') + '" aria-label="' + esc(tr('Data')) + '"></td>' +
     '<td><input type="text" data-pj-marco="nota" data-id="' + p.id + '" data-m="' + m.id + '" value="' + esc(m.nota || '') + '" aria-label="' + esc(tr('Observação')) + '"></td>' +
     '<td class="num"><button type="button" class="link-botao pequeno" data-acao="pj-tirar-marco" data-id="' + p.id + '" data-m="' + m.id + '">' + tr('Remover') + '</button></td></tr>').join('');
-  const ganha = p.situacao === 'ganha';
+  const ganha = liberadoParaObra(p);
   const faixaGanho = !ganha ? '' : '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + (c.confirmado ? tr('Cronograma confirmado') : tr('Confirme o cronograma')) + '</h2><p class="mudo pequeno">' +
     (c.confirmado ? tn(c.confirmado.tarefas.length, 'Base da obra desde {data}: {n} tarefa.', 'Base da obra desde {data}: {n} tarefas.', { data: dataCurta(c.confirmado.em) }) + ' ' + tr('Se mudar algo, confirme de novo para atualizar a base.')
-      : tr('O projeto foi ganho. Ajuste as datas abaixo e confirme: o cronograma vira a base da obra.')) + '</p></div>' +
+      : tr('O projeto está liberado para obra. Ajuste as datas abaixo e confirme: o cronograma vira a base da obra.')) + '</p></div>' +
     '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-confirmar-cronograma" data-id="' + p.id + '"' + (tarefas.length ? '' : ' disabled') + '>' + (c.confirmado ? tr('Atualizar a base') : tr('Confirmar cronograma')) + '</button></div></section>';
   return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (etapasDasCondicoes(p).length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
@@ -232,6 +248,15 @@ if (typeof document !== 'undefined') {
 function terminou(msg) { salvar(); if (msg) toast(msg); app.desenhar(); }
 
 export const acoesEspaco = {
+  'pj-liberar'(el) {
+    const r = liberarProjeto(el.dataset.id, (usuarioAtual() || {}).nome || '');
+    terminou(r.erro || tr('Projeto liberado para obra. Ele já aparece no Daily.'));
+  },
+  'pj-voltar-analise'(el) {
+    const p = projeto(el.dataset.id);
+    const r = voltarParaAnalise(el.dataset.id, (estado().rdos || []).some((x) => p && p.obraId && x.obraId === p.obraId));
+    terminou(r.erro || tr('O projeto voltou para análise e saiu do Daily.'));
+  },
   'pj-add-tarefa'(el) {
     const c = cronogramaDe(projeto(el.dataset.id));
     const ultima = c.tarefas.map(fimDe).filter(Boolean).sort().pop();

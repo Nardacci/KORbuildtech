@@ -2,6 +2,7 @@
  * Medir planta é trabalho de computador: o visor é pensado para mouse e teclado. */
 
 import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
+import { liberadoParaObra } from './obras.js';
 import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta } from './util.js';
 import { dinheiro } from './crew.js';
 import { tr, tn } from './i18n.js';
@@ -117,7 +118,7 @@ function textoProps(c) {
 
 let filtroSituacao = 'todos';
 const nomeUsuario = (id) => (estado().usuarios.find((u) => u.id === id) || {}).nome || '';
-const etiquetaSituacao = (p) => '<span class="etiqueta ' + SITUACOES[p.situacao].classe + '">' + SITUACOES[p.situacao].nome + '</span>';
+const etiquetaSituacao = (p) => '<span class="etiqueta ' + SITUACOES[p.situacao].classe + '">' + SITUACOES[p.situacao].nome + '</span>' + (liberadoParaObra(p) ? ' <span class="etiqueta etiqueta-verde">' + tr('Liberado para obra') + '</span>' : '');
 /* Prazo da proposta (bid due date): em quantos dias, ou se já passou. */
 function textoPrazo(p) {
   if (!p.prazoProposta) return '<span class="mudo">—</span>';

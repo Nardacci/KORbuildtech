@@ -143,17 +143,19 @@ try {
     for (let i = 0; i < 20; i++) { await p.waitForTimeout(500); c = await noBanco(); if (!c || !(c.tarefas || []).length) break; }
     verificar('a tarefa de teste foi removida', !c || !(c.tarefas || []).length);
 
-    console.log('Conta real: o projeto ganho vira a obra (migração 0020) e aparece no Daily');
+    console.log('Conta real: o projeto liberado para obra vira a obra (migrações 0020/0022) e aparece no Daily');
     const [pjo] = await sql(`select id, nome from public.projetos where empresa_id = '${emp.id}' and situacao = 'orcamento' and obra_id is null order by criado_em limit 1`);
     await p.goto(BASE + '#/measure/projeto/' + pjo.id + '/editar');
     await p.waitForSelector('#form-projeto', { timeout: 40000 });
     await p.waitForTimeout(800);
     verificar('o formulário do projeto tem a seção Execução (mapa, cerca e dias de trabalho)', await p.locator('#mapa-obra').count() === 1 && await p.locator('[name="diasTrabalho"]').count() === 7);
-    await p.selectOption('#pj-situacao', 'ganha');
     await p.click('[data-acao="mz-salvar-projeto"]');
+    await p.waitForTimeout(800);
+    // liberar para obra (a tela exige as cinco etapas prontas; aqui o que se testa é o gatilho 0020/0022 e o Daily): direto no banco
+    await sqlExec(`update public.projetos set liberado_em = now(), liberado_por = 'Teste' where id = '${pjo.id}'`);
     let ob = null;
     for (let i = 0; i < 40 && !ob; i++) { await p.waitForTimeout(500); [ob] = await sql(`select o.id, o.nome, o.projeto_id, o.lat, p.obra_id from public.obras o join public.projetos p on p.id = o.projeto_id where o.projeto_id = '${pjo.id}'`); }
-    verificar('ao ficar Ganha, o banco criou a obra 1:1 do projeto e ligou projetos.obra_id', !!ob && ob.obra_id === ob.id && ob.lat == null, JSON.stringify(ob));
+    verificar('ao ser liberado para obra, o banco criou a obra 1:1 do projeto e ligou projetos.obra_id', !!ob && ob.obra_id === ob.id && ob.lat == null, JSON.stringify(ob));
     await p.waitForTimeout(3000);   // o app relê o espelho depois de gravar o projeto ganho (a obra vem do gatilho)
     await p.goto(BASE + '#/daily/obras');
     await p.waitForSelector('.cartao-obra, .vazio', { timeout: 40000 });
@@ -163,7 +165,7 @@ try {
     verificar('o Daily lista o projeto em "Projetos em execução", sem botão de nova obra', /Projetos em execução/.test(tdaily) && ob && tdaily.includes(ob.nome) && await p.locator('a[href*="obra/nova"]').count() === 0, tdaily.slice(0, 300));
     verificar('o cabeçalho do Daily é "KORbuild / Daily", sem o selo Takeoff', await p.locator('.topo-modulo:has-text("Daily")').count() === 1 && await p.locator('.topo-marca .logo-produto').count() === 0);
     // deixa a massa como estava
-    await sqlExec(`update public.projetos set situacao = 'orcamento', obra_id = null where id = '${pjo.id}'; delete from public.obras where projeto_id = '${pjo.id}';`);
+    await sqlExec(`update public.projetos set situacao = 'orcamento', liberado_em = null, liberado_por = null, obra_id = null where id = '${pjo.id}'; delete from public.obras where projeto_id = '${pjo.id}';`);
     await ctx.close();
   }
 

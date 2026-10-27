@@ -222,6 +222,8 @@ try {
   await t.p.reload();
   await t.p.waitForSelector('[data-acao="co-fechar"][data-convite="' + cvA + '"]', { timeout: 30000 });
   verificar((await t.p.locator('[data-acao="co-fechar"]').count()) === 2, 'a comparação tem as duas propostas');
+  // a Ana libera o projeto para obra antes (migração 0022): a obra nasce; ao vencer, o gatilho liga essa obra à da B
+  await sqlExec(`update public.projetos set liberado_em = now(), liberado_por = 'Ana' where id = '${pjA.id}'`);
   await t.p.click('[data-acao="co-fechar"][data-convite="' + cvA + '"]');
   await t.p.fill('dialog input[name="observacao"]', 'Melhor prazo');
   await t.p.click('dialog button:has-text("Fechar negócio")');
@@ -236,7 +238,7 @@ try {
   await l.p.waitForFunction(() => /fechou com outra empresa/.test(document.body.textContent), null, { timeout: 30000 });
   verificar(!(await l.p.textContent('main')).includes('186'), 'a Bayside vê que a contratante fechou com outra, sem o valor');
 
-  console.log('Ana: a obra nasce sozinha com o projeto ganho, ligada à obra da B (CO-14, migração 0020)');
+  console.log('Ana: a obra do projeto liberado fica ligada à obra da B ao vencer (CO-14, migrações 0020/0022)');
   await a.p.goto(BASE + '#/measure/convite/' + c.id);
   await a.p.reload();
   await a.p.waitForSelector('a[href^="#/daily/obras/"]', { timeout: 30000 });

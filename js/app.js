@@ -1040,7 +1040,7 @@ function telaObrasAdmin(filtro) {
     acoes: podeCadastrar ? '<a class="btn btn-primario btn-pequeno" href="#/settings/obra/nova">' + icone('mais', 16) + tr('Nova obra') + '</a>' : '',
     conteudo: (outras.length ? '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '"><a href="#/daily/obras"' + (filtro !== 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Em andamento') + ' <span class="mz-contagem">' + ativas.length + '</span></a>' +
         '<a href="#/daily/obras/encerradas"' + (filtro === 'encerradas' ? ' class="ativa" aria-current="page"' : '') + '>' + tr('Paralisadas e concluídas') + ' <span class="mz-contagem">' + outras.length + '</span></a></nav>' : '') +
-      (!obras.length ? '<p class="vazio">' + (filtro === 'encerradas' ? tr('Nenhuma obra paralisada ou concluída.') : PRIMEIRA_VERSAO ? tr('Nenhum projeto em execução. No Takeoff, marque o projeto como Ganha: ele aparece aqui.') : tr('Nenhuma obra em andamento.')) + (podeCadastrar && filtro !== 'encerradas' ? ' <a href="#/settings/obra/nova">' + tr('Cadastrar a primeira obra') + '</a>' : '') + '</p>' : '') +
+      (!obras.length ? '<p class="vazio">' + (filtro === 'encerradas' ? tr('Nenhuma obra paralisada ou concluída.') : PRIMEIRA_VERSAO ? tr('Nenhum projeto em execução. No Takeoff, termine a análise e clique em "Liberar para obra" na Visão geral do projeto: ele aparece aqui.') : tr('Nenhuma obra em andamento.')) + (podeCadastrar && filtro !== 'encerradas' ? ' <a href="#/settings/obra/nova">' + tr('Cadastrar a primeira obra') + '</a>' : '') + '</p>' : '') +
       '<div class="lista grade-obras">' + obras.map((o) => {
       const f = farolDaObra(o);
       const qtd = diariosDaObra(o).length;

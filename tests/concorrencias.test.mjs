@@ -404,6 +404,8 @@ r = await rodar((m, a, h, x) => {
 }, mezId);
 verificar(r.total === 31500 && r.outros === 1500 && r.nao === 1 && r.numero === 'P-2026-090' && r.prazo === 20 && r.excl.includes('Forro'), 'a construtora recebe a rev. 1: total, outros itens, etapa não cotada, número e prazo');
 
+// a Northfield já liberou o projeto para obra (análise pronta): a obra existe e, ao vencer, fica ligada à da construtora
+await rodar((m, a, h, x) => h.como(h.NF, () => { const p = a.estado().measure.projetos.find((y) => y.id === x); p.liberado = { em: Date.now(), por: 'Tom Reilly' }; a.salvar(); return true; }), pjId);
 await ir('u-ana', '#/daily/concorrencias/' + mezId + '/comparar');
 verificar((await page.locator('.tabela-comparar').innerText()).includes('Outros itens (fora das etapas)'), 'Comparar mostra a linha de outros itens');
 await page.locator('[data-acao="co-fechar"]').first().click();
@@ -414,7 +416,7 @@ verificar(r.sit === 'ganha' && r.vinc.empresaId === 'construtora-exemplo' && r.v
 
 await ir('u-tom', '#/measure/convite/' + mezId);
 txt = await page.locator('main').innerText();
-verificar(txt.includes('Você venceu esta concorrência.') && txt.includes('A obra já está criada e ligada à da contratante.') && await page.locator('a[href^="#/daily/obras/"]').count() >= 1, 'a Northfield vê que venceu: a obra já nasceu com o projeto ganho (sem "Criar obra")');
+verificar(txt.includes('Você venceu esta concorrência.') && txt.includes('A obra já está criada e ligada à da contratante.') && await page.locator('a[href^="#/daily/obras/"]').count() >= 1, 'a Northfield vê que venceu: a obra do projeto liberado já está ligada à da contratante (sem "Criar obra")');
 r = await rodar((m, a, h, x) => h.como(h.NF, () => { const o = a.estado().obras.find((y) => y.projetoId === x); return o && { vinc: o.vinculo, cid: o.concorrenciaId, nome: o.nome }; }), pjId);
 verificar(r && r.vinc && r.vinc.empresaId === 'construtora-exemplo' && r.vinc.obraId === 'galpao' && r.cid === mezId, 'a obra automática da Northfield nasce ligada ao Galpão da construtora (CO-14)', r);
 await ir('u-ana', '#/daily/obras/galpao');
@@ -559,8 +561,9 @@ r = await rodar((m, a, h, x) => h.como(h.NF, () => a.estado().measure.projetos.f
 verificar(r === 1, 'usar de novo troca a linha, não duplica');
 r = await rodar((m, a, h, x) => h.como(h.NF, () => m.fechar(x.sub, m.concorrenciaEnviada(x.sub).convites[0].id, '', 'Tom Reilly')), cadeia);
 verificar(r.erro && r.erro.includes('ganho'), 'sem ganhar o projeto, a Northfield não fecha com a Ridgeline (CO-24)');
-// a Northfield ganha: a obra nasce sozinha (ligada ao galpão); ao fechar com a Ridgeline, a construtora precisa aprovar
+// a Northfield libera o projeto para obra (análise pronta) e depois ganha: a obra que nasceu da liberação fica ligada ao galpão; ao fechar com a Ridgeline, a construtora precisa aprovar
 r = await rodar(async (m, a, h, x) => {
+  h.como(h.NF, () => { const pj = a.estado().measure.projetos.find((p) => p.id === x.pj); pj.liberado = { em: Date.now(), por: 'Tom Reilly' }; a.salvar(); });
   h.como(h.NF, () => m.enviarProposta(x.pai, { porEtapa: { '09 51 00 · Acoustical ceilings': 27500 } }, 'Tom Reilly'));
   h.como(h.GC, () => m.fechar(x.pai, m.concorrenciaEnviada(x.pai).convites[0].id, '', 'Ana Ribeiro'));
   return h.como(h.NF, () => {
