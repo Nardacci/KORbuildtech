@@ -170,7 +170,7 @@ T168;17 Itens e preços;pv.p1.admin;Itens › abrir um item › aba Preços: reg
 T169;17 Itens e preços;pv.p1.admin;Itens: item cujo preço vale desde mais de 12 meses;"Aparece como Desatualizado e no filtro Desatualizado";;;;
 T170;17 Itens e preços;pv.p1.admin;Itens › abrir um item › Deixar inativo (e depois Reativar);"Não existe botão de excluir; o inativo some da lista padrão, aparece em Inativos e não é oferecido em assemblies novos; o histórico de preços continua; reativar devolve o item";;;;
 T171;17 Itens e preços;pv.p1.admin;Itens › aba Usado em;"Lista os assemblies que usam o item";;;;
-T172;17 Itens e preços;pv.p1.admin;Conta real: deixar um item inativo;"O botão aparece desabilitado com o aviso 'depois da próxima atualização do banco' até a migração 0018 ser aplicada";;;;
+T172;17 Itens e preços;pv.p1.admin;Conta real: deixar um item inativo;"Deixar inativo funciona na conta real (migração 0018 aplicada): o item some da lista padrão e continua inativo depois de recarregar";;;;
 T173;17 Itens e preços;pv.p1.admin;Itens › Exportar › Excel;"Baixa um .xlsx com a aba Items (preço atual) e a aba Price history (histórico completo)";;;;
 T174;17 Itens e preços;pv.p1.admin;Itens › Exportar › CSV;"Baixa um .csv com os itens e o preço atual, que abre no Excel com acentos corretos";;;;
 T175;17 Itens e preços;pv.p1.admin;Itens › Importar › Baixar o modelo; preencher 1 item novo com preço, 1 item existente com preço diferente e 1 linha sem unidade; Conferir a planilha;"A conferência mostra 1 novo, 1 preço novo e 1 erro com o número da linha; só grava ao clicar Importar; o preço antigo continua no histórico";;;;

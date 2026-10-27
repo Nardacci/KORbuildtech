@@ -19,7 +19,7 @@ export const PERSISTE_ESPACO = true;
 /** Observação de cada folha (migração 0017): só vai ao banco depois que ela for aplicada. */
 export const PERSISTE_OBS_FOLHA = true;
 /** Item ativo/inativo (migração 0018, em supabase/pendentes): só vai ao banco depois que ela for aplicada. */
-export const PERSISTE_ATIVO_ITEM = false;
+export const PERSISTE_ATIVO_ITEM = true;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;

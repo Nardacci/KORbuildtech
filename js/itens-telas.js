@@ -21,7 +21,7 @@ let app = { desenhar: () => {}, ir: () => {} };
 export function ligarItens(funcoes) { app = { ...app, ...funcoes }; }
 const podeEditar = () => pode(usuarioAtual(), 'measure.catalogo');
 const quem = () => (usuarioAtual() || {}).nome || '';
-/* Na conta com banco, "inativo" só vale depois da atualização do banco (migração 0018). */
+/* Na conta com banco, "inativo" depende da migração 0018 (itens.ativo), já no código: a chave fica para o caso de ela ainda não estar aplicada. */
 const ativoDisponivel = () => !estado().oficial || PERSISTE_ATIVO_ITEM;
 
 const SITUACOES = () => ({
