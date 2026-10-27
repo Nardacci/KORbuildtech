@@ -46,7 +46,7 @@ T44;6 Pares de empresas;pv.a2.admin;Receber 'Temporary protection and scaffoldin
 T45;6 Pares de empresas;pv.p4.admin;Receber 'Gutters and downspouts' (ambas → prestadora) e ver o prazo prorrogado;Convite com o prazo novo;;;;
 T46;6 Pares de empresas;pv.c1.admin;Receber 'MEP package' (ambas → construtora);Convite chega para a construtora;;;;
 T47;6 Pares de empresas;pv.a2.admin;Abrir 'Storefront glazing' com 3 propostas;Compara as 3 e fecha com uma vencedora;;;;
-T48;7 Vencedora e obra;pv.p6.admin;Abrir 'Interior drywall and finishing' (ganhou);"Mostra 'Você venceu'; botão para abrir a obra";;;;
+T48;7 Vencedora e obra;pv.p6.admin;Abrir 'Interior drywall and finishing' (ganhou);"Mostra 'Você venceu' (sem botão de obra na 1ª versão)";;;;
 T49;7 Vencedora e obra;pv.p6.admin;Criar a obra a partir da concorrência vencida;Obra criada em Jobs, ligada à da contratante;;;;
 T50;7 Vencedora e obra;pv.p2.admin;Abrir a mesma concorrência (perdeu);Vê que não foi escolhida, sem dados de outras propostas;;;;
 T51;7 Vencedora e obra;pv.c2.admin;Confirmar a obra da vencedora vinculada à Capitol Plaza;Vínculo visível no lado de quem contratou;;;;
@@ -67,10 +67,10 @@ T65;11 Navegador e celular;pv.p1.admin;Com o app instalado, abrir depois de uma 
 T66;12 Início: painel e menu lateral;pv.c1.admin;Entrar com ?versao=primeira e olhar o Início;"Painel em tela cheia abaixo do cabeçalho, sem abas nem menu lateral; 'Olá, Helen' e dois botões: Takeoff e Settings";;;;
 T67;12 Início: painel e menu lateral;pv.c1.admin;Olhar o bloco 'Precisa de você agora';"Fundo e borda laranja que se destacam dos demais; 3 propostas recebidas e 1 convite para responder; os cartões sem pendência aparecem apagados com 'Nada pendente'";;;;
 T68;12 Início: painel e menu lateral;pv.c1.admin;Clicar em 'Propostas recebidas' e em 'Convite para responder';Abre as concorrências (propostas) e a lista de Convites;;;;
-T69;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Projetos por status';"Rosca com 1 projeto em Proposta emitida; 2 obras em andamento e 0 concluídas";;;;
+T69;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Projetos por status';"Rosca com 1 projeto em Proposta emitida; sem contagem de obras (1ª versão)";;;;
 T70;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Dinheiro em jogo';"Propostas abertas com valor em US$; Taxa de acerto e Ticket médio com '—' (nenhum projeto decidido); valor por contratante";;;;
 T71;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Concorrências';"Enviadas por nós: 3 (2 abertas e 1 rascunho); Recebidas por nós: 1 sem resposta; economia média '—'; tempo médio de resposta em horas ou dias";;;;
-T72;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Prazo das obras';"Northgate Tower Renovation e Canal Street Lofts com início, prazo, % de tempo decorrido e dias restantes; linha 'Andamento do cronograma: —'";;;;
+T72;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Prazo das obras';"O bloco 'Prazo das obras' não existe na 1ª versão: o andamento está em 'Andamento dos projetos'";;;;
 T73;12 Início: painel e menu lateral;pv.c1.admin;Em Settings › Obras, mudar o prazo de uma obra para uma data passada e voltar ao Início;A obra aparece com 'atrasada N dias' em vermelho e a barra completa;;;;
 T74;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Minhas parceiras';"Maple Siding, Cobalt Framing e outras com a obra em comum, propostas e tempo de resposta; Birchwood Insulation com 'só pelo link'";;;;
 T75;12 Início: painel e menu lateral;pv.c1.admin;Conferir 'Catálogo e preços';Itens sem preço novo há mais de 90 dias (0 na massa nova) e margem vigente 16% (overhead 9% + lucro 7%);;;;
@@ -86,11 +86,11 @@ T84;12 Início: painel e menu lateral;pv.a2.admin;Entrar;"Enviadas por nós 2 e 
 T85;12 Início: painel e menu lateral;pv.c1.admin + pv.p1.admin;"Com a p1, enviar uma proposta a um convite da c1; com a c1, voltar ao Início em até 1 minuto";Os números de propostas recebidas e de concorrências mudam sozinhos (releitura a cada minuto);;;;
 T86;12 Início: painel e menu lateral;pv.c1.admin;Trocar o idioma para EN;Todos os títulos e legendas do painel em inglês (Needs you now, Projects by status, Job deadlines, My partners...), sem português solto;;;;
 T87;12 Início: painel e menu lateral;pv.c1.admin;Reduzir a janela do navegador;Blocos empilham, tabelas rolam na horizontal, botões Takeoff e Settings continuam visíveis;;;;
-T88;12 Início: painel e menu lateral;pv.c1.admin;Clicar em Takeoff e em Settings no painel;"Takeoff abre o Measure (Projetos); Settings abre Obras";;;;
-T89;12 Início: painel e menu lateral;pv.c1.admin;Olhar o menu lateral do Settings;"Itens: Início, Obras, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil; o item da tela aberta fica marcado";;;;
+T88;12 Início: painel e menu lateral;pv.c1.admin;Clicar em Takeoff e em Settings no painel;"Takeoff abre o Measure (Projetos); Settings abre Contatos";;;;
+T89;12 Início: painel e menu lateral;pv.c1.admin;Olhar o menu lateral do Settings;"Itens: Início, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil (sem Obras); o item da tela aberta fica marcado";;;;
 T90;12 Início: painel e menu lateral;pv.c1.admin;Clicar em cada item do menu lateral do Settings;"Cada um abre a tela certa; 'Início' volta ao painel";;;;
 T91;12 Início: painel e menu lateral;pv.c1.admin;No Takeoff, olhar o menu lateral;"Tem Início, Projetos, Assemblies, Itens (os preços ficam dentro de Itens), Convites e Concorrências; 'Início' volta ao painel";;;;
-T92;12 Início: painel e menu lateral;pv.c1.admin;Abrir o Settings numa janela estreita (celular);O menu lateral some e aparecem as abas de antes (Início, Obras, Contatos...);;;;
+T92;12 Início: painel e menu lateral;pv.c1.admin;Abrir o Settings numa janela estreita (celular);O menu lateral some e aparecem as abas de antes (Início, Contatos...);;;;
 T93;13 Assemblies, listas de materiais e cotações;pv.p1.admin;Settings › Takeoff › Assemblies: abrir a lista;Lista com 4 assemblies (Lap siding with housewrap, Siding full package, Trim and corners, Exterior paint two coats), cada um com seus materiais;;;;
 T94;13 Assemblies, listas de materiais e cotações;pv.p1.admin;Abrir 'Siding full package';"4 linhas de material com fórmula, perda % e unidade; as quantidades de exemplo calculam sem erro";;;;
 T95;13 Assemblies, listas de materiais e cotações;pv.p1.admin;Takeoff › Itens: conferir o catálogo;8 itens (2 básicos + 6 novos) por etapa (Siding, Trim, Fasteners, Flashing, Finish, Sealants), com unidade de compra;;;;
@@ -128,7 +128,7 @@ T126;15 Projeto - espaço de trabalho;pv.p1.admin;Plans: enviar o PDF do jogo de
 T127;15 Projeto - espaço de trabalho;pv.p1.admin;Plans: escrever uma observação numa folha e recarregar a página;"Aparece 'Note saved.' (até 500 caracteres) e o texto continua depois de recarregar";;;;
 T128;15 Projeto - espaço de trabalho;pv.p1.admin;Overview: conferir os 4 cartões do topo e o checklist 'Set up this project';"Bid due (com 'em N dias'), Progress (N de 6 passos e o próximo), Plans and measuring, Proposal; os 6 passos mostram feito/próximo/pendente com o botão certo";;;;
 T129;15 Projeto - espaço de trabalho;pv.p1.admin;Overview: clicar nos botões do checklist (View plans, Set scales, Review, Open takeoff, Open schedule, Open proposal);"Plans leva a Plans; Set scales e Open takeoff levam a Takeoff; Review e Open schedule levam a Schedule; Open proposal, à proposta; ao concluir o passo, a marca verde aparece e o progresso sobe";;;;
-T130;15 Projeto - espaço de trabalho;pv.p1.admin;Edit project: mudar dono da obra, obra vinculada, situação e estimador; salvar;"Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado";;;;
+T130;15 Projeto - espaço de trabalho;pv.p1.admin;Edit project: mudar dono da obra, situação e estimador; salvar (não há 'Obra vinculada' na 1ª versão);"Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado";;;;
 T131;15 Projeto - espaço de trabalho;pv.p1.admin;Takeoff: cartão 'Measure' — escolher uma planta e clicar em Measure;"Lista as folhas com escala e número de medições; Measure abre a tela de medição daquela folha; nela dá para trocar de folha pela lista no topo; o link de volta leva ao Takeoff";;;;
 T132;15 Projeto - espaço de trabalho;pv.p1.admin;Takeoff: medir algo e voltar;"A tabela Quantities mostra medido, derivadas e número de medições; os typicals, vãos e o rastro do cálculo aparecem como antes";;;;
 T133;15 Projeto - espaço de trabalho;pv.p1.admin;Materials: abrir a aba; clicar 'Lista para cotação';"Mostra os materiais calculados; a Lista para cotação abre com a faixa de abas no topo (Materials marcada)";;;;

@@ -23,10 +23,10 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Vê os 5 logins da Maple Siding com seus perfis (Administrador, Gestor, Estimator, Contacts only, Trabalhador)
 - [ ] **T7** · `pv.p1.admin` — Access roles: abrir Estimator e comparar com Gestor de obras  
   _Esperado:_ Estimator tem medir, catálogo e responder convites; Gestor não tem catálogo
-- [ ] **T8** · `pv.p1.admin` — Jobs: abrir a lista; criar uma obra nova simples  
-  _Esperado:_ Obra criada com contratante e local; sem seção de equipe; aparece na lista
-- [ ] **T9** · `pv.p1.admin` — Jobs: editar o nome da obra criada e salvar  
-  _Esperado:_ Nome atualizado na lista
+- [ ] **T8** · `pv.p1.admin` — Settings: procurar a tela Jobs/Obras  
+  _Esperado:_ Não existe na 1ª versão (o projeto ganho é a obra); #/conta/obras volta para a conta
+- [ ] **T9** · `pv.p1.admin` — Início › botão Settings  
+  _Esperado:_ Abre Settings › Contatos
 - [ ] **T10** · `pv.p1.gestor` — Entrar; abrir Jobs e Concorrências  
   _Esperado:_ Vê e gerencia obras e concorrências; não vê Access roles
 - [ ] **T11** · `pv.p1.orcamentista` — Entrar; abrir Measure  
@@ -119,13 +119,13 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 ## 7 Vencedora e obra
 
 - [ ] **T48** · `pv.p6.admin` — Abrir 'Interior drywall and finishing' (ganhou)  
-  _Esperado:_ Mostra 'Você venceu'; botão para abrir a obra
+  _Esperado:_ Mostra 'Você venceu' (sem botão de obra na 1ª versão)
 - [ ] **T49** · `pv.p6.admin` — Criar a obra a partir da concorrência vencida  
-  _Esperado:_ Obra criada em Jobs, ligada à da contratante
+  _Esperado:_ Não se aplica na 1ª versão: não há cadastro de obra (o projeto ganho é a obra)
 - [ ] **T50** · `pv.p2.admin` — Abrir a mesma concorrência (perdeu)  
   _Esperado:_ Vê que não foi escolhida, sem dados de outras propostas
 - [ ] **T51** · `pv.c2.admin` — Confirmar a obra da vencedora vinculada à Capitol Plaza  
-  _Esperado:_ Vínculo visível no lado de quem contratou
+  _Esperado:_ Não se aplica na 1ª versão (sem obra)
 
 ## 8 Link sem conta
 
@@ -176,15 +176,15 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T68** · `pv.c1.admin` — Clicar em 'Propostas recebidas' e em 'Convite para responder'  
   _Esperado:_ Abre as concorrências (propostas) e a lista de Convites
 - [ ] **T69** · `pv.c1.admin` — Conferir 'Projetos por status'  
-  _Esperado:_ Rosca com 1 projeto em Proposta emitida; 2 obras em andamento e 0 concluídas
+  _Esperado:_ Rosca com 1 projeto em Proposta emitida; sem contagem de obras (1ª versão)
 - [ ] **T70** · `pv.c1.admin` — Conferir 'Dinheiro em jogo'  
   _Esperado:_ Propostas abertas com valor em US$; Taxa de acerto e Ticket médio com '—' (nenhum projeto decidido); valor por contratante
 - [ ] **T71** · `pv.c1.admin` — Conferir 'Concorrências'  
   _Esperado:_ Enviadas por nós: 3 (2 abertas e 1 rascunho); Recebidas por nós: 1 sem resposta; economia média '—'; tempo médio de resposta em horas ou dias
 - [ ] **T72** · `pv.c1.admin` — Conferir 'Prazo das obras'  
-  _Esperado:_ Northgate Tower Renovation e Canal Street Lofts com início, prazo, % de tempo decorrido e dias restantes; linha 'Andamento do cronograma: —'
+  _Esperado:_ O bloco 'Prazo das obras' não existe na 1ª versão: o andamento está em 'Andamento dos projetos'
 - [ ] **T73** · `pv.c1.admin` — Em Settings › Obras, mudar o prazo de uma obra para uma data passada e voltar ao Início  
-  _Esperado:_ A obra aparece com 'atrasada N dias' em vermelho e a barra completa
+  _Esperado:_ Não se aplica (sem Settings › Obras); use o % feito do Schedule para ver atraso no Início
 - [ ] **T74** · `pv.c1.admin` — Conferir 'Minhas parceiras'  
   _Esperado:_ Maple Siding, Cobalt Framing e outras com a obra em comum, propostas e tempo de resposta; Birchwood Insulation com 'só pelo link'
 - [ ] **T75** · `pv.c1.admin` — Conferir 'Catálogo e preços'  
@@ -198,7 +198,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T79** · `pv.p1.admin` — Registrar os preços recebidos desse fornecedor e voltar ao Início  
   _Esperado:_ O fornecedor passa a 'respondeu' e o cartão volta a 'Nada pendente'
 - [ ] **T80** · `pv.p1.admin` — Num projeto ganho sem obra, olhar o Início  
-  _Esperado:_ Aparece o cartão 'Projeto ganho sem obra' com o link para criar a obra
+  _Esperado:_ Não aparece cartão de 'Projeto ganho sem obra'; o projeto ganho entra em Andamento dos projetos quando tem cronograma
 - [ ] **T81** · `pv.p1.gestor` — Entrar  
   _Esperado:_ Vê o painel com concorrências enviadas e recebidas; vê 'Dinheiro em jogo' (tem crew.custos)
 - [ ] **T82** · `pv.p1.orcamentista` — Entrar  
@@ -214,15 +214,15 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T87** · `pv.c1.admin` — Reduzir a janela do navegador  
   _Esperado:_ Blocos empilham, tabelas rolam na horizontal, botões Takeoff e Settings continuam visíveis
 - [ ] **T88** · `pv.c1.admin` — Clicar em Takeoff e em Settings no painel  
-  _Esperado:_ Takeoff abre o Measure (Projetos); Settings abre Obras
+  _Esperado:_ Takeoff abre o Measure (Projetos); Settings abre Contatos
 - [ ] **T89** · `pv.c1.admin` — Olhar o menu lateral do Settings  
-  _Esperado:_ Itens: Início, Obras, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil; o item da tela aberta fica marcado
+  _Esperado:_ Itens: Início, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil (sem Obras); o item da tela aberta fica marcado
 - [ ] **T90** · `pv.c1.admin` — Clicar em cada item do menu lateral do Settings  
   _Esperado:_ Cada um abre a tela certa; 'Início' volta ao painel
 - [ ] **T91** · `pv.c1.admin` — No Takeoff, olhar o menu lateral  
   _Esperado:_ Tem Início, Projetos, Assemblies, Itens (os preços ficam dentro de Itens), Convites e Concorrências; 'Início' volta ao painel
 - [ ] **T92** · `pv.c1.admin` — Abrir o Settings numa janela estreita (celular)  
-  _Esperado:_ O menu lateral some e aparecem as abas de antes (Início, Obras, Contatos...)
+  _Esperado:_ O menu lateral some e aparecem as abas de antes (Início, Contatos...)
 
 ## 13 Assemblies, listas de materiais e cotações
 
@@ -306,7 +306,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Bid due (com 'em N dias'), Progress (N de 6 passos e o próximo), Plans and measuring, Proposal; os 6 passos mostram feito/próximo/pendente com o botão certo
 - [ ] **T129** · `pv.p1.admin` — Overview: clicar nos botões do checklist (View plans, Set scales, Review, Open takeoff, Open schedule, Open proposal)  
   _Esperado:_ Plans leva a Plans; Set scales e Open takeoff levam a Takeoff; Review e Open schedule levam a Schedule; Open proposal, à proposta; ao concluir o passo, a marca verde aparece e o progresso sobe
-- [ ] **T130** · `pv.p1.admin` — Edit project: mudar dono da obra, obra vinculada, situação e estimador; salvar  
+- [ ] **T130** · `pv.p1.admin` — Edit project: mudar dono da obra, situação e estimador; salvar (não há 'Obra vinculada' na 1ª versão)  
   _Esperado:_ Os dados aparecem no Overview; o contato novo criado no próprio formulário já fica escolhido sem perder o que foi digitado
 - [ ] **T131** · `pv.p1.admin` — Takeoff: cartão 'Measure' — escolher uma planta e clicar em Measure  
   _Esperado:_ Lista as folhas com escala e número de medições; Measure abre a tela de medição daquela folha; nela dá para trocar de folha pela lista no topo; o link de volta leva ao Takeoff

@@ -56,7 +56,7 @@ function htmlProjetos(p) {
   if (!p.total) return bloco('ini-projetos', tr('Projetos por status'), '#/measure', '<p class="ini-vazio">' + tr('Nenhum projeto ainda. Crie o primeiro.') + '</p>', tr('Nenhum projeto'));
   const nomes = NOME_SITUACAO();
   const legenda = SITUACOES_DO_PROJETO.map((s) => '<li><i class="ini-ponto" style="background:' + COR_SITUACAO[s] + '"></i><span>' + nomes[s] + '</span><b>' + p.porSituacao[s] + ' <small>(' + Math.round((p.porSituacao[s] / p.total) * 100) + '%)</small></b></li>').join('');
-  const obras = '<div class="ini-minikpis">' + kpi(p.obrasEmAndamento, tr('Obras em andamento')) + kpi(p.obrasConcluidas, tr('Obras concluídas')) + '</div>';
+  const obras = p.obrasEmAndamento === undefined ? '' : '<div class="ini-minikpis">' + kpi(p.obrasEmAndamento, tr('Obras em andamento')) + kpi(p.obrasConcluidas, tr('Obras concluídas')) + '</div>';
   return bloco('ini-projetos', tr('Projetos por status'), '#/measure', '<div class="ini-linha">' + rosca(p.porSituacao, p.total) + '<ul class="ini-legenda">' + legenda + '</ul>' + obras + '</div>', tn(p.total, '{n} projeto no total', '{n} projetos no total'));
 }
 

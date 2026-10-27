@@ -62,16 +62,17 @@ try {
     await a.p.waitForSelector('.oficial-titulo, .ini-ola', { timeout: 30000 });
     const t = await texto(a.p);
     verificar(/Measure Takeoff|Takeoff/.test(t) && !/Daily|Crew/.test(t.replace(/Dados/g, '')), 'a área da conta oferece o Measure Takeoff e as concorrências, sem Daily nem Crew', t.slice(0, 400));
-    await a.p.goto(BASE + '#/conta/obras');
+    await a.p.goto(BASE + '#/conta/contatos');
     await a.p.waitForSelector('.lateral-item', { timeout: 30000 });
     const abas = (await a.p.locator('.lateral-item').allInnerTexts()).map((x) => x.trim());
-    verificar(!abas.some((x) => /Employees|Rules|Funcion/.test(x)) && abas.some((x) => /Contacts|Contatos/.test(x)) && abas.some((x) => /Jobs|Obras/.test(x)), 'o menu do Settings tem contatos e obras (as concorrências precisam da obra), mas não funcionários nem regras', abas);
+    // na 1ª versão o projeto ganho é a obra: não há tela de Obras (docs/obra-na-primeira-versao.md)
+    verificar(!abas.some((x) => /Employees|Rules|Funcion|Jobs|Obras/.test(x)) && abas.some((x) => /Contacts|Contatos/.test(x)), 'o menu do Settings tem contatos e obras (as concorrências precisam da obra), mas não funcionários nem regras', abas);
     await a.p.goto(BASE + '#/inicio');
     await a.p.waitForSelector('.modulos, .oficial-titulo, .pagina, .ini-ola', { timeout: 30000 });
     await a.p.waitForTimeout(1500);
     const ti = await texto(a.p);
     verificar(!/Daily|Crew|Em breve|Coming soon/.test(ti.replace(/Dados/g, '')), 'o início não mostra nenhum outro módulo', (await a.p.evaluate(() => location.hash)) + ' · ' + ti.slice(0, 200));
-    for (const rota of ['#/daily', '#/crew', '#/daily/painel', '#/daily/campo', '#/daily/obras', '#/settings/funcionarios', '#/conta/funcionarios', '#/conta/regras', '#/conta/obras/modelos']) {
+    for (const rota of ['#/daily', '#/crew', '#/daily/painel', '#/daily/campo', '#/daily/obras', '#/settings/funcionarios', '#/conta/funcionarios', '#/conta/regras', '#/conta/obras', '#/conta/obras/modelos']) {
       await a.p.goto(BASE + rota);
       await a.p.waitForTimeout(1200);
       const tr = await texto(a.p);
@@ -83,9 +84,8 @@ try {
     const tc = await texto(a.p);
     verificar(/Bids/.test(tc) && /Takeoff/.test(tc) && !/Daily|Crew/.test(tc.replace(/Dados/g, '')) && /measure|concorrencias/.test(await a.p.evaluate(() => location.hash)), 'as concorrências abrem dentro do Measure Takeoff', (await a.p.evaluate(() => location.hash)) + ' · ' + tc.slice(0, 200));
     await a.p.goto(BASE + '#/conta/obras/nova');
-    await a.p.waitForSelector('#form-obra', { timeout: 20000 });
-    const to = await texto(a.p);
-    verificar(!/Daily|Crew|time clock|geofence|fence|schedule|crew|Employees|diary|timesheet/i.test(to) && await a.p.locator('[name="responsavelId"], [name="diasTrabalho"]').count() >= 1, 'a obra (necessária para fechar a concorrência) abre sem diário, ponto nem cronograma', to.slice(0, 300));
+    await a.p.waitForTimeout(1500);
+    verificar(await a.p.locator('#form-obra').count() === 0 && !/obras/.test(await a.p.evaluate(() => location.hash)), 'não há cadastro de obra na 1ª versão: #/conta/obras volta para a conta', await a.p.evaluate(() => location.hash));
     await a.p.goto(BASE + '#/measure');
     await a.p.waitForSelector('h1', { timeout: 30000 });
     const m = await texto(a.p);

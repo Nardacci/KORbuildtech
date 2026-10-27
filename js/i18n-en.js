@@ -3654,6 +3654,7 @@ export const EN = {
   '{n} tarefa atrasada': '{n} late task',
   '{n} tarefas atrasadas': '{n} late tasks',
   '{n}% previsto para hoje': '{n}% planned by today',
+  'Contatos, usuários e empresa': 'Contacts, users and company',
   'Atualizar a base': 'Update baseline',
   'Confirmar cronograma': 'Confirm schedule',
   'Cronograma confirmado como base da obra.': 'Schedule confirmed as the job baseline.',

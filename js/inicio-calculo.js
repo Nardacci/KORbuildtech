@@ -39,12 +39,13 @@ function blocoProjetos(d, ctx) {
   const ano = ctx.hoje.slice(0, 4);
   const ganhosNoAno = ganhos.filter((p) => !p.alteradoEm || new Date(p.alteradoEm).getFullYear() === Number(ano));
   const decididos = ganhos.length + perdidos;
-  const r = {
-    total: projetos.length, porSituacao,
-    obrasEmAndamento: obras.filter((o) => (o.situacao || 'andamento') !== 'concluida').length,
-    obrasConcluidas: obras.filter((o) => o.situacao === 'concluida').length,
-    ganhosSemObra: ganhos.filter((p) => !p.obraId).length,
-  };
+  const r = { total: projetos.length, porSituacao };
+  // na 1ª versão não existe obra: o projeto ganho é a obra (docs/obra-na-primeira-versao.md)
+  if (!ctx.ver.semObra) {
+    r.obrasEmAndamento = obras.filter((o) => (o.situacao || 'andamento') !== 'concluida').length;
+    r.obrasConcluidas = obras.filter((o) => o.situacao === 'concluida').length;
+    r.ganhosSemObra = ganhos.filter((p) => !p.obraId).length;
+  }
   if (ctx.ver.dinheiro) {
     const contato = (id) => ((d.contatos || []).find((c) => c.id === id) || {}).nome || '';
     const abertasComProposta = abertas.filter((p) => situacaoDoProjeto(p, d) === 'proposta');
@@ -208,7 +209,7 @@ export function calcularInicio(d, ctx) {
     acao: blocoAcao(d, c, projetos, cotacoes),
     projetos, cotacoes, concorrencias,
     andamento: c.ver.medir ? blocoAndamento(d, c) : null,
-    prazos: c.ver.obras || c.ver.medir ? blocoPrazos(d, c) : null,
+    prazos: !c.ver.semObra && (c.ver.obras || c.ver.medir) ? blocoPrazos(d, c) : null,
     parceiras: c.ver.concorrenciasEnviadas ? blocoParceiras(d, c) : null,
     precos: c.ver.medir ? blocoPrecos(d, c) : null,
   };

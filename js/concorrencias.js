@@ -9,6 +9,7 @@ import { tr } from './i18n.js';
 import { limparHtml, escopoTexto } from './texto-rico.js';
 import { auditar } from './settings.js';
 import { contato } from './contatos.js';
+import { PRIMEIRA_VERSAO } from './versao.js';
 
 export const SITUACOES = {
   rascunho: { nome: tr('Rascunho'), classe: 'etiqueta-neutro' },
@@ -283,8 +284,9 @@ export function fechar(id, conviteId, observacao, por, agora = Date.now()) {
   if (c.origem && c.origem.tipo === 'projeto') {
     const pj = projetoDe(estado(), c.origem.id);
     if (!pj || pj.situacao !== 'ganha') return { erro: tr('Esta concorrência saiu de um projeto em orçamento: só fecha depois que o projeto for ganho.') };
-    if (!pj.obraId) return { erro: tr('Crie a obra a partir do projeto antes de fechar: a contratada fica ligada a ela.') };
-    c.obraId = pj.obraId;
+    // na 1ª versão o projeto ganho é a obra: fecha sem obra cadastrada (docs/obra-na-primeira-versao.md)
+    if (!pj.obraId && !PRIMEIRA_VERSAO) return { erro: tr('Crie a obra a partir do projeto antes de fechar: a contratada fica ligada a ela.') };
+    c.obraId = pj.obraId || null;
   }
   // CO-23: com a aprovação da contratante de cima, o fechamento espera a decisão dela
   const pai = concorrenciaPai(c);

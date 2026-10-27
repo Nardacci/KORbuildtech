@@ -92,7 +92,7 @@ export function telaOficial(p) {
   if (aba === 'diagnostico') return { html: moldura('perfil', htmlTelaDiagnostico()), depois: iniciarTelaDiagnostico };
   const cadastro = ABAS_CADASTROS.find(([k]) => k === aba);
   if (cadastro) {
-    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && cadastro[0] !== 'contatos' && cadastro[0] !== 'obras')) return { trocar: '#/conta' };
+    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && cadastro[0] !== 'contatos')) return { trocar: '#/conta' };
     const r = telaCadastro(aba, p.slice(2));
     return r.trocar ? r : { html: moldura(aba, r.html), depois: r.depois };
   }
@@ -179,7 +179,7 @@ function ladoDireitoDoTopo() {
 /* A moldura da área da conta. Na 1ª versão: o Início é o painel, em tela cheia (opcoes.cheio), e as outras telas do Settings têm o menu
  * lateral, como o Takeoff (no celular o menu vira as abas de sempre). */
 function moldura(ativa, conteudo, opcoes = {}) {
-  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos' || k === 'obras')).map(([k, nome]) => [k, tr(nome)]))
+  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos')).map(([k, nome]) => [k, tr(nome)]))
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
   const topo = '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo() + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ ' + (opcoes.cheio ? tr('Início') : 'Settings') + '</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +
@@ -220,18 +220,18 @@ export const temPainelDoInicio = () => PRIMEIRA_VERSAO && !!conta.membro && (pod
 export const espelhoProntoParaOInicio = () => !!(espelho.pronto && estado() && estado().oficial && conta.empresa && estado().empresa.id === conta.empresa.id);
 function htmlPainel(cabeca, rodape) {
   const medir = pode('measure.medir');
-  const ver = { medir, dinheiro: medir && (pode('measure.catalogo') || pode('crew.custos')), concorrenciasEnviadas: pode('concorrencias.gerir'), concorrenciasRecebidas: pode('concorrencias.responder'), obras: pode('settings.obras') || medir };
+  const ver = { medir, dinheiro: medir && (pode('measure.catalogo') || pode('crew.custos')), concorrenciasEnviadas: pode('concorrencias.gerir'), concorrenciasRecebidas: pode('concorrencias.responder'), obras: !PRIMEIRA_VERSAO && (pode('settings.obras') || medir), semObra: PRIMEIRA_VERSAO };
   const dados = { ...estado(), concorrencias: (bancoDeDados() || {}).concorrencias || [] };   // as concorrências ficam fora das empresas, numa lista só
   const calc = calcularInicio(dados, { eu: conta.empresa.id, agora: Date.now(), ver, itensDaLista: (id) => { try { return listaDeCotacao(id).total; } catch { return 0; } } });
   return htmlPainelInicio(calc, { ver, cabeca, rodape });
 }
 function htmlInicioComPainel() {
-  const rotaDoSettings = pode('settings.obras') ? '#/conta/obras' : pode('settings.contatos') ? '#/conta/contatos' : '#/conta/empresa';
+  const rotaDoSettings = !PRIMEIRA_VERSAO && pode('settings.obras') ? '#/conta/obras' : pode('settings.contatos') ? '#/conta/contatos' : '#/conta/empresa';
   const rotaDoTakeoff = pode('measure.medir') ? '#/measure' : '#/measure/convites';
   const cabeca = '<header class="ini-topo"><div class="ini-saudacao"><h1 class="ini-ola">' + tr('Olá, {nome}', { nome: esc(conta.membro.nome.split(' ')[0]) }) + '</h1>' +
       '<p class="ini-sub">' + esc(conta.empresa.nome) + ' · ' + esc(ATUACOES[conta.empresa.atuacao] || '') + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</p></div>' +
     '<div class="ini-botoes"><a class="ini-botao ini-botao-takeoff" href="' + rotaDoTakeoff + '">' + icone('tabela', 22) + '<span><b>Takeoff</b><small>' + tr('Plantas, quantidades e propostas') + '</small></span></a>' +
-      '<a class="ini-botao ini-botao-settings" href="' + rotaDoSettings + '">' + icone('settings', 22) + '<span><b>Settings</b><small>' + tr('Obras, contatos, usuários e empresa') + '</small></span></a></div></header>';
+      '<a class="ini-botao ini-botao-settings" href="' + rotaDoSettings + '">' + icone('settings', 22) + '<span><b>Settings</b><small>' + tr(PRIMEIRA_VERSAO ? 'Contatos, usuários e empresa' : 'Obras, contatos, usuários e empresa') + '</small></span></a></div></header>';
   const rodape = '<footer class="ini-rodape"><a href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></footer>';
   return htmlPainel(cabeca, rodape);
 }

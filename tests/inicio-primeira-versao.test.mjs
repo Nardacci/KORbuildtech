@@ -85,9 +85,7 @@ try {
     verificar('as concorrências enviadas somam 3 (2 abertas, 1 rascunho)', /Enviadas por nós 3 concorrências/.test(t) && /Abertas\s*2/.test(t) && /Rascunhos\s*1/.test(t), t.match(/Enviadas por nós.{0,200}/));
     verificar('recebidas: 1 convite', /Recebidas por nós 1 convite recebido/.test(t), t.match(/Recebidas por nós.{0,120}/));
     verificar('1 projeto no total, em proposta emitida', /1 projeto no total/.test(t) && /Proposta emitida\s*1/.test(t), t.match(/Projetos por status.{0,200}/));
-    verificar('as 2 obras em andamento', /2 Obras em andamento/.test(t));
-    verificar('o prazo das obras lista a Northgate Tower e a Canal Street', /Northgate Tower Renovation/.test(t) && /Canal Street Lofts/.test(t));
-    verificar('o andamento do cronograma fica em branco (—)', /Andamento do cronograma: —/.test(t));
+    verificar('sem obra na 1ª versão: o painel não conta obras nem tem o Prazo das obras', !/Obras em andamento|Prazo das obras|sem obra/.test(t));
     verificar('parceiras: Maple Siding e Cobalt Framing aparecem, Birchwood "só pelo link"', /Maple Siding Co/.test(t) && /Cobalt Framing/.test(t) && /Birchwood Insulation LLC.*só pelo link/.test(t), t.match(/Minhas parceiras.{0,400}/));
     verificar('dinheiro: propostas abertas com valor em US$', /Propostas abertas/.test(t) && /US\$ [\d.]+/.test(t));
     verificar('não há gasto nem custo', !/Gasto|Custo/i.test(await p.locator('.ini-painel').innerText()));
@@ -187,8 +185,8 @@ try {
     await p.click('.ini-botao-settings');
     await p.waitForSelector('.lateral', { timeout: 15000 });
     const itens = (await p.locator('.lateral-item').allInnerTexts()).map((t) => t.trim());
-    verificar('o Settings tem menu lateral com Início, Obras, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil', ['Início', 'Obras', 'Contatos', 'Usuários', 'Perfis de acesso', 'Empresa', 'Meu perfil'].every((n) => itens.includes(n)), itens.join(' | '));
-    verificar('o item da tela aberta fica marcado (Obras)', /Obras/.test(await p.locator('.lateral-item.ativo').innerText()));
+    verificar('o Settings tem menu lateral com Início, Contatos, Usuários, Perfis de acesso, Empresa e Meu perfil (sem Obras)', !itens.includes('Obras') && ['Início', 'Contatos', 'Usuários', 'Perfis de acesso', 'Empresa', 'Meu perfil'].every((n) => itens.includes(n)), itens.join(' | '));
+    verificar('o item da tela aberta fica marcado (Contatos)', /Contatos/.test(await p.locator('.lateral-item.ativo').innerText()));
     await p.click('.lateral-item:has-text("Contatos")');
     await p.waitForSelector('.lateral-item.ativo:has-text("Contatos")', { timeout: 15000 });
     await p.click('.lateral-item:has-text("Início")');
@@ -205,10 +203,10 @@ try {
   {
     const { ctx, p } = await painel('c1', 'admin', 'en');
     const t = await texto(p);
-    verificar('os títulos saem em inglês', /Needs you now/.test(t) && /Projects by status/.test(t) && /Job deadlines/.test(t) && /My partners/.test(t) && /Catalog and prices/.test(t), t.slice(0, 300));
+    verificar('os títulos saem em inglês', /Needs you now/.test(t) && /Projects by status/.test(t) && /Project progress/.test(t) && /My partners/.test(t) && /Catalog and prices/.test(t), t.slice(0, 300));
     verificar('nada sem tradução (sem português solto no painel)', !/Precisa de você|Dinheiro em jogo|Prazo das obras|Minhas parceiras/.test(await p.locator('.ini-painel').innerText()));
     const hrefs = await p.locator('.ini-painel a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^(#\/(measure|daily\/concorrencias|conta\/obras)|portal)/.test(h)), hrefs.join(' '));
+    verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^(#\/(measure|daily\/concorrencias|conta\/contatos)|portal)/.test(h)), hrefs.join(' '));
     await ctx.close();
   }
 } finally {
