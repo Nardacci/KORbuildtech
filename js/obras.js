@@ -11,6 +11,7 @@ import { RAIO_CERCA } from './crew.js';
 import { DIAS_TRABALHO } from './prazos.js';
 import { cronogramaDe, novaBase, servidorCronograma } from './cronograma.js';
 import { PRIMEIRA_VERSAO } from './versao.js';
+import { pctFeito, fimDaTarefa } from './andamento.js';
 
 export const SITUACOES_OBRA = {
   andamento: { nome: tr('Em andamento'), classe: 'etiqueta-verde' },
@@ -174,6 +175,35 @@ export function garantirObrasDosProjetos(dados = estado()) {
 export function projetoDaObra(o) {
   const lista = (estado().measure || {}).projetos || [];
   return lista.find((p) => p.id === o.projetoId) || lista.find((p) => p.obraId === o.id) || null;
+}
+
+/* ---------- O diário e o cronograma do projeto (1ª versão: docs/daily-primeira-versao.md) ---------- */
+
+/* Tarefas do cronograma do projeto desta obra (as que têm início), ou [] quando a obra não nasceu de um projeto. */
+export function tarefasDoProjetoDaObra(o) {
+  const pj = o && PRIMEIRA_VERSAO ? projetoDaObra(o) : null;
+  return pj && pj.cronograma && Array.isArray(pj.cronograma.tarefas) ? pj.cronograma.tarefas.filter((t) => t.inicio && t.nome) : [];
+}
+
+/* Tarefas em andamento hoje (começaram, não acabaram e não chegaram a 100%). */
+export function tarefasAtuaisDaObra(o, iso = hoje()) {
+  return tarefasDoProjetoDaObra(o).filter((t) => t.inicio <= iso && fimDaTarefa(t) >= iso && pctFeito(t) < 100);
+}
+
+/* RDO aprovado: cada atividade que aponta uma tarefa do projeto leva o % feito para o Gantt (quem aprovou, qual diário). */
+export function aplicarRdoNoProjeto(r, o, por) {
+  const tarefas = tarefasDoProjetoDaObra(o);
+  let n = 0;
+  for (const a of (r && r.atividades) || []) {
+    if (!a.tarefaId || a.tarefaPct === '' || a.tarefaPct == null) continue;
+    const t = tarefas.find((x) => x.id === a.tarefaId), v = Math.round(Number(a.tarefaPct));
+    if (!t || !Number.isFinite(v) || v < 0 || v > 100) continue;
+    t.avancos = (t.avancos || []).concat({ data: r.data, antes: pctFeito(t), pct: v, rdoNumero: r.numero || null, por: por || '' });
+    t.pct = v;
+    n++;
+  }
+  if (n) salvar();
+  return n;
 }
 
 /* ---------- Cronograma confirmado no projeto ganho ---------- */

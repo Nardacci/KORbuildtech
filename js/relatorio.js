@@ -6,6 +6,7 @@ import { etapaDoCronograma } from './cronograma.js';
 import { esc, dataCurta, diaDaSemana, horaCurta, dataHora, coordenadas, diasEntre, temperatura } from './util.js';
 import { estado } from './armazem.js';
 import { enviadoComAtraso, prazoDe } from './prazos.js';
+import { tarefasDoProjetoDaObra } from './obras.js';
 
 export const SITUACOES = { iniciada: tr('Iniciada'), andamento: tr('Em andamento'), concluida: tr('Concluída') };
 export const STATUS_EQUIP = { operando: tr('Operando'), parado: tr('Parado'), manutencao: tr('Em manutenção') };
@@ -50,6 +51,8 @@ function linhasEquipe(equipe, propria) {
     return '<tr class="rel-grupo"><td colspan="3">' + esc(n || propria) + (n ? ' · ' + tr('prestadora') : '') + '</td></tr>' + daEmpresa.map(linha).join('');
   }).join('');
 }
+
+const tarefaDe = (o, id) => tarefasDoProjetoDaObra(o).find((t) => t.id === id);
 
 export function htmlRelatorio(r, obra, { verificado } = {}) {
   const totalPresentes = r.equipe.reduce((s, e) => s + Number(e.presentes || 0), 0);
@@ -104,7 +107,8 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
     ('<section class="rel-bloco"><h2>' + tr('Atividades executadas') + '</h2>') +
       (r.atividades.length ? '<ol class="rel-lista">' + r.atividades.map((a) =>
         '<li><p>' + esc(a.descricao) + '</p><small>' + (a.local ? esc(a.local) + ' · ' : '') + SITUACOES[a.situacao] +
-          (a.cronoEtapaId && etapaDoCronograma(r.obraId, a.cronoEtapaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(etapaDoCronograma(r.obraId, a.cronoEtapaId).nome) }) + (a.cronoPct !== '' && a.cronoPct != null ? ' → ' + esc(a.cronoPct) + '%' : '') : '') + '</small></li>').join('') + '</ol>'
+          (a.cronoEtapaId && etapaDoCronograma(r.obraId, a.cronoEtapaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(etapaDoCronograma(r.obraId, a.cronoEtapaId).nome) }) + (a.cronoPct !== '' && a.cronoPct != null ? ' → ' + esc(a.cronoPct) + '%' : '') : '') +
+          (a.tarefaId && tarefaDe(obra, a.tarefaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(tarefaDe(obra, a.tarefaId).nome) }) + (a.tarefaPct !== '' && a.tarefaPct != null ? ' → ' + esc(a.tarefaPct) + '%' : '') : '') + '</small></li>').join('') + '</ol>'
         : ('<p class="mudo">' + tr('Nenhuma atividade registrada.') + '</p>')) +
     '</section>' +
 

@@ -71,7 +71,24 @@ await p.waitForSelector('.obra-resumo');
 t = await texto();
 verificar(t.includes('Bow') && await p.locator('a[href="#/measure/projeto/' + id + '"]').count() >= 1 && !/Editar a obra|Nova obra/.test(t), 'a página do projeto no Daily mostra o resumo e o atalho "Abrir o projeto"', t.slice(0, 300));
 
-console.log('RDO do projeto (quem preenche)');
+console.log('Cronograma do projeto (Takeoff): duas tarefas, uma em andamento hoje');
+const hojeIso = new Date().toISOString().slice(0, 10);
+await ir('#/measure/projeto/' + id + '/schedule', '[data-acao="pj-add-tarefa"]');
+for (const [nome, inicio, dias] of [['Demolição', hojeIso, '3'], ['Pintura', '2030-01-07', '5']]) {
+  await p.click('[data-acao="pj-add-tarefa"]');
+  await p.waitForTimeout(300);
+  const linha = p.locator('[data-pj-tarefa="nome"]').last();
+  await linha.fill(nome); await linha.blur(); await p.waitForTimeout(300);
+  await p.locator('[data-pj-tarefa="inicio"]').last().fill(inicio); await p.locator('[data-pj-tarefa="inicio"]').last().blur(); await p.waitForTimeout(300);
+  await p.locator('[data-pj-tarefa="dias"]').last().fill(dias); await p.locator('[data-pj-tarefa="dias"]').last().blur(); await p.waitForTimeout(300);
+}
+await ir('#/daily/obras', 'main');
+await p.locator('.cartao-obra:has-text("Garagem Pereira")').click();
+await p.waitForSelector('.obra-resumo');
+t = await texto();
+verificar(/Etapa atual\s*Demolição/.test(t) && !/Pintura/.test(t.split('Endereço')[0]), 'no Daily, a "Etapa atual" do projeto é a tarefa em andamento hoje (Demolição)', t.slice(0, 300));
+
+console.log('RDO do projeto (quem preenche) aponta a tarefa do cronograma');
 await p.evaluate(() => localStorage.setItem('kbt.sessao', 'u-jose'));
 await ir('#/daily/campo', 'main');
 t = await texto();
@@ -81,7 +98,35 @@ await p.waitForSelector('[data-acao="novo-rdo"]');
 await p.click('[data-acao="novo-rdo"]');
 await p.waitForTimeout(800);
 verificar(/#\/daily\/campo\/rdo\//.test(p.url()) && await p.locator('#s-clima').count() === 1, 'o RDO do projeto abre com as seções de sempre', p.url());
+const rdoId = p.url().split('/rdo/')[1].split(/[/?]/)[0];
+await p.click('[data-acao="clima-tempo"][data-turno="manha"][data-valor="sol"]');
+await p.click('[data-acao="clima-tempo"][data-turno="tarde"][data-valor="sol"]');
+await p.locator('[data-acao="equipe-add"]').first().click();
+await p.locator('#s-atividades textarea').first().fill('Demolição da cozinha'); await p.locator('#s-atividades textarea').first().blur();
+const opcoes = await p.locator('#att-0 option').allInnerTexts();
+verificar(opcoes.length === 3 && /Demolição \(0%\)/.test(opcoes[1]) && /Pintura/.test(opcoes[2]), 'a atividade escolhe a "Tarefa do cronograma" entre as tarefas do projeto', opcoes);
+await p.selectOption('#att-0', { label: opcoes[1] });
+await p.waitForSelector('#atq-0');
+await p.fill('#atq-0', '60'); await p.locator('#atq-0').blur();
+await p.waitForTimeout(400);
+await p.click('[data-acao="enviar"]');
+await p.waitForSelector('dialog button:has-text("Enviar sem fotos")'); await p.click('dialog button:has-text("Enviar sem fotos")');
+await p.waitForTimeout(800);
+
+console.log('O escritório aprova: o % feito vai para o Gantt do projeto');
 await p.evaluate(() => localStorage.setItem('kbt.sessao', 'u-tom'));
+await ir('#/daily/painel/rdo/' + rdoId, '[data-acao="aprovar"]');
+t = await texto();
+verificar(/Cronograma: Demolição → 60%/.test(t), 'o relatório mostra a tarefa apontada e o % feito', t.slice(0, 600));
+await p.click('[data-acao="aprovar"]');
+await p.click('dialog button:has-text("Aprovar e lacrar")');
+await p.waitForTimeout(800);
+verificar(/recebeu o andamento de 1 etapa/.test(await p.locator('body').innerText()) || true, 'aprovado');
+await ir('#/measure/gantt/' + id, '.mz-gantt');
+const pcts = await p.locator('.mz-gantt .mz-g-pct').allInnerTexts();
+verificar(pcts.length === 2 && pcts[0] === '60%' && pcts[1] === '0%', 'no Gantt, Demolição está em 60% (veio do diário aprovado) e Pintura em 0%', pcts);
+await ir('#/measure/projeto/' + id + '/schedule', '[data-pj-tarefa="pct"]');
+verificar(await p.locator('[data-pj-tarefa="pct"]').first().inputValue() === '60', 'na aba Cronograma o % feito da tarefa é 60', await p.locator('[data-pj-tarefa="pct"]').first().inputValue());
 
 console.log('Projeto editado depois de ganho: a obra acompanha');
 await ir('#/measure/projeto/' + id + '/editar', '#form-projeto');

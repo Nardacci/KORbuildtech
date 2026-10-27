@@ -438,3 +438,11 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Na vencedora, o projeto fica Ganha e a obra dela nasce sozinha, ligada à obra da contratante; o convite mostra 'Você venceu' e 'Abrir a obra'; o diário dela chega para a contratante aprovar
 - [ ] **T190** · `pv.p1.admin` — Conta real (depois da migração 0020): Editar projeto › Ganha  
   _Esperado:_ A obra aparece no banco (projetos.obra_id preenchido) e no Daily
+- [ ] **T191** · `pv.p1.encarregado` — Daily › projeto ganho › Nova RDO › Atividades  
+  _Esperado:_ A atividade tem 'Tarefa do cronograma' com as tarefas do projeto (Takeoff › Schedule) abaixo de 100% e, ao escolher uma, o campo '% feito da tarefa (hoje: n%)'
+- [ ] **T192** · `pv.p1.admin` — Daily › Painel › RDO recebido › Aprovar e lacrar  
+  _Esperado:_ O relatório mostra 'Cronograma: <tarefa> → n%'; depois de aprovar, a aba Schedule e o Gantt do projeto mostram o % feito informado, e o Início atualiza 'Andamento dos projetos'
+- [ ] **T193** · `pv.p1.admin` — Daily › projeto ganho (página do projeto)  
+  _Esperado:_ 'Etapa atual' traz as tarefas do cronograma em andamento hoje; o sininho avisa 'Tarefa atrasada' com atalho para o Gantt quando uma tarefa passou do fim sem 100%
+- [ ] **T194** · `pv.p1.admin` — Conta real (depois da migração 0021): aprovar um diário que aponta uma tarefa  
+  _Esperado:_ projetos.cronograma recebe o pct e o avanço (data, antes, pct, rdoNumero, por); o Gantt reflete depois de recarregar

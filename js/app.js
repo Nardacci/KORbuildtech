@@ -42,7 +42,8 @@ import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorre
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
-import { obrasEmAndamento, obrasDaVersao, situacaoDaObra, SITUACOES_OBRA, projetoDaObra, garantirObrasDosProjetos } from './obras.js';
+import { obrasEmAndamento, obrasDaVersao, situacaoDaObra, SITUACOES_OBRA, projetoDaObra, garantirObrasDosProjetos, tarefasDoProjetoDaObra, tarefasAtuaisDaObra, aplicarRdoNoProjeto } from './obras.js';
+import { andamentoDoCronograma } from './andamento.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra, prestadorasNaObra, presencaDaCadeia, horas, aoRegistrarBatida } from './crew.js';
 import { icone, marca } from './icones.js';
@@ -471,6 +472,8 @@ function telaCampo() {
 
 /* Etapa atual: as etapas em andamento no cronograma; sem cronograma, o texto do cadastro da obra. */
 function etapaAtual(o) {
+  const tarefas = tarefasAtuaisDaObra(o);
+  if (tarefas.length) return tarefas.map((t) => t.nome).join(' · ');
   const atuais = etapasAtuais(o.id);
   return atuais.length ? atuais.map((e) => e.nome).join(' · ') : o.etapa;
 }
@@ -767,6 +770,8 @@ function ferramentasTexto(alvo) {
 
 /* Atividade → etapa do cronograma e % concluído (vai para o cronograma quando o RDO é aprovado). */
 function campoCronograma(r, a, i) {
+  const tarefas = tarefasDoProjetoDaObra(obraDoRdo(r));
+  if (tarefas.length) return campoTarefa(tarefas, a, i);
   const c = cronogramaDe(r.obraId);
   if (!c || !c.etapas.length) return '';
   const abertas = c.etapas.filter((e) => (e.pct || 0) < 100 || e.id === a.cronoEtapaId);
@@ -777,6 +782,19 @@ function campoCronograma(r, a, i) {
       abertas.map((x) => '<option value="' + x.id + '"' + (x.id === a.cronoEtapaId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + (x.pct || 0) + '%)</option>').join('') + '</select>' +
     (e ? '<label class="rotulo-pequeno" for="atp-' + i + '">' + tr('% concluído da etapa (hoje: {n}%)', { n: e.pct || 0 }) + '</label>' +
       '<input type="number" min="0" max="100" step="5" inputmode="numeric" id="atp-' + i + '" data-bind="atividades.' + i + '.cronoPct" value="' + esc(a.cronoPct == null ? '' : a.cronoPct) + '" placeholder="' + (e.pct || 0) + '">' : '') +
+  '</div>';
+}
+
+/* 1ª versão: a atividade aponta uma tarefa do cronograma do projeto (Takeoff); o % feito vai para o Gantt quando o RDO é aprovado. */
+function campoTarefa(tarefas, a, i) {
+  const abertas = tarefas.filter((t) => (t.pct || 0) < 100 || t.id === a.tarefaId);
+  const t = tarefas.find((x) => x.id === a.tarefaId);
+  return '<div class="atividade-crono">' +
+    '<label class="rotulo-pequeno" for="att-' + i + '">' + tr('Tarefa do cronograma') + '</label>' +
+    '<select id="att-' + i + '" data-bind="atividades.' + i + '.tarefaId"><option value="">' + tr('Nenhuma') + '</option>' +
+      abertas.map((x) => '<option value="' + x.id + '"' + (x.id === a.tarefaId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + (x.pct || 0) + '%)</option>').join('') + '</select>' +
+    (t ? '<label class="rotulo-pequeno" for="atq-' + i + '">' + tr('% feito da tarefa (hoje: {n}%)', { n: t.pct || 0 }) + '</label>' +
+      '<input type="number" min="0" max="100" step="5" inputmode="numeric" id="atq-' + i + '" data-bind="atividades.' + i + '.tarefaPct" value="' + esc(a.tarefaPct == null ? '' : a.tarefaPct) + '" placeholder="' + (t.pct || 0) + '">' : '') +
   '</div>';
 }
 
@@ -1740,7 +1758,7 @@ const acoes = {
     const deFora = !!origemDe(r);
     await lacrar(r, o);
     registrar(r, quem, (tr('Aprovou · código') + ' ') + r.codigo + (deFora ? ' (' + estado().empresa.nome + ')' : ''));
-    const noCronograma = naEmpresaDoRdo(r, () => aplicarRdoAprovado(r, quem));
+    const noCronograma = naEmpresaDoRdo(r, () => aplicarRdoAprovado(r, quem) + aplicarRdoNoProjeto(r, obraDoRdo(r), quem));
     salvar();
     desenhar();
     toast((tr('RDO aprovado e lacrado. Código') + ' ') + r.codigo + '.' + (noCronograma ? ' ' + tn(noCronograma, 'O cronograma recebeu o andamento de {n} etapa.', 'O cronograma recebeu o andamento de {n} etapas.') : ''));
@@ -1899,7 +1917,10 @@ function notificacoesDaily(u) {
   const lista = [];
   const { rdos } = estado();
   if (pode(u, 'daily.acompanhar')) {
-    for (const obra of obrasEmAndamento()) for (const e of (cronogramaDe(obra.id) || { etapas: [] }).etapas.filter((x) => situacaoDaEtapa(x) === 'atrasada')) {
+    for (const obra of obrasEmAndamento()) for (const t of tarefasDoProjetoDaObra(obra).length ? andamentoDoCronograma({ tarefas: tarefasDoProjetoDaObra(obra) }, hoje()).atrasadas : []) {
+      lista.push({ id: 'pj-atraso-' + t.id + t.fim, em: new Date(somarDias(t.fim, 1) + 'T08:00:00').getTime(), modulo: 'daily', titulo: tr('Tarefa atrasada: {etapa} · {obra}', { etapa: t.nome, obra: obra.nome }), href: '#/measure/gantt/' + (projetoDaObra(obra) || {}).id });
+    }
+    for (const obra of obrasEmAndamento()) for (const e of tarefasDoProjetoDaObra(obra).length ? [] : (cronogramaDe(obra.id) || { etapas: [] }).etapas.filter((x) => situacaoDaEtapa(x) === 'atrasada')) {
       lista.push({ id: 'cr-atraso-' + e.id + e.fim, em: new Date(somarDias(e.fim, 1) + 'T08:00:00').getTime(), modulo: 'daily', titulo: tr('Etapa atrasada: {etapa} · {obra}', { etapa: e.nome, obra: obra.nome }), href: '#/daily/obras/' + obra.id + '/cronograma' });
     }
     for (const { nome, data, href, resp } of semRdoOntemAqui()) {
