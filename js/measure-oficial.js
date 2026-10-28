@@ -25,7 +25,7 @@ export const PERSISTE_EXECUCAO = true;
 /* liberado_em / liberado_por (migração 0022): virar true junto com a migração. */
 export const PERSISTE_LIBERADO = true;
 /* itens.funcao_id (migração 0023): virar true junto com a migração. */
-export const PERSISTE_FUNCAO = false;
+export const PERSISTE_FUNCAO = true;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;

@@ -14,7 +14,7 @@
 - Protótipo: `js/settings-telas.js` (rotas `#/settings/funcoes`, `#/settings/funcao/nova`, `#/settings/funcao/:id[/editar]`).
 - Conta com banco: `js/cadastros.js` (`funcoesCad`, `salvarFuncaoCad`, `novoValorDaFuncaoCad`) e `js/cadastros-telas.js` (`#/conta/funcoes…`); o espelho (`js/espelho-crew.js`) traz `funcoes` + `funcao_valores` para o Takeoff.
 - Preço da mão de obra: `precoEm` em `js/precos.js`; item: `funcaoId` (`js/measure.js`, `js/itens-telas.js`).
-- Banco: migração **0023** (`funcoes`, `funcao_valores`, `itens.funcao_id`, dez funções padrão por empresa); teste `supabase/testes/0015_funcoes.sql`. No app, `PERSISTE_FUNCAO` em `js/measure-oficial.js` vira true junto com a migração.
+- Banco: migração **0023** (`funcoes`, `funcao_valores`, `itens.funcao_id`, dez funções padrão por empresa); teste `supabase/testes/0015_funcoes.sql`. No app, `PERSISTE_FUNCAO` (`js/measure-oficial.js`) está ligado desde que a migração entrou (28/10).
 
 ## Próximo (Gantt físico-financeiro, fatia 1)
 O valor de cada tarefa do cronograma = material + horas por função × custo da hora da função.
