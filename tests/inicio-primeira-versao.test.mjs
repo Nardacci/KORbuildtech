@@ -169,6 +169,31 @@ try {
     await ctx.close();
   }
 
+  console.log('Conta real: Settings › Funções (migração 0023)');
+  {
+    const { ctx, p } = await painel('p1', 'admin');
+    const [emp] = await sql(`select e.id from public.empresas e join public.membros m on m.empresa_id = e.id join auth.users u on u.id = m.user_id where u.email = '${emailDe('p1', 'admin')}' limit 1`);
+    await p.goto(BASE + '#/conta/funcoes');
+    await p.waitForSelector('.tabela-funcoes', { timeout: 40000 });
+    await p.waitForTimeout(500);
+    let tf = await texto(p);
+    verificar('Settings › Funções lista as dez funções padrão da empresa (sem valor)', await p.locator('.tabela-funcoes tbody tr').count() >= 10 && /Carpenter/.test(tf) && /sem valor/.test(tf), tf.slice(0, 300));
+    verificar('o menu lateral do Settings tem Funções na 1ª versão', await p.locator('.lateral-item:has-text("Funções")').count() === 1);
+    await p.goto(BASE + '#/conta/funcoes/nova');
+    await p.waitForSelector('#form-funcao', { timeout: 20000 });
+    await p.fill('#fn-nome', 'Teste QA ' + Date.now().toString().slice(-5));
+    await p.fill('#fn-valor', '33');
+    await p.click('[data-acao="cad-salvar-funcao"]');
+    await p.waitForFunction(() => /#\/conta\/funcoes\/[0-9a-f-]{36}$/.test(location.hash), null, { timeout: 20000 }).catch(() => null);
+    await p.waitForTimeout(800);
+    tf = await texto(p);
+    verificar('função criada no banco com o valor inicial: a página mostra US$ 33 vigente', /#\/conta\/funcoes\/[0-9a-f-]{36}$/.test(p.url()) && /33[.,]00/.test(tf) && /vigente/.test(tf), p.url() + ' · ' + tf.slice(0, 300));
+    const [fq] = await sql(`select count(*)::int n from public.funcao_valores v join public.funcoes f on f.id = v.funcao_id where f.empresa_id = '${emp.id}' and f.nome like 'Teste QA%'`);
+    verificar('funcao_valores gravado com o autor', fq && fq.n === 1, fq);
+    await sqlExec(`delete from public.funcoes where empresa_id = '${emp.id}' and nome like 'Teste QA%'`);
+    await ctx.close();
+  }
+
   console.log('Ambas (pv.a2.admin)');
   {
     const { ctx, p } = await painel('a2', 'admin');

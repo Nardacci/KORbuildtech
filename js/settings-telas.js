@@ -15,6 +15,8 @@ import {
   PERMISSOES, perfis, perfilDe, modulosDe, salvarPermissoes, criarPerfil, excluirPerfil, salvarUsuario,
 } from './settings.js';
 import { telaEmpresa, telaContatos, telaFormContato } from './contatos-telas.js';
+import { funcoes, funcao, funcoesAtivas, salvarFuncao, novoValorDaFuncao, htmlListaFuncoes, htmlFuncao, htmlFormFuncao, dialogoNovoValor } from './funcoes.js';
+import { itens as itensDoCatalogo } from './measure.js';
 import { ATUACOES } from './contatos.js';
 import { telaObras, telaFormObra, telaModelos, telaFormModelo } from './obras-telas.js';
 
@@ -30,6 +32,8 @@ function nav() {
   }
   // encargos e jornada são do ponto (Crew): a construtora, que não bate ponto, não precisa (docs/saas.md HS-09)
   if (pode(u, 'settings.regras') && estado().empresa.modulos.includes('crew') && !PRIMEIRA_VERSAO) itens.push({ id: 'encargos', href: '#/settings/encargos', rotulo: tr('Encargos'), icone: 'dinheiro' }, { id: 'regras', href: '#/settings/regras', rotulo: tr('Jornada'), icone: 'relogio' });
+  // funções com valor hora padrão: o orçamento do Takeoff usa; fica em todas as versões (docs/funcoes.md)
+  if (pode(u, 'settings.funcionarios') || pode(u, 'measure.catalogo')) itens.push({ id: 'funcoes', href: '#/settings/funcoes', rotulo: tr('Funções'), icone: 'dinheiro' });
   if (pode(u, 'settings.conta')) itens.push({ id: 'empresa', href: '#/settings/empresa', rotulo: tr('Empresa'), icone: 'obras' });
   if (pode(u, 'settings.obras') && !PRIMEIRA_VERSAO) itens.push({ id: 'obras', href: '#/settings/obras', rotulo: tr('Obras'), icone: 'obras' });
   if (pode(u, 'settings.contatos')) itens.push({ id: 'contatos', href: '#/settings/contatos', rotulo: tr('Contatos'), icone: 'link' });
@@ -53,6 +57,12 @@ export function telaSettings(q) {
   if (!primeira) return { trocar: '#/inicio' };
   if (!q.length || (precisa[q[0]] && !pode(u, precisa[q[0]]))) return { trocar: primeira.href };
   if (PRIMEIRA_VERSAO && ['funcionarios', 'funcionario', 'encargos', 'regras', 'obras', 'obra', 'modelos', 'modelo'].includes(q[0])) return { trocar: primeira.href };   // 1ª versão: só empresa, contatos, usuários e perfis
+  if (q[0] === 'funcoes' || q[0] === 'funcao') {
+    if (!(pode(u, 'settings.funcionarios') || pode(u, 'measure.catalogo'))) return { trocar: primeira.href };
+    if (q[0] === 'funcao' && q[1] === 'nova') return telaFormFuncao(null);
+    if (q[0] === 'funcao' && q[1]) return q[2] === 'editar' ? telaFormFuncao(q[1]) : telaFuncao(q[1]);
+    return telaFuncoes();
+  }
   if (q[0] === 'empresa') return telaEmpresa(moldura);
   if (q[0] === 'contatos') return telaContatos(moldura, q[1]);
   if (q[0] === 'contato' && q[1] === 'novo') return telaFormContato(moldura, null, q[2]);
@@ -174,11 +184,46 @@ function opcoes(lista, atual) {
   return lista.map(([v, r]) => '<option value="' + esc(v) + '"' + (v === atual ? ' selected' : '') + '>' + esc(r) + '</option>').join('');
 }
 
+/* ---------- Funções (docs/funcoes.md): telas compartilhadas em js/funcoes.js ---------- */
+
+function ctxFuncoes() {
+  const u = usuarioAtual();
+  const chave = (n) => String(n || '').trim().toLowerCase();
+  return {
+    base: '#/settings/funcao', lista: '#/settings/funcoes', prefixo: 'settings', podeEditar: pode(u, 'settings.funcionarios') || pode(u, 'measure.catalogo'), encargos: encargosEm(hoje()), dados: estado(),
+    funcionariosDe: (f) => funcionarios().filter((x) => x.situacao !== 'desligado' && chave(x.funcao) === chave(f.nome)).length,
+    itensDe: (f) => itensDoCatalogo().filter((it) => it.funcaoId === f.id && it.ativo !== false).map((it) => ({ id: it.id, nome: it.nome })),
+  };
+}
+function telaFuncoes() {
+  const ctx = ctxFuncoes();
+  return moldura({
+    ativo: 'funcoes', titulo: tr('Funções'), subtitulo: tr('A função com o valor hora padrão: o orçamento do Takeoff usa; o funcionário tem o valor dele'),
+    acoes: ctx.podeEditar ? '<a class="btn btn-primario btn-pequeno" href="#/settings/funcao/nova">' + icone('mais', 16) + tr('Nova função') + '</a>' : '',
+    conteudo: htmlListaFuncoes(ctx),
+  });
+}
+function telaFuncao(id) {
+  const f = funcao(id);
+  if (!f) return { trocar: '#/settings/funcoes' };
+  const ctx = ctxFuncoes();
+  return moldura({
+    ativo: 'funcoes', titulo: f.nome, subtitulo: f.ativa === false ? tr('Função inativa') : tr('Função ativa'), voltar: { href: '#/settings/funcoes', rotulo: tr('Funções') },
+    acoes: ctx.podeEditar ? '<a class="btn btn-contorno btn-pequeno" href="#/settings/funcao/' + f.id + '/editar">' + tr('Editar') + '</a>' : '',
+    conteudo: htmlFuncao(ctx, f),
+  });
+}
+function telaFormFuncao(id) {
+  const f = id ? funcao(id) : null;
+  if (id && !f) return { trocar: '#/settings/funcoes' };
+  return moldura({ ativo: 'funcoes', largo: false, titulo: f ? tr('Editar') + ' ' + f.nome : tr('Nova função'), voltar: { href: f ? '#/settings/funcao/' + f.id : '#/settings/funcoes', rotulo: f ? f.nome : tr('Funções') }, conteudo: htmlFormFuncao(ctxFuncoes(), f) });
+}
+
 function telaFormFuncionario(id) {
   const f = id ? funcionarios().find((x) => x.id === id) : null;
   if (id && !f) return { trocar: '#/settings/funcionarios' };
   const v = f || { classificacao: 'w2', flsa: 'nao-isento', situacao: 'ativo', admissao: hoje(), certificacoes: [] };
-  const funcoes = Array.from(new Set((estado().settings.funcoes || []).concat(funcionarios().map((x) => x.funcao)))).sort();
+  const funcoes = Array.from(new Set(funcoesAtivas().map((x) => x.nome).concat(funcionarios().map((x) => x.funcao)))).sort();
   const campo = (nome, rot, html, dica) => '<div class="campo"><label class="rotulo-pequeno" for="ff-' + nome + '">' + rot + '</label>' + html + (dica ? '<span class="mudo pequeno">' + dica + '</span>' : '') + '</div>';
   const texto = (nome, valor, extra) => '<input type="text" id="ff-' + nome + '" name="' + nome + '" value="' + esc(valor || '') + '"' + (extra || '') + '>';
   const data = (nome, valor) => '<input type="date" id="ff-' + nome + '" name="' + nome + '" value="' + esc(valor || '') + '">';
@@ -396,6 +441,23 @@ function telaAuditoria() {
 const valorDe = (form, nome) => { const el = form.querySelector('[name="' + nome + '"]'); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; };
 
 export const acoesSettings = {
+  'settings-salvar-funcao'() {
+    const form = document.getElementById('form-funcao');
+    const id = form.dataset.id || null;
+    const r = salvarFuncao(id, { nome: valorDe(form, 'nome'), ativa: id ? valorDe(form, 'ativa') : true, valor: valorDe(form, 'valor'), desde: valorDe(form, 'desde') }, usuarioAtual().nome);
+    if (r.erro) { toast(r.erro); return; }
+    toast(id ? tr('Função atualizada.') : tr('Função cadastrada.'));
+    app.ir('#/settings/funcao/' + r.id);
+  },
+  async 'settings-valor-funcao'(el) {
+    const f = funcao(el.dataset.id);
+    if (!f) return;
+    const campos = await dialogoNovoValor(abrirDialogo, f);
+    if (!campos) return;
+    const r = novoValorDaFuncao(f.id, campos, usuarioAtual().nome);
+    toast(r.erro || tr('Valor hora registrado.'));
+    if (!r.erro) app.desenhar();
+  },
   'settings-salvar-usuario'() {
     const form = document.getElementById('form-usuario');
     const marcado = form.querySelector('[name="perfilId"]:checked');

@@ -21,13 +21,17 @@ export async function lerTudo(tabela, ordem, desempate = 'id') {
   return linhas;
 }
 
+/* Tabela que pode ainda não existir no banco (migração não aplicada): lê como vazia. */
+const lerSeExistir = (tabela, ordem) => lerTudo(tabela, ordem).catch(() => []);
+
 export function lerCrew() {
   return Promise.all([
     lerTudo('equipes', 'nome'), lerTudo('funcionarios', 'nome'), lerTudo('funcionario_valores', 'desde'), lerTudo('encargos_versoes', 'desde'),
     lerTudo('regras_jornada_versoes', 'desde'), lerTudo('batidas', 'em'), lerTudo('batidas_conferidas', 'em', 'batida_id'),
     lerTudo('aprovacoes_semana', 'em'), lerTudo('orcamentos_obra', 'em'), lerTudo('localizacoes', 'em'),
-  ]).then(([equipes, funcionarios, valores, encargos, regras, batidas, conferidas, aprovacoes, orcamentos, localizacoes]) =>
-    ({ equipes, funcionarios, valores, encargos, regras, batidas, conferidas, aprovacoes, orcamentos, localizacoes }));
+    lerSeExistir('funcoes', 'nome'), lerSeExistir('funcao_valores', 'desde'),
+  ]).then(([equipes, funcionarios, valores, encargos, regras, batidas, conferidas, aprovacoes, orcamentos, localizacoes, funcoes, funcaoValores]) =>
+    ({ equipes, funcionarios, valores, encargos, regras, batidas, conferidas, aprovacoes, orcamentos, localizacoes, funcoes, funcaoValores }));
 }
 
 export function batidaDoBanco(b, conferidas) {
@@ -51,6 +55,13 @@ export function aplicarCrew(d, lido, usuarios, antes) {
     if (!valoresDe.has(v.funcionario_id)) valoresDe.set(v.funcionario_id, []);
     valoresDe.get(v.funcionario_id).push({ desde: v.desde, valor: Number(v.valor), motivo: v.motivo, por: nomeDe.get(v.por) || '', em: ms(v.em) });
   }
+  // funções com valor hora padrão (docs/funcoes.md): o Takeoff precisa delas para o preço da mão de obra
+  const valoresDaFuncao = new Map();
+  for (const v of lido.funcaoValores || []) {
+    if (!valoresDaFuncao.has(v.funcao_id)) valoresDaFuncao.set(v.funcao_id, []);
+    valoresDaFuncao.get(v.funcao_id).push({ desde: v.desde, valor: Number(v.valor), motivo: v.motivo, por: nomeDe.get(v.por) || '', em: ms(v.em) });
+  }
+  d.funcoes = (lido.funcoes || []).map((f) => ({ id: f.id, nome: f.nome, ativa: f.ativa !== false, valores: valoresDaFuncao.get(f.id) || [], criadoEm: ms(f.criado_em) }));
   d.funcionarios = lido.funcionarios.map((f) => ({
     id: f.id, nome: f.nome, funcao: f.funcao, equipeId: f.equipe_id || null, admissao: f.admissao, valores: valoresDe.get(f.id) || [],
     usuarioId: usuarioDoFuncionario.get(f.id) || null, codigo: f.codigo, telefone: f.telefone, emergencia: f.emergencia,
@@ -180,7 +191,7 @@ export function aplicarMeasure(d, lido) {
     folhas: lido.folhas.map((f) => ({ id: f.id, projetoId: f.projeto_id, nome: f.nome, arquivo: { tipo: 'storage', path: f.arquivo_path, id: nomeDoArquivo(f.arquivo_path), nome: f.arquivo_nome }, pagina: f.pagina, escala: f.escala || null, observacao: f.observacao || '', criadaEm: ms(f.criada_em) })),
     condicoes: lido.condicoes.map((c) => ({ id: c.id, projetoId: c.projeto_id, nome: c.nome, tipo: c.tipo, cor: c.cor, props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: c.oculta, medicoes: c.medicoes || [], _banco: { versao: c.versao } })),
     typicais: lido.typicais.map((t) => ({ id: t.id, projetoId: t.projeto_id, folhaId: t.folha_id, nome: t.nome, regiao: t.regiao, ocorrencias: t.ocorrencias, por: t.por_nome, em: ms(t.em) })),
-    itens: lido.itens.map((i) => ({ id: i.id, codigo: i.codigo, nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa, nota: i.nota, ativo: i.ativo !== false, precos: precosPor.get(i.id) || [] })),
+    itens: lido.itens.map((i) => ({ id: i.id, codigo: i.codigo, nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa, nota: i.nota, ativo: i.ativo !== false, funcaoId: i.funcao_id || null, precos: precosPor.get(i.id) || [] })),
     assemblies: lido.assemblies.map((a) => ({ id: a.id, nome: a.nome, tipo: a.tipo, descricao: a.descricao, linhas: a.linhas })),
     margens: lido.margens.map((m) => ({ id: m.id, overheadPct: Number(m.overhead_pct), lucroPct: Number(m.lucro_pct), modo: m.modo, impostoMaterialPct: Number(m.imposto_material_pct), desde: m.desde, motivo: m.motivo, por: m.por_nome, em: ms(m.em), _banco: true })),
   };

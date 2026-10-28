@@ -14,6 +14,7 @@ import { tr, tn } from './i18n.js';
 import { hoje, numTexto, dataCurta, diasEntre } from './util.js';
 import { auditar, encargosEm } from './settings.js';
 import { item } from './measure.js';
+import { funcao, valorDaFuncao } from './funcoes.js';
 
 const mz = () => estado().measure;
 const r2 = (v) => Math.round(v * 100) / 100;
@@ -21,10 +22,19 @@ const r2 = (v) => Math.round(v * 100) / 100;
 /* ---------- Preço de um item ---------- */
 
 export function historicoDePrecos(it) { return (it.precos || []).slice().sort((a, b) => (a.desde < b.desde ? 1 : a.desde > b.desde ? -1 : b.em - a.em)); }
-/* O preço que vale numa data (o mais recente com "desde" até a data). */
+/* O preço que vale numa data (o mais recente com "desde" até a data). Item de mão de obra ligado a uma função (docs/funcoes.md):
+ * o preço da hora é o valor hora padrão da função na data × (1 + encargos da data); o histórico próprio do item não vale. */
 export function precoEm(it, iso = hoje()) {
+  if (it && it.categoria === 'mao-de-obra' && it.funcaoId) {
+    const f = funcao(it.funcaoId);
+    const v = f ? valorDaFuncao(f, iso) : null;
+    if (!v) return null;
+    const enc = encargosEm(iso);
+    return { valor: r2(v.valor * (1 + enc)), desde: v.desde, fonte: tr('Função: {nome}', { nome: f.nome }) + (enc ? ' (+' + numTexto(r2(enc * 100)) + '% ' + tr('encargos') + ')' : ''), fornecedorId: null, por: v.por || '', em: v.em || 0, daFuncao: true };
+  }
   return historicoDePrecos(it).find((p) => p.desde <= iso) || null;
 }
+export const precoVemDaFuncao = (it) => !!(it && it.categoria === 'mao-de-obra' && it.funcaoId);
 
 /* Preço com mais de 12 meses é tratado como desatualizado. */
 export const PRAZO_DESATUALIZADO_DIAS = 365;

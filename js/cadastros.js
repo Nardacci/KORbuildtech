@@ -10,11 +10,12 @@ import { estado } from './armazem.js';
 import { espelho, montar } from './espelho.js';
 
 /* O que já foi lido do banco; cada tela pede só o que usa. */
-export const cad = { funcionarios: [], valores: [], encargos: [], regras: [], contatos: [], obras: [], alocacoes: [], modelos: [], membros: [] };
+export const cad = { funcionarios: [], valores: [], encargos: [], regras: [], contatos: [], obras: [], alocacoes: [], modelos: [], membros: [], funcoes: [], fvalores: [], itens: [] };
 const TABELAS = {
   funcionarios: ['funcionarios', 'nome'], valores: ['funcionario_valores', 'desde'], encargos: ['encargos_versoes', 'desde'],
   regras: ['regras_jornada_versoes', 'desde'], contatos: ['contatos', 'nome'], obras: ['obras', 'nome'],
   alocacoes: ['alocacoes', 'criado_em'], modelos: ['modelos_cronograma', 'nome'], membros: ['membros', 'nome'],
+  funcoes: ['funcoes', 'nome'], fvalores: ['funcao_valores', 'desde'], itens: ['itens', 'nome'],
 };
 const lidas = new Set();
 
@@ -110,6 +111,52 @@ export async function novoValorHora(funcionarioId, d) {
   if (!motivo) return { erro: tr('O motivo é obrigatório: fica no histórico.') };
   return gravar(cliente().from('funcionario_valores').insert({ funcionario_id: funcionarioId, desde, valor: Math.round(valor * 100) / 100, motivo }),
     ['valores'], tr('Já existe um valor a partir dessa data.'));
+}
+
+/* ---------- Funções com valor hora padrão (docs/funcoes.md; migração 0023) ---------- */
+
+/* As funções no formato de js/funcoes.js (nome, ativa, valores com vigência). */
+export function funcoesCad() {
+  const porFuncao = new Map();
+  for (const v of cad.fvalores) {
+    if (!porFuncao.has(v.funcao_id)) porFuncao.set(v.funcao_id, []);
+    porFuncao.get(v.funcao_id).push({ desde: v.desde, valor: Number(v.valor), motivo: v.motivo, por: (cad.membros.find((m) => m.user_id === v.por) || {}).nome || '', em: v.em ? new Date(v.em).getTime() : 0 });
+  }
+  return cad.funcoes.map((f) => ({ id: f.id, nome: f.nome, ativa: f.ativa !== false, valores: porFuncao.get(f.id) || [], criadoEm: f.criado_em ? new Date(f.criado_em).getTime() : 0 }));
+}
+/* Depois de gravar uma função: o espelho do Takeoff (se já carregado) relê, para o preço da mão de obra acompanhar. */
+async function relerEspelho() { try { if (espelho.pronto) await montar(true); } catch { /* o espelho relê na próxima abertura */ } }
+
+export async function salvarFuncaoCad(id, d) {
+  const nome = t(d.nome);
+  if (nome.length < 2) return { erro: tr('Informe o nome da função.') };
+  const repetida = tr('Já existe uma função com esse nome.');
+  if (cad.funcoes.some((f) => f.id !== id && f.nome.toLowerCase() === nome.toLowerCase())) return { erro: repetida };
+  if (id) {
+    const r = await gravar(cliente().from('funcoes').update({ nome, ativa: d.ativa !== false && d.ativa !== 'false' }).eq('id', id), ['funcoes'], repetida);
+    if (!r.erro) relerEspelho();
+    return r.erro ? r : { ok: true, id };
+  }
+  const r = await gravar(cliente().from('funcoes').insert({ nome, ativa: true }).select('id').single(), ['funcoes'], repetida);
+  if (r.erro) return r;
+  const novoId = r.data && r.data.id;
+  if (t(d.valor) !== '') {
+    const v = n(d.valor), desde = t(d.desde) || hoje();
+    if (!(v > 0)) return { erro: tr('Função criada, mas o valor hora precisa ser maior que zero.'), id: novoId };
+    const rv = await gravar(cliente().from('funcao_valores').insert({ funcao_id: novoId, desde, valor: Math.round(v * 100) / 100, motivo: tr('Cadastro da função') }), ['fvalores']);
+    if (rv.erro) return { erro: tr('Função criada, mas o valor não foi salvo: {erro}', { erro: rv.erro }), id: novoId };
+  }
+  relerEspelho();
+  return { ok: true, id: novoId };
+}
+export async function novoValorDaFuncaoCad(funcaoId, d) {
+  const valor = n(d.valor), desde = t(d.desde), motivo = t(d.motivo);
+  if (!(valor > 0)) return { erro: tr('Informe um valor hora maior que zero.') };
+  if (!DATA.test(desde)) return { erro: tr('Informe a data a partir da qual vale.') };
+  if (!motivo) return { erro: tr('O motivo é obrigatório: fica no histórico.') };
+  const r = await gravar(cliente().from('funcao_valores').insert({ funcao_id: funcaoId, desde, valor: Math.round(valor * 100) / 100, motivo }), ['fvalores'], tr('Já existe um valor a partir dessa data.'));
+  if (!r.erro) relerEspelho();
+  return r;
 }
 
 /* ---------- Encargos e regras de jornada (versões; o banco recusa o passado) ---------- */

@@ -4,7 +4,8 @@
  * serem os mesmos. O mapa da obra e as linhas dos modelos reaproveitam js/obras-telas.js (só dependem dos ids). */
 
 import { PRIMEIRA_VERSAO } from './versao.js';
-import { esc, toast, confirmar, dataCurta, dataHora, decimal, numTexto, hoje } from './util.js';
+import { esc, toast, confirmar, abrirDialogo, dataCurta, dataHora, decimal, numTexto, hoje } from './util.js';
+import { htmlListaFuncoes, htmlFuncao, htmlFormFuncao, dialogoNovoValor } from './funcoes.js';
 import { tr, tn } from './i18n.js';
 import { icone } from './icones.js';
 import { conta, pode } from './conta.js';
@@ -20,7 +21,7 @@ import { dinheiro } from './crew.js';
 import { aposDesenharObras, aposDesenharModelo } from './obras-telas.js';
 import {
   cad, carregar, jaLeu, funcionario, valoresDe, valorAtual, encargosVigentes, totalEncargos, certificacoesAVencer, vigente, historico, segundaDe,
-  salvarFuncionario, novoValorHora, novosEncargos, novaRegra, contato, salvarContato, excluirContato, PAPEIS_CONTATO,
+  salvarFuncionario, novoValorHora, novosEncargos, novaRegra, contato, salvarContato, excluirContato, PAPEIS_CONTATO, funcoesCad, salvarFuncaoCad, novoValorDaFuncaoCad,
   obra, salvarObra, empresaExecuta, alocacoesDa, alocar, desalocar, RAIO_PADRAO, RAIO_MIN, RAIO_MAX, modelo, salvarModelo, excluirModelo,
 } from './cadastros.js';
 
@@ -32,12 +33,14 @@ export function ligarCadastros(fns) { redesenhar = fns.redesenhar; ir = fns.ir; 
 export const ABAS_CADASTROS = [
   ['obras', 'Obras', 'settings.obras'],
   ['funcionarios', 'Funcionários', 'settings.funcionarios'],
+  ['funcoes', 'Funções', 'settings.funcionarios'],
   ['contatos', 'Contatos', 'settings.contatos'],
   ['regras', 'Regras', 'settings.regras'],
 ];
 const PRECISA = {
   obras: ['obras', 'contatos', 'membros', 'alocacoes', 'funcionarios', 'modelos'],
-  funcionarios: ['funcionarios', 'valores', 'encargos', 'regras', 'membros'],
+  funcionarios: ['funcionarios', 'valores', 'encargos', 'regras', 'membros', 'funcoes'],
+  funcoes: ['funcoes', 'fvalores', 'encargos', 'membros', 'funcionarios', 'itens'],
   contatos: ['contatos', 'obras'],
   regras: ['encargos', 'regras', 'membros'],
 };
@@ -79,6 +82,15 @@ export function telaCadastro(aba, resto) {
     }
     return { html: telaFuncionarios(resto[0] || '') };
   }
+  if (aba === 'funcoes') {
+    if (resto[0] === 'nova') return { html: telaFormFuncaoCad(null) };
+    if (resto[0]) {
+      const f = funcoesCad().find((x) => x.id === resto[0]);
+      if (!f) return { trocar: '#/conta/funcoes' };
+      return { html: resto[1] === 'editar' ? telaFormFuncaoCad(f) : telaFuncaoCad(f) };
+    }
+    return { html: telaFuncoesCad() };
+  }
   if (aba === 'contatos') {
     if (resto[0]) return resto[0] === 'novo' || contato(resto[0]) ? { html: telaFormContato(resto[0] === 'novo' ? null : resto[0]) } : { trocar: '#/conta/contatos' };
     return { html: telaContatos() };
@@ -89,6 +101,30 @@ export function telaCadastro(aba, resto) {
     return { html: telaRegras() };
   }
   return { trocar: '#/conta' };
+}
+
+/* ---------- Funções (docs/funcoes.md): telas compartilhadas em js/funcoes.js ---------- */
+
+function ctxFuncoesCad() {
+  const chave = (x) => String(x || '').trim().toLowerCase();
+  return {
+    base: '#/conta/funcoes', lista: '#/conta/funcoes', prefixo: 'cad', podeEditar: pode('settings.funcionarios') || pode('measure.catalogo'), encargos: totalEncargos(encargosVigentes()), dados: { funcoes: funcoesCad() },
+    funcionariosDe: (f) => cad.funcionarios.filter((x) => x.situacao !== 'desligado' && chave(x.funcao) === chave(f.nome)).length,
+    itensDe: (f) => cad.itens.filter((it) => it.funcao_id === f.id && it.ativo !== false).map((it) => ({ id: it.id, nome: it.nome })),
+  };
+}
+function telaFuncoesCad() {
+  const ctx = ctxFuncoesCad();
+  return cabeca(tr('Funções'), ctx.podeEditar ? '<a class="btn btn-primario btn-pequeno" href="#/conta/funcoes/nova">' + icone('mais', 16) + tr('Nova função') + '</a>' : '') +
+    '<p class="mudo">' + tr('A função com o valor hora padrão: o orçamento do Takeoff usa; o funcionário tem o valor dele') + '</p>' + htmlListaFuncoes(ctx);
+}
+function telaFuncaoCad(f) {
+  const ctx = ctxFuncoesCad();
+  return cabeca(f.nome, ctx.podeEditar ? '<a class="btn btn-contorno btn-pequeno" href="#/conta/funcoes/' + f.id + '/editar">' + tr('Editar') + '</a>' : '', ['#/conta/funcoes', tr('Funções')]) +
+    '<p class="mudo">' + (f.ativa === false ? tr('Função inativa') : tr('Função ativa')) + '</p>' + htmlFuncao(ctx, f);
+}
+function telaFormFuncaoCad(f) {
+  return cabeca(f ? tr('Editar') + ' ' + f.nome : tr('Nova função'), '', f ? ['#/conta/funcoes/' + f.id, f.nome] : ['#/conta/funcoes', tr('Funções')]) + htmlFormFuncao(ctxFuncoesCad(), f);
 }
 
 /* ---------- Funcionários ---------- */
@@ -154,7 +190,7 @@ function telaFuncionario(id) {
 function telaFormFuncionario(id) {
   const f = id ? funcionario(id) : null;
   const v = f || { classificacao: 'w2', flsa: 'nao-isento', situacao: 'ativo', admissao: hoje(), certificacoes: [] };
-  const funcoes = Array.from(new Set(cad.funcionarios.map((x) => x.funcao))).sort();
+  const funcoes = Array.from(new Set(cad.funcoes.filter((x) => x.ativa !== false).map((x) => x.nome).concat(cad.funcionarios.map((x) => x.funcao)))).sort();
   const certs = (v.certificacoes || []).concat([{}, {}]);
   return cabeca(f ? tr('Editar') + ' ' + f.nome : tr('Novo funcionário'), '', f ? ['#/conta/funcionarios/' + f.id, f.nome] : ['#/conta/funcionarios', tr('Funcionários')]) +
     '<form id="form-func" class="form-settings" data-id="' + (f ? f.id : '') + '" data-sem-envio>' +
@@ -412,6 +448,18 @@ async function resultado(promessa, ok, destino) {
 }
 
 export const acoesCadastros = {
+  'cad-salvar-funcao'() {
+    const f = form('form-funcao');
+    const id = f.dataset.id || null;
+    return resultado(salvarFuncaoCad(id, Object.fromEntries(new FormData(f).entries())), id ? tr('Função atualizada.') : tr('Função cadastrada.'), (r) => '#/conta/funcoes/' + (id || r.id));
+  },
+  async 'cad-valor-funcao'(el) {
+    const f = funcoesCad().find((x) => x.id === el.dataset.id);
+    if (!f) return;
+    const campos = await dialogoNovoValor(abrirDialogo, f);
+    if (!campos) return;
+    return resultado(novoValorDaFuncaoCad(f.id, campos), tr('Valor hora registrado.'));
+  },
   'cad-salvar-func'() {
     const f = form('form-func');
     const d = Object.fromEntries(new FormData(f).entries());

@@ -11,7 +11,8 @@ import { dinheiro } from './crew.js';
 import { numero } from './imperial.js';
 import { CATEGORIAS, itens, item, assemblies, salvarItem, definirAtivoItem } from './measure.js';
 import { contato } from './contatos.js';
-import { precoEm, registrarPreco, historicoComVariacao, situacaoDoItem, margensEm, historicoDeMargens, textoMargens, PRAZO_DESATUALIZADO_DIAS } from './precos.js';
+import { precoEm, precoVemDaFuncao, registrarPreco, historicoComVariacao, situacaoDoItem, margensEm, historicoDeMargens, textoMargens, PRAZO_DESATUALIZADO_DIAS } from './precos.js';
+import { funcao, funcoesAtivas, valorDaFuncao } from './funcoes.js';
 import { dialogoPreco, dialogoMargens } from './precos-telas.js';
 import { PERSISTE_ATIVO_ITEM } from './measure-oficial.js';
 import { lerValor } from './measure-relatorios.js';
@@ -19,6 +20,9 @@ import { acoesPlanilha, dialogoImportar } from './itens-planilha.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarItens(funcoes) { app = { ...app, ...funcoes }; }
+
+/* O campo Função só vale para mão de obra: aparece e some conforme a categoria. */
+if (typeof document !== 'undefined') document.addEventListener('change', (ev) => { const el = ev.target; if (el && el.id === 'it-cat') { const c = document.getElementById('campo-funcao'); if (c) c.hidden = el.value !== 'mao-de-obra'; } });
 const podeEditar = () => pode(usuarioAtual(), 'measure.catalogo');
 const quem = () => (usuarioAtual() || {}).nome || '';
 /* Na conta com banco, "inativo" depende da migração 0018 (itens.ativo), já no código: a chave fica para o caso de ela ainda não estar aplicada. */
@@ -126,6 +130,8 @@ export function telaItem(moldura, id, abaPedida) {
       campo('codigo', tr('Código'), '<input type="text" id="it-codigo" name="codigo" value="' + esc(v.codigo || '') + '"' + dis + '>') +
       campo('cat', tr('Categoria *'), '<select id="it-cat" name="categoria"' + dis + '>' + Object.entries(CATEGORIAS).map(([c, n]) => '<option value="' + c + '"' + (c === v.categoria ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>') +
       campo('un', tr('Unidade de compra *'), '<input type="text" id="it-un" name="unidade" value="' + esc(v.unidade || '') + '" placeholder="' + esc(tr('chapa, caixa, rolo, peça, cu yd, hora…')) + '"' + dis + '>') +
+      '<div class="campo" id="campo-funcao"' + (v.categoria === 'mao-de-obra' ? '' : ' hidden') + '><label class="rotulo-pequeno" for="it-funcao">' + tr('Função (valor hora padrão)') + '</label><select id="it-funcao" name="funcaoId"' + dis + '><option value="">' + tr('Nenhuma: preço digitado neste item') + '</option>' +
+        funcoesAtivas().concat(v.funcaoId && funcao(v.funcaoId) && !funcoesAtivas().some((f) => f.id === v.funcaoId) ? [funcao(v.funcaoId)] : []).map((f) => '<option value="' + f.id + '"' + (f.id === v.funcaoId ? ' selected' : '') + '>' + esc(f.nome) + (valorDaFuncao(f) ? ' · ' + dinheiro(valorDaFuncao(f).valor) + '/h' : ' · ' + tr('sem valor')) + '</option>').join('') + '</select><span class="mudo pequeno">' + tr('Com função, o preço da hora vem de Settings › Funções (valor hora + encargos). <a href="{href}">Ver funções</a>', { href: estado().oficial ? '#/conta/funcoes' : '#/settings/funcoes' }) + '</span></div>' +
       campo('etapa', tr('Etapa (cost code)'), '<input type="text" id="it-etapa" name="etapa" value="' + esc(v.etapa || '') + '" placeholder="' + esc(tr('Ex.: 09 29 00 · Gypsum board')) + '"' + dis + '>') +
       campo('nota', tr('Nota'), '<input type="text" id="it-nota" name="nota" value="' + esc(v.nota || '') + '" placeholder="' + esc(tr('Ex.: cobre 32 sq ft')) + '"' + dis + '>') + '</div></section>' +
       (novo && ed ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Preço inicial (opcional)') + '</h2><div class="grade-campos">' +
@@ -135,6 +141,13 @@ export function telaItem(moldura, id, abaPedida) {
       (!novo && ed ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Situação do item') + '</h2><p class="mudo pequeno">' + (it.ativo === false ? tr('Este item está inativo: não aparece nas listas nem nos assemblies novos. O histórico de preços fica guardado.') : tr('Item ativo. Para tirar de uso sem perder o histórico, deixe-o inativo. Itens nunca são excluídos.')) + '</p>' +
         '<button type="button" class="btn btn-contorno" data-acao="item-ativo" data-id="' + it.id + '"' + (ativoDisponivel() ? '' : ' disabled title="' + esc(tr('Disponível depois da próxima atualização do banco.')) + '"') + '>' + (it.ativo === false ? tr('Reativar o item') : tr('Deixar inativo')) + '</button>' +
         (ativoDisponivel() ? '' : '<p class="mudo pequeno">' + tr('Disponível depois da próxima atualização do banco.') + '</p>') + '</section>' : '');
+  } else if (aba === 'prices' && precoVemDaFuncao(it)) {
+    const p = precoEm(it), f = funcao(it.funcaoId);
+    corpo = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Preço atual') + '</h2>' +
+      (p ? '<p class="itens-preco-grande"><b>' + dinheiro(p.valor) + '</b> <span class="mudo">/ ' + esc(it.unidade) + '</span></p><p class="mudo pequeno">' + tr('desde {data}', { data: dataCurta(p.desde) }) + ' · ' + esc(p.fonte) + '</p>'
+        : '<p class="vazio">' + tr('A função {nome} ainda não tem valor hora: registre em Settings › Funções.', { nome: esc(f ? f.nome : '') }) + '</p>') +
+      '<p class="dica">' + tr('Este item é de mão de obra ligado à função <b>{nome}</b>: o preço da hora vem do valor hora padrão da função mais os encargos, e muda quando a função muda. Para digitar um preço próprio, tire a função no cadastro do item.', { nome: esc(f ? f.nome : '') }) +
+        ' <a href="' + (estado().oficial ? '#/conta/funcoes/' : '#/settings/funcao/') + it.funcaoId + '">' + tr('Abrir a função') + '</a></p></section>';
   } else if (aba === 'prices') {
     const p = precoEm(it), h = historicoComVariacao(it);
     const fornecedor = (x) => (x.fornecedorId && contato(x.fornecedorId) ? contato(x.fornecedorId).nome : '');

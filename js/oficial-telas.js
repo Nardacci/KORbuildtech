@@ -92,7 +92,7 @@ export function telaOficial(p) {
   if (aba === 'diagnostico') return { html: moldura('perfil', htmlTelaDiagnostico()), depois: iniciarTelaDiagnostico };
   const cadastro = ABAS_CADASTROS.find(([k]) => k === aba);
   if (cadastro) {
-    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && cadastro[0] !== 'contatos')) return { trocar: '#/conta' };
+    if (!pode(cadastro[2]) || (PRIMEIRA_VERSAO && !['contatos', 'funcoes'].includes(cadastro[0]))) return { trocar: '#/conta' };
     const r = telaCadastro(aba, p.slice(2));
     return r.trocar ? r : { html: moldura(aba, r.html), depois: r.depois };
   }
@@ -167,7 +167,7 @@ function telaNovaEmpresa() {
 
 /* ---------- Área da conta ---------- */
 
-const ICONES_DO_SETTINGS = { obras: 'obras', contatos: 'crew', funcionarios: 'crew', regras: 'settings', usuarios: 'crew', perfis: 'aprovacoes', empresa: 'conta', perfil: 'settings' };
+const ICONES_DO_SETTINGS = { obras: 'obras', contatos: 'crew', funcionarios: 'crew', funcoes: 'dinheiro', regras: 'settings', usuarios: 'crew', perfis: 'aprovacoes', empresa: 'conta', perfil: 'settings' };
 /* O lado direito do cabeçalho: na 1ª versão, o mesmo do Takeoff (sininho, módulos e o menu do usuário, com idioma e Sair dentro);
  * enquanto o espelho da empresa não carregou (ou fora da 1ª versão), o seletor de idioma e o botão Sair. */
 function ladoDireitoDoTopo() {
@@ -179,7 +179,7 @@ function ladoDireitoDoTopo() {
 /* A moldura da área da conta. Na 1ª versão: o Início é o painel, em tela cheia (opcoes.cheio), e as outras telas do Settings têm o menu
  * lateral, como o Takeoff (no celular o menu vira as abas de sempre). */
 function moldura(ativa, conteudo, opcoes = {}) {
-  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos')).map(([k, nome]) => [k, tr(nome)]))
+  const abas = [['inicio', tr('Início')]].concat(ABAS_CADASTROS.filter(([k, , perm]) => pode(perm) && (!PRIMEIRA_VERSAO || k === 'contatos' || k === 'funcoes')).map(([k, nome]) => [k, tr(nome)]))
     .concat(pode('settings.acesso') ? [['usuarios', tr('Usuários')], ['perfis', tr('Perfis de acesso')]] : []).concat([['empresa', tr('Empresa')], ['perfil', tr('Meu perfil')]]);
   const topo = '<header class="oficial-topo"><a class="oficial-marca" href="#/conta">' + marca(28) + logotipo({ produto: false }) + '</a>' + (PRIMEIRA_VERSAO ? '<span class="oficial-secao">/ ' + (opcoes.cheio ? tr('Início') : 'Settings') + '</span>' : '') +
       '<span class="oficial-empresa"><b>' + esc(conta.empresa ? conta.empresa.nome : '') + '</b><span class="mudo pequeno">' + esc(conta.membro.nome) + ' · ' + esc(nomeDoPerfil(conta.perfil)) + '</span></span>' +

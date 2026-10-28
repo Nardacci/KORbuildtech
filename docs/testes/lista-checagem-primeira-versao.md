@@ -454,3 +454,11 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ O projeto some do Daily sem apagar nada; liberar de novo traz a mesma obra. Com diário de obra, 'Voltar para análise' não aparece
 - [ ] **T198** · `pv.p1.admin` — Conta real (depois da migração 0022): liberar um projeto  
   _Esperado:_ projetos.liberado_em preenchido, obra criada (obra_id) e o projeto no Daily; projeto Perdida não fica liberado; marcar Ganha sozinho não leva mais ao Daily
+- [ ] **T199** · `pv.p1.admin` — Settings › Funções  
+  _Esperado:_ Lista com as funções padrão, valor hora padrão, custo da hora (+encargos), nº de funcionários e de itens; 'Nova função' com nome e valor inicial opcional; nome repetido é recusado
+- [ ] **T200** · `pv.p1.admin` — Settings › Funções › uma função › Novo valor hora  
+  _Esperado:_ Valor, data e motivo obrigatórios; o histórico mostra vigente/futuro e a variação; mesma data é recusada; inativar tira das listas e mantém o histórico
+- [ ] **T201** · `pv.p1.admin` — Takeoff › Itens › item de mão de obra › Função  
+  _Esperado:_ O campo Função só aparece na categoria Mão de obra; com função, a aba Preços mostra o preço vindo da função (valor + encargos) e não tem 'Novo preço'; sem função, o preço digitado continua valendo
+- [ ] **T202** · `pv.p1.admin` — Conta real (depois da migração 0023): Settings › Funções e item com função  
+  _Esperado:_ As dez funções padrão aparecem; valor registrado grava em funcao_valores; o item salvo com função grava itens.funcao_id e o Takeoff mostra o preço da função

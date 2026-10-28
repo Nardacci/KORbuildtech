@@ -432,7 +432,8 @@ export function itens() { return mz().itens || []; }
 export function item(id) { return itens().find((i) => i.id === id); }
 
 export function salvarItem(id, dados) {
-  const d = { codigo: (dados.codigo || '').trim(), nome: (dados.nome || '').trim(), categoria: dados.categoria, unidade: (dados.unidade || '').trim(), etapa: (dados.etapa || '').trim(), nota: (dados.nota || '').trim() };
+  const d = { codigo: (dados.codigo || '').trim(), nome: (dados.nome || '').trim(), categoria: dados.categoria, unidade: (dados.unidade || '').trim(), etapa: (dados.etapa || '').trim(), nota: (dados.nota || '').trim(),
+    funcaoId: dados.categoria === 'mao-de-obra' && dados.funcaoId ? String(dados.funcaoId) : null };   // docs/funcoes.md: o preço da hora vem da função
   if (!d.nome || !d.unidade) return { erro: tr('Informe o nome e a unidade de compra (ex.: chapa, caixa, cu yd, hora).') };
   if (!CATEGORIAS[d.categoria]) return { erro: tr('Escolha a categoria.') };
   if (d.codigo && itens().some((i) => i.codigo.toLowerCase() === d.codigo.toLowerCase() && i.id !== id)) return { erro: tr('Já existe um item com esse código.') };

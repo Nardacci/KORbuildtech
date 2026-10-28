@@ -24,6 +24,8 @@ export const PERSISTE_ATIVO_ITEM = true;
 export const PERSISTE_EXECUCAO = true;
 /* liberado_em / liberado_por (migração 0022): virar true junto com a migração. */
 export const PERSISTE_LIBERADO = true;
+/* itens.funcao_id (migração 0023): virar true junto com a migração. */
+export const PERSISTE_FUNCAO = false;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;
@@ -38,7 +40,7 @@ const linha = {
   folhas: (f) => ({ id: f.id, projeto_id: f.projetoId, nome: f.nome, arquivo_path: f.arquivo.path, arquivo_nome: f.arquivo.nome || '', pagina: f.pagina, escala: f.escala || null, ...(PERSISTE_OBS_FOLHA ? { observacao: f.observacao || '' } : {}) }),
   condicoes: (c) => ({ id: c.id, projeto_id: c.projetoId, nome: c.nome, tipo: c.tipo, cor: c.cor || '', props: c.props || {}, assemblies: c.assemblies || [], folhas: c.folhas || [], oculta: !!c.oculta, medicoes: c.medicoes || [] }),
   typicais: (t) => ({ id: t.id, projeto_id: t.projetoId, folha_id: t.folhaId, nome: t.nome, regiao: t.regiao || null, ocorrencias: t.ocorrencias }),
-  itens: (i) => ({ id: i.id, codigo: i.codigo || '', nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa || '', nota: i.nota || '', ...(PERSISTE_ATIVO_ITEM ? { ativo: i.ativo !== false } : {}) }),
+  itens: (i) => ({ id: i.id, codigo: i.codigo || '', nome: i.nome, categoria: i.categoria, unidade: i.unidade, etapa: i.etapa || '', nota: i.nota || '', ...(PERSISTE_ATIVO_ITEM ? { ativo: i.ativo !== false } : {}), ...(PERSISTE_FUNCAO ? { funcao_id: i.funcaoId || null } : {}) }),
   assemblies: (a) => ({ id: a.id, nome: a.nome, tipo: a.tipo, descricao: a.descricao || '', linhas: a.linhas }),
 };
 const ORDEM = ['projetos', 'folhas', 'condicoes', 'typicais', 'itens', 'assemblies'];   // pais antes dos filhos
