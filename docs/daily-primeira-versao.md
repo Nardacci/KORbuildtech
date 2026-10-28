@@ -18,7 +18,7 @@ Depois do login, três módulos: **Daily**, **Takeoff** e **Settings**. O Settin
 Até a migração entrar na conta real: o projeto ganho não vira obra no banco (o Daily fica vazio) e a seção Execução não é gravada.
 
 ## Banco (migração 0022, em `supabase/migrations/`)
-`projetos.liberado_em timestamptz`, `liberado_por text`; o gatilho `projetos_obra` cria a obra quando `liberado_em` é preenchido (não mais em `situacao = 'ganha'`), zera a liberação de projeto perdido e aplica o vínculo da concorrência vencida na obra que já existe. Projetos que já tinham obra automática ficam marcados como liberados. No app: `PERSISTE_LIBERADO` em `js/measure-oficial.js` vira true junto com a migração; até lá, a liberação feita na conta real fica só no aparelho.
+`projetos.liberado_em timestamptz`, `liberado_por text`; o gatilho `projetos_obra` cria a obra quando `liberado_em` é preenchido (não mais em `situacao = 'ganha'`), zera a liberação de projeto perdido e aplica o vínculo da concorrência vencida na obra que já existe. Projetos que já tinham obra automática ficam marcados como liberados. No app: `PERSISTE_LIBERADO` (`js/measure-oficial.js`) está ligado desde que a migração entrou (28/10).
 
 ## Banco (migração 0021, em `supabase/migrations/`)
 `aprovar_rdo` reescrita: além das etapas de obra (0007), cada atividade com `tarefaId` e `tarefaPct` atualiza `projetos.cronograma -> tarefas[].pct` do projeto que virou a obra (mesma empresa do diário) e acrescenta o avanço em `avancos`. Retorna `etapas` = total de etapas + tarefas atualizadas. Teste `supabase/testes/0014_rdo_tarefa_do_projeto.sql`. Não depende de nada no app: até ela entrar, o % informado no diário fica só no relatório.

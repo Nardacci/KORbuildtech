@@ -23,7 +23,7 @@ export const PERSISTE_ATIVO_ITEM = true;
 /** Execução do projeto (local no mapa, dias de trabalho): coluna projetos.execucao da migração 0020 (supabase/pendentes). Virar true junto com ela. */
 export const PERSISTE_EXECUCAO = true;
 /* liberado_em / liberado_por (migração 0022): virar true junto com a migração. */
-export const PERSISTE_LIBERADO = false;
+export const PERSISTE_LIBERADO = true;
 let conhecido = null;          // { tabela: Map(id → JSON da linha como o banco tem) }
 let agendado = null;
 let subindo = null;

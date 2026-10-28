@@ -6,5 +6,5 @@ O que ela faz: colunas `projetos.liberado_em` e `liberado_por`; reescreve a fun�
 1. `git pull origin main`. Leia o arquivo e confirme que é só isso.
 2. Aplique no banco real pelo mesmo caminho das anteriores (0016–0021).
 3. Confira: `select count(*) from information_schema.columns where table_name = 'projetos' and column_name in ('liberado_em', 'liberado_por');` → 2; `select count(*) from pg_proc where proname = 'obra_do_projeto' and prosrc like '%liberado_em%';` → 1.
-4. Só depois publique o app (`PERSISTE_LIBERADO = true` já no código; service worker `korbuild-v145`). Publicar antes faz o cadastro de projeto falhar por coluna inexistente.
+4. Só depois publique o app (`PERSISTE_LIBERADO = true` já no código; service worker `korbuild-v146`). Publicar antes faz o cadastro de projeto falhar por coluna inexistente.
 5. Relate o que foi aplicado e os resultados. Se algo falhar, não corrija às cegas.
