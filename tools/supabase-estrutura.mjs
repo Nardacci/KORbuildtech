@@ -4,7 +4,7 @@
  *
  * Precisa de:
  *   SUPABASE_ACCESS_TOKEN  token pessoal do Supabase (Account › Access Tokens), nunca no código nem no chat
- *   SUPABASE_PROJECT_REF   opcional; padrão gbdmtgephszxhaprpiss
+ *   SUPABASE_PROJECT_REF   opcional; padrão qudyyewfrtfimbytahkv
  * Uso: node tools/supabase-estrutura.mjs
  * Saída: supabase/backup/estrutura-AAAA-MM-DD.sql (para recriar a estrutura) e inventario-AAAA-MM-DD.json
  *        (a lista por schema: tabelas com contagem de linhas, views, funções, triggers, políticas, buckets). */
@@ -12,7 +12,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
-const REF = process.env.SUPABASE_PROJECT_REF || 'gbdmtgephszxhaprpiss';
+const REF = process.env.SUPABASE_PROJECT_REF || 'qudyyewfrtfimbytahkv';
 if (!TOKEN) { console.error('Defina SUPABASE_ACCESS_TOKEN (variável de ambiente).'); process.exit(1); }
 
 async function sql(query) {

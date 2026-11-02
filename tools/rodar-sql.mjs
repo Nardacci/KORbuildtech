@@ -3,13 +3,13 @@
  * Migrações NÃO passam por aqui: elas são executadas à parte, depois de revisadas (CLAUDE.md).
  * Uso: node tools/rodar-sql.mjs supabase/testes/0002_settings.sql
  *   SUPABASE_ACCESS_TOKEN  token pessoal do Supabase (variável de ambiente; nunca no código nem no chat)
- *   SUPABASE_PROJECT_REF   opcional (padrão: gbdmtgephszxhaprpiss) */
+ *   SUPABASE_PROJECT_REF   opcional (padrão: qudyyewfrtfimbytahkv) */
 
 import { readFileSync } from 'node:fs';
 import { resolve, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const REF = process.env.SUPABASE_PROJECT_REF || 'gbdmtgephszxhaprpiss';
+const REF = process.env.SUPABASE_PROJECT_REF || 'qudyyewfrtfimbytahkv';
 const TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
 const arquivo = process.argv[2];
 if (!TOKEN) { console.error('Defina SUPABASE_ACCESS_TOKEN (variável de ambiente).'); process.exit(2); }
