@@ -22,7 +22,7 @@ const cab = { apikey: chave, Authorization: 'Bearer ' + chave, 'Content-Type': '
 
 console.log('Projeto ' + ref);
 let falhas = 0;
-process.on('unhandledRejection', (e) => sai('Falha de rede ou resposta inesperada: ' + ((e && e.cause && e.cause.code) || (e && e.message) || e)));
+try {
 for (const email of emails) {
   let achado = null;
   for (let pagina = 1; pagina <= 20 && !achado; pagina++) {
@@ -38,5 +38,6 @@ for (const email of emails) {
   if (r.ok) console.log('  senha nova ' + email);
   else { console.log('  falhou     ' + email + ' (' + r.status + ')'); falhas++; }
 }
+} catch (e) { sai('Falha de rede ou resposta inesperada: ' + ((e && e.cause && (e.cause.code || e.cause.message)) || (e && e.message) || e)); }
 console.log(falhas ? '\n' + falhas + ' com problema.' : '\nPronto. Entre no app com o e-mail e a senha nova.');
 process.exit(falhas ? 1 : 0);
