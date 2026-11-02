@@ -40,9 +40,9 @@ function jwtDecode(t) { try { return JSON.parse(Buffer.from(t.split('.')[1], 'ba
     ['token do GitHub', /\bgh[pousr]_[A-Za-z0-9]{36,}\b/],
     ['chave da API da Anthropic/OpenAI', /\bsk-(?:ant-)?[A-Za-z0-9_-]{32,}/],
     ['senha SMTP escrita no arquivo', /SMTP_PASS\s*[:=]\s*['"][^'"$]{4,}['"]/],
-    ['segredo do cron escrito no arquivo', /CRON_SECRET\s*[:=]\s*['"][^'"$]{8,}['"]/],
+    ['segredo do cron escrito no arquivo', /CRON_SECRET\s*[:=]\s*['"](?!o mesmo|um valor|valor |\.\.\.|…|<)[^'"$]{8,}['"]/],
     ['senha da massa de demonstração escrita no arquivo', /KOR_DEMO_SENHA\s*[:=]\s*['"](?![<{$]|qualquer|\.\.\.|…)[^'"]{4,}['"]/],
-    ['string de conexão com senha', /postgres(?:ql)?:\/\/[^:\s@]+:[^@\s'"]{4,}@(?!localhost|127\.0\.0\.1)[a-z0-9.-]+/i],
+    ['string de conexão com senha', /postgres(?:ql)?:\/\/[^:\s@]+:(?!SENHA|\[|<|\$|x@)[^@\s'"]{4,}@(?!localhost|127\.0\.0\.1)[a-z0-9.-]+/i],
     ['e-mail pessoal do dono do projeto (não vai para arquivo do repositório)', /nardaccicoach/i],
   ];
   for (const [f, t] of lido) {
