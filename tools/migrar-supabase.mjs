@@ -34,12 +34,17 @@ function conexao(qual) {
   const v = process.env[nome];
   if (!v) sai('Falta a variável ' + nome + '. Veja docs/migrar-supabase.md, passo "Variáveis".');
   if (/\[YOUR-PASSWORD\]|\[SENHA\]/i.test(v)) sai(nome + ' ainda tem [YOUR-PASSWORD]: troque pelo valor da senha do banco.');
-  let u;
-  try { u = new URL(v); } catch { sai(nome + ' não é um endereço válido (deve começar com postgresql://).'); }
-  const ref = decodeURIComponent(u.username).split('.')[1] || (u.hostname.match(/^db\.([a-z0-9]+)\.supabase\.co$/) || [])[1] || '';
+  // lê o endereço "à mão": a senha pode ter @, #, / ou [ ] sem virar erro (o último @ separa a senha do servidor)
+  const m = v.trim().match(/^postgres(?:ql)?:\/\/([^:\/@]+):(.*)@([^@\/?#]+)(?:\/([^?#]*))?(?:[?#].*)?$/s);
+  if (!m) sai(nome + ' não é um endereço válido. Deve ser: postgresql://USUARIO:SENHA@SERVIDOR:5432/postgres (sem espaços e sem aspas dentro das aspas).');
+  const [, usuario, senhaBruta, servidor, banco] = m;
+  const [hostname, porta] = servidor.split(':');
+  const dec = (x) => { try { return decodeURIComponent(x); } catch { return x; } };
+  const u = { username: usuario, password: dec(senhaBruta), hostname, port: porta || '5432', pathname: '/' + (banco || 'postgres') };
+  const ref = u.username.split('.')[1] || (u.hostname.match(/^db\.([a-z0-9]+)\.supabase\.co$/) || [])[1] || '';
   return {
     ref,
-    env: { ...process.env, PGHOST: u.hostname, PGPORT: u.port || '5432', PGUSER: decodeURIComponent(u.username), PGPASSWORD: decodeURIComponent(u.password), PGDATABASE: (u.pathname || '/postgres').slice(1) || 'postgres', PGSSLMODE: process.env.KOR_SSLMODE || 'require', PGCONNECT_TIMEOUT: '20' },
+    env: { ...process.env, PGHOST: u.hostname, PGPORT: u.port || '5432', PGUSER: u.username, PGPASSWORD: u.password, PGDATABASE: (u.pathname || '/postgres').slice(1) || 'postgres', PGSSLMODE: process.env.KOR_SSLMODE || 'require', PGCONNECT_TIMEOUT: '20' },
   };
 }
 
