@@ -57,6 +57,11 @@ node tools/migrar-supabase.mjs conferir
 ```
 O `restaurar` recusa se o banco novo não estiver vazio. Mensagens como "already exists" são normais. O `conferir` lista, tabela por tabela, as linhas do antigo e do novo. **Tem que terminar com "Tudo bate".** Se mostrar `DIFER`, pare e me mande a tela (sem endereços nem senhas).
 
+Se o `conferir` mostrar só `auth.identities` diferente (o restante da cópia foi feito por outro caminho, como o DBeaver), copie essa tabela direto do antigo:
+```powershell
+node tools/migrar-supabase.mjs identidades
+```
+
 Depois os arquivos:
 ```powershell
 $env:KOR_ORIGEM_SERVICE_KEY  = "chave service_role do ANTIGO"

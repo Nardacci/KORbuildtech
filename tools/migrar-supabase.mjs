@@ -4,6 +4,7 @@
  * Fases (rode na ordem):
  *   node tools/migrar-supabase.mjs backup      lê o banco ANTIGO e grava tudo numa pasta local (backups/AAAA-MM-DD_HHMM). Não altera nada.
  *   node tools/migrar-supabase.mjs restaurar   grava a pasta no banco NOVO (recusa se o novo já tem tabelas, a não ser com --forcar).
+*   node tools/migrar-supabase.mjs identidades copia só auth.identities do antigo para o novo (para quando o restante foi copiado por outro caminho).
  *   node tools/migrar-supabase.mjs arquivos    copia os arquivos dos buckets do projeto antigo para o novo (pode rodar de novo: pula o que já existe).
  *   node tools/migrar-supabase.mjs cron        recria no banco NOVO o segredo do cron e os dois jobs (usa a URL do projeto novo).
  *   node tools/migrar-supabase.mjs conferir    compara contagens dos dois bancos e dos arquivos. Sai com erro se algo não bate.
@@ -179,6 +180,25 @@ function restaurar() {
   log('Próximo: node tools/migrar-supabase.mjs arquivos');
 }
 
+/* ---------- fase: identidades (auth.identities) ---------- */
+
+function identidades() {
+  const o = conexao('origem'), d = conexao('destino');
+  if (o.ref && o.ref === d.ref) sai('O destino é o MESMO projeto da origem (' + d.ref + '). Confira KOR_DESTINO_URL.');
+  const antes = Number(psql(d, 'select count(*) from auth.identities').trim());
+  const nO = Number(psql(o, 'select count(*) from auth.identities').trim());
+  const usuariosD = Number(psql(d, 'select count(*) from auth.users').trim());
+  log('auth.identities: antigo ' + nO + ' · novo ' + antes + ' · usuários no novo ' + usuariosD);
+  if (antes === nO) { log('Já está igual. Nada a fazer.'); return; }
+  if (antes > 0 && !opc.forcar) sai('O novo já tem ' + antes + ' identidades. Use --forcar para apagar e recopiar só essa tabela.');
+  const dump = rodar('pg_dump', ['--no-owner', '--data-only', '--column-inserts', '-t', 'auth.identities'], { env: o.env }).stdout;
+  const sql = 'set session_replication_role = replica;\n' + (antes > 0 ? 'delete from auth.identities;\n' : '') + dump;
+  const r = rodar('psql', ['-X', '-q', '-1', '-v', 'ON_ERROR_STOP=1'], { env: d.env, entrada: sql, aceitaErro: true });
+  if (r.status !== 0) sai('Não consegui gravar as identidades (nada foi alterado, a gravação é tudo-ou-nada). Mensagem do banco:\n' + (r.stderr || '').split(/\r?\n/).filter((l) => /ERROR|DETAIL|HINT/.test(l) && !/Failing row/.test(l)).slice(0, 6).join('\n'));
+  const depois = Number(psql(d, 'select count(*) from auth.identities').trim());
+  log('Agora o novo tem ' + depois + ' identidades' + (depois === nO ? ' (igual ao antigo).' : ' (esperado ' + nO + ').'));
+}
+
 /* ---------- fase: arquivos ---------- */
 
 async function arquivos() {
@@ -264,6 +284,6 @@ function conferir() {
 
 /* ---------- main ---------- */
 
-const fases = { backup, restaurar, arquivos, cron, conferir };
+const fases = { backup, restaurar, identidades, arquivos, cron, conferir };
 if (!fases[fase]) { console.log(readFileSync(new URL(import.meta.url), 'utf8').split('*/')[0].replace(/^\/\*\s?/, '')); process.exit(fase ? 1 : 0); }
 await fases[fase]();
