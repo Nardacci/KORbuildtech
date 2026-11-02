@@ -51,12 +51,12 @@ function conexao(qual) {
 function rodar(cmd, args, { env, entrada, aceitaErro = false } = {}) {
   const r = spawnSync(cmd, args, { env, input: entrada, encoding: 'utf8', maxBuffer: 1 << 29 });
   if (r.error) sai('Não consegui rodar "' + cmd + '". Instale o cliente do PostgreSQL 17 (docs/migrar-supabase.md, "Pré-requisitos"). ' + r.error.message);
-  if (r.status !== 0 && !aceitaErro) sai(cmd + ' falhou:\n' + (r.stderr || '').split('\n').slice(0, 12).join('\n'));
+  if (r.status !== 0 && !aceitaErro) sai(cmd + ' falhou:\n' + (r.stderr || '').split(/\r?\n/).slice(0, 12).join('\n'));
   return r;
 }
 
 const psql = (c, sql, extra = []) => rodar('psql', ['-X', '-q', '-At', '-v', 'ON_ERROR_STOP=1', ...extra, '-c', sql], { env: c.env }).stdout;
-const consulta = (c, sql) => psql(c, sql).split('\n').filter(Boolean);
+const consulta = (c, sql) => psql(c, sql).split(/\r?\n/).filter(Boolean);
 
 function versaoDoCliente() {
   const r = spawnSync('pg_dump', ['--version'], { encoding: 'utf8' });
@@ -158,7 +158,7 @@ function restaurar() {
   const aplica = (rotulo, sql) => {
     log('  ' + rotulo + ' …');
     const r = rodar('psql', ['-X', '-q', '-v', 'ON_ERROR_STOP=0'], { env: d.env, entrada: sql, aceitaErro: true });
-    const e = (r.stderr || '').split('\n').filter((l) => /ERROR|FATAL/.test(l));
+    const e = (r.stderr || '').split(/\r?\n/).filter((l) => /ERROR|FATAL/.test(l));
     for (const l of e) erros.push(rotulo + ': ' + l.trim());
   };
   const le = (a) => readFileSync(path.join(pasta, a), 'utf8');
@@ -187,7 +187,7 @@ async function arquivos() {
   if (!kO || !kD) sai('Faltam KOR_ORIGEM_SERVICE_KEY e/ou KOR_DESTINO_SERVICE_KEY (chave service_role de cada projeto, em Project Settings > API).');
   if (!o.ref || !d.ref) sai('Não consegui descobrir o código de cada projeto pelo endereço de conexão. Use o endereço do "Session pooler" (usuário postgres.CODIGO).');
   const pasta = pastaDoBackup(false);
-  const lista = readFileSync(path.join(pasta, '05-arquivos.tsv'), 'utf8').split('\n').filter(Boolean).map((l) => { const [bucket, nome, tipo, tam] = l.split('\t'); return { bucket, nome, tipo, tam: Number(tam) }; });
+  const lista = readFileSync(path.join(pasta, '05-arquivos.tsv'), 'utf8').split(/\r?\n/).filter(Boolean).map((l) => { const [bucket, nome, tipo, tam] = l.split('\t'); return { bucket, nome, tipo, tam: Number(tam) }; });
   const baseO = 'https://' + o.ref + '.supabase.co/storage/v1/object', baseD = 'https://' + d.ref + '.supabase.co/storage/v1/object';
   const caminho = (b, n) => b + '/' + n.split('/').map(encodeURIComponent).join('/');
   const jaTem = new Set(consulta(d, `select bucket_id || '|' || name from storage.objects`));
