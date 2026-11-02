@@ -43,7 +43,7 @@ import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
 import { cronogramaDe, etapasAtuais, situacaoDaEtapa, aplicarRdoAprovado } from './cronograma.js';
 import { obrasEmAndamento, obrasDaVersao, situacaoDaObra, SITUACOES_OBRA, projetoDaObra, garantirObrasDosProjetos, tarefasDoProjetoDaObra, tarefasAtuaisDaObra, aplicarRdoNoProjeto } from './obras.js';
-import { andamentoDoCronograma } from './andamento.js';
+import { andamentoDoCronograma, pctFeito, fimDaTarefa } from './andamento.js';
 import { contratanteDe, donoDe, textoPartes } from './contatos.js';
 import { presencaNaObra, prestadorasNaObra, presencaDaCadeia, horas, aoRegistrarBatida } from './crew.js';
 import { icone, marca } from './icones.js';
@@ -1109,6 +1109,13 @@ function htmlDiariosPorPrestadora(o, lista) {
 function htmlCronogramaDoProjeto(o) {
   const pj = projetoDaObra(o);
   if (!pj) return '';
+  // quem não tem Measure (o encarregado) vê o cronograma, mas não tem para onde ir no Takeoff
+  if (!pode(usuarioAtual(), 'measure.medir')) {
+    const tarefas = tarefasDoProjetoDaObra(o);
+    return '<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2></div>' + (tarefas.length
+      ? '<ul class="lista-simples">' + tarefas.map((t) => '<li><b>' + esc(t.nome) + '</b> <span class="mudo pequeno">' + dataCurta(t.inicio) + ' → ' + dataCurta(fimDaTarefa(t)) + ' · ' + tr('{n}% feito', { n: pctFeito(t) }) + '</span></li>').join('') + '</ul>'
+      : '<p class="vazio">' + tr('Este projeto ainda não tem cronograma.') + '</p>') + '</section>';
+  }
   return '<section class="cartao obra-resumo"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Cronograma') + '</h2>' +
     '<a class="btn btn-contorno btn-pequeno" href="#/measure/gantt/' + pj.id + '">' + tr('Ver o Gantt') + '</a></div>' +
     '<p class="mudo pequeno">' + tr('O cronograma, o % feito e as concorrências deste projeto ficam no Takeoff.') + ' <a href="#/measure/projeto/' + pj.id + '/schedule">' + tr('Abrir o cronograma') + '</a></p></section>';
@@ -1117,7 +1124,7 @@ function htmlCronogramaDoProjeto(o) {
 /* "Editar a obra": na 1ª versão o cadastro é o do projeto (o projeto ganho é a obra). */
 function linkEditarObra(o, classe) {
   if (PRIMEIRA_VERSAO) {
-    const pj = projetoDaObra(o);
+    const pj = pode(usuarioAtual(), 'measure.medir') ? projetoDaObra(o) : null;
     return pj ? (classe === 'dica' ? '<p class="dica"><a href="#/measure/projeto/' + pj.id + '">' + tr('Abrir o projeto') + '</a></p>' : '<a class="link" href="#/measure/projeto/' + pj.id + '">' + tr('Abrir o projeto') + '</a>') : '';
   }
   if (!pode(usuarioAtual(), 'settings.obras')) return '';

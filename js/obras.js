@@ -11,6 +11,7 @@ import { RAIO_CERCA } from './crew.js';
 import { DIAS_TRABALHO } from './prazos.js';
 import { cronogramaDe, novaBase, servidorCronograma } from './cronograma.js';
 import { PRIMEIRA_VERSAO } from './versao.js';
+import { liberadoParaObra, obrasDaVersao, projetosDaEmpresa } from './projetos-da-obra.js';
 import { pctFeito, fimDaTarefa } from './andamento.js';
 
 export const SITUACOES_OBRA = {
@@ -26,15 +27,8 @@ const DATA = /^\d{4}-\d{2}-\d{2}$/;
 
 export function obras() { return estado().obras; }
 /* Na 1ª versão o Daily só conhece as obras que nasceram de projetos (o projeto ganho é a obra); obras cadastradas à mão ficam para a versão completa. */
-/* O projeto está liberado para obra (docs/daily-primeira-versao.md): a análise terminou e o Daily pode começar. */
-export const liberadoParaObra = (pj) => !!(pj && pj.liberado && pj.liberado.em);
-/* 1ª versão: o Daily só vê obras que nasceram de projetos liberados para obra (o projeto "voltou para análise" some do Daily, sem apagar nada). */
-export function obrasDaVersao(dados) {
-  const d = dados || estado(), lista = d.obras || [];
-  if (!PRIMEIRA_VERSAO) return lista;
-  const projetos = (d.measure || {}).projetos || [];
-  return lista.filter((o) => o.projetoId && liberadoParaObra(projetos.find((p) => p.id === o.projetoId)));
-}
+/* O que é "liberado para obra" e quais obras o Daily vê ficam em js/projetos-da-obra.js (sem ciclo com prazos.js). */
+export { liberadoParaObra, obrasDaVersao, projetosDaEmpresa };
 /* Obra sem situação (dados antigos) está em andamento. */
 export function situacaoDaObra(o) { return (o && o.situacao) || 'andamento'; }
 /* Só obra em andamento cobra diário, aparece no campo e no ponto (OB-04). */
@@ -183,7 +177,7 @@ export function garantirObrasDosProjetos(dados = estado()) {
 
 /* Projeto do Measure ligado à obra (o que virou obra, ou o primeiro que aponta para ela). */
 export function projetoDaObra(o) {
-  const lista = (estado().measure || {}).projetos || [];
+  const lista = projetosDaEmpresa();
   return lista.find((p) => p.id === o.projetoId) || lista.find((p) => p.obraId === o.id) || null;
 }
 

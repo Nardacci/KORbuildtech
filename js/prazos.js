@@ -8,10 +8,10 @@
 import { hoje, somarDias, diaDaSemana } from './util.js';
 import { estado, rdoDoDia } from './armazem.js';
 import { tr, emIngles } from './i18n.js';
-import { PRIMEIRA_VERSAO } from './versao.js';
+import { obrasDaVersao } from './projetos-da-obra.js';
 
-/* Na 1ª versão o Daily só conhece as obras que nasceram de projetos (o projeto ganho é a obra). */
-const obrasDoDaily = () => (PRIMEIRA_VERSAO ? estado().obras.filter((o) => o.projetoId) : estado().obras);
+/* Na 1ª versão o Daily só conhece as obras de projetos liberados para obra (a mesma regra da lista de projetos). */
+const obrasDoDaily = () => obrasDaVersao();
 
 export const PRAZO_HORA = 18;          // prazo padrão do RDO
 export const LEMBRETE_HORA = 16;       // lembrete 2h antes

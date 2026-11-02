@@ -162,7 +162,9 @@ export function lerMeasure() {
   return Promise.all([
     lerTudo('projetos', 'nome'), lerTudo('folhas', 'criada_em'), lerTudo('condicoes', 'criado_em'), lerTudo('typicais', 'em'),
     lerTudo('itens', 'nome'), lerTudo('item_precos', 'em'), lerTudo('assemblies', 'nome'), lerTudo('margens_versoes', 'em'), lerTudo('propostas_emitidas', 'emitida_em'),
-  ]).then(([projetos, folhas, condicoes, typicais, itens, precos, assemblies, margens, propostas]) => ({ projetos, folhas, condicoes, typicais, itens, precos, assemblies, margens, propostas }));
+    // o essencial dos projetos liberados para quem só tem Daily (migração 0024); antes dela, ou sem permissão, vem vazio
+    cliente().rpc('projetos_do_daily').then(({ data, error }) => (error ? [] : data || []), () => []),
+  ]).then(([projetos, folhas, condicoes, typicais, itens, precos, assemblies, margens, propostas, doDaily]) => ({ projetos, folhas, condicoes, typicais, itens, precos, assemblies, margens, propostas, doDaily }));
 }
 
 /* Do banco para o formato de js/measure.js. O que não é da empresa (preços e margens sem permissão) simplesmente não vem. */
@@ -195,6 +197,8 @@ export function aplicarMeasure(d, lido) {
     assemblies: lido.assemblies.map((a) => ({ id: a.id, nome: a.nome, tipo: a.tipo, descricao: a.descricao, linhas: a.linhas })),
     margens: lido.margens.map((m) => ({ id: m.id, overheadPct: Number(m.overhead_pct), lucroPct: Number(m.lucro_pct), modo: m.modo, impostoMaterialPct: Number(m.imposto_material_pct), desde: m.desde, motivo: m.motivo, por: m.por_nome, em: ms(m.em), _banco: true })),
   };
+  // o Daily de quem não tem Measure: só o essencial de cada projeto liberado (projetos_do_daily, migração 0024; js/projetos-da-obra.js)
+  d.projetosDoDaily = (lido.doDaily || []).map((r) => ({ id: r.id, nome: r.nome, obraId: r.obra_id || null, cidade: r.cidade, estado: r.estado, liberado: { em: ms(r.liberado_em), por: r.liberado_por || '' }, cronograma: r.cronograma || { tarefas: [] } }));
   // as propostas de projetos que já saíram ficam guardadas (consulta pelo número)
   d.measure.propostasSemProjeto = lido.propostas.filter((p) => !lido.projetos.some((x) => x.id === p.projeto_id)).map((p) => ({ numero: p.numero, projetoNome: p.projeto_nome, emitidaEm: p.emitida_em, total: Number(p.total) }));
 }

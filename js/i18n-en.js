@@ -3746,6 +3746,8 @@ export const EN = {
   'Valor hora registrado.': 'Hourly rate recorded.',
   'Função criada, mas o valor hora precisa ser maior que zero.': 'Role created, but the hourly rate must be greater than zero.',
   'Função criada, mas o valor não foi salvo: {erro}': 'Role created, but the rate was not saved: {erro}',
+  '{n}% feito': '{n}% done',
+  'Este projeto ainda não tem cronograma.': 'This project has no schedule yet.',
   'Atualizar a base': 'Update baseline',
   'Confirmar cronograma': 'Confirm schedule',
   'Cronograma confirmado como base da obra.': 'Schedule confirmed as the job baseline.',
