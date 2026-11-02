@@ -1,5 +1,7 @@
 # Migrar o banco KORbuild Tech para a conta nova do Supabase
 
+> **Concluído em 02/11/2026.** O projeto novo é `qudyyewfrtfimbytahkv`; o antigo (`gbdmtgephszxhaprpiss`) foi excluído no mesmo dia, por ser só dado de teste e por custo. Este guia fica como referência para a próxima migração.
+
 **Objetivo:** copiar o projeto "KORbuild Tech" (conta antiga, região us-west-2) para um projeto novo, na conta nova, sem perder dados, logins nem arquivos. O banco antigo **não é alterado** em nenhum momento: se algo der errado, ele continua funcionando.
 
 **Tamanho hoje (levantado em 02/11):** 22 empresas, 84 usuários, 16 projetos, 137 RDOs, 3.949 batidas de ponto, 503 arquivos (430 de diários, 57 de concorrências, 16 de plantas) e 36 MB de banco. A cópia leva poucos minutos.
