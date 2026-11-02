@@ -10,8 +10,14 @@
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 
-const local = await import('./_supabase-local.mjs');
-export const { sql, sqlExec, rest, garantirUsuario, sessao, rotear, limparMassa } = local;
+// Por padrão: o banco local (tools/supabase-local.sh). Com --real: o Supabase do js/config.js (precisa de SUPABASE_ACCESS_TOKEN no ambiente).
+// No real, a empresa e os logins dos fluxos são criados e apagados no fim (empresa marcada plano.massa = 'fluxo'; logins fluxo.*@example.com).
+export const REAL = process.argv.includes('--real');
+const local = await import(REAL ? './_supabase-real.mjs' : './_supabase-local.mjs');
+export const { sql, sqlExec, rest, sessao, rotear, limparMassa } = local;
+const SENHA_FLUXO = 'Fx1!' + randomUUID().replace(/-/g, '').slice(0, 16);   // nova a cada rodada; só vale para os logins de teste
+export const garantirUsuario = (email, nome) => local.garantirUsuario(email, nome, SENHA_FLUXO);
+export const AMBIENTE = REAL ? 'conta real, Supabase do projeto, português' : 'conta real, banco local, português';
 export const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
 export const BASE = (process.argv.slice(2).find((a) => a.startsWith('http')) || 'http://localhost:8123/').replace(/\/?$/, '/');
 export const aspas = (t) => String(t).replace(/'/g, "''");

@@ -1,13 +1,14 @@
 /* KORbuild — Fluxo F03: obra, diário do campo, aprovação e o % feito no Gantt (docs/testes/fluxos/F03-obra-diario-gantt.md).
  * Conta real contra o banco local, em português, só pelas telas: o encarregado no celular e o administrador no computador.
- * Uso: python3 -m http.server 8123 &  →  bash tools/supabase-local.sh  →  node tests/fluxo-03-obra-diario-gantt.test.mjs [--relatorio] [--manter] */
+ * Uso: python3 -m http.server 8123 &  →  bash tools/supabase-local.sh  →  node tests/fluxo-03-obra-diario-gantt.test.mjs [--relatorio] [--manter]  * No Supabase de verdade (js/config.js):  $env:SUPABASE_ACCESS_TOKEN = "sbp_…"  →  node tests/fluxo-03-obra-diario-gantt.test.mjs --real [--relatorio]
+ */
 
 import { chromium } from 'playwright';
 import { criarFluxo } from './_fluxo.mjs';
-import { BASE, sql, sqlExec, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirEmpresaFluxo, criarProjetoLiberado, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
+import { AMBIENTE, REAL, BASE, sql, sqlExec, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirEmpresaFluxo, criarProjetoLiberado, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
 
 const MANTER = process.argv.includes('--manter');
-const fluxo = criarFluxo({ id: 'F03', modo: 'conta real, banco local, português', roteiro: 'docs/testes/fluxos/F03-obra-diario-gantt.md', ambiente: BASE });
+const fluxo = criarFluxo({ id: 'F03', modo: AMBIENTE, roteiro: 'docs/testes/fluxos/F03-obra-diario-gantt.md', ambiente: BASE });
 const { verificar } = fluxo;
 const NOME = 'Reforma Mitchell';
 

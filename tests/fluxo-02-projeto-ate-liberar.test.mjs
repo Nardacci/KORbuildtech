@@ -1,13 +1,14 @@
 /* KORbuild — Fluxo F02: projeto do zero até "Liberar para obra" (docs/testes/fluxos/F02-projeto-ate-liberar.md).
  * Conta real contra o banco local, em português, só pelas telas (o banco só é lido para conferir o que a tela mostra).
- * Uso: python3 -m http.server 8123 &  →  bash tools/supabase-local.sh  →  node tests/fluxo-02-projeto-ate-liberar.test.mjs [--relatorio] [--manter] */
+ * Uso: python3 -m http.server 8123 &  →  bash tools/supabase-local.sh  →  node tests/fluxo-02-projeto-ate-liberar.test.mjs [--relatorio] [--manter]  * No Supabase de verdade (js/config.js):  $env:SUPABASE_ACCESS_TOKEN = "sbp_…"  →  node tests/fluxo-02-projeto-ate-liberar.test.mjs --real [--relatorio]
+ */
 
 import { chromium } from 'playwright';
 import { criarFluxo } from './_fluxo.mjs';
-import { BASE, sql, aspas, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirEmpresaFluxo, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
+import { AMBIENTE, REAL, BASE, sql, aspas, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirEmpresaFluxo, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
 
 const MANTER = process.argv.includes('--manter');
-const fluxo = criarFluxo({ id: 'F02', modo: 'conta real, banco local, português', roteiro: 'docs/testes/fluxos/F02-projeto-ate-liberar.md', ambiente: BASE });
+const fluxo = criarFluxo({ id: 'F02', modo: AMBIENTE, roteiro: 'docs/testes/fluxos/F02-projeto-ate-liberar.md', ambiente: BASE });
 const { verificar } = fluxo;
 const NOME = 'Garagem Pereira';
 
