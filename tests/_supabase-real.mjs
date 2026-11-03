@@ -26,7 +26,10 @@ export async function sql(consulta) {
 }
 export const sqlExec = sql;
 
-const chaves = await (await fetch('https://api.supabase.com/v1/projects/' + REF + '/api-keys?reveal=true', { headers: { Authorization: 'Bearer ' + TOKEN } })).json();
+if (!/^sbp_[0-9a-f]{20,}$/.test(TOKEN)) { console.error('SUPABASE_ACCESS_TOKEN não parece um token pessoal do Supabase (começa com sbp_). Gere um em Account preferences > Access Tokens e cole o valor, não o texto de exemplo.'); process.exit(2); }
+const respChaves = await fetch('https://api.supabase.com/v1/projects/' + REF + '/api-keys?reveal=true', { headers: { Authorization: 'Bearer ' + TOKEN } });
+const chaves = await respChaves.json().catch(() => null);
+if (!respChaves.ok || !Array.isArray(chaves)) { console.error('O Supabase não aceitou o token para o projeto ' + REF + ' (HTTP ' + respChaves.status + '). Confira se o token é da conta que tem esse projeto e se não foi apagado.'); process.exit(2); }
 const SERVICO = (chaves.find((k) => k.name === 'service_role') || {}).api_key;
 if (!SERVICO) { console.error('Não foi possível obter a chave de serviço pela API de gerenciamento.'); process.exit(2); }
 const comServico = (caminho, metodo, corpo) => fetch(URL_SB + caminho, { method: metodo, headers: { apikey: SERVICO, Authorization: 'Bearer ' + SERVICO, 'Content-Type': 'application/json' }, body: corpo ? JSON.stringify(corpo) : undefined });
