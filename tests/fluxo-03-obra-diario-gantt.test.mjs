@@ -5,7 +5,7 @@
 
 import { chromium } from 'playwright';
 import { criarFluxo } from './_fluxo.mjs';
-import { AMBIENTE, REAL, BASE, sql, sqlExec, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirEmpresaFluxo, criarProjetoLiberado, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
+import { AMBIENTE, REAL, BASE, sql, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirEmpresaFluxo, criarProjetoLiberado, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
 
 const MANTER = process.argv.includes('--manter');
 const fluxo = criarFluxo({ id: 'F03', modo: AMBIENTE, roteiro: 'docs/testes/fluxos/F03-obra-diario-gantt.md', ambiente: BASE });
@@ -19,9 +19,6 @@ const { projetoId, obraId } = await criarProjetoLiberado(dados, { nome: NOME, ta
   { id: 'tf-1', nome: 'Demolição e remoção', quem: 'proprio', inicio: somar(hoje(), -10), dias: 3, pct: 0 },
   { id: 'tf-2', nome: 'Instalação de drywall', quem: 'proprio', inicio: hoje(), dias: 5, pct: 20 },
   { id: 'tf-3', nome: 'Pintura', quem: 'terceiro', inicio: somar(hoje(), 6), dias: 4, pct: 0 }] });
-// a obra começa a cobrar diário na liberação (hoje). O início da obra vem da primeira tarefa do cronograma (aqui, 10 dias atrás): sem este ajuste o encarregado
-// receberia 3 "RDO atrasado" de dias anteriores à liberação. Esse comportamento é uma pendência de decisão do produto (relatório da rodada).
-await sqlExec(`update public.obras set inicio = current_date where id = '${obraId}'`);
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
 const edu = await abrirComo(browser, 'encarregado', { campo: true, ir: '#/daily' });
 const fab = await abrirComo(browser, 'admin', { ir: '#/daily' });
@@ -48,7 +45,7 @@ try {
     await edu.p.waitForSelector('[data-acao="novo-rdo"], [data-acao="copiar-rdo"]', { timeout: 20000 });
     const t = await texto(edu.p, 'main');
     verificar(/Etapa atual\s*Instalação de drywall/.test(t) && !/Etapa atual[^A-Z]*Demolição/.test(t), '"Etapa atual: Instalação de drywall" (só ela está em andamento)', t.slice(0, 300));
-    verificar(await edu.p.locator('[data-acao="novo-rdo"]').count() === 1, 'o botão "Nova RDO" está na tela');
+    verificar(await edu.p.locator('[data-acao="novo-rdo"]').count() === 1, 'só o RDO de hoje está pendente: nada atrasado de antes da liberação, mesmo com tarefa no passado');
   });
 
   await fluxo.passo(3, async () => {

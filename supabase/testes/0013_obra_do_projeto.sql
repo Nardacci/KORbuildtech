@@ -29,7 +29,7 @@ begin
   if (select obra_id from public.projetos where id = v_pj) is not null then raise exception 'FALHOU: projeto em orçamento ganhou obra'; end if;
 
   -- liberado para obra: a obra nasce do projeto
-  update public.projetos set liberado_em = now(), liberado_por = 'Ana Treze' where id = v_pj;
+  update public.projetos set liberado_em = now(), liberado_por = 'Ana Treze', inicio_obra = date '2026-11-02' where id = v_pj;   -- 0025: o início da obra vem da data escolhida na liberação
   select * into o from public.obras where projeto_id = v_pj;
   if o.id is null then raise exception 'FALHOU: obra automática não foi criada'; end if;
   if (select obra_id from public.projetos where id = v_pj) <> o.id then raise exception 'FALHOU: projetos.obra_id não aponta para a obra'; end if;

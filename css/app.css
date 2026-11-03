@@ -1712,6 +1712,8 @@ dialog .mz-escolha-cor { margin: 8px 0 4px; }
 .mz-passo-texto { flex: 1; min-width: 0; }
 .mz-passo-texto b { display: block; }
 .mz-passo-texto small { color: var(--mudo); }
+.mz-inicio-obra { display: grid; gap: 4px; margin: 10px 0 2px; font-weight: 600; max-width: 220px; }
+.mz-inicio-obra input { font-weight: 400; }
 .mz-marcos { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px 12px; margin: 12px 0 0; }
 .mz-marcos dt { color: var(--mudo); font-weight: 600; }
 .mz-marcos dd { margin: 0; }

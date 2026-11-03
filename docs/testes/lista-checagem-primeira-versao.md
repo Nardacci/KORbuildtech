@@ -443,7 +443,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 - [ ] **T192** · `pv.p1.admin` — Daily › Painel › RDO recebido › Aprovar e lacrar  
   _Esperado:_ O relatório mostra 'Cronograma: <tarefa> → n%'; depois de aprovar, a aba Schedule e o Gantt do projeto mostram o % feito informado, e o Início atualiza 'Andamento dos projetos'
 - [ ] **T193** · `pv.p1.admin` — Daily › projeto ganho (página do projeto)  
-  _Esperado:_ 'Etapa atual' traz as tarefas do cronograma em andamento hoje; o sininho avisa 'Tarefa atrasada' com atalho para o Gantt quando uma tarefa passou do fim sem 100%
+  _Esperado:_ 'Etapa atual' traz as tarefas do cronograma em andamento hoje; no protótipo o sininho avisa 'Tarefa atrasada' com atalho para o Gantt (na conta real o atraso aparece no Início, em Andamento dos projetos) quando uma tarefa passou do fim sem 100%
 - [ ] **T194** · `pv.p1.admin` — Conta real (depois da migração 0021): aprovar um diário que aponta uma tarefa  
   _Esperado:_ projetos.cronograma recebe o pct e o avanço (data, antes, pct, rdoNumero, por); o Gantt reflete depois de recarregar
 - [ ] **T195** · `pv.p1.admin` — Takeoff › projeto em orçamento › Visão geral › cartão Obra  
@@ -462,3 +462,12 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ O campo Função só aparece na categoria Mão de obra; com função, a aba Preços mostra o preço vindo da função (valor + encargos) e não tem 'Novo preço'; sem função, o preço digitado continua valendo
 - [ ] **T202** · `pv.p1.admin` — Conta real (depois da migração 0023): Settings › Funções e item com função  
   _Esperado:_ As dez funções padrão aparecem; valor registrado grava em funcao_valores; o item salvo com função grava itens.funcao_id e o Takeoff mostra o preço da função
+
+## 21 Início da obra (migração 0025)
+
+- [ ] **T203** · `pv.p1.admin` — Takeoff › um projeto pronto › Visão geral › cartão Obra (antes de liberar)  
+  _Esperado:_ O campo "Início da obra" vem com a data de hoje e aceita outra data; ao clicar em Liberar para obra, a obra começa na data escolhida (projetos.inicio_obra e obras.inicio), e não na da primeira tarefa
+- [ ] **T204** · `pv.p1.admin` — Takeoff › projeto já liberado › Visão geral › Início da obra  
+  _Esperado:_ Mudar a data: a obra acompanha (aviso "Início da obra atualizado.") e o diário passa a ser cobrado da nova data; a data não pode ser absurda (antes de 2020 é recusada)
+- [ ] **T205** · `pv.p1.encarregado (ou a pessoa de campo)` — Daily › obra de um projeto liberado com tarefa no passado  
+  _Esperado:_ Só o RDO de hoje aparece pendente: não há "RDO atrasado" de dias anteriores à liberação. Conta real depois da migração 0025

@@ -134,14 +134,16 @@ export function garantirObraDoProjeto(pj, dados = estado(), por = '') {
   const existente = pj.obraId && lista.find((o) => o.id === pj.obraId);
   if (existente) {
     if (existente.projetoId === pj.id) Object.assign(existente, campos, { nome: nomeLivreDeObra(lista, pj.nome, existente.id) });
+    // a obra acompanha a data de início escolhida (0025); o prazo nunca fica antes do início
+    if (existente.projetoId === pj.id && pj.inicioObra) { existente.inicio = pj.inicioObra; if (existente.prazo && existente.prazo < pj.inicioObra) existente.prazo = pj.inicioObra; }
     // ganhou a concorrência depois de liberar: a obra que já existia recebe a ligação com a obra da contratante (CO-14)
     if (existente.projetoId === pj.id && !existente.vinculo && pj.concorrencia && pj.concorrencia.vinculo && pj.concorrencia.vinculo.obraId) { existente.vinculo = { ...pj.concorrencia.vinculo }; existente.concorrenciaId = pj.concorrencia.id; }
     return existente;
   }
   const tarefas = ((pj.cronograma || {}).tarefas || []).filter((x) => DATA.test(x.inicio || ''));
-  const inicio = tarefas.map((x) => x.inicio).sort()[0] || hoje();
+  const inicio = pj.inicioObra || tarefas.map((x) => x.inicio).sort()[0] || hoje();   // 0025: o início da obra é a data escolhida na liberação
   const fins = tarefas.map((x) => somarDias(x.inicio, Math.max(0, (Number(x.dias) || 1) - 1))).sort();
-  const prazo = fins.length && fins[fins.length - 1] >= inicio ? fins[fins.length - 1] : somarDias(inicio, 89);
+  const prazo = fins.length ? (fins[fins.length - 1] >= inicio ? fins[fins.length - 1] : inicio) : somarDias(inicio, 89);
   const nova = { id: novoId('ob'), ...campos, nome: nomeLivreDeObra(lista, pj.nome), inicio, prazo, responsavelId: null, situacao: 'andamento', projetoId: pj.id, criadoEm: Date.now() };
   // ganho numa concorrência (CO-14): a obra já nasce ligada à obra de quem contratou
   if (pj.concorrencia && pj.concorrencia.vinculo && pj.concorrencia.vinculo.obraId) { nova.vinculo = { ...pj.concorrencia.vinculo }; nova.concorrenciaId = pj.concorrencia.id; }

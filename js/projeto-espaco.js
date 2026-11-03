@@ -12,7 +12,7 @@ import { usuarioAtual } from './plataforma.js';
 import { dinheiro } from './crew.js';
 import { icone } from './icones.js';
 import { andamentoDoCronograma, pctFeito, pctPrevisto, tarefaAtrasada, ORDEM_SITUACAO } from './andamento.js';
-import { cronogramaDoProjetoNaObra, liberadoParaObra } from './obras.js';
+import { cronogramaDoProjetoNaObra, liberadoParaObra, garantirObraDoProjeto } from './obras.js';
 import { PRIMEIRA_VERSAO } from './versao.js';
 
 let app = { desenhar() {}, ir() {} };
@@ -102,11 +102,17 @@ export function htmlOverview(p, ajudas) {
 export function htmlLiberarParaObra(p, nomes = NOMES_PASSO()) {
   const liberado = liberadoParaObra(p), faltam = pendenciasParaObra(p), perdido = p.situacao === 'perdida';
   const temDiario = (estado().rdos || []).some((r) => p.obraId && r.obraId === p.obraId);
+  const obraDele = (estado().obras || []).find((o) => p.obraId && o.id === p.obraId);
+  const inicioAtual = p.inicioObra || (obraDele && obraDele.inicio) || '';
+  // o diário passa a ser cobrado a partir do início da obra: o administrador escolhe ao liberar (padrão: hoje) e pode mudar depois
+  const campoInicio = (id, attr) => '<label class="mz-inicio-obra"><span>' + tr('Início da obra') + '</span><input type="date" id="' + id + '" ' + attr + ' value="' + esc(inicioAtual || hoje()) + '"></label>' +
+    '<p class="mudo pequeno">' + tr('O diário (RDO) passa a ser cobrado a partir desta data.') + '</p>';
   const corpo = liberado
-    ? '<p class="mudo pequeno">' + tr('Liberado em {data} por {quem}. O projeto está no Daily: diário, histórico e painel.', { data: dataCurta(new Date(p.liberado.em).toISOString().slice(0, 10)), quem: esc(p.liberado.por || '—') }) + '</p>' +
+    ? '<p class="mudo pequeno">' + tr('Liberado em {data} por {quem}. O projeto está no Daily: diário, histórico e painel.', { data: dataCurta(new Date(p.liberado.em).toISOString().slice(0, 10)), quem: esc(p.liberado.por || '—') }) + '</p>' + campoInicio('pj-inicio-obra-edit', 'data-pj-inicio-obra data-id="' + p.id + '"') +
       '<div class="btn-linha">' + (PRIMEIRA_VERSAO ? '<a class="btn btn-primario btn-pequeno" href="' + (p.obraId ? '#/daily/obras/' + p.obraId : '#/daily/obras') + '">' + tr('Abrir no Daily') + '</a>' : '') +
       (temDiario ? '' : '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-voltar-analise" data-id="' + p.id + '">' + tr('Voltar para análise') + '</button>') + '</div>'
     : '<p class="mudo pequeno">' + (perdido ? tr('Projeto perdido não vai para obra.') : faltam.length ? tr('Falta terminar:') + ' ' + faltam.map((k) => esc(nomes[k][0].toLowerCase())).join(', ') + '.' : tr('Tudo pronto. Ao liberar, o projeto vira a obra e entra no Daily.')) + '</p>' +
+      (perdido ? '' : campoInicio('pj-inicio-obra', '')) +
       '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-liberar" data-id="' + p.id + '"' + (prontoParaObra(p) ? '' : ' disabled') + '>' + tr('Liberar para obra') + '</button>';
   return '<section class="cartao mz-liberar' + (liberado ? ' liberado' : '') + '"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Obra') + '</h2>' +
     (liberado ? '<span class="etiqueta etiqueta-verde">' + tr('Liberado para obra') + '</span>' : '<span class="etiqueta etiqueta-neutro">' + tr('Em análise') + '</span>') + '</div>' + corpo + '</section>';
@@ -249,7 +255,8 @@ function terminou(msg) { salvar(); if (msg) toast(msg); app.desenhar(); }
 
 export const acoesEspaco = {
   'pj-liberar'(el) {
-    const r = liberarProjeto(el.dataset.id, (usuarioAtual() || {}).nome || '');
+    const campo = typeof document !== 'undefined' ? document.getElementById('pj-inicio-obra') : null;
+    const r = liberarProjeto(el.dataset.id, (usuarioAtual() || {}).nome || '', campo ? campo.value : '');
     terminou(r.erro || tr('Projeto liberado para obra. Ele já aparece no Daily.'));
   },
   'pj-voltar-analise'(el) {
@@ -307,6 +314,15 @@ if (typeof document !== 'undefined') {
       if (!t) return;
       t[el.dataset.pjTarefa] = el.dataset.pjTarefa === 'dias' ? Math.max(1, Number(el.value) || 1) : el.dataset.pjTarefa === 'pct' ? Math.max(0, Math.min(100, Math.round(Number(el.value) || 0))) : el.value;
       terminou();
+      return;
+    }
+    if (el.matches('[data-pj-inicio-obra]')) {   // muda o início da obra depois de liberar: o diário é cobrado a partir da nova data
+      const pj = projeto(el.dataset.id);
+      if (!pj || !/^\d{4}-\d{2}-\d{2}$/.test(el.value || '')) return;
+      pj.inicioObra = el.value;
+      pj.alteradoEm = Date.now();
+      garantirObraDoProjeto(pj, estado(), (usuarioAtual() || {}).nome || '');
+      terminou(tr('Início da obra atualizado.'));
       return;
     }
     if (el.matches('[data-pj-marco]')) {

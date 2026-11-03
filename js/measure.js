@@ -124,13 +124,14 @@ export function pendenciasParaObra(p) {
   return ETAPAS_PARA_OBRA.filter((k) => !feitos[k]);
 }
 export const prontoParaObra = (p) => !!p && p.situacao !== 'perdida' && pendenciasParaObra(p).length === 0;
-export function liberarProjeto(id, por = '') {
+export function liberarProjeto(id, por = '', inicioObra = '') {
   const p = projeto(id);
   if (!p) return { erro: tr('Projeto não encontrado.') };
   if (p.situacao === 'perdida') return { erro: tr('Projeto perdido não vai para obra.') };
   if (pendenciasParaObra(p).length) return { erro: tr('Termine as etapas do projeto antes de liberar para obra.') };
   if (liberadoParaObra(p)) return { ok: true, id };
   p.liberado = { em: Date.now(), por: por || '' };
+  p.inicioObra = /^\d{4}-\d{2}-\d{2}$/.test(inicioObra) ? inicioObra : hoje();   // o diário passa a ser cobrado desta data (migração 0025)
   p.alteradoEm = Date.now();
   garantirObraDoProjeto(p, estado(), por);
   salvar();

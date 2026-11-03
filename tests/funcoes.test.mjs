@@ -66,6 +66,7 @@ verificar(/41,50|41\.50/.test(t) && /futuro/.test(t) && /Reajuste futuro/.test(t
 await p.click('[data-acao="settings-valor-funcao"]');
 await p.waitForSelector('dialog #nv-valor');
 await p.fill('dialog #nv-valor', '40'); await p.fill('dialog #nv-desde', '2030-01-01'); await p.fill('dialog #nv-motivo', 'x');
+await p.evaluate(() => { const t = document.getElementById('toast'); t.classList.remove('on'); t.textContent = ''; });   // o aviso do registro anterior ainda pode estar na tela: sem limpar, o teste lê o aviso velho
 await p.click('dialog button:has-text("Registrar")');
 verificar(/Já existe um valor a partir dessa data/.test(await toast()), 'mesma data é recusada');
 

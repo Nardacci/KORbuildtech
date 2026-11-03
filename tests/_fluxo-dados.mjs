@@ -94,7 +94,7 @@ export async function garantirEmpresaFluxo({ catalogo = true } = {}) {
 export async function criarProjetoLiberado(dados, { nome, tarefas = [], liberado = true } = {}) {
   const [pj] = await rest(dados.ids.admin, '/projetos', { metodo: 'POST', corpo: {
     nome, contratante_id: dados.clienteId, cidade: 'Concord', estado: 'NH', tipo: 'reforma', situacao: 'orcamento',
-    cronograma: { tarefas, marcos: [] }, ...(liberado ? { liberado_em: new Date().toISOString(), liberado_por: PESSOAS.admin.nome } : {}) } });
+    cronograma: { tarefas, marcos: [] }, ...(liberado ? { liberado_em: new Date().toISOString(), liberado_por: PESSOAS.admin.nome, inicio_obra: hoje() } : {}) } });   // 0025: o diário é cobrado do início da obra (aqui, hoje), não da primeira tarefa
   const [lido] = await sql(`select id, obra_id from public.projetos where id = '${pj.id}'`);
   return { projetoId: lido.id, obraId: lido.obra_id };
 }

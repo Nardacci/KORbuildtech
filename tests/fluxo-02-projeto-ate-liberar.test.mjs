@@ -28,7 +28,7 @@ async function clicar(pes, o = PLANTA) {
 }
 const noDialogo = async (rotulo) => { await p.click('dialog button:has-text("' + rotulo + '")'); await p.waitForSelector('dialog', { state: 'detached' }); };
 const esperaDesenho = () => p.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 40000 });
-const projeto = async () => (await sql(`select p.id, p.situacao, p.obra_id, p.liberado_em, p.liberado_por, p.cronograma, (select count(*) from public.folhas f where f.projeto_id = p.id)::int as folhas, (select count(*) from public.propostas_emitidas x where x.projeto_id = p.id)::int as propostas from public.projetos p where p.empresa_id = '${dados.empresaId}' and p.nome = '${aspas(NOME)}'`))[0];
+const projeto = async () => (await sql(`select p.id, p.situacao, p.obra_id, p.liberado_em, p.liberado_por, p.inicio_obra::text as inicio_obra, p.cronograma, (select count(*) from public.folhas f where f.projeto_id = p.id)::int as folhas, (select count(*) from public.propostas_emitidas x where x.projeto_id = p.id)::int as propostas from public.projetos p where p.empresa_id = '${dados.empresaId}' and p.nome = '${aspas(NOME)}'`))[0];
 const dinheiroDe = (t) => { const m = String(t).match(/\d[\d.,]*/); if (!m) return NaN; let s = m[0]; const ponto = s.lastIndexOf('.'), virgula = s.lastIndexOf(','); if (virgula > ponto) s = s.replace(/\./g, '').replace(',', '.'); else s = s.replace(/,/g, ''); return Number(s); };
 const numeroDe = (txt, unidade) => { const m = new RegExp('([\\d.]+(?:,\\d+)?) ' + unidade).exec(txt); return m ? Number(m[1].replace(/\./g, '').replace(',', '.')) : NaN; };
 const quase = (v, alvo, tol) => Math.abs(v - alvo) <= tol;
@@ -175,6 +175,9 @@ try {
   });
 
   await fluxo.passo(10, async () => {
+    const campoInicio = p.locator('#pj-inicio-obra');
+    verificar(await campoInicio.count() === 1 && await campoInicio.inputValue() === hoje(), 'o campo "Início da obra" vem com a data de hoje', await campoInicio.count() ? await campoInicio.inputValue() : 'sem campo');
+    await campoInicio.fill(somar(hoje(), 2));
     await p.click('[data-acao="pj-liberar"]');
     await p.waitForSelector('[data-acao="pj-voltar-analise"]', { timeout: 15000 });
     const cartao = await texto(p, '.mz-liberar');
@@ -185,6 +188,16 @@ try {
     const [o] = await sql(`select projeto_id, nome from public.obras where id = '${x.obra_id}'`);
     verificar(o && o.projeto_id === x.id && o.nome === NOME, 'a obra nasceu do projeto (mesmo nome, projeto_id)', o);
     verificar(x.liberado_por === 'Fábio Fluxo', 'liberado_por guarda o nome de quem liberou', x.liberado_por);
+    const inicioEscolhido = somar(hoje(), 2);
+    const [ob] = await sql(`select inicio::text as inicio from public.obras where id = '${x.obra_id}'`);
+    verificar(String(x.inicio_obra).slice(0, 10) === inicioEscolhido && ob && ob.inicio === inicioEscolhido, 'a data escolhida (hoje + 2) vai para projetos.inicio_obra e para o início da obra', { projeto: x.inicio_obra, obra: ob });
+    // mudar a data depois de liberar: a obra acompanha
+    const novoInicio = somar(hoje(), 1);
+    const edita = p.locator('#pj-inicio-obra-edit');
+    verificar(await edita.count() === 1 && await edita.inputValue() === inicioEscolhido, 'depois de liberar, o campo "Início da obra" continua na tela, editável', await edita.count() ? await edita.inputValue() : 'sem campo');
+    await edita.fill(novoInicio);
+    await edita.blur();
+    verificar(await esperarAte(async () => { const [o2] = await sql(`select inicio::text as inicio from public.obras where id = '${x.obra_id}'`); return o2 && o2.inicio === novoInicio; }, 20000), 'ao mudar a data, a obra no banco acompanha (hoje + 1)');
   });
 
   await fluxo.passo(11, async () => {
