@@ -87,8 +87,10 @@ try {
     await p.click('[data-acao="cad-salvar-contato"]');
     verificar(await esperarAte(async () => (await sql(`select count(*)::int as n from public.contatos c join public.empresas e on e.id = c.empresa_id where e.nome = '${aspas(EMPRESA)}' and c.nome = '${CLIENTE}'`))[0].n === 1, 20000), 'no banco: o contato existe');
     await irPara(p, '#/conta/contatos', 'main');
-    await p.waitForTimeout(800);
-    verificar((await texto(p, 'main')).includes(CLIENTE), 'o contato aparece na lista');
+    // no Supabase de verdade a lista chega depois da tela: espera o nome aparecer e, se não vier, recarrega uma vez
+    let naLista = await esperarAte(async () => (await texto(p, 'main')).includes(CLIENTE), 15000);
+    if (!naLista) { await p.reload(); await p.waitForSelector('main', { timeout: 40000 }); naLista = await esperarAte(async () => (await texto(p, 'main')).includes(CLIENTE), 20000); }
+    verificar(naLista, 'o contato aparece na lista', (await texto(p, 'main')).slice(0, 300));
   });
 
   await fluxo.passo(7, async () => {
