@@ -14,6 +14,7 @@ import { icone } from './icones.js';
 import { andamentoDoCronograma, pctFeito, pctPrevisto, tarefaAtrasada, ORDEM_SITUACAO } from './andamento.js';
 import { cronogramaDoProjetoNaObra, liberadoParaObra, garantirObraDoProjeto } from './obras.js';
 import { PRIMEIRA_VERSAO } from './versao.js';
+import { htmlValorDoGantt, guardarBase, BASES } from './valor-cronograma.js';
 
 let app = { desenhar() {}, ir() {} };
 export function ligarEspaco(funcoes) { app = { ...app, ...funcoes }; }
@@ -242,11 +243,13 @@ export function telaGantt(moldura, id) {
   return moldura({
     ativo: 'gantt', largura: 'larga', titulo: tr('Gantt'), subtitulo: tr('O andamento de cada projeto, no tamanho da página'),
     acoes: '<a class="btn btn-contorno btn-pequeno" href="' + href(p, 'schedule') + '">' + tr('Editar o cronograma') + '</a>',
-    conteudo: '<div class="gantt-topo">' + combo + '</div><div class="gantt-grande">' + htmlGantt(p) + '<div class="gantt-rodape">' + legendaGantt() + '</div></div>',
+    conteudo: '<div class="gantt-topo">' + combo + '</div><div class="gantt-grande">' + htmlGantt(p) + '<div class="gantt-rodape">' + legendaGantt() + '</div></div>' + htmlValorDoGantt(p),
   });
 }
 if (typeof document !== 'undefined') {
-  document.addEventListener('change', (ev) => { if (ev.target && ev.target.id === 'gantt-projeto') app.ir('#/measure/gantt/' + ev.target.value); });
+  document.addEventListener('change', (ev) => { if (ev.target && ev.target.id === 'gantt-projeto') app.ir('#/measure/gantt/' + ev.target.value);
+    if (ev.target && ev.target.id === 'gantt-base-valor' && BASES.includes(ev.target.value)) { guardarBase(ev.target.value); app.desenhar(); }
+  });
 }
 
 /* ---------- Ações ---------- */
@@ -282,7 +285,7 @@ export const acoesEspaco = {
     let n = 0;
     for (const nome of etapasDasCondicoes(p)) {
       if (ja.has(nome)) continue;
-      c.tarefas.push({ id: novoId('tf'), nome, quem: 'proprio', inicio, dias: 5 });
+      c.tarefas.push({ id: novoId('tf'), nome, etapa: nome, quem: 'proprio', inicio, dias: 5 });   // etapa: liga a tarefa ao valor do Takeoff mesmo se ela for renomeada
       inicio = somarDias(inicio, 5); n++;
     }
     terminou(n ? tn(n, '{n} tarefa criada. Ajuste as datas e as durações.', '{n} tarefas criadas. Ajuste as datas e as durações.') : tr('As etapas já estão no cronograma.'));

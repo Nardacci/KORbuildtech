@@ -1824,3 +1824,14 @@ td.mz-obs textarea { width: 100%; min-height: 52px; resize: vertical; font: inhe
 .itens-queda { color: #15803D; font-weight: 600; }
 .tabela-historico tr.atual td { background: #FFF9F4; }
 .itens-filtros select { width: auto; }
+
+/* Valor por tarefa e curva S (docs/gantt-financeiro.md) */
+.valor-gantt { margin-top: 16px; }
+.valor-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin: 6px 0 12px; }
+.valor-resumo > div { background: #F8F9FB; border: 1px solid var(--borda); border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+.valor-resumo span { font-size: 12px; color: var(--mudo, #5B6472); } .valor-resumo b { font-size: 18px; } .valor-resumo b.neg { color: #B42318; }
+.curva-s { width: 100%; max-width: 760px; height: auto; display: block; margin: 4px 0 12px; }
+.curva-s .cs-grade { stroke: #E3E7EE; stroke-width: 1; } .curva-s .cs-eixo { font-size: 10px; fill: #5B6472; }
+.curva-s .cs-plan { fill: none; stroke: #2563EB; stroke-width: 2.5; stroke-linejoin: round; }
+.curva-s .cs-hoje { stroke: #DC2626; stroke-width: 1.5; stroke-dasharray: 4 3; } .curva-s .cs-feito { fill: #16A34A; stroke: #fff; stroke-width: 2; }
+.tabela-valor-gantt td, .tabela-valor-gantt th { white-space: nowrap; }
