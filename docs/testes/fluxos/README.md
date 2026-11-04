@@ -21,4 +21,5 @@ Em vez de testar tela por tela, de forma solta, cada rodada de teste segue um **
 "Conta real" tem dois ambientes, com o mesmo teste e o mesmo roteiro:
 - **Banco local de teste** (nuvem de desenvolvimento): `python3 -m http.server 8123 &`, `bash tools/supabase-local.sh` e `node tests/fluxo-NN-….test.mjs --relatorio`. Não tem o serviço de login: as pessoas entram com a sessão já gravada.
 - **Supabase de verdade** (o do `js/config.js`): servidor em `:8123`, `$env:SUPABASE_ACCESS_TOKEN = "sbp_…"` (token novo da conta, apagado depois) e `node tests/fluxo-NN-….test.mjs --real --relatorio`. Cria uma empresa marcada `plano.massa = 'fluxo'` e logins `fluxo.*@example.com` e apaga tudo no fim; os dados reais não são tocados. Nenhum e-mail sai.
+- **Antes de rodar no Supabase de verdade**, confira o esquema: `psql $env:KOR_DESTINO_URL -f tools\conferir-esquema.sql` (só lê; nenhuma linha = o banco tem as migrações 0016 a 0025). Foi o que faltou para a 0018 passar despercebida.
 - Cada rodada grava o registro em `docs/testes/rodadas/AAAA-MM-DD_HH-MM_FNN.md`.

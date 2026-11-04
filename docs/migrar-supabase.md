@@ -73,6 +73,12 @@ node tools/migrar-supabase.mjs conferir
 ```
 Se der falha em alguns arquivos, rode `arquivos` de novo: ele só repete o que falta.
 
+### 6b. Conferir o esquema (migrações)
+```powershell
+psql $env:KOR_DESTINO_URL -f tools\conferir-esquema.sql
+```
+Só lê. **Nenhuma linha** significa que o banco tem tudo o que as migrações 0016 a 0025 criam. Se listar algo, aplique a migração indicada antes de seguir. (Na migração real, a 0018 faltava e só apareceu no teste F01.)
+
 ### 7. Funções do servidor
 Precisa do token de acesso da conta nova (painel → avatar → Access Tokens → Generate), só nesta janela:
 ```powershell

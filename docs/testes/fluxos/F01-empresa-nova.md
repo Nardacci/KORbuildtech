@@ -22,3 +22,9 @@
 | 9 | Nora | Takeoff › Projetos › Novo projeto | Abrir o formulário e olhar a lista de clientes | "Cliente Nova LLC" está na lista de clientes (porta para o F02); nenhum erro de JavaScript em todo o fluxo |
 
 **Desfaz:** a empresa dos fluxos e o login `fluxo.nova@example.com` são apagados no fim (`--manter` guarda os dados).
+
+## Achados deste fluxo
+1. **Criar item pela tela não gravava no Supabase (03/11):** o app mandava `itens.ativo` (migração 0018, "autorizada" em 27/10), mas a coluna nunca tinha sido criada no banco; toda gravação de item pela tela falhava com "Não foi possível gravar no banco". Os outros fluxos criam os itens direto no banco e não pegavam isso. Aplicada a 0018 no banco novo; `tools/conferir-esquema.sql` passou a listar o que falta das migrações 0016 a 0025.
+2. **Item de mão de obra com função não grava mais preço digitado:** a tela esconde o "Preço inicial" quando a função é escolhida.
+3. **Formulário redesenhado enquanto se digita:** no Supabase de verdade o app redesenha a tela quando os dados do banco chegam, e o que foi digitado pode se perder. O teste agora confere os campos antes de salvar (`preencher`). Se uma pessoa notar isso usando o app, o formulário precisa ser protegido.
+
