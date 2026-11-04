@@ -19,10 +19,11 @@ if (!(await fetch(BASE).then((r) => r.ok, () => false))) { console.error('O serv
 await apagarEmpresaFluxo();   // começa sempre do zero (e apaga o login fluxo.* da rodada anterior)
 await garantirUsuario(NOVA.email, NOVA.nome);   // a pessoa existe e está confirmada, mas não tem empresa
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM || undefined });
-const { ctx, p, erros } = await abrirComo(browser, NOVA, REAL ? { semSessao: true, ir: '#/entrar' } : { ir: '#/nova-empresa' });
+const { ctx, p, erros, ruins, consoleErros } = await abrirComo(browser, NOVA, REAL ? { semSessao: true, ir: '#/entrar' } : { ir: '#/nova-empresa' });
 fluxo.pagina(p);
 
 const empresaId = async () => ((await sql(`select id from public.empresas where nome = '${aspas(EMPRESA)}'`))[0] || {}).id;
+const diag = async () => ({ aviso: await p.evaluate(() => (document.getElementById('toast') || {}).textContent || '').catch(() => ''), rede: ruins.slice(-4), console: consoleErros.slice(-3) });
 const item = async (codigo) => (await sql(`select i.id, i.nome, i.funcao_id from public.itens i join public.empresas e on e.id = i.empresa_id where e.nome = '${aspas(EMPRESA)}' and i.codigo = '${codigo}'`))[0];
 
 try {
@@ -98,7 +99,7 @@ try {
     await irPara(p, '#/measure/item/novo', '#it-nome');
     verificar(await preencher(p, [['#it-nome', MAT.nome], ['#it-codigo', MAT.codigo], ['#it-cat', 'material', 'lista'], ['#it-un', MAT.un], ['#it-etapa', MAT.etapa], ['#it-preco', MAT.preco]]), 'o formulário do material guardou os campos antes de salvar');
     await p.click('[data-acao="item-salvar"]');
-    verificar(await esperarAte(async () => !!(await item(MAT.codigo)), 20000), 'no banco: o material NV-DW existe');
+    verificar(await esperarAte(async () => !!(await item(MAT.codigo)), 20000), 'no banco: o material NV-DW existe', await diag());
     const [pr] = await sql(`select ip.valor::float as valor from public.item_precos ip join public.itens i on i.id = ip.item_id where i.codigo = '${MAT.codigo}' and i.empresa_id = '${await empresaId()}'`);
     verificar(pr && pr.valor === 14.5, 'no banco: o preço digitado é US$ 14,50', pr);
     // mão de obra, ligada à função
@@ -108,7 +109,7 @@ try {
     verificar(await preencher(p, [['#it-nome', MO.nome], ['#it-codigo', MO.codigo], ['#it-cat', 'mao-de-obra', 'lista'], ['#it-un', MO.un], ['#it-etapa', MO.etapa], ['#it-funcao', idCarpenter, 'lista']]), 'o formulário da mão de obra guardou os campos e a função antes de salvar');
     verificar(!(await p.locator('#it-preco').isVisible()), 'com função escolhida, o campo de preço inicial some (o preço vem da função)');
     await p.click('[data-acao="item-salvar"]');
-    verificar(await esperarAte(async () => { const x = await item(MO.codigo); return !!(x && x.funcao_id); }, 20000), 'no banco: a mão de obra NV-MO aponta a função');
+    verificar(await esperarAte(async () => { const x = await item(MO.codigo); return !!(x && x.funcao_id); }, 20000), 'no banco: a mão de obra NV-MO aponta a função', await diag());
     const [sem] = await sql(`select count(*)::int as n from public.item_precos ip join public.itens i on i.id = ip.item_id where i.codigo = '${MO.codigo}' and i.empresa_id = '${await empresaId()}'`);
     verificar(sem.n === 0, 'no banco: a mão de obra não tem preço digitado', sem);
     // o preço da função aparece na tela do item

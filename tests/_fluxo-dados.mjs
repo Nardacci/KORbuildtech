@@ -123,15 +123,19 @@ export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, al
   } else await ctx.route(/open-meteo/, (r) => r.abort());
   const pagina = await ctx.newPage();
   const erros = [];
+  const ruins = [], consoleErros = [];   // diagnóstico: respostas de rede com erro e erros do console (sem cabeçalhos nem chaves)
+  pagina.on('response', async (r) => { if (r.status() >= 400 && /supabase\.co|localhost:3001/.test(r.url())) { let corpo = ''; try { corpo = (await r.text()).slice(0, 200); } catch { /* */ } ruins.push(r.request().method() + ' ' + r.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 90) + ' → ' + r.status() + ' ' + corpo); } });
+  pagina.on('console', (m) => { if (m.type() === 'error') consoleErros.push(m.text().slice(0, 200)); });
   pagina.on('dialog', (d) => { (d.type() === 'beforeunload' ? d.accept() : d.dismiss()).catch(() => {}); });   // "há alterações não salvas": o teste segue
   pagina.on('pageerror', (e) => erros.push(rotuloErros + ': ' + e.message));
   await pagina.goto(BASE + ir);
-  return { ctx, p: pagina, erros };
+  return { ctx, p: pagina, erros, ruins, consoleErros };
 }
 
 /** Preenche campos [[seletor, valor, 'texto'|'lista']] e confere que continuam lá meio segundo depois: no Supabase de verdade o app redesenha o
  *  formulário quando os dados do banco chegam e apaga o que foi digitado. Repete até 4 vezes. */
 export async function preencher(p, campos) {
+  await p.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => { /* a conexão em tempo real pode não aquietar: segue */ });
   for (let tentativa = 0; tentativa < 4; tentativa++) {
     for (const [sel, valor, tipo] of campos) { if (tipo === 'lista') await p.selectOption(sel, valor); else await p.fill(sel, String(valor)); }
     await p.waitForTimeout(600);
