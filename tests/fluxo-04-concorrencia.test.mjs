@@ -15,7 +15,7 @@ const BASE = process.argv.slice(2).find((a) => a.startsWith('http')) || 'http://
 const fluxo = criarFluxo({ id: 'F04', modo: 'conta real, ' + nome + ', português', roteiro: 'docs/testes/fluxos/F04-concorrencia.md', ambiente: BASE });
 const { verificar } = fluxo;
 const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
-const esperarAte = async (fn, ms = 20000) => { const fim = Date.now() + ms; while (Date.now() < fim) { if (await fn()) return true; await new Promise((ok) => setTimeout(ok, 250)); } return false; };
+const esperarAte = async (fn, ms = 20000) => { const fim = Date.now() + ms; while (Date.now() < fim) { try { if (await fn()) return true; } catch (e) { if (!/^rede:/.test(String((e && e.message) || e))) throw e; } await new Promise((ok) => setTimeout(ok, 250)); } return false; };   // uma queda de rede passageira (rede: …) não derruba a espera
 const isoDaqui = (dias) => { const d = new Date(Date.now() + dias * 86400000); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 
 // ---------- A cena ----------

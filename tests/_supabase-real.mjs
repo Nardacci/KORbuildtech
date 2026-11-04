@@ -19,10 +19,26 @@ const PADRAO = 'kb-e2e-daily-%@example.com';
 export const nome = 'Supabase do projeto ' + REF;
 
 export async function sql(consulta) {
-  const r = await fetch('https://api.supabase.com/v1/projects/' + REF + '/database/query', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ query: consulta }) });
-  const t = await r.text();
-  if (!r.ok) throw new Error('SQL ' + r.status + ': ' + t.slice(0, 1500));
-  return JSON.parse(t);
+  // A API do Supabase às vezes derruba a conexão ou limita o ritmo (429). Consulta de leitura tenta de novo se a rede cair; qualquer consulta tenta
+  // de novo se o servidor disser "devagar" (429). Escrita NÃO repete quando a resposta se perde: ela pode ter sido executada.
+  const leitura = /^\s*(select|with)\b/i.test(consulta);
+  let ultimo;
+  for (let tentativa = 1; tentativa <= 4; tentativa++) {
+    let r, t;
+    try {
+      r = await fetch('https://api.supabase.com/v1/projects/' + REF + '/database/query', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ query: consulta }) });
+      t = await r.text();
+    } catch (e) {
+      ultimo = new Error('rede: ' + ((e && e.cause && (e.cause.code || e.cause.message)) || (e && e.message) || e));
+      if (!leitura || tentativa === 4) throw ultimo;
+      await new Promise((ok) => setTimeout(ok, 1000 * 2 ** (tentativa - 1)));
+      continue;
+    }
+    if (r.status === 429 && tentativa < 4) { await new Promise((ok) => setTimeout(ok, 2000 * tentativa)); continue; }
+    if (!r.ok) throw new Error('SQL ' + r.status + ': ' + t.slice(0, 1500));
+    return JSON.parse(t);
+  }
+  throw ultimo;
 }
 export const sqlExec = sql;
 

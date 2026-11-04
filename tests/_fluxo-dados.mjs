@@ -25,7 +25,7 @@ const pad = (n) => String(n).padStart(2, '0');
 export const hoje = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 export const somar = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 export const segundaDaSemana = () => { const d = new Date(hoje() + 'T12:00:00'); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
-export const esperarAte = async (fn, ms = 25000, passo = 300) => { const fim = Date.now() + ms; while (Date.now() < fim) { if (await fn()) return true; await new Promise((ok) => setTimeout(ok, passo)); } return false; };
+export const esperarAte = async (fn, ms = 25000, passo = 300) => { const fim = Date.now() + ms; while (Date.now() < fim) { try { if (await fn()) return true; } catch (e) { if (!/^rede:/.test(String((e && e.message) || e))) throw e; } await new Promise((ok) => setTimeout(ok, passo)); } return false; };   // uma queda de rede passageira (rede: …) não derruba a espera
 export const texto = async (p, seletor = 'body') => (await p.locator(seletor).innerText()).replace(/\s+/g, ' ');
 const rpc = (uid, nome, args) => rest(uid, '/rpc/' + nome, { metodo: 'POST', corpo: args || {} });
 
