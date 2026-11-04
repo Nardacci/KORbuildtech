@@ -471,3 +471,10 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Mudar a data: a obra acompanha (aviso "Início da obra atualizado.") e o diário passa a ser cobrado da nova data; a data não pode ser absurda (antes de 2020 é recusada)
 - [ ] **T205** · `pv.p1.encarregado (ou a pessoa de campo)` — Daily › obra de um projeto liberado com tarefa no passado  
   _Esperado:_ Só o RDO de hoje aparece pendente: não há "RDO atrasado" de dias anteriores à liberação. Conta real depois da migração 0025
+
+## 22 Empresa nova e itens com função
+
+- [ ] **T206** · `pv.p1.admin (ou uma conta nova)` — Entrar pela primeira vez sem empresa › Sua empresa  
+  _Esperado:_ A pessoa sem empresa cai em "Sua empresa" com o nome já preenchido; ao criar, aparece "Empresa criada. Você é o Administrador." e a área da conta mostra a empresa. Roteiro F01, passos 1 e 2
+- [ ] **T207** · `pv.p1.admin` — Takeoff › Itens › Novo item › categoria Mão de obra › Função  
+  _Esperado:_ Ao escolher uma função, o campo "Preço inicial" some (o preço da hora vem da função) e nenhum preço digitado é gravado no item; sem função, o campo de preço aparece. Roteiro F01, passo 7

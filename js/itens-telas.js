@@ -22,7 +22,13 @@ let app = { desenhar: () => {}, ir: () => {} };
 export function ligarItens(funcoes) { app = { ...app, ...funcoes }; }
 
 /* O campo Função só vale para mão de obra: aparece e some conforme a categoria. */
-if (typeof document !== 'undefined') document.addEventListener('change', (ev) => { const el = ev.target; if (el && el.id === 'it-cat') { const c = document.getElementById('campo-funcao'); if (c) c.hidden = el.value !== 'mao-de-obra'; } });
+if (typeof document !== 'undefined') document.addEventListener('change', (ev) => {
+  const el = ev.target;
+  if (!el || (el.id !== 'it-cat' && el.id !== 'it-funcao')) return;
+  const cat = document.getElementById('it-cat'), fun = document.getElementById('it-funcao'), c = document.getElementById('campo-funcao'), preco = document.getElementById('cartao-preco-inicial');
+  if (c && cat) c.hidden = cat.value !== 'mao-de-obra';
+  if (preco && cat && fun) preco.hidden = cat.value === 'mao-de-obra' && !!fun.value;   // com função, o preço da hora vem dela: não há preço digitado
+});
 const podeEditar = () => pode(usuarioAtual(), 'measure.catalogo');
 const quem = () => (usuarioAtual() || {}).nome || '';
 /* Na conta com banco, "inativo" depende da migração 0018 (itens.ativo), já no código: a chave fica para o caso de ela ainda não estar aplicada. */
@@ -134,7 +140,7 @@ export function telaItem(moldura, id, abaPedida) {
         funcoesAtivas().concat(v.funcaoId && funcao(v.funcaoId) && !funcoesAtivas().some((f) => f.id === v.funcaoId) ? [funcao(v.funcaoId)] : []).map((f) => '<option value="' + f.id + '"' + (f.id === v.funcaoId ? ' selected' : '') + '>' + esc(f.nome) + (valorDaFuncao(f) ? ' · ' + dinheiro(valorDaFuncao(f).valor) + '/h' : ' · ' + tr('sem valor')) + '</option>').join('') + '</select><span class="mudo pequeno">' + tr('Com função, o preço da hora vem de Settings › Funções (valor hora + encargos). <a href="{href}">Ver funções</a>', { href: estado().oficial ? '#/conta/funcoes' : '#/settings/funcoes' }) + '</span></div>' +
       campo('etapa', tr('Etapa (cost code)'), '<input type="text" id="it-etapa" name="etapa" value="' + esc(v.etapa || '') + '" placeholder="' + esc(tr('Ex.: 09 29 00 · Gypsum board')) + '"' + dis + '>') +
       campo('nota', tr('Nota'), '<input type="text" id="it-nota" name="nota" value="' + esc(v.nota || '') + '" placeholder="' + esc(tr('Ex.: cobre 32 sq ft')) + '"' + dis + '>') + '</div></section>' +
-      (novo && ed ? '<section class="cartao"><h2 class="cartao-titulo">' + tr('Preço inicial (opcional)') + '</h2><div class="grade-campos">' +
+      (novo && ed ? '<section class="cartao" id="cartao-preco-inicial"><h2 class="cartao-titulo">' + tr('Preço inicial (opcional)') + '</h2><div class="grade-campos">' +
         campo('preco', tr('Preço por unidade de compra (US$)'), '<input type="text" inputmode="decimal" id="it-preco" name="preco">') +
         campo('desde', tr('Vale a partir de'), '<input type="date" id="it-desde" name="desde" value="' + hoje() + '">') + '</div></section>' : '') +
       (ed ? '<div class="rodape-form"><a class="btn btn-contorno" href="#/measure/itens">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="item-salvar">' + (novo ? tr('Criar item') : tr('Salvar')) + '</button></div>' : '') + '</form>' +
@@ -183,7 +189,7 @@ export const acoesItens = {
     const id = form.dataset.id || null;
     const r = salvarItem(id, dados);
     if (r.erro) { toast(r.erro); return; }
-    if (!id && String(dados.preco || '').trim()) {
+    if (!id && String(dados.preco || '').trim() && !(dados.categoria === 'mao-de-obra' && dados.funcaoId)) {   // com função, o preço vem dela
       const pr = registrarPreco(r.id, { valor: lerValor(dados.preco), desde: dados.desde, fonte: tr('Digitado') }, quem());
       if (pr.erro) { toast(tr('Item criado, mas o preço não foi salvo: {erro}', { erro: pr.erro })); app.ir('#/measure/item/' + r.id + '/prices'); return; }
     }

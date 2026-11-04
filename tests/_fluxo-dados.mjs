@@ -15,7 +15,7 @@ import { randomUUID } from 'node:crypto';
 export const REAL = process.argv.includes('--real');
 const local = await import(REAL ? './_supabase-real.mjs' : './_supabase-local.mjs');
 export const { sql, sqlExec, rest, sessao, rotear, limparMassa } = local;
-const SENHA_FLUXO = 'Fx1!' + randomUUID().replace(/-/g, '').slice(0, 16);   // nova a cada rodada; só vale para os logins de teste
+export const SENHA_FLUXO = 'Fx1!' + randomUUID().replace(/-/g, '').slice(0, 16);   // nova a cada rodada; só vale para os logins de teste
 export const garantirUsuario = (email, nome) => local.garantirUsuario(email, nome, SENHA_FLUXO);
 export const AMBIENTE = REAL ? 'conta real, Supabase do projeto, português' : 'conta real, banco local, português';
 export const URL_PROJETO = readFileSync(new URL('../js/config.js', import.meta.url), 'utf8').match(/SUPABASE_URL\s*=\s*'([^']+)'/)[1];
@@ -34,6 +34,8 @@ export const PESSOAS = {
   encarregado: { email: 'fluxo.encarregado@example.com', nome: 'Eduardo Encarregado', perfil: 'encarregado', cargo: 'Foreman' },
 };
 export const NOME_EMPRESA = 'Fluxo QA Prestadora';
+/** Quem chega sem empresa no F01 (não entra em PESSOAS: a empresa dos outros fluxos não a conhece). */
+export const NOVA = { email: 'fluxo.nova@example.com', nome: 'Nora Nova' };
 
 /** Cria (ou completa) a empresa dos fluxos. Devolve os ids que os testes usam. */
 export async function garantirEmpresaFluxo({ catalogo = true } = {}) {
@@ -103,11 +105,12 @@ export async function criarProjetoLiberado(dados, { nome, tarefas = [], liberado
 export async function apagarEmpresaFluxo() { await limparMassa('fluxo.%@example.com', "plano ->> 'massa' = 'fluxo'"); }
 
 /** Abre o app, na conta real local, como uma das pessoas. Com campo: true é o celular do canteiro (390 × 844, GPS ligado e clima simulado). */
-export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, alt = 1100, ir = '#/conta', campo = false } = {}) {
-  const p = PESSOAS[chave];
+export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, alt = 1100, ir = '#/conta', campo = false, semSessao = false } = {}) {
+  const p = typeof chave === 'string' ? PESSOAS[chave] : chave;   // uma pessoa de PESSOAS ou um objeto { email, nome }
+  const rotuloErros = typeof chave === 'string' ? chave : 'nova';
   const [u] = await sql(`select id, coalesce(raw_user_meta_data ->> 'nome', 'x') as nome from auth.users where email = '${aspas(p.email)}'`);
   const ctx = await browser.newContext({ viewport: campo ? { width: 390, height: 844 } : { width: larg, height: alt }, ...(campo ? { geolocation: { latitude: 43.2081, longitude: -71.5376, accuracy: 8 }, permissions: ['geolocation'] } : {}) });
-  await ctx.addInitScript(([s, i]) => { try { localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', i); localStorage.setItem('kbt.versao', 'primeira'); } catch { /* */ } }, [await sessao(u.id, p.email, u.nome), idioma]);
+  await ctx.addInitScript(([s, i]) => { try { if (s) localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', i); localStorage.setItem('kbt.versao', 'primeira'); } catch { /* */ } }, [semSessao ? '' : await sessao(u.id, p.email, u.nome), idioma]);   // semSessao: a pessoa entra pela tela de login
   await rotear(ctx, URL_PROJETO);
   await ctx.route('https://fonts.**', (r) => r.abort());
   await ctx.route('https://tile.openstreetmap.org/**', (r) => r.abort());
@@ -120,7 +123,7 @@ export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, al
   } else await ctx.route(/open-meteo/, (r) => r.abort());
   const pagina = await ctx.newPage();
   const erros = [];
-  pagina.on('pageerror', (e) => erros.push(chave + ': ' + e.message));
+  pagina.on('pageerror', (e) => erros.push(rotuloErros + ': ' + e.message));
   await pagina.goto(BASE + ir);
   return { ctx, p: pagina, erros };
 }
