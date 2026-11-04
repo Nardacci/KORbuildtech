@@ -1,0 +1,23 @@
+# F04 · Concorrência: do convite ao fechamento, com a obra ligada
+
+**Objetivo:** provar a concorrência entre empresas de ponta a ponta: a construtora monta e envia, uma prestadora com conta cota pelo Takeoff e manda a proposta emitida, outra sem conta responde pelo link e manda um PDF, a construtora responde para todos, compara e fecha. O projeto da vencedora vira "Ganha" e a obra dela nasce ligada à obra da contratante.
+
+**Roda em:** conta real. Sem `--real`, no banco local (a função de borda do link público é simulada); com `--real`, no Supabase do `js/config.js`, e então depende da função `convite-publico` publicada nesse projeto. **O teste cria as empresas e as pessoas dele** (nada da massa dos outros fluxos) e as apaga no fim.
+**Comando:** `node tests/fluxo-04-concorrencia.test.mjs --relatorio` (banco local) ou `… --real --relatorio` (precisa de `SUPABASE_ACCESS_TOKEN`).
+
+**Pré-condições (feitas pelo teste):** a construtora **Construtora Local** (administrador **Tom**), com a obra "Edifício Local" (Nashua, NH) e dois contatos prestadores: a **Prestadora Local** (empresa **Ana**, com conta) e a **Bayside Local** (sem conta, só e-mail). A prestadora tem o encarregado **José** (perfil Encarregado). Todos com login confirmado, sem e-mail enviado.
+
+**Dados fixos:** serviço "Framing e drywall"; etapas 06 10 00 e 09 21 16; escopo "Paredes e forro em drywall"; planta `assets/plantas/casa-modelo.pdf` (3 folhas); pergunta da Ana "O forro inclui isolamento?" (resposta: "Sim, isolamento R-30."); pergunta da Bayside "Tem visita à obra?"; adendo nº 1; proposta da Bayside US$ 61.500 (PDF); proposta da Ana pela plataforma, prazo de 45 dias; fechamento com a Ana, motivo "Melhor prazo".
+
+| # | Quem | Onde | O que faz | Esperado |
+|---|---|---|---|---|
+| 1 | Tom (construtora) | Daily › Concorrências › Nova | Escolhe a obra, o serviço, as etapas e o escopo, o prazo e o anexo da planta, marca as duas prestadoras e salva como rascunho; abre e salva o rascunho mais duas vezes | Aviso "Rascunho salvo". No banco: um rascunho com a obra, 2 etapas e o escopo formatado; 2 convites (a Ana com conta, a Bayside pelo link); salvar de novo não duplica nem o rascunho nem os convites |
+| 2 | Tom | Concorrência › Enviar | Conferir o desenho e enviar | O desenho aponta a pasta da concorrência e o PDF está no Storage; ao enviar, não abre popup com links; o link da Bayside vem uma vez (48 caracteres, sem "?demo"); a concorrência fica aberta; só o convite pelo link tem token (e só o hash fica); "Copiar o link" aparece só para a Bayside |
+| 3 | Ana (prestadora) | Takeoff › Convites › o convite › Vou cotar | Abrir o convite pelo sino e pela lista, "Vou cotar", perguntar "O forro inclui isolamento?" | O convite mostra a contratante e a obra e fica "visto"; "Vou cotar" cria o projeto com a concorrência guardada e a contratante é o contato da construtora; os desenhos viram 3 folhas e o PDF é copiado para o Storage dela; a pergunta chega ao banco |
+| 4 | Bayside (sem conta) | Link do convite | Abrir o link, "Vou cotar", mandar a proposta de US$ 61.500 com PDF e perguntar "Tem visita à obra?" | A página mostra o convite e não cita a outra convidada, com os desenhos e o botão Abrir; a proposta (rev. 1, US$ 61.500) e o PDF chegam ao banco e ao Storage; a Bayside não vê a pergunta da Ana, que ainda não é pública |
+| 5 | Tom | Concorrência › Perguntas | Responder a pergunta da Ana para todos e mandar o adendo nº 1 a todos | As duas perguntas aparecem; a respondida fica pública; o aviso chega a todos; pelo link, a Bayside vê a pergunta pública sem o nome da Ana, a resposta e o adendo |
+| 6 | Ana | Takeoff › Projeto › Proposta | Emitir a proposta e enviá-la pela plataforma, prazo de 45 dias | A proposta enviada (rev. 1) fica no banco com número, total, valor por etapa e prazo, ligada à proposta emitida |
+| 7 | Tom | Concorrência › Comparar | Comparar as duas propostas e fechar com a Ana, motivo "Melhor prazo" (a Ana libera o projeto para obra antes) | A comparação tem as duas propostas; a concorrência fica fechada; a Ana é vencedora e a Bayside "não escolhida"; o projeto da Ana vira Ganha com o vínculo para a obra da construtora; a Bayside vê que a contratante fechou com outra empresa, sem o valor |
+| 8 | Ana | Takeoff › Convite › obra | Abrir o convite depois de vencer | Mostra "Você venceu" e que a obra já está criada e ligada à da contratante; no banco, a obra da Ana aponta a obra da construtora, a concorrência e o projeto; o projeto aponta a obra; a auditoria registra o que ela fez; nenhum erro de JavaScript em todo o fluxo; a cena é apagada |
+
+**Desfaz:** as empresas "… Local", as pessoas `kb-e2e-daily-*@example.com` e os arquivos do Storage são apagados no fim.

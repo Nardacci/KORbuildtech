@@ -14,7 +14,7 @@ Em vez de testar tela por tela, de forma solta, cada rodada de teste segue um **
 | F01 | Empresa nova: primeira entrada, empresa, perfis, funções com valor hora, cliente, itens e assembly | `F01-empresa-nova.md` | `tests/fluxo-01-empresa-nova.test.mjs` | conta real (o passo 1 entra pela tela de login só com `--real`) |
 | F02 | Projeto do zero até "Liberar para obra": plantas, escala, medição, materiais, cronograma, proposta, início da obra | `F02-projeto-ate-liberar.md` | `tests/fluxo-02-projeto-ate-liberar.test.mjs` | conta real |
 | F03 | Obra: diário com tarefa, aprovação, % feito no Gantt, Início | `F03-obra-diario-gantt.md` | `tests/fluxo-03-obra-diario-gantt.test.mjs` | conta real |
-| F04 | Concorrência: convite, proposta da prestadora, fechamento, vínculo das obras, diário entre empresas | (a escrever) | (a escrever; reaproveita `concorrencias-oficial`) | conta real |
+| F04 | Concorrência: convite, proposta da prestadora, fechamento, vínculo das obras, diário entre empresas | `F04-concorrencia.md` | `tests/fluxo-04-concorrencia.test.mjs` (as mesmas verificações de `concorrencias-oficial`, em passos) | conta real; no `--real` precisa da função `convite-publico` publicada |
 | F05 | Settings: usuários, perfis, listas, preços e margens, auditoria | (a escrever) | (a escrever) | conta real |
 
 ## Como rodar
