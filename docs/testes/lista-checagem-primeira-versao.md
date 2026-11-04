@@ -1,7 +1,7 @@
 # Lista de checagem — 1ª versão (Measure Takeoff, Concorrências e Settings)
 
 Senha de todos os logins: a de `KOR_DEMO_SENHA`. Logins: `pv.<empresa>.<papel>@example.com`. Endereço: homologação com `?versao=primeira`.
-Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, hora). Versão em planilha: `lista-checagem-primeira-versao.csv`.
+Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, hora). Quando o item aparece com _F01_ a _F05_, um teste automático por fluxo já o cobre (`docs/testes/fluxos/`); ele continua valendo para conferir a olho, mas a rodada automática comprova o essencial. Sem marca = só manual. Versão em planilha: `lista-checagem-primeira-versao.csv`.
 
 
 ## 1 Entrada e conta
@@ -19,9 +19,9 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 ## 2 Settings e papéis
 
-- [ ] **T6** · `pv.p1.admin` — Users: abrir a lista  
+- [ ] **T6** · `pv.p1.admin` · _F05_ — Users: abrir a lista  
   _Esperado:_ Vê os 5 logins da Maple Siding com seus perfis (Administrador, Gestor, Estimator, Contacts only, Trabalhador)
-- [ ] **T7** · `pv.p1.admin` — Access roles: abrir Estimator e comparar com Gestor de obras  
+- [ ] **T7** · `pv.p1.admin` · _F05_ — Access roles: abrir Estimator e comparar com Gestor de obras  
   _Esperado:_ Estimator tem medir, catálogo e responder convites; Gestor não tem catálogo
 - [ ] **T8** · `pv.p1.admin` — Settings: procurar a tela Jobs/Obras  
   _Esperado:_ Não existe na 1ª versão (o projeto ganho é a obra); #/conta/obras volta para a conta
@@ -33,7 +33,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Cria item e assembly no catálogo; NÃO vê enviar concorrência
 - [ ] **T12** · `pv.p1.gestor` — Tentar criar item no catálogo  
   _Esperado:_ Não consegue (sem permissão de catálogo)
-- [ ] **T13** · `pv.p1.admin` — Company: conferir os dados da empresa  
+- [ ] **T13** · `pv.p1.admin` · _F05_ — Company: conferir os dados da empresa  
   _Esperado:_ Nome, endereço e telefone da Maple Siding corretos
 
 ## 3 Measure Takeoff
@@ -61,15 +61,15 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 - [ ] **T23** · `pv.c1.admin` — Abrir 'Exterior windows and doors' (aberta)  
   _Esperado:_ 3 convidadas (Maple, Cobalt e Birchwood sem conta); 2 propostas; pergunta e resposta
-- [ ] **T24** · `pv.c1.admin` — Comparar as 2 propostas por etapa  
+- [ ] **T24** · `pv.c1.admin` · _F04_ — Comparar as 2 propostas por etapa  
   _Esperado:_ Totais e prazos corretos lado a lado
-- [ ] **T25** · `pv.c1.admin` — Responder uma nova pergunta para todas as convidadas  
+- [ ] **T25** · `pv.c1.admin` · _F04_ — Responder uma nova pergunta para todas as convidadas  
   _Esperado:_ Mensagem registrada e visível a quem foi convidada
-- [ ] **T26** · `pv.c1.admin` — Fechar a concorrência escolhendo uma vencedora  
+- [ ] **T26** · `pv.c1.admin` · _F04_ — Fechar a concorrência escolhendo uma vencedora  
   _Esperado:_ Situação fechada; vencedora e não escolhidas marcadas
 - [ ] **T27** · `pv.c1.admin` — Abrir 'Final cleaning' (rascunho); conferir e enviar  
   _Esperado:_ Vira aberta; convidadas passam a ver
-- [ ] **T28** · `pv.c1.admin` — Criar uma concorrência nova do zero (obra, etapas, escopo, prazo, 2 convidadas) e enviar  
+- [ ] **T28** · `pv.c1.admin` · _F04_ — Criar uma concorrência nova do zero (obra, etapas, escopo, prazo, 2 convidadas) e enviar  
   _Esperado:_ Enviada sem erro; aparece na lista como aberta
 - [ ] **T29** · `pv.c1.admin` — Prorrogar o prazo de uma concorrência aberta  
   _Esperado:_ Novo prazo visível para as convidadas
@@ -82,15 +82,15 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 ## 5 Concorrências — quem recebe
 
-- [ ] **T33** · `pv.p1.admin` — Measure Takeoff › Convites  
+- [ ] **T33** · `pv.p1.admin` · _F04_ — Measure Takeoff › Convites  
   _Esperado:_ Lista os convites recebidos, com novidades destacadas
-- [ ] **T34** · `pv.p1.admin` — Abrir um convite novo e responder 'Vou cotar'  
+- [ ] **T34** · `pv.p1.admin` · _F04_ — Abrir um convite novo e responder 'Vou cotar'  
   _Esperado:_ Situação muda para vai-cotar; quem pediu vê
-- [ ] **T35** · `pv.p1.admin` — Enviar proposta com valor por etapa, prazo e exclusões  
+- [ ] **T35** · `pv.p1.admin` · _F04_ — Enviar proposta com valor por etapa, prazo e exclusões  
   _Esperado:_ Proposta enviada; revisão registrada
 - [ ] **T36** · `pv.p1.admin` — Recusar um convite com motivo  
   _Esperado:_ Situação 'não vai'; quem pediu vê o motivo
-- [ ] **T37** · `pv.p1.admin` — Fazer uma pergunta ao contratante  
+- [ ] **T37** · `pv.p1.admin` · _F04_ — Fazer uma pergunta ao contratante  
   _Esperado:_ Pergunta chega a quem pediu
 - [ ] **T38** · `pv.p3.admin` — Procurar 'Exterior windows and doors'  
   _Esperado:_ Não aparece (Bedrock não foi convidada)
@@ -118,20 +118,20 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 ## 7 Vencedora e obra
 
-- [ ] **T48** · `pv.p6.admin` — Abrir 'Interior drywall and finishing' (ganhou)  
+- [ ] **T48** · `pv.p6.admin` · _F04_ — Abrir 'Interior drywall and finishing' (ganhou)  
   _Esperado:_ Mostra 'Você venceu' (sem botão de obra na 1ª versão)
-- [ ] **T49** · `pv.p6.admin` — Criar a obra a partir da concorrência vencida  
+- [ ] **T49** · `pv.p6.admin` · _F04_ — Criar a obra a partir da concorrência vencida  
   _Esperado:_ Não se aplica na 1ª versão: não há cadastro de obra (o projeto ganho é a obra)
 - [ ] **T50** · `pv.p2.admin` — Abrir a mesma concorrência (perdeu)  
   _Esperado:_ Vê que não foi escolhida, sem dados de outras propostas
-- [ ] **T51** · `pv.c2.admin` — Confirmar a obra da vencedora vinculada à Capitol Plaza  
+- [ ] **T51** · `pv.c2.admin` · _F04_ — Confirmar a obra da vencedora vinculada à Capitol Plaza  
   _Esperado:_ Não se aplica na 1ª versão (sem obra)
 
 ## 8 Link sem conta
 
-- [ ] **T52** · `pv.c1.admin` — Pegar o link da Birchwood Insulation e abrir em janela anônima  
+- [ ] **T52** · `pv.c1.admin` · _F04_ — Pegar o link da Birchwood Insulation e abrir em janela anônima  
   _Esperado:_ Abre a página do convite sem login
-- [ ] **T53** · `(sem login)` — Responder 'Vou cotar' e enviar uma proposta pelo link  
+- [ ] **T53** · `(sem login)` · _F04_ — Responder 'Vou cotar' e enviar uma proposta pelo link  
   _Esperado:_ Proposta chega a quem pediu
 - [ ] **T54** · `(sem login)` — Tentar alterar o endereço do link  
   _Esperado:_ Mostra link inválido, sem vazar dados
@@ -226,7 +226,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 ## 13 Assemblies, listas de materiais e cotações
 
-- [ ] **T93** · `pv.p1.admin` — Settings › Takeoff › Assemblies: abrir a lista  
+- [ ] **T93** · `pv.p1.admin` · _F01_ — Settings › Takeoff › Assemblies: abrir a lista  
   _Esperado:_ Lista com 4 assemblies (Lap siding with housewrap, Siding full package, Trim and corners, Exterior paint two coats), cada um com seus materiais
 - [ ] **T94** · `pv.p1.admin` — Abrir 'Siding full package'  
   _Esperado:_ 4 linhas de material com fórmula, perda % e unidade; as quantidades de exemplo calculam sem erro
@@ -273,17 +273,17 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Pede confirmação ('Sem desenhos anexados'); com desenho, não pede; o envio não abre popup de links
 - [ ] **T114** · `pv.c1.admin` — Abrir a lista de concorrências, aba Rascunhos  
   _Esperado:_ Coluna Ações: rascunho tem 'Editar'; as demais têm 'Abrir'
-- [ ] **T115** · `pv.c1.admin` — Convidada sem conta: copiar o link na tabela de convidados  
+- [ ] **T115** · `pv.c1.admin` · _F04_ — Convidada sem conta: copiar o link na tabela de convidados  
   _Esperado:_ 'Copiar o link' funciona e não abre popup
-- [ ] **T116** · `(sem login)` — Abrir o link do convite recebido por e-mail  
+- [ ] **T116** · `(sem login)` · _F04_ — Abrir o link do convite recebido por e-mail  
   _Esperado:_ A tela mostra Escopo, O pacote, 'Documentos do projeto' (tabela com botão Abrir em cada arquivo) e o cartão 'Cote mais rápido com o KORbuild Takeoff'; o botão leva ao login
-- [ ] **T117** · `(sem login)` — Clicar Abrir em cada documento do projeto  
+- [ ] **T117** · `(sem login)` · _F04_ — Clicar Abrir em cada documento do projeto  
   _Esperado:_ O PDF abre; se algum não abrir, aparece 'indisponível' (anote qual)
-- [ ] **T118** · `(sem login)` — Responder 'Vou cotar' e olhar o formulário 'Mandar a proposta'  
+- [ ] **T118** · `(sem login)` · _F04_ — Responder 'Vou cotar' e olhar o formulário 'Mandar a proposta'  
   _Esperado:_ Total (US$) e Prazo de execução (dias) lado a lado, mesmo tamanho; PDF e exclusões na largura inteira; Enviar a proposta no canto direito
-- [ ] **T119** · `(sem login)` — Mandar a proposta com PDF e total, depois uma pergunta  
+- [ ] **T119** · `(sem login)` · _F04_ — Mandar a proposta com PDF e total, depois uma pergunta  
   _Esperado:_ A proposta e a pergunta chegam para a contratante; a contratante responde e a resposta aparece no link
-- [ ] **T120** · `pv.c1.admin` — Abrir a concorrência com proposta recebida, comparar e fechar  
+- [ ] **T120** · `pv.c1.admin` · _F04_ — Abrir a concorrência com proposta recebida, comparar e fechar  
   _Esperado:_ A comparação mostra a proposta; ao fechar, a vencedora e a situação 'Fechada' aparecem
 
 ## 15 Projeto — espaço de trabalho (abas, plantas, takeoff, cronograma e resumo)
@@ -294,7 +294,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Passo 1 pede só o essencial: nome, cliente, prazo da proposta e endereço (rua, cidade, estado, ZIP); botão 'Continuar para as plantas'
 - [ ] **T123** · `pv.p1.admin` — New project: salvar sem cliente; depois com ZIP de 4 dígitos  
   _Esperado:_ Avisa que o cliente é obrigatório; avisa que o ZIP precisa de 5 dígitos; nada é salvo com erro
-- [ ] **T124** · `pv.p1.admin` — New project: preencher tudo certo e continuar  
+- [ ] **T124** · `pv.p1.admin` · _F02_ — New project: preencher tudo certo e continuar  
   _Esperado:_ Abre o projeto na aba Plans, com o cartão para enviar o PDF das plantas e o texto 'No sheets yet'
 - [ ] **T125** · `pv.p1.admin` — Abas do projeto: olhar a faixa de abas  
   _Esperado:_ Seis abas, nesta ordem: Overview · Plans · Takeoff · Materials · Schedule · Project summary
@@ -375,7 +375,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Editor de texto formatado já preenchido com o escopo do projeto; editar aqui não muda o escopo do projeto; há também o campo Notes (observações)
 - [ ] **T162** · `pv.c1.admin` — New bid › Documents: olhar 'Project drawings'  
   _Esperado:_ Os arquivos de plantas do projeto aparecem marcados, com a lista de folhas e a observação da aba Plans em campo editável; ajustar a observação vale só para esta concorrência
-- [ ] **T163** · `pv.c1.admin` — New bid: salvar e enviar para uma prestadora com conta e outra por link  
+- [ ] **T163** · `pv.c1.admin` · _F04_ — New bid: salvar e enviar para uma prestadora com conta e outra por link  
   _Esperado:_ As plantas vão com as observações; o escopo formatado aparece para quem recebe (convite e link) e na página da concorrência (Details)
 - [ ] **T164** · `pv.c1.admin` — Concorrência antiga (escopo em listas Incluso/Excluso): abrir para editar  
   _Esperado:_ As listas aparecem dentro do editor de Scope e continuam sendo mostradas normalmente
@@ -386,7 +386,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Uma tela só com itens e preços: código, item, categoria, cost code, unidade, preço atual, desde quando e situação (Em dia, Desatualizado, Sem preço, Inativo); no topo, o cartão Markups; não existe mais o menu Preços
 - [ ] **T166** · `pv.p1.admin` — Itens: usar a busca, o filtro de categoria, o de cost code e o de situação  
   _Esperado:_ A lista filtra na hora; os contadores da situação (Sem preço, Desatualizado, Inativos) batem com o que aparece; 'Ativos' é o padrão
-- [ ] **T167** · `pv.p1.admin` — Itens › Novo item: criar com e sem preço inicial  
+- [ ] **T167** · `pv.p1.admin` · _F01_ — Itens › Novo item: criar com e sem preço inicial  
   _Esperado:_ Com preço, abre a aba Preços já com ele; sem preço, avisa que falta e o item aparece em 'Sem preço'
 - [ ] **T168** · `pv.p1.admin` — Itens › abrir um item › aba Preços: registrar dois preços com datas diferentes  
   _Esperado:_ O histórico lista todos, com a variação em % sobre o anterior, a origem, o fornecedor e quem registrou; o mais recente vira o atual; nenhum preço é apagado
@@ -408,17 +408,17 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Diz 'Nada para importar': a planilha é igual ao catálogo
 
 ### 18 · Andamento e Gantt
-- [ ] **T177** · `pv.p1.admin` — Projeto › Schedule › coluna % feito  
+- [ ] **T177** · `pv.p1.admin` · _F03_ — Projeto › Schedule › coluna % feito  
   _Esperado:_ Cada tarefa tem o % feito (0 a 100); fica salvo ao sair do campo; a barra da linha do tempo preenche o %
-- [ ] **T178** · `pv.p1.admin` — Projeto › Schedule › tarefa com término já passado e % abaixo de 100  
+- [ ] **T178** · `pv.p1.admin` · _F03_ — Projeto › Schedule › tarefa com término já passado e % abaixo de 100  
   _Esperado:_ A tarefa aparece atrasada: nome e barra em vermelho; em 100% deixa de estar atrasada
-- [ ] **T179** · `pv.p1.admin` — Menu › Gantt  
+- [ ] **T179** · `pv.p1.admin` · _F03_ — Menu › Gantt  
   _Esperado:_ Abre a página do Gantt no projeto mais urgente (atrasados primeiro), com a lista de projetos e o gráfico no tamanho da página
 - [ ] **T180** · `pv.p1.admin` — Gantt › trocar o projeto na lista  
   _Esperado:_ O endereço muda (#/measure/gantt/<projeto>) e o gráfico passa a ser do projeto escolhido; a lista marca quem está Atrasado
 - [ ] **T181** · `pv.p1.admin` — Gantt › Editar o cronograma / Linha do tempo › Tela inteira  
   _Esperado:_ Vai e volta entre a aba Schedule do projeto e a página do Gantt
-- [ ] **T182** · `pv.p1.admin` — Início › Andamento dos projetos  
+- [ ] **T182** · `pv.p1.admin` · _F03_ — Início › Andamento dos projetos  
   _Esperado:_ Primeiro bloco do painel: uma linha por projeto com cronograma (atrasados primeiro) com a situação, a barra do feito e o tracejado do previsto para hoje, e a tarefa mais atrasada; o resumo conta atrasados/em dia/não iniciados/concluídos; cada linha abre o Gantt do projeto
 
 ### 19 · Daily por projeto
@@ -426,55 +426,55 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
   _Esperado:_ Três módulos: Daily, Takeoff e Settings; o Settings abre com o cabeçalho 'KORbuild / Settings', fora do Takeoff
 - [ ] **T184** · `pv.p1.admin` — Takeoff › Novo projeto › seção Execução  
   _Esperado:_ Mapa com cerca (latitude, longitude, raio), 'Usar a localização atual' e dias de trabalho; tudo opcional; fica salvo e aparece em Editar projeto
-- [ ] **T185** · `pv.p1.admin` — Takeoff › Editar projeto › situação Ganha › salvar  
+- [ ] **T185** · `pv.p1.admin` · _F02_ — Takeoff › Editar projeto › situação Ganha › salvar  
   _Esperado:_ O projeto aparece no Daily em Projetos (menu) e em 'Projetos em execução'; ninguém cadastra obra
-- [ ] **T186** · `pv.p1.admin` — Daily › Projetos › abrir o projeto  
+- [ ] **T186** · `pv.p1.admin` · _F03_ — Daily › Projetos › abrir o projeto  
   _Esperado:_ Resumo do projeto (contratante, endereço), link 'Abrir o projeto' para o Takeoff; sem 'Editar a obra' nem 'Nova obra'
-- [ ] **T187** · `pv.p1.admin` — Daily › Hoje › projeto › Adicionar nova RDO › preencher e enviar  
+- [ ] **T187** · `pv.p1.admin` · _F03_ — Daily › Hoje › projeto › Adicionar nova RDO › preencher e enviar  
   _Esperado:_ O diário é criado e enviado como antes; sem local no mapa, o clima avisa para marcar à mão
-- [ ] **T188** · `pv.p1.admin` — Daily › Painel  
+- [ ] **T188** · `pv.p1.admin` · _F03_ — Daily › Painel  
   _Esperado:_ RDOs de hoje, aguardando aprovação, 'Projetos com RDO atrasado' e 'Farol dos projetos' com os projetos em execução
-- [ ] **T189** · `pv.p1.admin` — Bids › fechar uma concorrência de projeto ganho (vencedora com conta)  
+- [ ] **T189** · `pv.p1.admin` · _F04_ — Bids › fechar uma concorrência de projeto ganho (vencedora com conta)  
   _Esperado:_ Na vencedora, o projeto fica Ganha e a obra dela nasce sozinha, ligada à obra da contratante; o convite mostra 'Você venceu' e 'Abrir a obra'; o diário dela chega para a contratante aprovar
-- [ ] **T190** · `pv.p1.admin` — Conta real (depois das migrações 0020/0022): Liberar para obra  
+- [ ] **T190** · `pv.p1.admin` · _F02_ — Conta real (depois das migrações 0020/0022): Liberar para obra  
   _Esperado:_ A obra aparece no banco (projetos.obra_id preenchido) e no Daily
-- [ ] **T191** · `pv.p1.encarregado` — Daily › projeto ganho › Nova RDO › Atividades  
+- [ ] **T191** · `pv.p1.encarregado` · _F03_ — Daily › projeto ganho › Nova RDO › Atividades  
   _Esperado:_ A atividade tem 'Tarefa do cronograma' com as tarefas do projeto (Takeoff › Schedule) abaixo de 100% e, ao escolher uma, o campo '% feito da tarefa (hoje: n%)'
-- [ ] **T192** · `pv.p1.admin` — Daily › Painel › RDO recebido › Aprovar e lacrar  
+- [ ] **T192** · `pv.p1.admin` · _F03_ — Daily › Painel › RDO recebido › Aprovar e lacrar  
   _Esperado:_ O relatório mostra 'Cronograma: <tarefa> → n%'; depois de aprovar, a aba Schedule e o Gantt do projeto mostram o % feito informado, e o Início atualiza 'Andamento dos projetos'
-- [ ] **T193** · `pv.p1.admin` — Daily › projeto ganho (página do projeto)  
+- [ ] **T193** · `pv.p1.admin` · _F03_ — Daily › projeto ganho (página do projeto)  
   _Esperado:_ 'Etapa atual' traz as tarefas do cronograma em andamento hoje; no protótipo o sininho avisa 'Tarefa atrasada' com atalho para o Gantt (na conta real o atraso aparece no Início, em Andamento dos projetos) quando uma tarefa passou do fim sem 100%
-- [ ] **T194** · `pv.p1.admin` — Conta real (depois da migração 0021): aprovar um diário que aponta uma tarefa  
+- [ ] **T194** · `pv.p1.admin` · _F03_ — Conta real (depois da migração 0021): aprovar um diário que aponta uma tarefa  
   _Esperado:_ projetos.cronograma recebe o pct e o avanço (data, antes, pct, rdoNumero, por); o Gantt reflete depois de recarregar
-- [ ] **T195** · `pv.p1.admin` — Takeoff › projeto em orçamento › Visão geral › cartão Obra  
+- [ ] **T195** · `pv.p1.admin` · _F02_ — Takeoff › projeto em orçamento › Visão geral › cartão Obra  
   _Esperado:_ Etiqueta 'Em análise', 'Falta terminar: …' com as etapas que faltam e o botão 'Liberar para obra' desabilitado; a situação comercial não interfere (só Perdida bloqueia)
-- [ ] **T196** · `pv.p1.admin` — Takeoff › projeto com plantas, escalas, medição, entrega decidida e cronograma › Liberar para obra  
+- [ ] **T196** · `pv.p1.admin` · _F02_ — Takeoff › projeto com plantas, escalas, medição, entrega decidida e cronograma › Liberar para obra  
   _Esperado:_ Botão habilita sem proposta; ao clicar: etiqueta 'Liberado para obra' com data e quem liberou, 'Abrir no Daily' e 'Voltar para análise'; o projeto aparece no Daily em 'Projetos em execução' (obra criada sozinha)
 - [ ] **T197** · `pv.p1.admin` — Takeoff › projeto liberado sem diário › Voltar para análise  
   _Esperado:_ O projeto some do Daily sem apagar nada; liberar de novo traz a mesma obra. Com diário de obra, 'Voltar para análise' não aparece
-- [ ] **T198** · `pv.p1.admin` — Conta real (depois da migração 0022): liberar um projeto  
+- [ ] **T198** · `pv.p1.admin` · _F02_ — Conta real (depois da migração 0022): liberar um projeto  
   _Esperado:_ projetos.liberado_em preenchido, obra criada (obra_id) e o projeto no Daily; projeto Perdida não fica liberado; marcar Ganha sozinho não leva mais ao Daily
-- [ ] **T199** · `pv.p1.admin` — Settings › Funções  
+- [ ] **T199** · `pv.p1.admin` · _F01_ — Settings › Funções  
   _Esperado:_ Lista com as funções padrão, valor hora padrão, custo da hora (+encargos), nº de funcionários e de itens; 'Nova função' com nome e valor inicial opcional; nome repetido é recusado
-- [ ] **T200** · `pv.p1.admin` — Settings › Funções › uma função › Novo valor hora  
+- [ ] **T200** · `pv.p1.admin` · _F01_ — Settings › Funções › uma função › Novo valor hora  
   _Esperado:_ Valor, data e motivo obrigatórios; o histórico mostra vigente/futuro e a variação; mesma data é recusada; inativar tira das listas e mantém o histórico
-- [ ] **T201** · `pv.p1.admin` — Takeoff › Itens › item de mão de obra › Função  
+- [ ] **T201** · `pv.p1.admin` · _F01_ — Takeoff › Itens › item de mão de obra › Função  
   _Esperado:_ O campo Função só aparece na categoria Mão de obra; com função, a aba Preços mostra o preço vindo da função (valor + encargos) e não tem 'Novo preço'; sem função, o preço digitado continua valendo
-- [ ] **T202** · `pv.p1.admin` — Conta real (depois da migração 0023): Settings › Funções e item com função  
+- [ ] **T202** · `pv.p1.admin` · _F01_ — Conta real (depois da migração 0023): Settings › Funções e item com função  
   _Esperado:_ As dez funções padrão aparecem; valor registrado grava em funcao_valores; o item salvo com função grava itens.funcao_id e o Takeoff mostra o preço da função
 
 ## 21 Início da obra (migração 0025)
 
-- [ ] **T203** · `pv.p1.admin` — Takeoff › um projeto pronto › Visão geral › cartão Obra (antes de liberar)  
+- [ ] **T203** · `pv.p1.admin` · _F02_ — Takeoff › um projeto pronto › Visão geral › cartão Obra (antes de liberar)  
   _Esperado:_ O campo "Início da obra" vem com a data de hoje e aceita outra data; ao clicar em Liberar para obra, a obra começa na data escolhida (projetos.inicio_obra e obras.inicio), e não na da primeira tarefa
-- [ ] **T204** · `pv.p1.admin` — Takeoff › projeto já liberado › Visão geral › Início da obra  
+- [ ] **T204** · `pv.p1.admin` · _F02_ — Takeoff › projeto já liberado › Visão geral › Início da obra  
   _Esperado:_ Mudar a data: a obra acompanha (aviso "Início da obra atualizado.") e o diário passa a ser cobrado da nova data; a data não pode ser absurda (antes de 2020 é recusada)
-- [ ] **T205** · `pv.p1.encarregado (ou a pessoa de campo)` — Daily › obra de um projeto liberado com tarefa no passado  
+- [ ] **T205** · `pv.p1.encarregado (ou a pessoa de campo)` · _F03_ — Daily › obra de um projeto liberado com tarefa no passado  
   _Esperado:_ Só o RDO de hoje aparece pendente: não há "RDO atrasado" de dias anteriores à liberação. Conta real depois da migração 0025
 
 ## 22 Empresa nova e itens com função
 
-- [ ] **T206** · `pv.p1.admin (ou uma conta nova)` — Entrar pela primeira vez sem empresa › Sua empresa  
+- [ ] **T206** · `pv.p1.admin (ou uma conta nova)` · _F01_ — Entrar pela primeira vez sem empresa › Sua empresa  
   _Esperado:_ A pessoa sem empresa cai em "Sua empresa" com o nome já preenchido; ao criar, aparece "Empresa criada. Você é o Administrador." e a área da conta mostra a empresa. Roteiro F01, passos 1 e 2
-- [ ] **T207** · `pv.p1.admin` — Takeoff › Itens › Novo item › categoria Mão de obra › Função  
+- [ ] **T207** · `pv.p1.admin` · _F01_ — Takeoff › Itens › Novo item › categoria Mão de obra › Função  
   _Esperado:_ Ao escolher uma função, o campo "Preço inicial" some (o preço da hora vem da função) e nenhum preço digitado é gravado no item; sem função, o campo de preço aparece. Roteiro F01, passo 7
