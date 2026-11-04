@@ -31,4 +31,7 @@ select migracao, 'tabela ' || tabela
 union all
 select migracao, 'gatilho ' || gatilho || ' em ' || tabela
   from gatilhos g where not exists (select 1 from pg_trigger t join pg_class k on k.oid = t.tgrelid join pg_namespace n on n.oid = k.relnamespace where not t.tgisinternal and n.nspname = 'public' and k.relname = g.tabela and t.tgname = g.gatilho)
+union all
+select '0019', 'função fechar_concorrencia ainda exige a obra (a 0019 não foi aplicada)'
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'fechar_concorrencia' and p.prosrc like '%Crie a obra a partir do projeto%'
 order by 1, 2;
