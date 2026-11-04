@@ -15,7 +15,7 @@ Em vez de testar tela por tela, de forma solta, cada rodada de teste segue um **
 | F02 | Projeto do zero até "Liberar para obra": plantas, escala, medição, materiais, cronograma, proposta, início da obra | `F02-projeto-ate-liberar.md` | `tests/fluxo-02-projeto-ate-liberar.test.mjs` | conta real |
 | F03 | Obra: diário com tarefa, aprovação, % feito no Gantt, Início | `F03-obra-diario-gantt.md` | `tests/fluxo-03-obra-diario-gantt.test.mjs` | conta real |
 | F04 | Concorrência: convite, proposta da prestadora, fechamento, vínculo das obras, diário entre empresas | `F04-concorrencia.md` | `tests/fluxo-04-concorrencia.test.mjs` (as mesmas verificações de `concorrencias-oficial`, em passos) | conta real; no `--real` precisa da função `convite-publico` publicada |
-| F05 | Settings: usuários, perfis, listas, preços e margens, auditoria | (a escrever) | (a escrever) | conta real |
+| F05 | Settings: convite, perfis de acesso, empresa, isolamento entre empresas, auditoria | `F05-settings.md` | `tests/fluxo-05-settings.test.mjs` | conta real; no `--real` a Gabi entra pela tela de login |
 
 ## Como rodar
 "Conta real" tem dois ambientes, com o mesmo teste e o mesmo roteiro:
