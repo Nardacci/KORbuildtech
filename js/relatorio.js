@@ -108,7 +108,8 @@ export function htmlRelatorio(r, obra, { verificado } = {}) {
       (r.atividades.length ? '<ol class="rel-lista">' + r.atividades.map((a) =>
         '<li><p>' + esc(a.descricao) + '</p><small>' + (a.local ? esc(a.local) + ' · ' : '') + SITUACOES[a.situacao] +
           (a.cronoEtapaId && etapaDoCronograma(r.obraId, a.cronoEtapaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(etapaDoCronograma(r.obraId, a.cronoEtapaId).nome) }) + (a.cronoPct !== '' && a.cronoPct != null ? ' → ' + esc(a.cronoPct) + '%' : '') : '') +
-          (a.tarefaId && tarefaDe(obra, a.tarefaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(tarefaDe(obra, a.tarefaId).nome) }) + (a.tarefaPct !== '' && a.tarefaPct != null ? ' → ' + esc(a.tarefaPct) + '%' : '') : '') + '</small></li>').join('') + '</ol>'
+          (a.tarefaId && tarefaDe(obra, a.tarefaId) ? ' · ' + tr('Cronograma: {etapa}', { etapa: esc(tarefaDe(obra, a.tarefaId).nome) }) + (a.tarefaPct !== '' && a.tarefaPct != null ? ' → ' + esc(a.tarefaPct) + '%' : '') : '') +
+          (a.tarefaId && Number(a.horas) > 0 ? ' · ' + esc(String(Number(a.horas))) + ' h' : '') + '</small></li>').join('') + '</ol>'
         : ('<p class="mudo">' + tr('Nenhuma atividade registrada.') + '</p>')) +
     '</section>' +
 

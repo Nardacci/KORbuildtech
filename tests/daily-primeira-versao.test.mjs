@@ -138,6 +138,8 @@ verificar(opcoes.length === 3 && /Demolição \(0%\)/.test(opcoes[1]) && /Pintur
 await p.selectOption('#att-0', { label: opcoes[1] });
 await p.waitForSelector('#atq-0');
 await p.fill('#atq-0', '60'); await p.locator('#atq-0').blur();
+verificar(await p.locator('#ath-0').count() === 1, 'a atividade ligada a uma tarefa pede as horas gastas nela');
+await p.fill('#ath-0', '24'); await p.locator('#ath-0').blur();
 await p.waitForTimeout(400);
 await p.click('[data-acao="enviar"]');
 await p.waitForSelector('dialog button:has-text("Enviar sem fotos")'); await p.click('dialog button:has-text("Enviar sem fotos")');
@@ -155,6 +157,7 @@ verificar(/recebeu o andamento de 1 etapa/.test(await p.locator('body').innerTex
 await ir('#/measure/gantt/' + id, '.mz-gantt');
 const pcts = await p.locator('.mz-gantt .mz-g-pct').allInnerTexts();
 verificar(pcts.length === 2 && pcts[0] === '60%' && pcts[1] === '0%', 'no Gantt, Demolição está em 60% (veio do diário aprovado) e Pintura em 0%', pcts);
+verificar((await p.locator('#hg-apontadas').innerText()).includes('24') && await p.locator('#horas-gantt tr[data-tarefa]').count() === 2, 'o Gantt soma as 24 horas apontadas no diário aprovado, por tarefa', await p.locator('#hg-apontadas').innerText().catch(() => 'sem bloco'));
 await ir('#/measure/projeto/' + id + '/schedule', '[data-pj-tarefa="pct"]');
 verificar(await p.locator('[data-pj-tarefa="pct"]').first().inputValue() === '60', 'na aba Cronograma o % feito da tarefa é 60', await p.locator('[data-pj-tarefa="pct"]').first().inputValue());
 await ir('#/measure/projeto/' + id, '.mz-liberar');

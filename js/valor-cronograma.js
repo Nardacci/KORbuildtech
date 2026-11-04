@@ -9,6 +9,7 @@ import { esc, hoje, dataCurta, somarDias, diasEntre } from './util.js';
 import { tr, tn } from './i18n.js';
 import { dinheiro } from './crew.js';
 import { quantidadesDoProjeto } from './measure.js';
+import { estado } from './armazem.js';
 import { custoDe } from './precos.js';
 import { duracaoDe, fimDaTarefa, pctFeito, pctPrevisto } from './andamento.js';
 
@@ -43,6 +44,38 @@ export function valorDasTarefas(p, iso = hoje()) {
   const calcular = (gs) => ({ ...custoDe(gs, iso), horas: r2(gs.filter((g) => g.item.categoria === 'mao-de-obra').reduce((s, g) => s + g.total, 0)), temValor: gs.length > 0 });
   const porTarefa = new Map(tarefas.map((t) => [t.id, calcular(grupos.get(t.id))]));
   return { porTarefa, soltos: calcular(soltos), total: calcular(porItem.map((g) => ({ item: g.item, total: g.total }))) };
+}
+
+/* Horas apontadas nos diários (RDO) aprovados da obra do projeto: cada atividade que aponta uma tarefa e informa as horas.
+ * Fica tudo derivado dos diários (nada é copiado para a tarefa): Map(tarefaId → { horas, diarios }). */
+export function horasApontadas(p) {
+  const r = new Map();
+  if (!p || !p.obraId) return r;
+  for (const d of (estado().rdos || [])) {
+    if (d.obraId !== p.obraId || d.status !== 'aprovado') continue;
+    const vistos = new Set();
+    for (const a of d.atividades || []) {
+      const h = Number(String(a.horas == null ? '' : a.horas).replace(',', '.'));
+      if (!a.tarefaId || !(h > 0)) continue;
+      const g = r.get(a.tarefaId) || { horas: 0, diarios: 0 };
+      g.horas = r2(g.horas + h);
+      if (!vistos.has(a.tarefaId)) { g.diarios++; vistos.add(a.tarefaId); }
+      r.set(a.tarefaId, g);
+    }
+  }
+  return r;
+}
+
+/* Conciliação das horas de uma tarefa: orçadas (Takeoff) × apontadas (diários aprovados).
+ *   consumo = apontadas ÷ orçadas (%) · projecao = apontadas ÷ % feito (só com 10% ou mais feito) · custoHoras = apontadas × custo médio da hora da tarefa
+ *   situacao: 'sem-horas' (nada orçado ou nada apontado) · 'ok' · 'acima' (consumiu mais do que avançou, com folga de 10 pontos) · 'estourou' (apontou mais que o orçado) */
+export function conciliarHoras(t, info, ap) {
+  const orcadas = info && info.temValor ? info.horas : 0, horas = ap ? ap.horas : 0, feito = pctFeito(t);
+  const custoHora = orcadas > 0 ? info.maoDeObra / orcadas : 0;
+  const r = { orcadas, apontadas: horas, diarios: ap ? ap.diarios : 0, consumo: orcadas > 0 ? Math.round(horas * 1000 / orcadas) / 10 : null,
+    projecao: horas > 0 && feito >= 10 ? r2(horas * 100 / feito) : null, custoHoras: r2(horas * custoHora), situacao: 'sem-horas' };
+  if (orcadas > 0 && horas > 0) r.situacao = horas > orcadas ? 'estourou' : r.consumo > feito + 10 ? 'acima' : 'ok';
+  return r;
 }
 
 /* Curva S na base escolhida. pontos: [{ d, plan }] (acumulado previsto por dia). feitoHoje = Σ valor × % feito. */
@@ -116,4 +149,28 @@ export function htmlValorDoGantt(p, base = baseEscolhida()) {
     '<div class="tabela-rolagem"><table class="tabela tabela-valor-gantt"><thead><tr><th>' + tr('Tarefa') + '</th><th class="num">' + tr('Horas') + '</th><th class="num">' + tr('Material') + '</th><th class="num">' + tr('Mão de obra') + '</th><th class="num">' + NOME_BASE()[base] + '</th><th class="num">' + tr('% do total') + '</th><th class="num">' + tr('Feito') + '</th></tr></thead><tbody>' + linhas + '</tbody></table></div>' +
     (solto > 0 ? '<p class="mudo pequeno" id="vg-soltos">' + tr('Fora do cronograma: {v} de etapas medidas que nenhuma tarefa recebeu. Gere as tarefas a partir das etapas para incluí-las.', { v: dinheiro(solto) }) + '</p>' : '') +
     (semPreco.length ? '<p class="mudo pequeno" id="vg-sem-preco">' + tn(semPreco.length, 'Item sem preço (fica fora dos valores): {itens}.', 'Itens sem preço (ficam fora dos valores): {itens}.', { itens: semPreco.join(', ') }) + '</p>' : '') + '</section>';
+}
+
+/* Horas orçadas × apontadas nos diários, por tarefa (fatia 2). Só aparece quando o projeto tem horas orçadas ou apontadas. */
+export function htmlHorasDoGantt(p) {
+  const tarefas = ((p.cronograma || {}).tarefas || []).filter((t) => t.inicio);
+  if (!tarefas.length) return '';
+  const v = valorDasTarefas(p, hoje()), ap = horasApontadas(p);
+  const linhas = tarefas.map((t) => ({ t, c: conciliarHoras(t, v.porTarefa.get(t.id), ap.get(t.id)) }));
+  if (!linhas.some((x) => x.c.orcadas > 0 || x.c.apontadas > 0)) return '';
+  const h = (n) => (n == null ? '—' : n.toLocaleString(document.documentElement.lang || 'en') + ' h');
+  const ROT = { 'sem-horas': ['', ''], ok: [tr('Dentro do orçado'), 'etiqueta-verde'], acima: [tr('Horas acima do avanço'), 'etiqueta-ambar'], estourou: [tr('Passou do orçado'), 'etiqueta-alerta'] };
+  const corpo = linhas.map(({ t, c }) => '<tr data-tarefa="' + esc(t.id) + '"><td>' + esc(t.nome) + '</td><td class="num">' + (c.orcadas > 0 ? h(c.orcadas) : '—') + '</td>' +
+    '<td class="num">' + (c.apontadas > 0 ? '<b>' + h(c.apontadas) + '</b><span class="mudo pequeno bloco">' + tn(c.diarios, '{n} diário', '{n} diários') + '</span>' : '—') + '</td>' +
+    '<td class="num">' + (c.consumo == null || !c.apontadas ? '—' : c.consumo + '%') + ' <span class="mudo pequeno">/ ' + pctFeito(t) + '% ' + tr('feito') + '</span></td>' +
+    '<td class="num">' + h(c.projecao) + '</td><td class="num">' + (c.apontadas > 0 && c.custoHoras > 0 ? dinheiro(c.custoHoras) : '—') + '</td>' +
+    '<td>' + (ROT[c.situacao][0] ? '<span class="etiqueta ' + ROT[c.situacao][1] + '">' + ROT[c.situacao][0] + '</span>' : '') + '</td></tr>').join('');
+  const orc = linhas.reduce((s, x) => s + x.c.orcadas, 0), apo = linhas.reduce((s, x) => s + x.c.apontadas, 0), custo = linhas.reduce((s, x) => s + x.c.custoHoras, 0);
+  const orcDasComHoras = linhas.filter((x) => x.c.apontadas > 0).reduce((s, x) => s + x.c.orcadas, 0);
+  return '<section class="cartao valor-gantt" id="horas-gantt"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Horas: orçado e apontado') + '</h2>' +
+    '<p class="mudo pequeno">' + tr('Orçadas = horas de mão de obra medidas no Takeoff. Apontadas = horas informadas nas atividades dos diários (RDO) aprovados. A projeção divide as horas apontadas pelo % feito (a partir de 10%).') + '</p></div></div>' +
+    '<div class="valor-resumo"><div><span>' + tr('Horas orçadas') + '</span><b id="hg-orcadas">' + h(orc) + '</b></div><div><span>' + tr('Horas apontadas') + '</span><b id="hg-apontadas">' + h(apo) + '</b></div>' +
+    '<div><span>' + tr('Orçadas das tarefas com apontamento') + '</span><b id="hg-orc-ap">' + h(orcDasComHoras) + '</b></div><div><span>' + tr('Custo das horas apontadas') + '</span><b id="hg-custo">' + dinheiro(custo) + '</b></div></div>' +
+    '<div class="tabela-rolagem"><table class="tabela tabela-horas-gantt"><thead><tr><th>' + tr('Tarefa') + '</th><th class="num">' + tr('Orçadas') + '</th><th class="num">' + tr('Apontadas') + '</th><th class="num">' + tr('Consumo / avanço') + '</th><th class="num">' + tr('Projeção') + '</th><th class="num">' + tr('Custo das horas') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' + corpo + '</tbody></table></div>' +
+    (apo === 0 ? '<p class="mudo pequeno" id="hg-vazio">' + tr('Nenhuma hora apontada ainda: no diário, em cada atividade ligada a uma tarefa, informe as horas gastas.') + '</p>' : '') + '</section>';
 }

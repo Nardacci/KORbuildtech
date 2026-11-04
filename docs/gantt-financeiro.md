@@ -23,3 +23,12 @@ Página **Gantt** (`#/measure/gantt/<projeto>`), abaixo do gráfico: resumo, cur
 
 ## Teste
 `tests/gantt-valor.test.mjs` (conta de demonstração): valor da tarefa contra a conta à parte, etapa sem tarefa, total, curva que só sobe, feito = valor × %, troca de base e base guardada.
+
+## Fatia 2: horas orçadas × apontadas nos diários
+- **No diário (RDO):** a atividade que aponta uma "Tarefa do cronograma" ganhou o campo **Horas gastas nesta tarefa hoje (todas as pessoas somadas)**. Vai no mesmo JSON do diário (nenhuma migração) e aparece no relatório da atividade (`· 24 h`).
+- **Fonte única:** as horas apontadas são lidas dos diários **aprovados** da obra do projeto (`horasApontadas`), nunca copiadas para a tarefa. Diário enviado e ainda não aprovado não conta; atividade sem tarefa também não.
+- **Horas orçadas:** as horas dos itens de mão de obra medidos no Takeoff para a etapa da tarefa (fatia 1).
+- **Bloco "Horas: orçado e apontado"** na página do Gantt (só aparece com horas orçadas ou apontadas): por tarefa, orçadas, apontadas (e quantos diários), consumo ÷ % feito, projeção e custo das horas (horas apontadas × custo médio da hora da tarefa, que já inclui os encargos da função).
+- **Situação:** *Dentro do orçado* · *Horas acima do avanço* (consumo maior que o % feito + 10 pontos) · *Passou do orçado* (apontou mais do que o orçado). A projeção (apontadas ÷ % feito) só aparece com 10% ou mais feito.
+- **Teste:** `tests/gantt-horas.test.mjs` (Takeoff + diários aprovados e enviados, vírgula decimal, projeção, custo, os dois alertas) e, em `tests/daily-primeira-versao.test.mjs`, o ciclo completo: digitar as horas no diário, aprovar e ver no Gantt.
+- **Ainda não faz:** horas por função (o custo usa a média da tarefa) e o custo real do Crew (fatia 3).

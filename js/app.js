@@ -795,6 +795,8 @@ function campoTarefa(tarefas, a, i) {
       abertas.map((x) => '<option value="' + x.id + '"' + (x.id === a.tarefaId ? ' selected' : '') + '>' + esc(x.nome) + ' (' + (x.pct || 0) + '%)</option>').join('') + '</select>' +
     (t ? '<label class="rotulo-pequeno" for="atq-' + i + '">' + tr('% feito da tarefa (hoje: {n}%)', { n: t.pct || 0 }) + '</label>' +
       '<input type="number" min="0" max="100" step="5" inputmode="numeric" id="atq-' + i + '" data-bind="atividades.' + i + '.tarefaPct" value="' + esc(a.tarefaPct == null ? '' : a.tarefaPct) + '" placeholder="' + (t.pct || 0) + '">' : '') +
+    (t ? '<label class="rotulo-pequeno" for="ath-' + i + '">' + tr('Horas gastas nesta tarefa hoje (todas as pessoas somadas)') + '</label>' +
+      '<input type="number" min="0" max="999" step="0.5" inputmode="decimal" id="ath-' + i + '" data-bind="atividades.' + i + '.horas" value="' + esc(a.horas == null ? '' : a.horas) + '" placeholder="' + esc(tr('Ex.: 24')) + '">' : '') +
   '</div>';
 }
 
