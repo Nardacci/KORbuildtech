@@ -7,7 +7,7 @@
 
 import { esc, hoje, dataCurta, somarDias, diasEntre } from './util.js';
 import { tr, tn } from './i18n.js';
-import { dinheiro } from './crew.js';
+import { dinheiro, lancamentosDaSemana, inicioDaSemana } from './crew.js';
 import { quantidadesDoProjeto } from './measure.js';
 import { estado } from './armazem.js';
 import { custoDe } from './precos.js';
@@ -173,4 +173,63 @@ export function htmlHorasDoGantt(p) {
     '<div><span>' + tr('Orçadas das tarefas com apontamento') + '</span><b id="hg-orc-ap">' + h(orcDasComHoras) + '</b></div><div><span>' + tr('Custo das horas apontadas') + '</span><b id="hg-custo">' + dinheiro(custo) + '</b></div></div>' +
     '<div class="tabela-rolagem"><table class="tabela tabela-horas-gantt"><thead><tr><th>' + tr('Tarefa') + '</th><th class="num">' + tr('Orçadas') + '</th><th class="num">' + tr('Apontadas') + '</th><th class="num">' + tr('Consumo / avanço') + '</th><th class="num">' + tr('Projeção') + '</th><th class="num">' + tr('Custo das horas') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' + corpo + '</tbody></table></div>' +
     (apo === 0 ? '<p class="mudo pequeno" id="hg-vazio">' + tr('Nenhuma hora apontada ainda: no diário, em cada atividade ligada a uma tarefa, informe as horas gastas.') + '</p>' : '') + '</section>';
+}
+
+/* ---------- Fatia 3: custo real do ponto (Crew) contra o orçado ---------- */
+
+/* O custo real da mão de obra do ponto (KORbuild Crew) na obra do projeto, por tarefa. A ligação é pelo nome da etapa que a pessoa
+ * escolheu ao bater o ponto (a etapa da obra tem o nome da tarefa). Custo = salário base + adicional de hora extra + encargos, como no Crew.
+ * Devolve { porTarefa: Map(id → { min, horas, custo }), fora: { min, horas, custo }, temPonto } — "fora" = ponto na obra em etapa que nenhuma tarefa tem. */
+export function custoRealDoPonto(p, agora = Date.now()) {
+  const vazio = { porTarefa: new Map(), fora: { min: 0, horas: 0, custo: 0 }, temPonto: false };
+  const c = estado().crew;
+  if (!p || !p.obraId || !c || !(estado().funcionarios || []).length) return vazio;
+  const tarefas = ((p.cronograma || {}).tarefas || []).filter((t) => t.inicio);
+  const dono = new Map(tarefas.map((t) => [chave(t.nome), t]));
+  const r = { porTarefa: new Map(tarefas.map((t) => [t.id, { min: 0, horas: 0, custo: 0 }])), fora: { min: 0, horas: 0, custo: 0 }, temPonto: false };
+  const ini = tarefas.map((t) => t.inicio).sort()[0] || hoje();
+  let n = 0;
+  for (let sem = inicioDaSemana(ini); sem <= hoje() && n < 120; sem = somarDias(sem, 7), n++) {
+    for (const l of lancamentosDaSemana(sem, agora)) {
+      if (l.obraId !== p.obraId) continue;
+      const t = dono.get(chave(l.etapa)), alvo = t ? r.porTarefa.get(t.id) : r.fora;
+      alvo.min += l.min; alvo.custo += l.custo; r.temPonto = true;
+    }
+  }
+  for (const g of [...r.porTarefa.values(), r.fora]) { g.horas = r2(g.min / 60); g.custo = r2(g.custo); }
+  return r;
+}
+
+/* Real × orçado de uma tarefa (custo e horas). O orçado é o custo da mão de obra do Takeoff (sem overhead nem lucro):
+ * é com ele que o custo do ponto se compara. Projeção = custo real ÷ % feito (a partir de 10%). */
+export function realContraOrcado(t, info, real) {
+  const orcado = info && info.temValor ? info.maoDeObra : 0, custo = real ? real.custo : 0, feito = pctFeito(t);
+  const r = { orcado, custo, horas: real ? real.horas : 0, orcadas: info && info.temValor ? info.horas : 0, variacao: orcado > 0 && custo > 0 ? r2(custo - orcado) : null,
+    ganho: r2(orcado * feito / 100), projecao: custo > 0 && feito >= 10 ? r2(custo * 100 / feito) : null, situacao: 'sem-ponto' };
+  if (custo > 0 && orcado > 0) r.situacao = custo > orcado ? 'estourou' : custo > r.ganho * 1.1 + 0.005 ? 'acima' : 'ok';
+  return r;
+}
+
+export function htmlCustoRealDoGantt(p) {
+  const tarefas = ((p.cronograma || {}).tarefas || []).filter((t) => t.inicio);
+  if (!tarefas.length) return '';
+  const real = custoRealDoPonto(p);
+  if (!real.temPonto) return '';
+  const v = valorDasTarefas(p, hoje());
+  const linhas = tarefas.map((t) => ({ t, c: realContraOrcado(t, v.porTarefa.get(t.id), real.porTarefa.get(t.id)) }));
+  const ROT = { 'sem-ponto': ['', ''], ok: [tr('Dentro do orçado'), 'etiqueta-verde'], acima: [tr('Custo acima do avanço'), 'etiqueta-ambar'], estourou: [tr('Passou do orçado'), 'etiqueta-alerta'] };
+  const h = (n) => n.toLocaleString(document.documentElement.lang || 'en') + ' h';
+  const corpo = linhas.map(({ t, c }) => '<tr data-tarefa="' + esc(t.id) + '"><td>' + esc(t.nome) + '</td>' +
+    '<td class="num">' + (c.orcado > 0 ? dinheiro(c.orcado) : '—') + '</td><td class="num">' + (c.custo > 0 ? '<b>' + dinheiro(c.custo) + '</b><span class="mudo pequeno bloco">' + h(c.horas) + '</span>' : '—') + '</td>' +
+    '<td class="num">' + (c.variacao == null ? '—' : (c.variacao > 0 ? '+' : c.variacao < 0 ? '−' : '') + dinheiro(Math.abs(c.variacao))) + '</td>' +
+    '<td class="num">' + (c.ganho > 0 ? dinheiro(c.ganho) : '—') + '</td><td class="num">' + (c.projecao == null ? '—' : dinheiro(c.projecao)) + '</td>' +
+    '<td>' + (ROT[c.situacao][0] ? '<span class="etiqueta ' + ROT[c.situacao][1] + '">' + ROT[c.situacao][0] + '</span>' : '') + '</td></tr>').join('');
+  const orc = linhas.reduce((s, x) => s + x.c.orcado, 0), gasto = linhas.reduce((s, x) => s + x.c.custo, 0) + real.fora.custo, ganho = linhas.reduce((s, x) => s + x.c.ganho, 0);
+  const proj = linhas.reduce((s, x) => s + (x.c.projecao != null ? x.c.projecao : Math.max(x.c.custo, x.c.orcado)), 0);
+  return '<section class="cartao valor-gantt" id="real-gantt"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Custo real do ponto × orçado') + '</h2>' +
+    '<p class="mudo pequeno">' + tr('Real = custo do ponto (KORbuild Crew) na obra, por etapa, com encargos e hora extra. Orçado = mão de obra do Takeoff, a custo (sem overhead nem lucro). A etapa do ponto precisa ter o nome da tarefa.') + '</p></div></div>' +
+    '<div class="valor-resumo"><div><span>' + tr('Mão de obra orçada') + '</span><b id="rg-orcado">' + dinheiro(orc) + '</b></div><div><span>' + tr('Custo real até hoje') + '</span><b id="rg-real">' + dinheiro(gasto) + '</b></div>' +
+    '<div><span>' + tr('Orçado × % feito') + '</span><b id="rg-ganho">' + dinheiro(ganho) + '</b></div><div><span>' + tr('Projeção ao término') + '</span><b id="rg-proj" class="' + (proj > orc + 0.5 ? 'neg' : '') + '">' + dinheiro(proj) + '</b></div></div>' +
+    '<div class="tabela-rolagem"><table class="tabela tabela-real-gantt"><thead><tr><th>' + tr('Tarefa') + '</th><th class="num">' + tr('Orçado') + '</th><th class="num">' + tr('Real') + '</th><th class="num">' + tr('Real − orçado') + '</th><th class="num">' + tr('Orçado × % feito') + '</th><th class="num">' + tr('Projeção') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>' + corpo + '</tbody></table></div>' +
+    (real.fora.custo > 0 ? '<p class="mudo pequeno" id="rg-fora">' + tr('Ponto sem tarefa: {v} ({h}) em etapas que nenhuma tarefa tem (ex.: deslocamento, limpeza). Entra no custo real, mas não nas tarefas.', { v: dinheiro(real.fora.custo), h: h(real.fora.horas) }) + '</p>' : '') + '</section>';
 }
