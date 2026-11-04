@@ -72,6 +72,10 @@ try {
     await edu.p.fill('#atq-0', '60'); await edu.p.locator('#atq-0').blur();
     await edu.p.waitForTimeout(400);
     verificar(await edu.p.inputValue('#atq-0') === '60', 'o 60% ficou no campo');
+    await edu.p.waitForSelector('#ath-0');
+    await edu.p.fill('#ath-0', '24'); await edu.p.locator('#ath-0').blur();
+    await edu.p.waitForTimeout(400);
+    verificar(await edu.p.inputValue('#ath-0') === '24', 'as 24 horas gastas na tarefa ficaram no campo');
   });
 
   await fluxo.passo(5, async () => {
@@ -83,6 +87,7 @@ try {
     const a = ((r && r.conteudo && r.conteudo.atividades) || [])[0] || {};
     verificar(r && r.numero === 1, 'é o RDO nº 1', r && r.numero);
     verificar(a.tarefaId === 'tf-2' && Number(a.tarefaPct) === 60, 'a atividade guardou a tarefa tf-2 e o 60%', a);
+    verificar(Number(a.horas) === 24, 'a atividade guardou as 24 horas gastas', a);
   });
 
   await fluxo.passo(6, async () => {
@@ -102,6 +107,7 @@ try {
     await fab.p.waitForSelector('[data-acao="aprovar"]', { timeout: 20000 });
     const t = await texto(fab.p, 'main');
     verificar(/Cronograma: Instalação de drywall → 60%/.test(t), 'o relatório mostra "Cronograma: Instalação de drywall → 60%"', t.slice(0, 500));
+    verificar(/→ 60% · 24 h/.test(t), 'o relatório mostra as horas gastas na atividade ("· 24 h")', t.slice(0, 500));
     verificar(await fab.p.locator('[data-acao="aprovar"]').count() === 1 && await fab.p.locator('[data-acao="pedir-ajustes"]').count() === 1, 'há "Aprovar e lacrar" e "Pedir ajustes"');
   });
 
@@ -127,6 +133,12 @@ try {
     verificar(por('Instalação de drywall').pct === '60%', '"Instalação de drywall" está em 60%', linhas);
     verificar(por('Demolição e remoção').pct === '0%' && por('Demolição e remoção').atrasada === true, '"Demolição e remoção" está em 0% e atrasada', por('Demolição e remoção'));
     verificar(await fab.p.locator('.gantt-rodape .mz-g-legenda, .gantt-rodape').count() >= 1, 'a legenda fica no rodapé do gráfico');
+    // fatias 2 e 3 do Gantt financeiro (docs/gantt-financeiro.md): horas do diário aprovado; sem medição não há valor nem horas orçadas; sem Crew não há custo real
+    await fab.p.waitForSelector('#horas-gantt', { timeout: 20000 });
+    verificar((await texto(fab.p, '#hg-apontadas')).includes('24'), 'o Gantt soma as 24 horas apontadas no diário aprovado', await texto(fab.p, '#hg-apontadas'));
+    verificar(await fab.p.locator('#horas-gantt tr[data-tarefa="tf-2"]').count() === 1 && (await texto(fab.p, '#horas-gantt tr[data-tarefa="tf-2"]')).includes('24'), 'a linha de "Instalação de drywall" mostra as 24 horas e o diário', await texto(fab.p, '#horas-gantt tr[data-tarefa="tf-2"]'));
+    verificar((await texto(fab.p, '.valor-gantt .vazio')).includes('Nenhum valor ainda'), 'sem medição no Takeoff o projeto ainda não tem valor por tarefa (o aviso explica o que falta)');
+    verificar(await fab.p.locator('#real-gantt').count() === 0, 'sem ponto do Crew não aparece o custo real');
   });
 
   await fluxo.passo(10, async () => {

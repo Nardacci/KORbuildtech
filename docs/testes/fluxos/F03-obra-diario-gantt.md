@@ -7,19 +7,19 @@
 
 **Pré-condições (feitas pelo teste, `tests/_fluxo-dados.mjs`, apagadas no fim):** a empresa dos fluxos com Fábio Fluxo (Administrador) e Eduardo Encarregado (perfil Encarregado: ponto e diário); projeto **"Reforma Mitchell"** já liberado para obra, com a obra criada pelo banco, começando hoje (o início da obra é uma data própria, `inicio_obra`, e não a da primeira tarefa) e três tarefas no cronograma: **"Demolição e remoção"** (começou há 10 dias, 3 dias, 0% feito: passou do fim, está atrasada), **"Instalação de drywall"** (começa hoje, 5 dias, 20% feito) e **"Pintura"** (daqui a 6 dias, 4 dias, prestadora, 0%).
 
-**Dados fixos:** atividade "Instalação de drywall na garagem", tarefa "Instalação de drywall" com 60% feito.
+**Dados fixos:** atividade "Instalação de drywall na garagem", tarefa "Instalação de drywall" com 60% feito e **24 horas** gastas na tarefa no dia.
 
 | # | Quem | Onde | O que faz | Esperado |
 |---|---|---|---|---|
 | 1 | Eduardo (encarregado, celular) | Daily › Hoje | Abrir o Daily | Entra direto no "Hoje" e "Reforma Mitchell" aparece em "Seus projetos"; sem botão de nova obra |
 | 2 | Eduardo (encarregado, celular) | Daily › Hoje › Reforma Mitchell | Abrir o projeto | "Etapa atual: Instalação de drywall" (a Demolição passou do fim e a Pintura ainda não começou); botão "Nova RDO" e nenhum RDO atrasado de dias anteriores à liberação |
 | 3 | Eduardo (encarregado, celular) | Nova RDO › Clima, Equipe e Atividades | Marcar o clima da manhã e da tarde, uma função na equipe e escrever a atividade "Instalação de drywall na garagem" | As seções ficam marcadas como prontas |
-| 4 | Eduardo (encarregado, celular) | Atividade › Tarefa do cronograma | Escolher "Instalação de drywall" e informar 60% | A lista oferece as 3 tarefas com o % de hoje; ao escolher aparece "% feito da tarefa (hoje: 20%)" |
-| 5 | Eduardo (encarregado, celular) | Enviar para aprovação | Enviar sem fotos | No banco: diário enviado, número 1, com a tarefa e o 60% guardados na atividade |
+| 4 | Eduardo (encarregado, celular) | Atividade › Tarefa do cronograma | Escolher "Instalação de drywall", informar 60% e as 24 horas gastas | A lista oferece as 3 tarefas com o % de hoje; ao escolher aparece "% feito da tarefa (hoje: 20%)" e o campo "Horas gastas nesta tarefa hoje" |
+| 5 | Eduardo (encarregado, celular) | Enviar para aprovação | Enviar sem fotos | No banco: diário enviado, número 1, com a tarefa, o 60% e as 24 horas guardados na atividade |
 | 6 | Fábio (admin) | Daily › Painel | Abrir o painel | "Aguardando aprovação" com "RDO nº 1 · Reforma Mitchell"; o sininho avisa que o RDO aguarda aprovação |
-| 7 | Fábio (admin) | Daily › Painel › Revisar | Abrir o diário | O relatório mostra "Cronograma: Instalação de drywall → 60%" e os botões "Aprovar e lacrar" e "Pedir ajustes" |
+| 7 | Fábio (admin) | Daily › Painel › Revisar | Abrir o diário | O relatório mostra "Cronograma: Instalação de drywall → 60% · 24 h" e os botões "Aprovar e lacrar" e "Pedir ajustes" |
 | 8 | Fábio (admin) | Aprovar e lacrar | Confirmar | Aviso de que o cronograma recebeu o andamento de 1 etapa. No banco: aprovado com código XXXX-XXXX-XXXX; a tarefa passa a 60% com o avanço guardado (antes 20, depois 60, RDO 1, por Fábio Fluxo) |
-| 9 | Fábio (admin) | Takeoff › Gantt | Abrir o Gantt do projeto | "Instalação de drywall" em 60%; "Demolição e remoção" em 0% e atrasada; a legenda fica no rodapé do gráfico |
+| 9 | Fábio (admin) | Takeoff › Gantt | Abrir o Gantt do projeto | "Instalação de drywall" em 60%; "Demolição e remoção" em 0% e atrasada; a legenda fica no rodapé do gráfico. Abaixo, o bloco "Horas: orçado e apontado" soma as 24 horas do diário aprovado (a linha de "Instalação de drywall" mostra as 24 h e 1 diário); sem medição no Takeoff ainda não há valor por tarefa (o aviso explica) e, sem ponto do Crew, não aparece o custo real |
 | 10 | Fábio (admin) | Projeto › Cronograma e Visão geral | Abrir | A tabela mostra 60 de % feito na tarefa; "Voltar para análise" não aparece mais, porque o projeto já tem diário |
 | 11 | Fábio (admin) | Início | Abrir | "Andamento dos projetos" mostra "Reforma Mitchell" atrasada. (O aviso "Tarefa atrasada" no sininho só existe no protótipo; na conta real o sininho traz só avisos do servidor. Pendência de decisão.) |
 | 12 | Eduardo (encarregado, celular) | Daily › Reforma Mitchell | Abrir o projeto de novo e o RDO de hoje | O diário aprovado aparece lacrado, com o código, sem botão de aprovar; nenhum erro de JavaScript em todo o fluxo |
@@ -31,3 +31,4 @@
 1. **RDO atrasado antes da liberação (03/11):** o início da obra deixou de ser a data da primeira tarefa. Agora é uma data própria (`projetos.inicio_obra`, migração `0025`), que o administrador escolhe ao liberar (padrão: hoje) e pode mudar depois; o diário é cobrado a partir dela.
 2. **Sininho na conta real (03/11):** "Tarefa atrasada" fica só no Início, em "Andamento dos projetos". O sininho da conta real continua com os avisos do servidor.
 3. **Encarregado sem projetos (02/11):** corrigido pela migração `0024` (`projetos_do_daily`), já aplicada no banco novo.
+4. **Gantt financeiro (04/11):** o diário agora recebe as horas gastas por tarefa e o Gantt as soma dos diários aprovados (sem migração: as horas ficam no JSON da atividade). Este fluxo cobre as horas apontadas; as horas **orçadas** e o valor por tarefa exigem medição com assemblies no Takeoff, e o custo real exige ponto no Crew: ficam nos testes `gantt-valor`, `gantt-horas` e `gantt-real` (protótipo).
