@@ -123,9 +123,23 @@ export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, al
   } else await ctx.route(/open-meteo/, (r) => r.abort());
   const pagina = await ctx.newPage();
   const erros = [];
+  pagina.on('dialog', (d) => { (d.type() === 'beforeunload' ? d.accept() : d.dismiss()).catch(() => {}); });   // "há alterações não salvas": o teste segue
   pagina.on('pageerror', (e) => erros.push(rotuloErros + ': ' + e.message));
   await pagina.goto(BASE + ir);
   return { ctx, p: pagina, erros };
+}
+
+/** Preenche campos [[seletor, valor, 'texto'|'lista']] e confere que continuam lá meio segundo depois: no Supabase de verdade o app redesenha o
+ *  formulário quando os dados do banco chegam e apaga o que foi digitado. Repete até 4 vezes. */
+export async function preencher(p, campos) {
+  for (let tentativa = 0; tentativa < 4; tentativa++) {
+    for (const [sel, valor, tipo] of campos) { if (tipo === 'lista') await p.selectOption(sel, valor); else await p.fill(sel, String(valor)); }
+    await p.waitForTimeout(600);
+    let ok = true;
+    for (const [sel, valor] of campos) if ((await p.locator(sel).inputValue().catch(() => null)) !== String(valor)) ok = false;
+    if (ok) return true;
+  }
+  return false;
 }
 
 /** Abre uma rota e espera um elemento; com a rede lenta a tela às vezes não redesenha: recarrega uma vez. */

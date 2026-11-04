@@ -6,7 +6,7 @@
 
 import { chromium } from 'playwright';
 import { criarFluxo } from './_fluxo.mjs';
-import { AMBIENTE, REAL, BASE, SENHA_FLUXO, NOVA, sql, sqlExec, aspas, hoje, somar, esperarAte, texto, irPara, abrirComo, garantirUsuario, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
+import { AMBIENTE, REAL, BASE, SENHA_FLUXO, NOVA, sql, sqlExec, aspas, hoje, somar, esperarAte, texto, irPara, abrirComo, preencher, garantirUsuario, apagarEmpresaFluxo } from './_fluxo-dados.mjs';
 
 const MANTER = process.argv.includes('--manter');
 const fluxo = criarFluxo({ id: 'F01', modo: AMBIENTE, roteiro: 'docs/testes/fluxos/F01-empresa-nova.md', ambiente: BASE });
@@ -82,7 +82,7 @@ try {
 
   await fluxo.passo(6, async () => {
     await irPara(p, '#/conta/contatos/novo', '#form-contato');
-    await p.fill('#ct-nome', CLIENTE);
+    verificar(await preencher(p, [['#ct-nome', CLIENTE]]), 'o formulário guardou o nome do cliente antes de salvar');
     await p.check('input[name="papeis"][value="cliente"]');
     await p.click('[data-acao="cad-salvar-contato"]');
     verificar(await esperarAte(async () => (await sql(`select count(*)::int as n from public.contatos c join public.empresas e on e.id = c.empresa_id where e.nome = '${aspas(EMPRESA)}' and c.nome = '${CLIENTE}'`))[0].n === 1, 20000), 'no banco: o contato existe');
@@ -96,18 +96,16 @@ try {
   await fluxo.passo(7, async () => {
     // material, com preço digitado
     await irPara(p, '#/measure/item/novo', '#it-nome');
-    await p.fill('#it-nome', MAT.nome); await p.fill('#it-codigo', MAT.codigo); await p.selectOption('#it-cat', 'material');
-    await p.fill('#it-un', MAT.un); await p.fill('#it-etapa', MAT.etapa); await p.fill('#it-preco', MAT.preco);
+    verificar(await preencher(p, [['#it-nome', MAT.nome], ['#it-codigo', MAT.codigo], ['#it-cat', 'material', 'lista'], ['#it-un', MAT.un], ['#it-etapa', MAT.etapa], ['#it-preco', MAT.preco]]), 'o formulário do material guardou os campos antes de salvar');
     await p.click('[data-acao="item-salvar"]');
     verificar(await esperarAte(async () => !!(await item(MAT.codigo)), 20000), 'no banco: o material NV-DW existe');
     const [pr] = await sql(`select ip.valor::float as valor from public.item_precos ip join public.itens i on i.id = ip.item_id where i.codigo = '${MAT.codigo}' and i.empresa_id = '${await empresaId()}'`);
     verificar(pr && pr.valor === 14.5, 'no banco: o preço digitado é US$ 14,50', pr);
     // mão de obra, ligada à função
     await irPara(p, '#/measure/item/novo', '#it-nome');
-    await p.fill('#it-nome', MO.nome); await p.fill('#it-codigo', MO.codigo); await p.selectOption('#it-cat', 'mao-de-obra');
-    await p.fill('#it-un', MO.un); await p.fill('#it-etapa', MO.etapa);
+    await p.waitForSelector('#it-funcao option:has-text("Carpenter")', { state: 'attached', timeout: 40000 });
     const idCarpenter = await p.locator('#it-funcao option', { hasText: 'Carpenter' }).first().getAttribute('value');
-    await p.selectOption('#it-funcao', idCarpenter);
+    verificar(await preencher(p, [['#it-nome', MO.nome], ['#it-codigo', MO.codigo], ['#it-cat', 'mao-de-obra', 'lista'], ['#it-un', MO.un], ['#it-etapa', MO.etapa], ['#it-funcao', idCarpenter, 'lista']]), 'o formulário da mão de obra guardou os campos e a função antes de salvar');
     verificar(!(await p.locator('#it-preco').isVisible()), 'com função escolhida, o campo de preço inicial some (o preço vem da função)');
     await p.click('[data-acao="item-salvar"]');
     verificar(await esperarAte(async () => { const x = await item(MO.codigo); return !!(x && x.funcao_id); }, 20000), 'no banco: a mão de obra NV-MO aponta a função');
@@ -126,16 +124,13 @@ try {
     await irPara(p, '#/measure/assemblies', 'main .mz-assemblies, main .vazio, main a:has-text("Novo assembly")');
     await p.click('a:has-text("Novo assembly")');
     await p.waitForSelector('#form-assembly');
-    await p.fill('#as-nome', 'Parede Nova');
-    await p.selectOption('#as-tipo', 'area');
-    const l1 = p.locator('.mz-linha').nth(0);
-    await l1.locator('[name="item"]').selectOption(await l1.locator('[name="item"] option', { hasText: MAT.nome }).first().getAttribute('value'));
-    await l1.locator('[name="formula"]').fill('MeasuredArea / 32');
-    await l1.locator('[name="perda"]').fill('5');
+    verificar(await preencher(p, [['#as-nome', 'Parede Nova'], ['#as-tipo', 'area', 'lista']]), 'o formulário do assembly guardou o nome e o tipo');
+    const valorDoItem = async (linha, nome) => p.locator('.mz-linha >> nth=' + linha + ' >> [name="item"] option', { hasText: nome }).first().getAttribute('value');
+    await p.waitForSelector('.mz-linha >> nth=0 >> [name="item"] option:has-text("' + MAT.nome + '")', { state: 'attached', timeout: 40000 });
+    verificar(await preencher(p, [['.mz-linha >> nth=0 >> [name="item"]', await valorDoItem(0, MAT.nome), 'lista'], ['.mz-linha >> nth=0 >> [name="formula"]', 'MeasuredArea / 32'], ['.mz-linha >> nth=0 >> [name="perda"]', '5']]), 'a linha do material guardou item, fórmula e perda');
     await p.click('[data-acao="mz-nova-linha"]');
-    const l2 = p.locator('.mz-linha').nth(1);
-    await l2.locator('[name="item"]').selectOption(await l2.locator('[name="item"] option', { hasText: MO.nome }).first().getAttribute('value'));
-    await l2.locator('[name="formula"]').fill('MeasuredArea / 50');
+    await p.waitForSelector('.mz-linha >> nth=1', { timeout: 10000 });
+    verificar(await preencher(p, [['.mz-linha >> nth=1 >> [name="item"]', await valorDoItem(1, MO.nome), 'lista'], ['.mz-linha >> nth=1 >> [name="formula"]', 'MeasuredArea / 50']]), 'a linha da mão de obra guardou item e fórmula');
     await p.click('[data-acao="mz-salvar-assembly"]');
     await p.waitForSelector('.mz-assemblies', { timeout: 20000 });
     const t = await texto(p, '.mz-assemblies');
