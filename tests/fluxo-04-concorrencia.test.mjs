@@ -49,7 +49,11 @@ async function aparelho(quem) {
   await ctx.route('https://fonts.**', (r) => r.abort());
   await ctx.route('https://api.open-meteo.com/**', (r) => r.abort());
   await ctx.route('https://tile.openstreetmap.org/**', (r) => r.abort());
+  ctx.setDefaultNavigationTimeout(60000);
   const p = await ctx.newPage();
+  const irOriginal = p.goto.bind(p);
+  p.goto = (url, opc) => irOriginal(url, { waitUntil: 'domcontentloaded', ...opc });   // a página é única: um pedido externo preso não deve travar a navegação
+  p.on('requestfailed', (r) => diag.push(quem + ' [pedido falhou] ' + r.url().slice(0, 140) + ' · ' + ((r.failure() || {}).errorText || '')));
   p.on('pageerror', (e) => erros.push(quem + ': ' + e.message));
   p.on('console', (m) => { if (['error', 'warning'].includes(m.type())) diag.push(quem + ' [' + m.type() + '] ' + m.text().slice(0, 240)); });
   p.on('response', async (r) => { if (r.status() >= 400 && !/fonts|tile\.openstreetmap/.test(r.url())) diag.push(quem + ' [' + r.status() + '] ' + r.request().method() + ' ' + r.url().slice(0, 160) + ' ' + (await r.text().catch(() => '')).slice(0, 200)); });

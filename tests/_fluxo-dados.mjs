@@ -121,11 +121,15 @@ export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, al
       route.fulfill({ json: { hourly: { time, weather_code, precipitation, temperature_2m } } });
     });
   } else await ctx.route(/open-meteo/, (r) => r.abort());
+  ctx.setDefaultNavigationTimeout(60000);
   const pagina = await ctx.newPage();
+  const irOriginal = pagina.goto.bind(pagina);
+  pagina.goto = (url, opc) => irOriginal(url, { waitUntil: 'domcontentloaded', ...opc });   // a página é única: um pedido externo preso não deve travar a navegação
   const erros = [];
   const ruins = [], consoleErros = [];   // diagnóstico: respostas de rede com erro e erros do console (sem cabeçalhos nem chaves)
   pagina.on('response', async (r) => { if (r.status() >= 400 && /supabase\.co|localhost:3001/.test(r.url())) { let corpo = ''; try { corpo = (await r.text()).slice(0, 200); } catch { /* */ } ruins.push(r.request().method() + ' ' + r.url().replace(/^https?:\/\/[^/]+/, '').slice(0, 90) + ' → ' + r.status() + ' ' + corpo); } });
   pagina.on('console', (m) => { if (m.type() === 'error') consoleErros.push(m.text().slice(0, 200)); });
+  pagina.on('requestfailed', (r) => ruins.push('[pedido falhou] ' + r.url().slice(0, 140) + ' · ' + ((r.failure() || {}).errorText || '')));
   pagina.on('dialog', (d) => { (d.type() === 'beforeunload' ? d.accept() : d.dismiss()).catch(() => {}); });   // "há alterações não salvas": o teste segue
   pagina.on('pageerror', (e) => erros.push(rotuloErros + ': ' + e.message));
   await pagina.goto(BASE + ir);
