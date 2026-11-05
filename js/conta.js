@@ -176,7 +176,18 @@ export async function definirNovaSenha(senha) {
   if (r.ok) conta.recuperandoSenha = false;
   return r;
 }
-export async function sair() { await iniciar(); await sb.auth.signOut(); }
+/* Sair não pode depender da rede nem de um travamento do Auth (no iPhone o pedido de saída ao servidor pode falhar ou ficar preso, e a sessão
+ * continuava no aparelho: o app voltava logado). Tenta avisar o servidor por até 3 s e, de qualquer jeito, apaga a sessão guardada no aparelho. */
+export async function sair() {
+  try { await Promise.race([iniciar().then(() => sb.auth.signOut()), new Promise((ok) => setTimeout(ok, 3000))]); } catch { /* segue: a sessão local sai abaixo */ }
+  try {
+    const apagar = [];
+    for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && (k.startsWith('kbt.conta') || k.startsWith('sb-') || k.startsWith('kbt.oficial.conta.'))) apagar.push(k); }
+    apagar.forEach((k) => localStorage.removeItem(k));
+  } catch { /* sem acesso ao armazenamento */ }
+  conta.sessao = null; conta.recuperandoSenha = false;
+  Object.assign(conta, { membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] });
+}
 
 /* ---------- Meu perfil ---------- */
 

@@ -561,7 +561,7 @@ export const FORMS_OFICIAIS = ['form-login-oficial', 'form-criar-conta', 'form-e
 const comResultado = (r, ok) => { if (r.erro) { toast(r.erro); return; } if (ok) toast(ok); redesenhar(); };
 
 export const acoesOficiais = {
-  async 'of-sair'() { await sair(); esquecerConvite(); esquecerCadastros(); espelho.pronto = false; ir('#/entrar'); },
+  async 'of-sair'() { await sair(); esquecerConvite(); esquecerCadastros(); espelho.pronto = false; ir('#/entrar'); location.reload(); },   // recarrega: zera de vez o que ficou em memória (e a sessão antiga do cliente do Auth)
   async 'of-aceitar'() {
     const r = await aceitarConvite(conviteGuardado());
     if (r.erro) return mostrarErro(r.erro);
