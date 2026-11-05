@@ -292,7 +292,12 @@ export const MOSTRAR_LOGINS_DE_TESTE = true;
 function mostrarLoginsDeTeste() { try { return MOSTRAR_LOGINS_DE_TESTE && !NO_DOMINIO && (NA_HOMOLOGACAO || localStorage.getItem('kbt.loginsDeTeste') === '1'); } catch { return false; } }
 const htmlLoginsDeTeste = () => !mostrarLoginsDeTeste() ? '' :
   '<div class="logins-teste" id="logins-teste"><p class="mudo pequeno"><b>' + tr('Contas de teste (homologação)') + '</b> · ' + tr('toque no e-mail para preencher; a senha é combinada por fora.') + '</p><ul>' +
-  LOGINS_DE_TESTE.map(([e, p]) => '<li><button type="button" class="email-demo" data-acao="preencher-email-oficial" data-email="' + esc(e) + '">' + esc(e) + '</button> <span class="mudo pequeno">' + tr(p) + '</span></li>').join('') + '</ul></div>';
+  LOGINS_DE_TESTE.map(([e, p]) => '<li><button type="button" class="email-demo" data-acao="preencher-email-oficial" data-email="' + esc(e) + '">' + esc(e) + '</button> <span class="mudo pequeno">' + tr(p) + '</span></li>').join('') + '</ul>' + htmlComoTestarNoIphone() + '</div>';
+/* Também temporário (some junto com a lista): como instalar e o que testar no iPhone. */
+const htmlComoTestarNoIphone = () => '<details class="como-testar" id="como-testar-iphone"><summary><b>' + tr('Testar no iPhone') + '</b></summary>' +
+  '<p class="pequeno"><b>' + tr('Instalar') + '</b></p><ol class="pequeno"><li>' + tr('Abra este endereço no Safari (outro navegador não instala o app).') + '</li><li>' + tr('Toque em Compartilhar (o quadrado com a seta, embaixo) e em "Adicionar à Tela de Início".') + '</li><li>' + tr('Abra pelo ícone da tela, não pelo Safari. Se aparecer a versão antiga, feche o app e abra de novo.') + '</li></ol>' +
+  '<p class="pequeno"><b>' + tr('O que testar') + '</b></p><ol class="pequeno"><li>' + tr('Daily: abra um projeto liberado para obra, lance o diário do dia com uma atividade e as horas, e envie.') + '</li><li>' + tr('Sem sinal: ligue o modo avião, lance outro diário (fica pendente), desligue o modo avião e veja se sincroniza.') + '</li><li>' + tr('Takeoff: abra um desenho, meça uma linha e uma área, e veja se a tela rola sem travar.') + '</li><li>' + tr('Settings: como Administrador, crie um usuário direto; a senha provisória deve ficar legível e copiável.') + '</li><li>' + tr('Primeiro acesso: entre com a senha provisória e veja se pede a troca de senha.') + '</li></ol>' +
+  '<p class="mudo pequeno">' + tr('Se algo falhar, mande um print da tela e a hora aproximada.') + '</p></details>';
 
 export function telaLoginOficial() {
   return paginaEntrada(
