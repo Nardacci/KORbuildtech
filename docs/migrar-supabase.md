@@ -73,6 +73,9 @@ node tools/migrar-supabase.mjs conferir
 ```
 Se der falha em alguns arquivos, rode `arquivos` de novo: ele só repete o que falta.
 
+### 6a. Acentos no psql do Windows
+Antes de aplicar qualquer migração com o `psql` no Windows, rode `$env:PGCLIENTENCODING = "UTF8"` na mesma janela. Sem isso o `psql` lê o arquivo em WIN1252 e as mensagens com acento ficam gravadas quebradas dentro das funções ("jÃ¡"). Para conferir um banco já aplicado: `psql $env:KOR_DESTINO_URL -f tools\conferir-codificacao.sql` (nenhuma linha = certo).
+
 ### 6b. Conferir o esquema (migrações)
 ```powershell
 psql $env:KOR_DESTINO_URL -f tools\conferir-esquema.sql
