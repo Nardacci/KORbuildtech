@@ -1,5 +1,5 @@
 ﻿ID;Bloco;Fluxo automático;Login;O que fazer;Resultado esperado;Resultado (OK / Falhou / N/A);Observação;Quem testou;Data
-T01;1 Entrada e conta;;pv.p1.admin;Abrir o endereço de homologação com ?versao=primeira e entrar;"Entra; o menu mostra Measure Takeoff e Settings; nada de Daily, Crew nem Cronograma";;;;
+T01;1 Entrada e conta;;pv.p1.admin;Abrir o endereço de homologação e entrar;"Entra; o menu mostra Measure Takeoff e Settings; nada de Daily, Crew nem Cronograma";;;;
 T02;1 Entrada e conta;;pv.p1.admin;Errar a senha de propósito e depois digitar certo (usar 'Mostrar');"Mensagem clara no erro; o botão Mostrar revela a senha; entra na segunda tentativa";;;;
 T03;1 Entrada e conta;;pv.p1.trabalhador;Entrar;"Só Início, Company e My profile; sem Measure, Users, Access roles nem Jobs";;;;
 T04;1 Entrada e conta;;pv.p1.contatos;Entrar e abrir Contacts;"Só a lista de contatos; consegue criar e editar um contato; não vê Measure nem Concorrências";;;;
@@ -64,7 +64,7 @@ T62;11 Navegador e celular;;pv.p1.admin;Repetir o fluxo de Measure no Chrome e n
 T63;11 Navegador e celular;;pv.p1.admin;Entrar no iPhone (roteiro do iPhone) e abrir Convites;"Entra; lista legível; responde um convite";;;;
 T64;11 Navegador e celular;;pv.p1.admin;Entrar no Android (roteiro do Android) e abrir Convites;Idem;;;;
 T65;11 Navegador e celular;;pv.p1.admin;Com o app instalado, abrir depois de uma atualização;Pega a versão nova sem reinstalar;;;;
-T66;12 Início: painel e menu lateral;;pv.c1.admin;Entrar com ?versao=primeira e olhar o Início;"Painel em tela cheia abaixo do cabeçalho, sem abas nem menu lateral; 'Olá, Helen' e dois botões: Takeoff e Settings";;;;
+T66;12 Início: painel e menu lateral;;pv.c1.admin;Entrar e olhar o Início;"Painel em tela cheia abaixo do cabeçalho, sem abas nem menu lateral; 'Olá, Helen' e dois botões: Takeoff e Settings";;;;
 T67;12 Início: painel e menu lateral;;pv.c1.admin;Olhar o bloco 'Precisa de você agora';"Fundo e borda laranja que se destacam dos demais; 3 propostas recebidas e 1 convite para responder; os cartões sem pendência aparecem apagados com 'Nada pendente'";;;;
 T68;12 Início: painel e menu lateral;;pv.c1.admin;Clicar em 'Propostas recebidas' e em 'Convite para responder';Abre as concorrências (propostas) e a lista de Convites;;;;
 T69;12 Início: painel e menu lateral;;pv.c1.admin;Conferir 'Projetos por status';"Rosca com 1 projeto em Proposta emitida; sem contagem de obras (1ª versão)";;;;

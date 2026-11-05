@@ -11,7 +11,7 @@
 | Guia (`portal/`) | Só Measure Takeoff e Settings (`portal-measure/`) | Guia inteiro |
 | Quem decide | `js/versao.js`: o domínio `korbuildtech.com` liga a 1ª versão sozinho | Sem a marca, é o app inteiro |
 
-Para **ver a 1ª versão na homologação**, abra `https://nardacci.github.io/KORbuildtech/?versao=primeira` (fica guardado no navegador). `?versao=completa` volta ao app inteiro. No domínio de produção esses dois pedidos não destravam nada.
+Para **ver a 1ª versão na homologação**, basta abrir `https://nardacci.github.io/KORbuildtech/`: é o padrão ali, sem parâmetro nenhum. `?versao=completa` mostra o app inteiro (fica guardado no navegador; para voltar à 1ª versão, abra `?versao=primeira`). No domínio de produção esses pedidos não destravam nada.
 
 ## O que muda na 1ª versão
 

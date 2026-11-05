@@ -1,12 +1,12 @@
 # Lista de checagem — 1ª versão (Measure Takeoff, Concorrências e Settings)
 
-Senha de todos os logins: a de `KOR_DEMO_SENHA`. Logins: `pv.<empresa>.<papel>@example.com`. Endereço: homologação com `?versao=primeira`.
+Senha de todos os logins: a de `KOR_DEMO_SENHA`. Logins: `pv.<empresa>.<papel>@example.com`. Endereço: homologação `https://nardacci.github.io/KORbuildtech/` (a 1ª versão já é o padrão, sem parâmetro; se o navegador ficou com `?versao=completa` guardado, abra uma vez com `?versao=primeira`).
 Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, hora). Quando o item aparece com _F01_ a _F05_, um teste automático por fluxo já o cobre (`docs/testes/fluxos/`); ele continua valendo para conferir a olho, mas a rodada automática comprova o essencial. Sem marca = só manual. Versão em planilha: `lista-checagem-primeira-versao.csv`.
 
 
 ## 1 Entrada e conta
 
-- [ ] **T1** · `pv.p1.admin` — Abrir o endereço de homologação com ?versao=primeira e entrar  
+- [ ] **T1** · `pv.p1.admin` — Abrir o endereço de homologação e entrar  
   _Esperado:_ Entra; o menu mostra Measure Takeoff e Settings; nada de Daily, Crew nem Cronograma
 - [ ] **T2** · `pv.p1.admin` — Errar a senha de propósito e depois digitar certo (usar 'Mostrar')  
   _Esperado:_ Mensagem clara no erro; o botão Mostrar revela a senha; entra na segunda tentativa
@@ -169,7 +169,7 @@ Marque `[x]` quando passar; se falhar, escreva ao lado o que viu (tela, login, h
 
 ## 12 Início: painel e menu lateral
 
-- [ ] **T66** · `pv.c1.admin` — Entrar com ?versao=primeira e olhar o Início  
+- [ ] **T66** · `pv.c1.admin` — Entrar e olhar o Início  
   _Esperado:_ Painel em tela cheia abaixo do cabeçalho, sem abas nem menu lateral; 'Olá, Helen' e dois botões: Takeoff e Settings
 - [ ] **T67** · `pv.c1.admin` — Olhar o bloco 'Precisa de você agora'  
   _Esperado:_ Fundo e borda laranja que se destacam dos demais; 3 propostas recebidas e 1 convite para responder; os cartões sem pendência aparecem apagados com 'Nada pendente'
