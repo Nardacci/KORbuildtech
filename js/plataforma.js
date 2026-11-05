@@ -98,6 +98,10 @@ export function inicioDoUsuario(u) {
   return mods.length === 1 ? '#/' + mods[0] : '#/inicio';
 }
 
+/* Controle do período de teste (aviso "Seu período de teste terminou"). Desligado por enquanto (05/11/2026): todas as empresas estão em teste
+ * e ninguém deve ver o aviso. Para religar, troque para true. A suspensão manual da conta (status "suspensa") continua valendo, ligado ou não. */
+export const CONTROLE_DE_TESTE = false;
+
 export function diasDeTeste() {
   const p = estado().empresa.plano;
   return p.status === 'teste' ? Math.max(0, diasEntre(hoje(), p.testeAte)) : 0;

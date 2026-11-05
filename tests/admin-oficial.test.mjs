@@ -110,6 +110,12 @@ try {
   verificar(gravou, 'reativada, a empresa volta a gravar');
   await b.reload();
   verificar(await esperarAte(async () => (await b.locator('.aviso-plano').count()) === 0), 'e o aviso some');
+  // controle do período de teste desligado (CONTROLE_DE_TESTE em js/plataforma.js): teste vencido não mostra aviso nenhum
+  await sqlExec(`update public.empresas set plano = plano || '{"status": "teste", "teste_ate": "2020-01-01"}'::jsonb where id = '${EMP_BETO}'`);
+  await b.reload();
+  await b.waitForSelector('.oficial-topo', { timeout: 30000 });
+  await b.waitForTimeout(1500);
+  verificar(await b.locator('.aviso-plano').count() === 0, 'com o teste vencido (desde 2020) o app não mostra o aviso de fim de teste');
 
   console.log('Outras abas e o inglês');
   await a.click('a[href="#administradores"]');

@@ -5,7 +5,7 @@
 import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
 import { esc, toast, confirmar, dataHora } from './util.js';
 import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
-import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario } from './plataforma.js';
+import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario, CONTROLE_DE_TESTE } from './plataforma.js';
 import { icone, marca, logotipo } from './icones.js';
 import { PERMISSOES, permissao } from './settings.js';
 import { ATUACOES } from './contatos.js';
@@ -197,7 +197,7 @@ function moldura(ativa, conteudo, opcoes = {}) {
 /** Conta suspensa (só lê) ou teste vencido: o aviso fica no alto de toda tela da conta (docs/banco.md §15.6). */
 function htmlAvisoDoPlano() {
   const pl = (conta.empresa && conta.empresa.plano) || {};
-  const vencido = pl.status === 'teste' && /^\d{4}-\d{2}-\d{2}/.test(pl.teste_ate || '') && pl.teste_ate.slice(0, 10) < new Date().toISOString().slice(0, 10);
+  const vencido = CONTROLE_DE_TESTE && pl.status === 'teste' && /^\d{4}-\d{2}-\d{2}/.test(pl.teste_ate || '') && pl.teste_ate.slice(0, 10) < new Date().toISOString().slice(0, 10);
   if (pl.status !== 'suspensa' && !vencido) return '';
   return '<section class="aviso aviso-alerta aviso-plano" role="alert"><b>' + (pl.status === 'suspensa' ? tr('Esta conta está suspensa. Fale com o KORbuild.') : tr('Seu período de teste terminou: fale com o KORbuild.')) + '</b></section>';
 }
