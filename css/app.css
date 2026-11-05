@@ -1913,3 +1913,7 @@ dialog.painel > form { display: flex; flex-direction: column; height: 100%; }
 .painel-marcadores { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; padding: 10px 12px; border: 1px solid var(--borda); border-radius: 10px; }
 .painel-corpo .tabela { margin-top: 4px; } .painel-corpo .tabela tr.vigente td { background: var(--verde-claro); }
 @media (max-width: 560px) { .painel-linha, .painel-linha.tres { grid-template-columns: 1fr; } }
+.credencial { display: flex; flex-direction: column; gap: 4px; padding: 14px; border: 1px solid var(--borda); border-radius: 12px; background: var(--superficie-2); }
+.credencial b { font-size: 15px; word-break: break-all; margin-bottom: 8px; }
+.senha-provisoria { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 22px; font-weight: 700; letter-spacing: .06em; text-align: center; padding: 12px; border: 1px dashed var(--primario); border-radius: 10px; background: #fff; }
+.aviso-ambar { background: var(--ambar-claro); border: 1px solid var(--ambar-borda); color: var(--ambar); padding: 10px 12px; border-radius: 10px; margin: 0; }

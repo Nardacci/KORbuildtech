@@ -13,6 +13,7 @@ const fluxo = criarFluxo({ id: 'F05', modo: AMBIENTE, roteiro: 'docs/testes/flux
 const { verificar } = fluxo;
 const GABI = { email: 'fluxo.gabi@example.com', nome: 'Gabi Gestora' };
 const OLGA = { email: 'fluxo.olga@example.com', nome: 'Olga Outra' };
+const HEITOR = { email: 'fluxo.heitor@example.com', nome: 'Heitor Novo' };
 
 if (!(await fetch(BASE).then((r) => r.ok, () => false))) { console.error('O servidor não responde em ' + BASE + ' (python3 -m http.server 8123).'); process.exit(2); }
 await apagarEmpresaFluxo();   // começa sempre do zero
@@ -37,7 +38,7 @@ try {
     const linhas = (await texto(p, '.tabela-membros'));
     verificar(linhas.includes('Fábio Fluxo') && linhas.includes('Eduardo Encarregado'), 'a lista mostra o Fábio e o Eduardo', linhas.slice(0, 300));
     verificar(await p.locator('select[data-acao-mudar="of-perfil-membro"]').count() === 1, 'o Administrador não tem seletor para mudar o próprio perfil (só o do Eduardo)', await p.locator('select[data-acao-mudar="of-perfil-membro"]').count());
-    await p.click('[data-acao="of-novo-usuario"]');
+    await p.click('[data-acao="of-convidar-link"]');
     await p.waitForSelector('dialog.painel #cv-email');
     verificar(await preencher(p, [['#cv-email', GABI.email], ['#cv-nome', GABI.nome]]), 'o painel do convite guardou e-mail e nome antes de enviar');
     await p.selectOption('#cv-perfil', { label: 'Gestor de obras' });
@@ -98,7 +99,7 @@ try {
     verificar(await p.locator('dialog.painel input[name="perm"]:disabled').count() > 0, 'o Administrador continua travado (caixas desabilitadas)');
     await p.click('dialog.painel [data-painel-fechar]');
     await irPara(p, '#/conta/usuarios', '.tabela-membros');
-    await p.click('[data-acao="of-novo-usuario"]');
+    await p.click('[data-acao="of-convidar-link"]');
     await p.waitForSelector('dialog.painel #cv-perfil');
     verificar(await p.locator('#cv-perfil option', { hasText: 'Encarregado com diário' }).count() === 1, 'o perfil novo aparece na lista de perfis do convite');
   });
@@ -146,6 +147,62 @@ try {
   });
 
   await fluxo.passo(8, async () => {
+    await irPara(p, '#/conta/usuarios', '.tabela-membros');
+    await p.click('[data-acao="of-novo-usuario"]');
+    await p.waitForSelector('dialog.painel #nu-nome');
+    verificar(await preencher(p, [['#nu-nome', HEITOR.nome], ['#nu-email', HEITOR.email], ['#nu-telefone', '(603) 555-0180'], ['#nu-cargo', 'Encarregado de obra']]), 'o painel guardou os dados do usuário novo antes de criar');
+    await p.selectOption('#nu-perfil', { label: 'Encarregado' });
+    await p.click('dialog.painel [data-painel-salvar]');
+    await p.waitForSelector('.senha-provisoria', { timeout: 40000 });
+    const senha = await p.inputValue('.senha-provisoria');
+    verificar(/^[A-Za-z2-9]{4}-[A-Za-z2-9]{4}-[A-Za-z2-9]{4}$/.test(senha), 'a senha provisória aparece uma vez, em três grupos de quatro, sem caracteres que se confundem', senha.replace(/./g, '*'));
+    verificar(await p.locator('dialog.painel', { hasText: HEITOR.email }).count() === 1 && /só agora/.test(await texto(p, 'dialog.painel')), 'o painel mostra o e-mail e avisa que a senha aparece só agora');
+    await p.click('dialog.painel [data-painel-fechar]');
+    const [m] = await sql(`select m.id, m.cargo, m.telefone, m.ativo, pa.chave from public.membros m join auth.users u on u.id = m.user_id join public.perfis_acesso pa on pa.id = m.perfil_id where u.email = '${HEITOR.email}' and m.empresa_id = '${empresaId}'`);
+    verificar(m && m.ativo && m.chave === 'encarregado' && m.cargo === 'Encarregado de obra' && m.telefone === '(603) 555-0180', 'no banco: membro ativo com o perfil Encarregado, cargo e telefone', m);
+    const [aud] = await sql(`select a.quem, a.motivo from public.auditoria a where a.tabela = 'membros' and a.acao = 'insert' and a.registro = '${m.id}'`);
+    const [fab] = await sql(`select id from auth.users where email = 'fluxo.admin@example.com'`);
+    verificar(aud && aud.quem === fab.id && /Cadastro direto/.test(aud.motivo || ''), 'a auditoria atribui o cadastro ao Fábio (e não à função do servidor)', aud);
+    // o mesmo e-mail de novo: o painel recusa, sem criar nada
+    await irPara(p, '#/conta/usuarios', '.tabela-membros');
+    await p.click('[data-acao="of-novo-usuario"]');
+    await p.waitForSelector('dialog.painel #nu-nome');
+    await preencher(p, [['#nu-nome', 'Outro Nome'], ['#nu-email', HEITOR.email]]);
+    await p.click('dialog.painel [data-painel-salvar]');
+    await p.waitForSelector('dialog.painel .painel-erro:not([hidden])', { timeout: 20000 });
+    verificar(/já tem conta/.test(await texto(p, 'dialog.painel .painel-erro')), 'e-mail que já tem conta é recusado com uma mensagem clara', await texto(p, 'dialog.painel .painel-erro'));
+    await p.click('dialog.painel [data-painel-fechar]');
+    // nova senha provisória para a pessoa
+    await irPara(p, '#/conta/usuarios', '.tabela-membros');
+    await p.locator('.tabela-membros tr', { hasText: HEITOR.nome }).locator('[data-acao="of-editar-usuario"]').click();
+    await p.waitForSelector('dialog.painel [data-painel-extra]');
+    await p.click('dialog.painel [data-painel-extra]');
+    await p.click('dialog:not(.painel) button:text-is("Gerar")');
+    await p.waitForSelector('.senha-provisoria', { timeout: 40000 });
+    const senha2 = await p.inputValue('.senha-provisoria');
+    verificar(/^[A-Za-z2-9]{4}-[A-Za-z2-9]{4}-[A-Za-z2-9]{4}$/.test(senha2), 'gerar nova senha provisória mostra a senha nova uma vez');
+    verificar((await sql(`select count(*)::int as n from public.auditoria where tabela = 'membros' and acao = 'senha_provisoria' and registro = '${m.id}'`))[0].n === 1, 'a auditoria registra que o Fábio gerou uma senha provisória');
+    await p.click('dialog.painel [data-painel-fechar]');
+    if (REAL) {   // só no Supabase de verdade há serviço de login: a pessoa entra com a senha provisória e é obrigada a trocá-la
+      const hei = await abrirComo(browser, HEITOR, { semSessao: true, ir: '#/entrar' });
+      fluxo.pagina(hei.p);
+      await hei.p.waitForSelector('#form-login-oficial', { timeout: 40000 });
+      await hei.p.fill('#oficial-email', HEITOR.email); await hei.p.fill('#oficial-senha', senha2);
+      await hei.p.click('#form-login-oficial button[type="submit"]');
+      await hei.p.waitForURL((u) => String(u).includes('#/nova-senha'), { timeout: 40000 });
+      verificar(/senha provisória/.test(await texto(hei.p, 'body')), 'o primeiro acesso cai na troca de senha, com o aviso da senha provisória');
+      const noSistema = await hei.p.goto(BASE + '#/conta').then(() => hei.p.waitForTimeout(1500)).then(() => hei.p.url());
+      verificar(noSistema.includes('#/nova-senha'), 'sem trocar a senha não dá para abrir o resto do sistema', noSistema);
+      await hei.p.fill('#ns-senha', 'Nova' + SENHA_FLUXO);
+      await hei.p.click('#form-nova-senha button[type="submit"]');
+      await hei.p.waitForSelector('.oficial-topo', { timeout: 40000 });
+      verificar((await texto(hei.p, 'body')).includes(NOME_EMPRESA), 'depois de trocar a senha ele entra na empresa');
+      verificar(await esperarAte(async () => (await sql(`select raw_user_meta_data ->> 'trocar_senha' as t from auth.users where email = '${HEITOR.email}'`))[0].t === 'false', 20000), 'a marca de "trocar a senha" foi limpa');
+      verificar(adm.erros.length === 0 && hei.erros.length === 0, 'sem erro de JavaScript neste passo');
+    }
+  });
+
+  await fluxo.passo(9, async () => {
     const [a] = await sql(`select count(*)::int as n from public.auditoria where empresa_id = '${empresaId}'`);
     verificar(a.n >= 4, 'a auditoria da empresa registra o que foi feito (' + a.n + ' registros)', a);
     const tabelas = (await sql(`select distinct tabela from public.auditoria where empresa_id = '${empresaId}'`)).map((x) => x.tabela);

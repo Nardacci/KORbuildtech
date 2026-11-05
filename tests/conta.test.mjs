@@ -157,7 +157,7 @@ try {
 
   console.log('Convidar e aceitar');
   await irPara(a, '#/conta/usuarios', '.tabela-membros');
-  await a.click('[data-acao="of-novo-usuario"]'); await aparecer(a, 'dialog.painel #cv-email');
+  await a.click('[data-acao="of-convidar-link"]'); await aparecer(a, 'dialog.painel #cv-email');
   await a.fill('#cv-email', BETO); await a.fill('#cv-nome', 'Beto E2E'); await a.selectOption('#cv-perfil', { label: 'Gestor de obras' });
   await a.click('dialog.painel [data-painel-salvar]');
   await aparecer(a, '.oficial-link');

@@ -29,7 +29,13 @@ Decisão do dono (05/11/2026): as telas de administração e cadastro não podem
 ## Para criar uma tela nova neste padrão
 Monte com `cabecalhoDePagina`, `barraDeBusca`, `gradeEmCartao` e `atributosDeLinha`; abra a edição com `abrirPainel({ titulo, corpo, aoSalvar })` e leia os campos com `lerCampos(painel)`. Cada linha da grade tem um botão `data-acao` que abre o painel; deixe o painel voltar à lista ao fechar se foi aberto por endereço.
 
+## Cadastro direto pelo administrador (05/11/2026; migração 0026 + função `criar-usuario`)
+- **Settings › Usuários › Novo usuário:** o administrador informa nome, e-mail (é o login), telefone, cargo e perfil. O sistema cria o login com uma **senha provisória** (12 letras e números sem os que se confundem, em três grupos: `k7Pm-3rTz-Wn9d`), mostrada **uma única vez** com o botão "Copiar endereço, e-mail e senha". Não há convite nem espera de aceite. "Convidar por link" continua para quem prefere que a pessoa crie a própria senha.
+- **Primeiro acesso:** quem entra com senha provisória é levado à tela de senha nova e não abre mais nada do sistema até trocá-la (marca `trocar_senha` no cadastro do login). **Editar › Gerar nova senha provisória** repete o processo (a senha atual deixa de valer).
+- **Segurança:** só a função de borda cria o login (a chave de serviço nunca sai do servidor); **quem pode é o banco** (`settings.acesso`; o perfil e a pessoa têm de ser da empresa de quem cadastra); a finalização só o `service_role` executa; a senha não é gravada nem escrita no log; 20 cadastros por minuto por administrador; e-mail que já tem conta é recusado (use o convite); a auditoria atribui o cadastro e cada senha provisória ao administrador.
+- **Limite honesto:** o administrador conhece a senha provisória até a pessoa trocá-la; depois disso só a pessoa sabe. Se o login já tem conta em outra empresa, o caminho é o convite por link.
+- Aplicar: `docs/prompt-aplicar-0026.md` (migração, depois a função com verificação de JWT, depois o app). Testes: `supabase/testes/0018_usuario_direto.sql` e o passo 8 do F05 (no `--real` inclui o primeiro acesso e a troca obrigatória).
+
 ## Pendente
-- Cadastro **direto** da pessoa pelo administrador (login com senha provisória, sem convite), planejado: exige função no servidor e migração.
 - Opção "é funcionário" (ponto e valor hora) na mesma tela de Pessoas, junto com o Crew.
 - Editor de itens e de assemblies em painel, se o uso mostrar que vale.

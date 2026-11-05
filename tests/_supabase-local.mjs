@@ -176,6 +176,29 @@ export async function rotear(contexto, urlProjeto) {
       const [quem] = await sql(`select email from auth.users where id = '${sub}'`);
       return route.fulfill({ status: 200, headers: cors, body: JSON.stringify({ id: sub, aud: 'authenticated', role: 'authenticated', email: (quem && quem.email) || '', user_metadata: { idioma: 'pt' }, app_metadata: {} }) });
     }
+    // a função de borda do cadastro direto (supabase/functions/criar-usuario): sem o serviço de login local, o login nasce direto em auth.users e a senha é fixa (só a de verdade passa pelo Auth)
+    if (caminho === '/functions/v1/criar-usuario' && req.method() === 'POST') {
+      const token = (req.headers().authorization || '').replace('Bearer ', '');
+      const sub = JSON.parse(Buffer.from(token.split('.')[1] || 'e30', 'base64url').toString()).sub;
+      const corpo = JSON.parse(req.postData() || '{}');
+      const dar = (status, obj) => route.fulfill({ status, headers: cors, body: JSON.stringify(obj) });
+      const falha = (e) => dar(400, { erro: (String(e.message).match(/"message":"((?:[^"\\]|\\.)*)"/) || [])[1] ? JSON.parse('"' + String(e.message).match(/"message":"((?:[^"\\]|\\.)*)"/)[1] + '"') : 'Não foi possível concluir.' });
+      try {
+        if (corpo.acao === 'criar') {
+          const email = String(corpo.email || '').trim().toLowerCase();
+          await rest(sub, '/rpc/preparar_usuario_direto', { metodo: 'POST', corpo: { p_email: email, p_perfil: corpo.perfil } });
+          const id = await criarUsuario(email, corpo.nome || email.split('@')[0]);
+          const r = await rpcServico('finalizar_usuario_direto', { p_admin: sub, p_user: id, p_perfil: corpo.perfil, p_nome: corpo.nome || '', p_cargo: corpo.cargo || '', p_telefone: corpo.telefone || '' });
+          if (!r.ok) { sqlExec(`delete from auth.users where id = '${id}'`); return dar(400, { erro: r.error }); }
+          return dar(200, { ok: true, senha: 'Ab3d-Ef5g-Hj7k', membro: r.data });
+        }
+        if (corpo.acao === 'nova-senha') {
+          await rest(sub, '/rpc/preparar_nova_senha', { metodo: 'POST', corpo: { p_membro: corpo.membro } });
+          return dar(200, { ok: true, senha: 'Zx9y-Wv8u-Ts7r' });
+        }
+        return dar(400, { erro: 'Ação inválida.' });
+      } catch (e) { return falha(e); }
+    }
     // a função de borda do link do cliente
     if (caminho === '/functions/v1/diario-publico') {
       const codigo = (url.searchParams.get('codigo') || '').toUpperCase();

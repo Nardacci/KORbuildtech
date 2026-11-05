@@ -9,7 +9,7 @@
 
 **Pré-condições (feitas pelo teste, `tests/_fluxo-dados.mjs`, apagadas no fim):** a empresa dos fluxos com **Fábio Fluxo** (Administrador) e **Eduardo Encarregado** (perfil Encarregado); a pessoa **Gabi Gestora** (`fluxo.gabi@example.com`), com login e sem empresa; a pessoa **Olga Outra** (`fluxo.olga@example.com`) com a empresa "Fluxo Outra Ltda" e um contato dela. Nenhum e-mail sai.
 
-**Dados fixos:** convite para a Gabi com o perfil "Gestor de obras"; perfil novo "Encarregado com diário" a partir do Encarregado; telefone da empresa `(603) 555-0199`; telefone do administrador `(603) 555-0123`.
+**Dados fixos:** usuário cadastrado direto: **Heitor Novo** (`fluxo.heitor@example.com`, cargo "Encarregado de obra", telefone `(603) 555-0180`, perfil Encarregado); convite para a Gabi com o perfil "Gestor de obras"; perfil novo "Encarregado com diário" a partir do Encarregado; telefone da empresa `(603) 555-0199`; telefone do administrador `(603) 555-0123`.
 
 | # | Quem | Onde | O que faz | Esperado |
 |---|---|---|---|---|
@@ -20,6 +20,7 @@
 | 5 | Fábio | Settings › Usuários | Trocar o perfil da Gabi para Trabalhador e depois desativá-la | O perfil muda no banco; ao desativar, `membros.ativo` fica falso; a Gabi, ao recarregar, vê "Seu acesso foi desativado" |
 | 6 | Fábio | Settings › Empresa e Meu perfil | Salvar o telefone da empresa e o telefone do próprio perfil | Os dois ficam no banco (`empresas.telefone`, `membros.telefone`) |
 | 7 | Olga (outra empresa) | Banco como a Olga | Ler membros, contatos e perfis | Só enxerga os da empresa dela: nenhum membro, contato ou convite da empresa dos fluxos |
-| 8 | Fábio | Auditoria (no banco) | Conferir o registro do que foi feito | A auditoria da empresa registra o convite, o perfil novo, a troca e a desativação (pelo menos 4 registros); nenhum erro de JavaScript em todo o fluxo |
+| 8 | Fábio (admin) | Settings › Usuários › Novo usuário | Cadastrar o Heitor direto (nome, e-mail, telefone, cargo, perfil Encarregado); tentar o mesmo e-mail de novo; gerar uma nova senha provisória | O painel mostra a senha provisória uma única vez (3 grupos de 4); no banco: membro ativo com perfil, cargo e telefone, e a auditoria atribui o cadastro ao Fábio; o e-mail repetido é recusado ("já tem conta"); a nova senha provisória fica na auditoria. **Só no `--real`:** o Heitor entra com a senha provisória, cai na troca de senha, não abre o resto do sistema antes de trocar e, trocada, entra na empresa |
+| 9 | Fábio | Auditoria (no banco) | Conferir o registro do que foi feito | A auditoria da empresa registra o convite, o perfil novo, a troca e a desativação (pelo menos 4 registros); nenhum erro de JavaScript em todo o fluxo |
 
 **Desfaz:** a empresa dos fluxos, a "Fluxo Outra Ltda" e os logins `fluxo.*@example.com` são apagados no fim (`--manter` guarda os dados).

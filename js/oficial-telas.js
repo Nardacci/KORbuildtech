@@ -12,7 +12,7 @@ import { PERMISSOES, permissao } from './settings.js';
 import { ATUACOES } from './contatos.js';
 import {
   conta, iniciar, aoMudar, carregarMinhaConta, pode, emailAtual, entrar, cadastrar, pedirNovaSenha, definirNovaSenha, sair, criarEmpresa,
-  aceitarConvite, convidar, salvarEmpresa, atualizarMeuPerfil, trocarEmail, emailPendente, salvarPermissoes, mudarPerfilDoMembro, ativarMembro, cancelarConvite, criarPerfil, excluirPerfil, salvarMembro, salvarPerfil,
+  aceitarConvite, convidar, salvarEmpresa, atualizarMeuPerfil, trocarEmail, emailPendente, salvarPermissoes, mudarPerfilDoMembro, ativarMembro, cancelarConvite, criarPerfil, excluirPerfil, salvarMembro, salvarPerfil, criarUsuarioDireto, novaSenhaProvisoria,
 } from './conta.js';
 import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
 import { esquecer as esquecerCadastros } from './cadastros.js';
@@ -135,6 +135,7 @@ function telaEsqueciSenha() {
 function telaNovaSenha() {
   return paginaEntrada('<form class="login-form" id="form-nova-senha" novalidate>' +
     '<h2>' + tr('Escolha uma senha nova') + '</h2><p class="mudo">' + esc(emailAtual()) + '</p>' +
+    ((((conta.sessao || {}).user || {}).user_metadata || {}).trocar_senha ? '<p class="aviso aviso-ambar pequeno">' + tr('Você entrou com a senha provisória que o administrador passou. Escolha agora a sua: só você vai saber.') + '</p>' : '') +
     campo('ns-senha', tr('Senha nova (pelo menos 8 caracteres)'), '<input id="ns-senha" name="senha" type="password" autocomplete="new-password" minlength="8" required>') +
     erroForm + '<button type="submit" class="btn btn-primario btn-bloco btn-grande">' + tr('Salvar a senha') + '</button></form>');
 }
@@ -292,7 +293,7 @@ function htmlUsuarios() {
         (eu ? '' : '<button type="button" class="btn btn-fantasma btn-pequeno" data-acao="of-ativar" data-id="' + m.id + '" data-ativo="' + (m.ativo ? '' : '1') + '">' + (m.ativo ? tr('Desativar') : tr('Reativar')) + '</button>') + '</td></tr>';
   }).join('');
   return cabecalhoDePagina(tr('Usuários'), tr('Quem entra no sistema e o que cada pessoa pode fazer. O cadastro é do administrador.'),
-      botaoCriar('of-novo-usuario', tr('Novo usuário'), icone('mais', 16))) +
+      '<button type="button" class="btn btn-contorno" data-acao="of-convidar-link">' + tr('Convidar por link') + '</button>' + botaoCriar('of-novo-usuario', tr('Novo usuário'), icone('mais', 16))) +
     barraDeBusca(tr('Buscar por nome, cargo ou perfil'), [['', tr('Todos'), conta.membros.length], ['ativos', tr('Ativos'), ativos], ['desativados', tr('Desativados'), conta.membros.length - ativos]]) +
     gradeEmCartao('tabela-membros', [tr('Pessoa'), tr('Perfil de acesso'), tr('Situação'), tr('Último acesso'), ''], linhas, tr('Ninguém encontrado com esse filtro.')) +
     '<p class="mudo pequeno">' + tr('Ninguém altera o próprio acesso, e a empresa sempre mantém alguém ativo que cuide dos acessos.') + '</p>' +
@@ -300,12 +301,44 @@ function htmlUsuarios() {
       ' <button type="button" class="link" data-acao="of-cancelar-convite" data-id="' + c.id + '">' + tr('Cancelar') + '</button></li>').join('') + '</ul></section>' : '');
 }
 
+/* Cadastro direto: o administrador cria o login; a senha provisória aparece uma vez e a pessoa troca no primeiro acesso. */
+function painelSenhaProvisoria({ titulo, subtitulo, email, senha }) {
+  const endereco = location.origin + location.pathname;
+  const texto = tr('Entrar em: {url}', { url: endereco }) + '\n' + tr('E-mail: {email}', { email }) + '\n' + tr('Senha provisória: {senha}', { senha });
+  return abrirPainel({
+    titulo, subtitulo, somenteLeitura: true, classe: 'painel-estreito',
+    corpo: '<div class="painel-campos"><div class="credencial"><span class="rotulo-pequeno">' + tr('E-mail') + '</span><b>' + esc(email) + '</b>' +
+      '<span class="rotulo-pequeno">' + tr('Senha provisória') + '</span><input type="text" readonly value="' + esc(senha) + '" class="senha-provisoria" data-selecionar aria-label="' + esc(tr('Senha provisória')) + '"></div>' +
+      '<button type="button" class="btn btn-primario" data-acao="of-copiar-texto" data-texto="' + esc(texto) + '">' + icone('link', 16) + '<span>' + tr('Copiar endereço, e-mail e senha') + '</span></button>' +
+      '<p class="aviso aviso-ambar pequeno"><b>' + tr('Esta senha aparece só agora.') + '</b> ' + tr('Passe para a pessoa por um canal seguro. No primeiro acesso ela é obrigada a escolher uma senha nova.') + '</p></div>',
+  });
+}
+
+function painelNovoUsuarioDireto() {
+  return abrirPainel({
+    titulo: tr('Novo usuário'), subtitulo: tr('Você cadastra a pessoa e entrega a senha provisória. Ela troca a senha no primeiro acesso.'), rotuloSalvar: tr('Criar usuário'),
+    corpo: '<div class="painel-campos">' + campoPainel('nu-nome', tr('Nome'), '<input id="nu-nome" autocomplete="off">') + campoPainel('nu-email', tr('E-mail (é o login da pessoa)'), '<input id="nu-email" type="email" autocomplete="off">') +
+      '<div class="painel-linha">' + campoPainel('nu-telefone', tr('Telefone'), '<input id="nu-telefone" type="tel" autocomplete="off">') + campoPainel('nu-cargo', tr('Cargo'), '<input id="nu-cargo" autocomplete="off" placeholder="' + esc(tr('Ex.: Encarregado de obra')) + '">') + '</div>' +
+      campoPainel('nu-perfil', tr('Perfil de acesso'), '<select id="nu-perfil">' + opcoesDePerfil((conta.perfis.find((p) => p.chave === 'gestor') || {}).id) + '</select>', tr('O que cada perfil pode fazer está em Perfis de acesso.')) + '</div>',
+    aoSalvar: async (p) => {
+      const dados = { nome: p.querySelector('#nu-nome').value, email: p.querySelector('#nu-email').value, telefone: p.querySelector('#nu-telefone').value, cargo: p.querySelector('#nu-cargo').value, perfil: p.querySelector('#nu-perfil').value };
+      const r = await criarUsuarioDireto(dados);
+      return r.erro ? r : { ok: true, senha: r.senha, email: dados.email.trim().toLowerCase(), nome: dados.nome.trim() };
+    },
+  }).then(async (r) => {
+    if (!r) return;
+    redesenhar();
+    await painelSenhaProvisoria({ titulo: tr('Usuário criado'), subtitulo: r.nome, email: r.email, senha: r.senha });
+  });
+}
+
+/* O convite por link continua para quem quer escolher a própria senha. */
 function painelNovoUsuario() {
   return abrirPainel({
-    titulo: tr('Novo usuário'), subtitulo: tr('Gera um link de convite para a pessoa entrar com o perfil escolhido.'), rotuloSalvar: tr('Gerar o convite'),
+    titulo: tr('Convidar por link'), subtitulo: tr('Gera um link para a pessoa criar a própria conta e entrar com o perfil escolhido.'), rotuloSalvar: tr('Gerar o convite'),
     corpo: '<div class="painel-campos">' + campoPainel('cv-email', tr('E-mail'), '<input id="cv-email" name="email" type="email" required autocomplete="off">') + campoPainel('cv-nome', tr('Nome'), '<input id="cv-nome" name="nome" autocomplete="off">') +
       campoPainel('cv-perfil', tr('Perfil de acesso'), '<select id="cv-perfil" name="perfil">' + opcoesDePerfil((conta.perfis.find((p) => p.chave === 'gestor') || {}).id) + '</select>', tr('O que cada perfil pode fazer está em Perfis de acesso.')) +
-      '<p class="mudo pequeno">' + tr('Por enquanto o convite é um link para você mandar à pessoa (vale 7 dias, uma vez só, para aquele e-mail).') + '</p></div>',
+      '<p class="mudo pequeno">' + tr('O convite é um link para você mandar à pessoa (vale 7 dias, uma vez só, para aquele e-mail).') + '</p></div>',
     aoSalvar: async (p) => {
       const r = await convidar(p.querySelector('#cv-email').value, p.querySelector('#cv-nome').value, p.querySelector('#cv-perfil').value);
       return r.erro ? r : { ok: true, link: r.link };
@@ -327,6 +360,11 @@ function painelEditarUsuario(id) {
   const eu = m.id === conta.membro.id;
   return abrirPainel({
     titulo: m.nome, subtitulo: eu ? tr('Você: o seu perfil e a sua situação só outra pessoa altera.') : nomePerfilDe(m.perfil_id), rotuloSalvar: tr('Salvar'),
+    extras: eu ? [] : [{ rotulo: tr('Gerar nova senha provisória'), classe: 'btn-contorno', aoClicar: async () => {
+      if (!(await confirmar(tr('Gerar nova senha provisória?'), tr('A senha atual deixa de valer e a pessoa terá de escolher outra no próximo acesso.'), tr('Gerar')))) return null;
+      const r = await novaSenhaProvisoria(m.id);
+      return r.erro ? r : { ok: true, senha: r.senha, nova: true };
+    } }],
     corpo: '<div class="painel-campos">' + campoPainel('eu-nome', tr('Nome'), '<input id="eu-nome" value="' + esc(m.nome) + '">') + campoPainel('eu-telefone', tr('Telefone'), '<input id="eu-telefone" type="tel" value="' + esc(m.telefone || '') + '">') +
       campoPainel('eu-cargo', tr('Cargo'), '<input id="eu-cargo" value="' + esc(m.cargo || '') + '" placeholder="' + esc(tr('Ex.: Encarregado de obra')) + '">') +
       campoPainel('eu-perfil', tr('Perfil de acesso'), '<select id="eu-perfil"' + (eu ? ' disabled' : '') + '>' + opcoesDePerfil(m.perfil_id) + '</select>') +
@@ -337,7 +375,12 @@ function painelEditarUsuario(id) {
       const r = await salvarMembro(m.id, dados);
       return r.erro ? r : { ok: true };
     },
-  }).then((r) => { if (r) { toast(tr('Dados salvos.')); redesenhar(); } });
+  }).then(async (r) => {
+    if (!r) return;
+    redesenhar();
+    if (r.nova) await painelSenhaProvisoria({ titulo: tr('Nova senha provisória'), subtitulo: m.nome, email: '—', senha: r.senha });
+    else toast(tr('Dados salvos.'));
+  });
 }
 
 /* ---------- Perfis de acesso ---------- */
@@ -527,7 +570,9 @@ export const acoesOficiais = {
     ir('#/conta');
   },
   'of-descartar-convite'() { esquecerConvite(); ir('#/nova-empresa'); },
-  'of-novo-usuario'() { painelNovoUsuario(); },
+  'of-novo-usuario'() { painelNovoUsuarioDireto(); },
+  'of-convidar-link'() { painelNovoUsuario(); },
+  async 'of-copiar-texto'(el) { try { await navigator.clipboard.writeText(el.dataset.texto); toast(tr('Copiado.')); } catch (e) { toast(tr('Selecione o texto e copie.')); } },
   'of-editar-usuario'(el) { painelEditarUsuario(el.dataset.id); },
   async 'of-copiar'(el) {
     try { await navigator.clipboard.writeText(el.dataset.link); toast(tr('Link copiado.')); } catch (e) { toast(tr('Selecione o link e copie.')); }

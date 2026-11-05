@@ -29,6 +29,9 @@ function carregarBiblioteca() {
   });
 }
 
+/* Login criado pelo administrador (senha provisória): até a pessoa escolher a senha dela, só vale a tela de senha nova (a mesma da recuperação). */
+const comSenhaProvisoria = (s) => !!(s && s.user && (s.user.user_metadata || {}).trocar_senha === true);
+
 export function iniciar() {
   if (carregando) return carregando;
   carregando = (async () => {
@@ -38,13 +41,14 @@ export function iniciar() {
     });
     sb.auth.onAuthStateChange((evento, sessao) => {
       conta.sessao = sessao;
-      if (evento === 'PASSWORD_RECOVERY') conta.recuperandoSenha = true;
+      if (evento === 'PASSWORD_RECOVERY' || comSenhaProvisoria(sessao)) conta.recuperandoSenha = true;
       if (evento === 'SIGNED_OUT') Object.assign(conta, { membro: null, empresa: null, perfil: null, perfis: [], membros: [], convites: [] });
       // não chama o banco dentro do próprio aviso do Auth (evita travar a sessão); recarrega logo depois
       setTimeout(() => carregarMinhaConta().then(avisar), 0);
     });
     const { data } = await sb.auth.getSession();
     conta.sessao = data.session;
+    if (comSenhaProvisoria(data.session)) conta.recuperandoSenha = true;
     // tira o "?code=" do endereço depois que o Supabase o trocou pela sessão
     if (new URLSearchParams(location.search).has('code')) history.replaceState(null, '', location.pathname + location.hash);
     await carregarMinhaConta();
@@ -148,7 +152,7 @@ export async function entrar(email, senha) {
     if (resp.error && senha !== senha.trim() && senha.trim()) resp = await entrarCom(senha.trim());
     const r = resultado(resp);
     if (r.erro) { r.erro += detalhe(resp.error); return r; }
-    conta.sessao = r.data.session; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); lembrarIdioma();
+    conta.sessao = r.data.session; if (comSenhaProvisoria(r.data.session)) conta.recuperandoSenha = true; await carregarMinhaConta(); await sb.rpc('registrar_acesso'); lembrarIdioma();
     return r;
   } catch (e) {
     return { erro: tr('Não foi possível entrar agora. Confira a internet e tente de novo.') + detalhe(e) };
@@ -168,7 +172,7 @@ export async function pedirNovaSenha(email) {
 export async function definirNovaSenha(senha) {
   await iniciar();
   if (String(senha).length < 8) return { erro: tr('A senha precisa ter pelo menos 8 caracteres.') };
-  const r = resultado(await sb.auth.updateUser({ password: senha }));
+  const r = resultado(await sb.auth.updateUser({ password: senha, data: { trocar_senha: false } }));   // a senha provisória deixa de valer como "a que falta trocar"
   if (r.ok) conta.recuperandoSenha = false;
   return r;
 }
@@ -243,6 +247,29 @@ export const ativarMembro = (membroId, ativo) => alterar('membros', membroId, { 
 export const cancelarConvite = (id) => alterar('convites_usuario', id, { cancelado_em: new Date().toISOString() });
 
 /* Perfil novo: em branco (baseId vazio) ou a partir de outro. Devolve { ok, id } para a tela abrir o editor de permissões. */
+/* Cadastro direto pelo administrador: a função de borda cria o login com uma senha provisória (devolvida uma vez) e o banco confere a permissão. */
+async function chamarCriarUsuario(corpo) {
+  await iniciar();
+  const { data, error } = await sb.functions.invoke('criar-usuario', { body: corpo });
+  if (error) {
+    let msg = '';
+    try { msg = ((await error.context.json()) || {}).erro || ''; } catch { /* sem corpo legível */ }
+    return { erro: msg || tr('Não foi possível concluir agora. Confira a internet e tente de novo.') };
+  }
+  if (!data || data.erro || !data.senha) return { erro: (data && data.erro) || tr('Não foi possível concluir agora. Confira a internet e tente de novo.') };
+  return { ok: true, senha: data.senha, membro: data.membro };
+}
+export async function criarUsuarioDireto(d) {
+  const nome = String(d.nome || '').trim(), email = String(d.email || '').trim().toLowerCase();
+  if (nome.length < 2) return { erro: tr('Diga o nome da pessoa.') };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { erro: tr('E-mail inválido.') };
+  if (!d.perfil) return { erro: tr('Escolha o perfil de acesso.') };
+  const r = await chamarCriarUsuario({ acao: 'criar', email, nome, cargo: d.cargo || '', telefone: d.telefone || '', perfil: d.perfil });
+  if (r.ok) await carregarMinhaConta();
+  return r;
+}
+export async function novaSenhaProvisoria(membroId) { return chamarCriarUsuario({ acao: 'nova-senha', membro: membroId }); }
+
 export async function criarPerfil(nome, baseId, descricao = '') {
   await iniciar();
   const n = String(nome || '').trim();

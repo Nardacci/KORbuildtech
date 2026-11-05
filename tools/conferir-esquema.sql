@@ -17,7 +17,8 @@ funcoes(migracao, funcao) as (values
   ('0020', 'obra_do_projeto'), ('0020', 'nome_livre_de_obra'),
   ('0021', 'aprovar_rdo'),
   ('0023', 'semear_funcoes'), ('0023', 'semear_funcoes_da_empresa'),
-  ('0024', 'projetos_do_daily')),
+  ('0024', 'projetos_do_daily'),
+  ('0026', 'preparar_usuario_direto'), ('0026', 'finalizar_usuario_direto'), ('0026', 'preparar_nova_senha')),
 tabelas(migracao, tabela) as (values ('0023', 'funcoes'), ('0023', 'funcao_valores')),
 gatilhos(migracao, gatilho, tabela) as (values ('0020', 'projetos_obra', 'projetos'), ('0023', 'empresas_semear_funcoes', 'empresas'))
 select migracao, 'coluna ' || tabela || '.' || coluna as falta
