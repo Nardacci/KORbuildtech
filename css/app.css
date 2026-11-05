@@ -1920,3 +1920,9 @@ dialog.painel > form { display: flex; flex-direction: column; height: 100%; }
 .credencial b { font-size: 15px; word-break: break-all; margin-bottom: 8px; }
 .senha-provisoria { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 22px; font-weight: 700; letter-spacing: .06em; text-align: center; padding: 12px; border: 1px dashed var(--primario); border-radius: 10px; background: #fff; }
 .aviso-ambar { background: var(--ambar-claro); border: 1px solid var(--ambar-borda); color: var(--ambar); padding: 10px 12px; border-radius: 10px; margin: 0; }
+
+/* Aviso de atualização do app (js/atualizacao.js) */
+.aviso-atualizacao { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; display: flex; gap: 10px; align-items: center; justify-content: center; padding: calc(8px + env(safe-area-inset-top)) 16px 8px; background: #1F2A44; color: #fff; font-size: .9rem; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.aviso-atualizacao-giro { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; animation: giro-atualizacao .8s linear infinite; }
+@keyframes giro-atualizacao { to { transform: rotate(360deg); } }
+.versao-app { margin: 18px 0 0; text-align: center; font-size: .75rem; color: var(--mudo, #6B7280); }

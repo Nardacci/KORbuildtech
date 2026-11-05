@@ -3279,6 +3279,10 @@ export const EN = {
   'Ocultar a senha': 'Hide password',
 
   // ---------- Entrada ----------
+  'Baixando a versão nova do KORbuild…': 'Downloading the new version of KORbuild…',
+  'Atualizando o app… um instante.': 'Updating the app… one moment.',
+  'Versão nova do KORbuild pronta.': 'A new version of KORbuild is ready.',
+  'Atualizar agora': 'Update now',
   'Há uma versão nova do KORbuild. Feche e abra o app para usar.': 'There is a new version of KORbuild. Close and reopen the app to use it.',
 
   // ---------- Entrada ----------

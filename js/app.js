@@ -21,6 +21,7 @@ import { ligarConcorrenciasOficial, lerConvitePublico, mostrarConvitePublico } f
 import { ligarAvisosOficial, avisosDoServidor } from './avisos-oficial.js';
 import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { avisarBaixando, avisarAtualizando, avisarPronta } from './atualizacao.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
 import { tr, tn, idioma, definirIdioma } from './i18n.js';
 import {
@@ -1991,15 +1992,18 @@ async function iniciar() {
     navigator.serviceWorker.register('sw.js').then((reg) => {
       // o app instalado fica aberto por dias: pergunta se há versão nova ao abrir e sempre que volta para a tela
       reg.update().catch(() => {});
+      // versão nova encontrada: mostra que está baixando (só quando já havia uma versão instalada; na 1ª instalação não há o que avisar)
+      reg.addEventListener('updatefound', () => { if (tinhaControle) avisarBaixando(); });
       document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
     }).catch(() => {});
     // versão nova assumiu: recarrega sozinho, a menos que a pessoa esteja preenchendo algo (aí só avisa)
     let recarregou = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!tinhaControle || recarregou) return;
-      if (formularioEmEdicao()) { toast(tr('Há uma versão nova do KORbuild. Feche e abra o app para usar.')); return; }
+      if (formularioEmEdicao()) { avisarPronta(() => { recarregou = true; location.reload(); }); return; }
       recarregou = true;
-      location.reload();
+      avisarAtualizando();
+      setTimeout(() => location.reload(), 700);
     });
   }
   window.addEventListener('beforeinstallprompt', (ev) => {

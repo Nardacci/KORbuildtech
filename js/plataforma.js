@@ -11,6 +11,7 @@ import { estado, todasAsEmpresas, salvar, chaveDaSessao } from './armazem.js';
 import { pode, perfilDe, modulosDe } from './settings.js';
 import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
 import { tr, tn, htmlSeletorIdioma } from './i18n.js';
+import { VERSAO_APP } from './config.js';
 import { htmlAvisoInstalar } from './instalar.js';
 
 
@@ -265,7 +266,7 @@ export function paginaEntrada(conteudo) {
         '<p class="login-assinatura">' + ASSINATURA.map((l) => '<span>' + l + '</span>').join('') + '</p>' +
         '<ul class="login-modulos">' + MODULOS.filter((m) => !m.incluso && moduloNaVersao(m.id)).map((m) => '<li class="modulo-' + m.id + '">' + icone(m.id, 18) + '<span><b>' + m.nome + '</b> ' + esc(m.resumo.split(':')[0].toLowerCase()) + '</span></li>').join('') + '</ul></div>' +
     '</section>' +
-    '<section class="login-lado">' + conteudo + '</section>' +
+    '<section class="login-lado">' + conteudo + '<p class="versao-app">KORbuild ' + VERSAO_APP + '</p></section>' +
   '</div>';
 }
 
