@@ -221,17 +221,37 @@ async function alterar(tabela, id, mudancas) {
 }
 export const salvarEmpresa = (mudancas) => alterar('empresas', conta.empresa.id, mudancas);
 export const salvarPermissoes = (perfilId, permissoes) => alterar('perfis_acesso', perfilId, { permissoes });
+/* Dados de outra pessoa (só quem tem settings.acesso, pela regra do banco): nome, telefone, cargo e, se for o caso, perfil e situação. */
+export async function salvarMembro(membroId, dados) {
+  const nome = String(dados.nome || '').trim();
+  if (nome.length < 2) return { erro: tr('Diga o nome da pessoa.') };
+  const mudancas = { nome, telefone: String(dados.telefone || '').trim(), cargo: String(dados.cargo || '').trim() };
+  if (dados.perfil_id) mudancas.perfil_id = dados.perfil_id;
+  if (typeof dados.ativo === 'boolean') mudancas.ativo = dados.ativo;
+  return alterar('membros', membroId, mudancas);
+}
+export async function salvarPerfil(id, dados) {
+  const mudancas = {};
+  if (dados.nome != null) { const n = String(dados.nome).trim(); if (n.length < 2) return { erro: tr('Dê um nome ao perfil.') }; mudancas.nome = n; }
+  if (dados.descricao != null) mudancas.descricao = String(dados.descricao).trim();
+  if (dados.permissoes) mudancas.permissoes = dados.permissoes;
+  const r = await alterar('perfis_acesso', id, mudancas);
+  return r.erro && /duplicate key|unique/i.test(r.erro) ? { erro: tr('Já existe um perfil com esse nome.') } : r;
+}
 export const mudarPerfilDoMembro = (membroId, perfilId) => alterar('membros', membroId, { perfil_id: perfilId });
 export const ativarMembro = (membroId, ativo) => alterar('membros', membroId, { ativo });
 export const cancelarConvite = (id) => alterar('convites_usuario', id, { cancelado_em: new Date().toISOString() });
 
-export async function criarPerfil(nome, baseId) {
+/* Perfil novo: em branco (baseId vazio) ou a partir de outro. Devolve { ok, id } para a tela abrir o editor de permissões. */
+export async function criarPerfil(nome, baseId, descricao = '') {
   await iniciar();
-  const base = conta.perfis.find((p) => p.id === baseId);
-  const { error } = await sb.from('perfis_acesso').insert({ empresa_id: conta.empresa.id, nome: String(nome).trim(), descricao: base ? tr('A partir de {nome}', { nome: base.nome }) : '', permissoes: base ? base.permissoes : [] });
+  const n = String(nome || '').trim();
+  if (n.length < 2) return { erro: tr('Dê um nome ao perfil.') };
+  const base = baseId ? conta.perfis.find((p) => p.id === baseId) : null;
+  const { data, error } = await sb.from('perfis_acesso').insert({ empresa_id: conta.empresa.id, nome: n, descricao: String(descricao || '').trim() || (base ? tr('A partir de {nome}', { nome: base.nome }) : ''), permissoes: base ? base.permissoes : [] }).select('id').single();
   if (error) return { erro: /duplicate key/i.test(error.message) ? tr('Já existe um perfil com esse nome.') : traduzir(error) };
   await carregarMinhaConta();
-  return { ok: true };
+  return { ok: true, id: data && data.id };
 }
 export async function excluirPerfil(id) {
   await iniciar();

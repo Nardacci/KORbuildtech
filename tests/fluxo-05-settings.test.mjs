@@ -31,15 +31,17 @@ const abaVisivel = async (pagina, rotulo) => (await pagina.locator('nav a', { ha
 
 try {
   await fluxo.passo(1, async () => {
-    await irPara(p, '#/conta/usuarios', '#cv-email');
+    await irPara(p, '#/conta/usuarios', '.tabela-membros');
     await p.waitForSelector('.tabela-membros tbody tr', { timeout: 30000 });
     await esperarAte(async () => (await p.locator('.tabela-membros tbody tr').count()) >= 2, 20000);
     const linhas = (await texto(p, '.tabela-membros'));
     verificar(linhas.includes('Fábio Fluxo') && linhas.includes('Eduardo Encarregado'), 'a lista mostra o Fábio e o Eduardo', linhas.slice(0, 300));
     verificar(await p.locator('select[data-acao-mudar="of-perfil-membro"]').count() === 1, 'o Administrador não tem seletor para mudar o próprio perfil (só o do Eduardo)', await p.locator('select[data-acao-mudar="of-perfil-membro"]').count());
-    verificar(await preencher(p, [['#cv-email', GABI.email], ['#cv-nome', GABI.nome]]), 'o formulário do convite guardou e-mail e nome antes de enviar');
+    await p.click('[data-acao="of-novo-usuario"]');
+    await p.waitForSelector('dialog.painel #cv-email');
+    verificar(await preencher(p, [['#cv-email', GABI.email], ['#cv-nome', GABI.nome]]), 'o painel do convite guardou e-mail e nome antes de enviar');
     await p.selectOption('#cv-perfil', { label: 'Gestor de obras' });
-    await p.click('[data-acao="of-convidar"]');
+    await p.click('dialog.painel [data-painel-salvar]');
     await p.waitForSelector('.oficial-link', { timeout: 30000 });
     const link = await p.locator('.oficial-link').inputValue();
     verificar(link.includes('#/aceitar/'), 'o convite gera o link de aceite', link.slice(0, 80));
@@ -81,12 +83,23 @@ try {
     await irPara(p, '#/conta/perfis', '.perfil-cartao');
     await esperarAte(async () => (await p.locator('.perfil-cartao').count()) === 4, 20000);
     verificar(await p.locator('.perfil-cartao').count() === 4, 'os quatro perfis padrão', await p.locator('.perfil-cartao').count());
-    verificar(await preencher(p, [['#np-nome', 'Encarregado com diário']]), 'o formulário guardou o nome do perfil novo antes de criar');
-    await p.selectOption('#np-base', { label: 'Encarregado' });
     await p.click('[data-acao="of-novo-perfil"]');
+    await p.waitForSelector('dialog.painel #np-nome');
+    verificar(await preencher(p, [['#np-nome', 'Encarregado com diário']]), 'o painel guardou o nome do perfil novo antes de criar');
+    await p.selectOption('#np-base', { label: 'Encarregado' });
+    await p.click('dialog.painel [data-painel-salvar]');
     verificar(await esperarAte(async () => (await p.locator('.perfil-cartao').count()) === 5, 25000), 'o perfil novo aparece: cinco perfis', await p.locator('.perfil-cartao').count());
-    verificar(await p.locator('.perfil-cartao').first().locator('input[name="perm"]:disabled').count() > 0, 'o Administrador continua travado (caixas desabilitadas)');
-    await irPara(p, '#/conta/usuarios', '#cv-perfil');
+    await p.waitForSelector('dialog.painel #pf-nome', { timeout: 15000 });   // depois de criar, o editor de permissões do perfil novo abre sozinho
+    verificar(await p.inputValue('dialog.painel #pf-nome') === 'Encarregado com diário', 'o editor do perfil novo abre para ajustar as permissões');
+    await p.click('dialog.painel [data-painel-fechar]');
+    await p.waitForSelector('dialog.painel', { state: 'detached' });
+    await p.locator('.perfil-cartao').first().locator('[data-acao="of-editar-perfil"]').click();
+    await p.waitForSelector('dialog.painel input[name="perm"]');
+    verificar(await p.locator('dialog.painel input[name="perm"]:disabled').count() > 0, 'o Administrador continua travado (caixas desabilitadas)');
+    await p.click('dialog.painel [data-painel-fechar]');
+    await irPara(p, '#/conta/usuarios', '.tabela-membros');
+    await p.click('[data-acao="of-novo-usuario"]');
+    await p.waitForSelector('dialog.painel #cv-perfil');
     verificar(await p.locator('#cv-perfil option', { hasText: 'Encarregado com diário' }).count() === 1, 'o perfil novo aparece na lista de perfis do convite');
   });
 

@@ -74,8 +74,8 @@ export function telaItens(moldura) {
           '<option value="sem-preco">' + tr('Sem preço') + ' (' + conta('sem-preco') + ')</option><option value="desatualizado">' + tr('Desatualizado') + ' (' + conta('desatualizado') + ')</option>' +
           '<option value="inativo">' + tr('Inativos') + ' (' + conta('inativo') + ')</option><option value="todos">' + tr('Todos') + ' (' + todos.length + ')</option></select>' +
         '<span class="mudo pequeno" id="itens-contagem"></span></div>' +
-      '<section class="cartao">' + (todos.length
-        ? '<div class="tabela-rolagem"><table class="tabela tabela-itens tabela-precos" id="itens-tabela"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Item') + '</th><th>' + tr('Categoria') + '</th><th>' + tr('Etapa (cost code)') + '</th><th>' + tr('Unidade de compra') + '</th><th class="num">' + tr('Preço atual') + '</th><th>' + tr('Desde') + '</th><th>' + tr('Situação') + '</th><th></th></tr></thead><tbody>' + todos.map(linha).join('') + '</tbody></table></div><p class="vazio" id="itens-nenhum" hidden>' + tr('Nenhum item com esses filtros.') + '</p>'
+      '<section class="cartao grade-cartao">' + (todos.length
+        ? '<div class="tabela-rolagem"><table class="tabela grade tabela-itens tabela-precos" id="itens-tabela"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Item') + '</th><th>' + tr('Categoria') + '</th><th>' + tr('Etapa (cost code)') + '</th><th>' + tr('Unidade de compra') + '</th><th class="num">' + tr('Preço atual') + '</th><th>' + tr('Desde') + '</th><th>' + tr('Situação') + '</th><th></th></tr></thead><tbody>' + todos.map(linha).join('') + '</tbody></table></div><p class="vazio" id="itens-nenhum" hidden>' + tr('Nenhum item com esses filtros.') + '</p>'
         : '<p class="vazio">' + tr('Ainda não há itens. Crie o primeiro.') + '</p>') + '</section>' +
       '<p class="dica">' + tr('Os preços nunca são apagados: um preço novo vale a partir de uma data, e a proposta usa o que vale no dia em que é emitida. Preço com mais de 12 meses aparece como desatualizado. Item não se exclui: fica inativo.') + '</p>',
   });

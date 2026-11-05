@@ -54,7 +54,10 @@ try {
   await fluxo.passo(3, async () => {
     await irPara(p, '#/conta/perfis', '.perfil-cartao');
     verificar(await p.locator('.perfil-cartao').count() === 4, 'os quatro perfis padrão', await p.locator('.perfil-cartao').count());
-    verificar(await p.locator('.perfil-cartao').first().locator('input[name="perm"]:disabled').count() > 0, 'o Administrador é travado (caixas desabilitadas)');
+    await p.locator('.perfil-cartao').first().locator('[data-acao="of-editar-perfil"]').click();
+    await p.waitForSelector('dialog.painel input[name="perm"]');
+    verificar(await p.locator('dialog.painel input[name="perm"]:disabled').count() > 0, 'o Administrador é travado (caixas desabilitadas)');
+    await p.click('dialog.painel [data-painel-fechar]');
   });
 
   await fluxo.passo(4, async () => {
@@ -67,15 +70,16 @@ try {
   });
 
   await fluxo.passo(5, async () => {
-    await p.locator('.tabela-funcoes a', { hasText: 'Carpenter' }).first().click();
-    await p.waitForSelector('[data-acao="cad-valor-funcao"]', { timeout: 20000 });
-    await p.click('[data-acao="cad-valor-funcao"]');
+    await p.locator('.tabela-funcoes tr', { hasText: 'Carpenter' }).locator('[data-acao="cad-editar-funcao"]').click();
+    await p.waitForSelector('dialog.painel [data-painel-extra]', { timeout: 20000 });
+    await p.click('dialog.painel [data-painel-extra]');
     await p.waitForSelector('dialog #nv-valor');
     await p.fill('dialog #nv-valor', '38'); await p.fill('dialog #nv-desde', somar(hoje(), -30)); await p.fill('dialog #nv-motivo', 'Valor inicial');
     await p.click('dialog button:has-text("Registrar")');
-    await p.waitForSelector('dialog', { state: 'detached' });
+    await p.waitForSelector('dialog #nv-valor', { state: 'detached' });
+    await p.waitForSelector('dialog.painel .tabela-valores', { timeout: 20000 });   // o painel reabre com o histórico novo
     await p.waitForTimeout(800);
-    const t = await texto(p, 'main');
+    const t = await texto(p, 'dialog.painel');
     verificar(/vigente/.test(t) && /38,00|38\.00/.test(t) && /Valor inicial/.test(t), 'o histórico mostra US$ 38,00 vigente com o motivo', t.slice(0, 300));
     const [n] = await sql(`select count(*)::int as n from public.funcao_valores fv join public.funcoes f on f.id = fv.funcao_id join public.empresas e on e.id = f.empresa_id where e.nome = '${aspas(EMPRESA)}' and f.nome = 'Carpenter' and fv.valor = 38`);
     verificar(n.n === 1, 'no banco: 1 valor de US$ 38,00 para a função Carpenter', n);
@@ -85,7 +89,7 @@ try {
     await irPara(p, '#/conta/contatos/novo', '#form-contato');
     verificar(await preencher(p, [['#ct-nome', CLIENTE]]), 'o formulário guardou o nome do cliente antes de salvar');
     await p.check('input[name="papeis"][value="cliente"]');
-    await p.click('[data-acao="cad-salvar-contato"]');
+    await p.click('dialog.painel [data-painel-salvar]');
     verificar(await esperarAte(async () => (await sql(`select count(*)::int as n from public.contatos c join public.empresas e on e.id = c.empresa_id where e.nome = '${aspas(EMPRESA)}' and c.nome = '${CLIENTE}'`))[0].n === 1, 20000), 'no banco: o contato existe');
     await irPara(p, '#/conta/contatos', 'main');
     // no Supabase de verdade a lista chega depois da tela: espera o nome aparecer e, se não vier, recarrega uma vez

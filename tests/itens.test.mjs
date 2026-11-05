@@ -29,7 +29,7 @@ console.log('Lista');
 await ir('#/measure/itens', '#itens-tabela');
 verificar(await p.locator('.lateral-item:has-text("Preços")').count() === 0, 'o menu não tem mais a tela Preços: itens e preços ficam juntos');
 const total = await visiveis();
-verificar(total >= 20 && (await p.locator('#itens-tabela thead').innerText()).includes('Preço atual'), 'a lista mostra os itens ativos com o preço atual', total);
+verificar(total >= 20 && /preço atual/i.test(await p.locator('#itens-tabela thead').innerText()), 'a lista mostra os itens ativos com o preço atual', total);
 await p.fill('#itens-busca', 'osb');
 verificar(await visiveis() === 1, 'a busca por nome ou código filtra na hora');
 await p.fill('#itens-busca', '');

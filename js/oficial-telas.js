@@ -2,8 +2,9 @@
  * entrar, criar conta, esqueci a senha / nova senha, aceitar convite, criar a empresa no primeiro acesso,
  * e a área da conta: início, usuários (convites), perfis de acesso e empresa. Os módulos chegam nas próximas fatias. */
 
-import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
-import { esc, toast, confirmar, dataHora } from './util.js';
+import { PRIMEIRA_VERSAO, NOME_MEASURE, MODULOS_DA_VERSAO } from './versao.js';
+import { esc, toast, confirmar, dataHora, abrirPainel } from './util.js';
+import { iniciais, quando, cabecalhoDePagina, botaoCriar, barraDeBusca, atributosDeLinha, gradeEmCartao, avatar, campoPainel } from './padrao-cadastro.js';
 import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
 import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario, CONTROLE_DE_TESTE } from './plataforma.js';
 import { icone, marca, logotipo } from './icones.js';
@@ -11,7 +12,7 @@ import { PERMISSOES, permissao } from './settings.js';
 import { ATUACOES } from './contatos.js';
 import {
   conta, iniciar, aoMudar, carregarMinhaConta, pode, emailAtual, entrar, cadastrar, pedirNovaSenha, definirNovaSenha, sair, criarEmpresa,
-  aceitarConvite, convidar, salvarEmpresa, atualizarMeuPerfil, trocarEmail, emailPendente, salvarPermissoes, mudarPerfilDoMembro, ativarMembro, cancelarConvite, criarPerfil, excluirPerfil,
+  aceitarConvite, convidar, salvarEmpresa, atualizarMeuPerfil, trocarEmail, emailPendente, salvarPermissoes, mudarPerfilDoMembro, ativarMembro, cancelarConvite, criarPerfil, excluirPerfil, salvarMembro, salvarPerfil,
 } from './conta.js';
 import { telaCadastro, ABAS_CADASTROS, ligarCadastros, acoesCadastros } from './cadastros-telas.js';
 import { esquecer as esquecerCadastros } from './cadastros.js';
@@ -271,58 +272,156 @@ function htmlInicio() {
       '<div class="btn-linha"><a class="btn btn-primario" href="' + URL_PROTOTIPO + '">' + icone('play', 18) + tr('Abrir o protótipo') + '</a><a class="btn btn-contorno" href="' + URL_PORTAL + (idioma() === 'pt' ? 'pt/' : '') + '">' + tr('Especificações e manual') + '</a></div></section>');
 }
 
+/* ---------- Usuários e Perfis de acesso: cabeçalho com ação, busca, grade e painel lateral ---------- */
+
+const nomePerfilDe = (id) => nomeDoPerfil(conta.perfis.find((p) => p.id === id)) || '—';
+const opcoesDePerfil = (atual) => conta.perfis.map((p) => '<option value="' + p.id + '"' + (p.id === atual ? ' selected' : '') + '>' + esc(nomeDoPerfil(p)) + '</option>').join('');
 function htmlUsuarios() {
-  const nomePerfil = (id) => nomeDoPerfil(conta.perfis.find((p) => p.id === id)) || '—';
-  const opcoesPerfil = (atual) => conta.perfis.map((p) => '<option value="' + p.id + '"' + (p.id === atual ? ' selected' : '') + '>' + esc(nomeDoPerfil(p)) + '</option>').join('');
   const pendentes = conta.convites.filter((c) => !c.aceito_em && !c.cancelado_em && new Date(c.expira_em) > new Date());
-  return '<section class="cartao"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + tr('Usuários') + '</h2><span class="mudo pequeno">' + conta.membros.length + '</span></div>' +
-      '<div class="tabela-rolagem"><table class="tabela tabela-membros"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Perfil de acesso') + '</th><th>' + tr('Situação') + '</th><th>' + tr('Último acesso') + '</th><th></th></tr></thead><tbody>' +
-      conta.membros.map((m) => {
-        const eu = m.id === conta.membro.id;
-        return '<tr><td><b>' + esc(m.nome) + '</b>' + (eu ? ' <span class="mudo pequeno">(' + tr('você') + ')</span>' : '') + '</td>' +
-          '<td>' + (eu ? esc(nomePerfil(m.perfil_id)) : '<select data-acao-mudar="of-perfil-membro" data-id="' + m.id + '" aria-label="' + esc(tr('Perfil de {nome}', { nome: m.nome })) + '">' + opcoesPerfil(m.perfil_id) + '</select>') + '</td>' +
-          '<td>' + (m.ativo ? '<span class="etiqueta etiqueta-verde">' + tr('Ativo') + '</span>' : '<span class="etiqueta etiqueta-neutro">' + tr('Desativado') + '</span>') + '</td>' +
-          '<td>' + (m.ultimo_acesso ? dataHora(new Date(m.ultimo_acesso).getTime()) : '<span class="mudo">—</span>') + '</td>' +
-          '<td>' + (eu ? '' : '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-ativar" data-id="' + m.id + '" data-ativo="' + (m.ativo ? '' : '1') + '">' + (m.ativo ? tr('Desativar') : tr('Reativar')) + '</button>') + '</td></tr>';
-      }).join('') + '</tbody></table></div>' +
-      '<p class="mudo pequeno">' + tr('Ninguém altera o próprio acesso, e a empresa sempre mantém alguém ativo que cuide dos acessos.') + '</p></section>' +
-    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Convidar alguém') + '</h2>' +
-      '<form id="form-convidar" class="grade-campos" novalidate data-sem-envio>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="cv-email">' + tr('E-mail') + '</label><input id="cv-email" name="email" type="email" required></div>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="cv-nome">' + tr('Nome') + '</label><input id="cv-nome" name="nome"></div>' +
-        '<div class="campo"><label class="rotulo-pequeno" for="cv-perfil">' + tr('Perfil de acesso') + '</label><select id="cv-perfil" name="perfil">' + opcoesPerfil((conta.perfis.find((p) => p.chave === 'gestor') || {}).id) + '</select></div>' +
-      '</form>' +
-      '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="of-convidar">' + tr('Gerar o convite') + '</button></div>' +
-      '<div id="link-convite"></div>' +
-      '<p class="mudo pequeno">' + tr('Por enquanto, o convite é um link para você mandar à pessoa (vale 7 dias, uma vez só, para aquele e-mail). O envio por e-mail chega numa próxima etapa.') + '</p>' +
-      (pendentes.length ? '<h3 class="rotulo-pequeno">' + tr('Convites pendentes') + '</h3><ul class="lista-simples">' + pendentes.map((c) => '<li><b>' + esc(c.email) + '</b> · ' + esc(nomePerfil(c.perfil_id)) + ' · ' + tr('vale até {quando}', { quando: dataHora(new Date(c.expira_em).getTime()) }) +
-        ' <button type="button" class="link" data-acao="of-cancelar-convite" data-id="' + c.id + '">' + tr('Cancelar') + '</button></li>').join('') + '</ul>' : '') +
-    '</section>';
+  const ativos = conta.membros.filter((m) => m.ativo).length;
+  const linhas = conta.membros.map((m) => {
+    const eu = m.id === conta.membro.id;
+    const sub = [m.cargo, m.telefone].filter(Boolean).join(' · ');
+    return '<tr data-usuario="' + m.id + '"' + atributosDeLinha(m.nome + ' ' + (m.cargo || '') + ' ' + (m.telefone || '') + ' ' + nomePerfilDe(m.perfil_id), [m.ativo ? 'ativos' : 'desativados']) + '>' +
+      '<td><div class="pessoa"><span class="avatar' + (m.ativo ? '' : ' inativo') + '" aria-hidden="true">' + esc(iniciais(m.nome)) + '</span><div><b>' + esc(m.nome) + '</b>' + (eu ? ' <span class="mudo pequeno">(' + tr('você') + ')</span>' : '') +
+        (sub ? '<span class="mudo pequeno bloco">' + esc(sub) + '</span>' : '') + '</div></div></td>' +
+      '<td>' + (eu ? '<span class="chip-perfil">' + esc(nomePerfilDe(m.perfil_id)) + '</span>' : '<select class="select-chip" data-acao-mudar="of-perfil-membro" data-id="' + m.id + '" aria-label="' + esc(tr('Perfil de {nome}', { nome: m.nome })) + '">' + opcoesDePerfil(m.perfil_id) + '</select>') + '</td>' +
+      '<td>' + (m.ativo ? '<span class="status status-ok">' + tr('Ativo') + '</span>' : '<span class="status status-off">' + tr('Desativado') + '</span>') + '</td>' +
+      '<td class="mudo">' + (m.ultimo_acesso ? esc(quando(m.ultimo_acesso)) : '—') + '</td>' +
+      '<td class="acoes-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-editar-usuario" data-id="' + m.id + '">' + tr('Editar') + '</button>' +
+        (eu ? '' : '<button type="button" class="btn btn-fantasma btn-pequeno" data-acao="of-ativar" data-id="' + m.id + '" data-ativo="' + (m.ativo ? '' : '1') + '">' + (m.ativo ? tr('Desativar') : tr('Reativar')) + '</button>') + '</td></tr>';
+  }).join('');
+  return cabecalhoDePagina(tr('Usuários'), tr('Quem entra no sistema e o que cada pessoa pode fazer. O cadastro é do administrador.'),
+      botaoCriar('of-novo-usuario', tr('Novo usuário'), icone('mais', 16))) +
+    barraDeBusca(tr('Buscar por nome, cargo ou perfil'), [['', tr('Todos'), conta.membros.length], ['ativos', tr('Ativos'), ativos], ['desativados', tr('Desativados'), conta.membros.length - ativos]]) +
+    gradeEmCartao('tabela-membros', [tr('Pessoa'), tr('Perfil de acesso'), tr('Situação'), tr('Último acesso'), ''], linhas, tr('Ninguém encontrado com esse filtro.')) +
+    '<p class="mudo pequeno">' + tr('Ninguém altera o próprio acesso, e a empresa sempre mantém alguém ativo que cuide dos acessos.') + '</p>' +
+    (pendentes.length ? '<section class="cartao"><h3 class="cartao-titulo">' + tr('Convites pendentes') + ' <span class="mudo pequeno">' + pendentes.length + '</span></h3><ul class="lista-simples">' + pendentes.map((c) => '<li><b>' + esc(c.email) + '</b> · ' + esc(nomePerfilDe(c.perfil_id)) + ' · ' + tr('vale até {quando}', { quando: dataHora(new Date(c.expira_em).getTime()) }) +
+      ' <button type="button" class="link" data-acao="of-cancelar-convite" data-id="' + c.id + '">' + tr('Cancelar') + '</button></li>').join('') + '</ul></section>' : '');
 }
 
+function painelNovoUsuario() {
+  return abrirPainel({
+    titulo: tr('Novo usuário'), subtitulo: tr('Gera um link de convite para a pessoa entrar com o perfil escolhido.'), rotuloSalvar: tr('Gerar o convite'),
+    corpo: '<div class="painel-campos">' + campoPainel('cv-email', tr('E-mail'), '<input id="cv-email" name="email" type="email" required autocomplete="off">') + campoPainel('cv-nome', tr('Nome'), '<input id="cv-nome" name="nome" autocomplete="off">') +
+      campoPainel('cv-perfil', tr('Perfil de acesso'), '<select id="cv-perfil" name="perfil">' + opcoesDePerfil((conta.perfis.find((p) => p.chave === 'gestor') || {}).id) + '</select>', tr('O que cada perfil pode fazer está em Perfis de acesso.')) +
+      '<p class="mudo pequeno">' + tr('Por enquanto o convite é um link para você mandar à pessoa (vale 7 dias, uma vez só, para aquele e-mail).') + '</p></div>',
+    aoSalvar: async (p) => {
+      const r = await convidar(p.querySelector('#cv-email').value, p.querySelector('#cv-nome').value, p.querySelector('#cv-perfil').value);
+      return r.erro ? r : { ok: true, link: r.link };
+    },
+  }).then(async (r) => {
+    if (!r) return;
+    redesenhar();
+    await abrirPainel({
+      titulo: tr('Convite criado'), subtitulo: tr('Mande este link para a pessoa:'), somenteLeitura: true, classe: 'painel-estreito',
+      corpo: '<div class="painel-campos"><input type="text" readonly value="' + esc(r.link) + '" class="oficial-link" data-selecionar><button type="button" class="btn btn-contorno" data-acao="of-copiar" data-link="' + esc(r.link) + '">' + tr('Copiar o link') + '</button>' +
+        '<p class="mudo pequeno">' + tr('Vale 7 dias e só uma vez, para o e-mail informado.') + '</p></div>',
+    });
+  });
+}
+
+function painelEditarUsuario(id) {
+  const m = conta.membros.find((x) => x.id === id);
+  if (!m) return;
+  const eu = m.id === conta.membro.id;
+  return abrirPainel({
+    titulo: m.nome, subtitulo: eu ? tr('Você: o seu perfil e a sua situação só outra pessoa altera.') : nomePerfilDe(m.perfil_id), rotuloSalvar: tr('Salvar'),
+    corpo: '<div class="painel-campos">' + campoPainel('eu-nome', tr('Nome'), '<input id="eu-nome" value="' + esc(m.nome) + '">') + campoPainel('eu-telefone', tr('Telefone'), '<input id="eu-telefone" type="tel" value="' + esc(m.telefone || '') + '">') +
+      campoPainel('eu-cargo', tr('Cargo'), '<input id="eu-cargo" value="' + esc(m.cargo || '') + '" placeholder="' + esc(tr('Ex.: Encarregado de obra')) + '">') +
+      campoPainel('eu-perfil', tr('Perfil de acesso'), '<select id="eu-perfil"' + (eu ? ' disabled' : '') + '>' + opcoesDePerfil(m.perfil_id) + '</select>') +
+      '<label class="check"><input type="checkbox" id="eu-ativo"' + (m.ativo ? ' checked' : '') + (eu ? ' disabled' : '') + '> ' + tr('Pode entrar no sistema') + '</label></div>',
+    aoSalvar: async (p) => {
+      const dados = { nome: p.querySelector('#eu-nome').value, telefone: p.querySelector('#eu-telefone').value, cargo: p.querySelector('#eu-cargo').value };
+      if (!eu) { dados.perfil_id = p.querySelector('#eu-perfil').value; dados.ativo = p.querySelector('#eu-ativo').checked; }
+      const r = await salvarMembro(m.id, dados);
+      return r.erro ? r : { ok: true };
+    },
+  }).then((r) => { if (r) { toast(tr('Dados salvos.')); redesenhar(); } });
+}
+
+/* ---------- Perfis de acesso ---------- */
+
+const gruposVisiveis = () => PERMISSOES.filter((g) => g.modulo !== 'crew' || MODULOS_DA_VERSAO.includes('crew'));   // o Crew só aparece quando existir para o cliente
+const tipoDoPerfil = (p) => (p.sistema ? ['sistema', tr('Sistema')] : p.chave ? ['modelo', tr('Modelo')] : ['proprio', tr('Personalizado')]);
+
 function htmlPerfis() {
-  return conta.perfis.map((p) => {
-    const travado = p.sistema;
-    const usado = conta.membros.filter((m) => m.perfil_id === p.id).length;
-    return '<section class="cartao perfil-cartao" data-perfil="' + p.id + '"><div class="cartao-cabeca"><h2 class="cartao-titulo">' + esc(nomeDoPerfil(p)) + '</h2>' +
-        '<span class="mudo pequeno">' + (usado === 1 ? tr('1 usuário') : tr('{n} usuários', { n: usado })) + (travado ? ' · ' + tr('travado') : '') + '</span></div>' +
-        (p.descricao ? '<p class="mudo pequeno">' + esc(descricaoDoPerfil(p)) + '</p>' : '') +
-        '<div class="perfil-grupos">' + PERMISSOES.map((g) => '<fieldset><legend class="rotulo-pequeno">' + esc(g.grupo) + '</legend>' + g.itens.map((i) =>
-          '<label class="check pequeno"><input type="checkbox" name="perm" value="' + i.id + '"' + (p.permissoes.includes(i.id) ? ' checked' : '') + (travado ? ' disabled' : '') + '> ' + esc(i.nome) + '</label>').join('') + '</fieldset>').join('') + '</div>' +
-        (travado ? '' : '<div class="btn-linha"><button type="button" class="btn btn-primario btn-pequeno" data-acao="of-salvar-perfil" data-id="' + p.id + '">' + tr('Salvar permissões') + '</button>' +
-          (p.chave ? '' : '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-excluir-perfil" data-id="' + p.id + '">' + tr('Excluir') + '</button>') + '</div>') + '</section>';
-  }).join('') +
-  '<section class="cartao"><h2 class="cartao-titulo">' + tr('Novo perfil') + '</h2><form id="form-novo-perfil" class="grade-campos" novalidate data-sem-envio>' +
-    '<div class="campo"><label class="rotulo-pequeno" for="np-nome">' + tr('Nome') + '</label><input id="np-nome" name="nome" required></div>' +
-    '<div class="campo"><label class="rotulo-pequeno" for="np-base">' + tr('A partir de') + '</label><select id="np-base" name="base">' + conta.perfis.map((p) => '<option value="' + p.id + '">' + esc(nomeDoPerfil(p)) + '</option>').join('') + '</select></div></form>' +
-    '<div class="btn-linha"><button type="button" class="btn btn-contorno" data-acao="of-novo-perfil">' + tr('Criar perfil') + '</button></div></section>';
+  const total = gruposVisiveis().reduce((n, g) => n + g.itens.length, 0);
+  const ids = new Set(gruposVisiveis().flatMap((g) => g.itens.map((i) => i.id)));
+  const linhas = conta.perfis.map((p) => {
+    const usuarios = conta.membros.filter((m) => m.perfil_id === p.id);
+    const [tipo, rotuloTipo] = tipoDoPerfil(p);
+    const n = p.permissoes.filter((x) => ids.has(x)).length;
+    return '<tr class="perfil-cartao" data-perfil="' + p.id + '"><td><div class="pessoa"><span class="icone-perfil" aria-hidden="true">' + icone('conta', 18) + '</span><div><b>' + esc(nomeDoPerfil(p)) + '</b><span class="mudo pequeno bloco">' + esc(descricaoDoPerfil(p) || '—') + '</span></div></div></td>' +
+      '<td><span class="tipo-perfil tipo-' + tipo + '">' + (p.sistema ? icone('olho', 12) : '') + rotuloTipo + '</span></td>' +
+      '<td><div class="meter" title="' + n + ' / ' + total + '"><span style="width:' + Math.round(n * 100 / Math.max(1, total)) + '%"></span></div><span class="mudo pequeno">' + tr('{n} de {total} permissões', { n, total }) + '</span></td>' +
+      '<td>' + (usuarios.length ? '<span class="pilha-avatares" title="' + esc(usuarios.map((u) => u.nome).join(', ')) + '">' + usuarios.slice(0, 3).map((u) => '<span class="avatar mini">' + esc(iniciais(u.nome)) + '</span>').join('') + '</span> <span class="mudo pequeno">' + (usuarios.length === 1 ? tr('1 usuário') : tr('{n} usuários', { n: usuarios.length })) + '</span>' : '<span class="mudo pequeno">' + tr('Ninguém') + '</span>') + '</td>' +
+      '<td class="acoes-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-editar-perfil" data-id="' + p.id + '">' + (p.sistema ? tr('Ver') : tr('Editar')) + '</button></td></tr>';
+  }).join('');
+  return cabecalhoDePagina(tr('Perfis de acesso'), tr('Cada perfil é um conjunto de permissões. Crie os que a sua empresa precisa e escolha, em Usuários, quem usa cada um.'),
+      botaoCriar('of-novo-perfil', tr('Novo perfil'), icone('mais', 16))) +
+    '<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela tabela-perfis grade"><thead><tr><th>' + tr('Perfil') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Permissões') + '</th><th>' + tr('Quem usa') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div></section>' +
+    '<p class="mudo pequeno">' + tr('O Administrador é protegido: a empresa sempre precisa de alguém que cuide dos acessos. Os perfis "Modelo" vêm prontos e podem ser alterados ou excluídos quando ninguém os usa.') + '</p>';
+}
+
+function htmlPermissoes(p, travado) {
+  return gruposVisiveis().map((g) => '<fieldset class="perm-grupo"><legend>' + esc(g.grupo) + '</legend>' + g.itens.map((i) =>
+    '<label class="perm-linha"><input type="checkbox" name="perm" value="' + i.id + '"' + (p && p.permissoes.includes(i.id) ? ' checked' : '') + (travado ? ' disabled' : '') + '><span class="perm-chave" aria-hidden="true"></span>' +
+    '<span class="perm-texto"><b>' + esc(i.nome) + '</b>' + (i.descricao ? '<span class="mudo pequeno bloco">' + esc(i.descricao) + '</span>' : '') + '</span></label>').join('') + '</fieldset>').join('');
+}
+
+function painelNovoPerfil() {
+  return abrirPainel({
+    titulo: tr('Novo perfil'), subtitulo: tr('Dê um nome e escolha de onde partir. Depois você ajusta as permissões.'), rotuloSalvar: tr('Criar perfil'),
+    corpo: '<div class="painel-campos">' + campoPainel('np-nome', tr('Nome'), '<input id="np-nome" name="nome" required autocomplete="off" placeholder="' + esc(tr('Ex.: Orçamentista')) + '">') +
+      campoPainel('np-descricao', tr('Descrição'), '<input id="np-descricao" name="descricao" autocomplete="off" placeholder="' + esc(tr('Para que serve este perfil')) + '">') +
+      campoPainel('np-base', tr('Começar de'), '<select id="np-base" name="base"><option value="">' + tr('Em branco (sem permissões)') + '</option>' + opcoesDePerfil('') + '</select>') + '</div>',
+    aoSalvar: async (p) => {
+      const r = await criarPerfil(p.querySelector('#np-nome').value, p.querySelector('#np-base').value, p.querySelector('#np-descricao').value);
+      return r.erro ? r : { ok: true, id: r.id };
+    },
+  }).then((r) => { if (!r) return; toast(tr('Perfil criado.')); redesenhar(); if (r.id) setTimeout(() => painelEditarPerfil(r.id), 50); });
+}
+
+function painelEditarPerfil(id) {
+  const p = conta.perfis.find((x) => x.id === id);
+  if (!p) return;
+  const travado = !!p.sistema;
+  const usuarios = conta.membros.filter((m) => m.perfil_id === p.id);
+  const visiveis = new Set(gruposVisiveis().flatMap((g) => g.itens.map((i) => i.id)));
+  const extras = [];
+  if (!travado) extras.push({ rotulo: tr('Excluir'), classe: 'btn-perigo', aoClicar: async () => {
+    if (usuarios.length) return { erro: tr('Em uso por {n} pessoa(s): troque antes o perfil delas em Usuários.', { n: usuarios.length }) };
+    if (!(await confirmar(tr('Excluir este perfil?'), tr('Ele deixa de existir. Ninguém usa este perfil agora.'), tr('Excluir')))) return null;
+    const r = await excluirPerfil(p.id);
+    return r.erro ? r : { ok: true, excluido: true };
+  } });
+  return abrirPainel({
+    titulo: nomeDoPerfil(p), subtitulo: travado ? tr('Perfil protegido: as permissões do Administrador não mudam.') : (usuarios.length === 1 ? tr('1 usuário usa este perfil') : tr('{n} usuários usam este perfil', { n: usuarios.length })), somenteLeitura: travado, extras,
+    classe: 'painel-largo', rotuloSalvar: tr('Salvar'),
+    corpo: '<div class="painel-campos">' + campoPainel('pf-nome', tr('Nome'), '<input id="pf-nome" value="' + esc(nomeDoPerfil(p)) + '"' + (travado ? ' disabled' : '') + '>') +
+      campoPainel('pf-descricao', tr('Descrição'), '<input id="pf-descricao" value="' + esc(descricaoDoPerfil(p)) + '"' + (travado ? ' disabled' : '') + '>') + '</div>' +
+      '<h3 class="painel-secao">' + tr('Permissões') + '</h3><div class="perm-grade">' + htmlPermissoes(p, travado) + '</div>' +
+      (usuarios.length ? '<h3 class="painel-secao">' + tr('Quem usa') + '</h3><p class="mudo">' + esc(usuarios.map((u) => u.nome).join(', ')) + '</p>' : ''),
+    aoSalvar: async (painel) => {
+      const marcadas = new Set(Array.from(painel.querySelectorAll('[name="perm"]:checked')).map((i) => i.value));
+      for (const idp of Array.from(marcadas)) for (const req of (permissao(idp) || {}).requer || []) marcadas.add(req);   // dependências automáticas (SET-062)
+      for (const x of p.permissoes) if (!visiveis.has(x)) marcadas.add(x);   // o que a tela não mostra (módulo ainda não disponível) fica como está
+      const dados = { permissoes: Array.from(marcadas) };
+      const nome = painel.querySelector('#pf-nome').value, descricao = painel.querySelector('#pf-descricao').value;
+      if (nome.trim() !== nomeDoPerfil(p)) dados.nome = nome;
+      if (descricao.trim() !== descricaoDoPerfil(p)) dados.descricao = descricao;
+      const r = await salvarPerfil(p.id, dados);
+      return r.erro ? r : { ok: true };
+    },
+  }).then((r) => { if (r) { toast(r.excluido ? tr('Perfil excluído.') : tr('Perfil salvo.')); redesenhar(); } });
 }
 
 const CAMPOS_EMPRESA = [['nome', 'Nome da empresa'], ['razao_social', 'Razão social'], ['ein', 'EIN'], ['endereco', 'Endereço'], ['cidade', 'Cidade'], ['estado', 'Estado'], ['zip', 'ZIP code'], ['telefone', 'Telefone'], ['email', 'E-mail'], ['site', 'Site']];
 function htmlEmpresa() {
   const e = conta.empresa;
   const edita = pode('settings.conta');
-  return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Empresa') + '</h2><form id="form-empresa" class="grade-campos" novalidate data-sem-envio>' +
+  return cabecalhoDePagina(tr('Empresa'), tr('Os dados da empresa aparecem nas propostas e nos relatórios.'), '') + '<section class="cartao"><h2 class="cartao-titulo">' + tr('Dados da empresa') + '</h2><form id="form-empresa" class="grade-campos" novalidate data-sem-envio>' +
     CAMPOS_EMPRESA.map(([k, r]) => '<div class="campo"><label class="rotulo-pequeno" for="em-' + k + '">' + tr(r) + '</label><input id="em-' + k + '" name="' + k + '" value="' + esc(e[k] || '') + '"' + (edita ? '' : ' readonly') + (k === 'estado' ? ' maxlength="2"' : '') + '></div>').join('') + '</form>' +
     (edita ? '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="of-salvar-empresa">' + tr('Salvar') + '</button></div>' : '<p class="mudo pequeno">' + tr('Só quem tem a permissão Empresa, conta e plano altera estes dados.') + '</p>') +
     '<p class="mudo pequeno">' + tr('Como a empresa atua: {atuacao}. Módulos: {modulos}.', { atuacao: esc(ATUACOES[e.atuacao] || ''), modulos: esc((e.modulos || []).join(', ')) }) + '</p></section>';
@@ -342,7 +441,7 @@ function htmlMeuPerfil() {
   const m = conta.membro;
   const pendente = emailPendente();
   const linha = (id, rotulo, html) => '<div class="campo"><label class="rotulo-pequeno" for="' + id + '">' + rotulo + '</label>' + html + '</div>';
-  return '<section class="cartao"><h2 class="cartao-titulo">' + tr('Seus dados') + '</h2>' +
+  return cabecalhoDePagina(tr('Meu perfil'), tr('Seus dados, o idioma, o e-mail de acesso e a senha. O seu perfil de acesso e as permissões só o administrador altera.'), '') + '<section class="cartao"><h2 class="cartao-titulo">' + tr('Seus dados') + '</h2>' +
       '<form id="form-meu-perfil" class="grade-campos" novalidate data-sem-envio>' +
         linha('mp-nome', tr('Nome'), '<input id="mp-nome" name="nome" type="text" value="' + esc(m.nome) + '" autocomplete="name">') +
         linha('mp-telefone', tr('Telefone'), '<input id="mp-telefone" name="telefone" type="tel" value="' + esc(m.telefone || '') + '" autocomplete="tel">') +
@@ -428,17 +527,8 @@ export const acoesOficiais = {
     ir('#/conta');
   },
   'of-descartar-convite'() { esquecerConvite(); ir('#/nova-empresa'); },
-  async 'of-convidar'() {
-    const f = document.getElementById('form-convidar');
-    const r = await convidar(f.email.value, f.nome.value, f.perfil.value);
-    if (r.erro) { toast(r.erro); return; }
-    redesenhar();
-    const area = document.getElementById('link-convite');
-    if (area) {
-      area.innerHTML = '<div class="aviso aviso-verde"><b>' + tr('Convite criado') + '</b><span>' + tr('Mande este link para a pessoa:') + '</span>' +
-        '<input type="text" readonly value="' + esc(r.link) + '" class="oficial-link"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-copiar" data-link="' + esc(r.link) + '">' + tr('Copiar o link') + '</button></div>';
-    }
-  },
+  'of-novo-usuario'() { painelNovoUsuario(); },
+  'of-editar-usuario'(el) { painelEditarUsuario(el.dataset.id); },
   async 'of-copiar'(el) {
     try { await navigator.clipboard.writeText(el.dataset.link); toast(tr('Link copiado.')); } catch (e) { toast(tr('Selecione o link e copie.')); }
   },
@@ -448,21 +538,8 @@ export const acoesOficiais = {
     if (!ativo && !(await confirmar(tr('Desativar este usuário?'), tr('A pessoa deixa de entrar no KORbuild. O histórico fica, e dá para reativar depois.'), tr('Desativar')))) return;
     comResultado(await ativarMembro(el.dataset.id, ativo), ativo ? tr('Usuário reativado.') : tr('Usuário desativado.'));
   },
-  async 'of-salvar-perfil'(el) {
-    const caixa = document.querySelector('[data-perfil="' + el.dataset.id + '"]');
-    const marcadas = new Set(Array.from(caixa.querySelectorAll('[name="perm"]:checked')).map((i) => i.value));
-    // dependências automáticas: aprovar inclui acompanhar, ver custos inclui acompanhar… (SET-062)
-    for (const id of Array.from(marcadas)) for (const req of (permissao(id) || {}).requer || []) marcadas.add(req);
-    comResultado(await salvarPermissoes(el.dataset.id, Array.from(marcadas)), tr('Permissões salvas.'));
-  },
-  async 'of-excluir-perfil'(el) {
-    if (!(await confirmar(tr('Excluir este perfil?'), '', tr('Excluir')))) return;
-    comResultado(await excluirPerfil(el.dataset.id), tr('Perfil excluído.'));
-  },
-  async 'of-novo-perfil'() {
-    const f = document.getElementById('form-novo-perfil');
-    comResultado(await criarPerfil(f.nome.value, f.base.value), tr('Perfil criado.'));
-  },
+  'of-novo-perfil'() { painelNovoPerfil(); },
+  'of-editar-perfil'(el) { painelEditarPerfil(el.dataset.id); },
   async 'of-salvar-meu-perfil'() {
     const f = document.getElementById('form-meu-perfil');
     comResultado(await atualizarMeuPerfil(f.nome.value, f.telefone.value), tr('Seus dados foram salvos.'));

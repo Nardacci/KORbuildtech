@@ -191,6 +191,44 @@ export function abrirDialogo({ titulo, corpo, acoes }) {
   });
 }
 
+/* Painel lateral (editar uma pessoa, um perfil…): <dialog> encostado à direita, com cabeçalho, corpo rolável e rodapé fixo.
+ * aoSalvar(painel) recebe o <dialog> (leia os campos com painel.querySelector) e devolve { ok } ou { erro }: com erro, o painel fica aberto e mostra a mensagem.
+ * extras: botões do rodapé à esquerda, [{ rotulo, classe, aoClicar(painel) → { ok } | { erro } | null }]. somenteLeitura: sem o botão de salvar. */
+export function abrirPainel({ titulo, subtitulo = '', corpo, rotuloSalvar, aoSalvar, extras = [], somenteLeitura = false, classe = '' }) {
+  return new Promise((resolve) => {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'painel' + (classe ? ' ' + classe : '');
+    dlg.dataset.hash = location.hash;   // o painel pertence à tela em que abriu: se o endereço mudar (Voltar, outro menu), ele fecha
+    dlg.innerHTML = '<form novalidate data-sem-envio><header class="painel-cab"><div><h2>' + esc(titulo) + '</h2>' + (subtitulo ? '<p class="mudo">' + esc(subtitulo) + '</p>' : '') + '</div>' +
+      '<button type="button" class="painel-fechar" data-painel-fechar aria-label="' + esc(tr('Fechar')) + '">×</button></header>' +
+      '<div class="painel-corpo">' + corpo + '</div><p class="painel-erro" role="alert" hidden></p>' +
+      '<footer class="painel-rodape"><span class="painel-extras">' + extras.map((x, i) => '<button type="button" class="btn ' + (x.classe || 'btn-contorno') + '" data-painel-extra="' + i + '">' + esc(x.rotulo) + '</button>').join('') + '</span>' +
+      '<span class="painel-acoes"><button type="button" class="btn btn-contorno" data-painel-fechar>' + esc(somenteLeitura ? tr('Fechar') : tr('Cancelar')) + '</button>' +
+      (somenteLeitura ? '' : '<button type="submit" class="btn btn-primario" data-painel-salvar>' + esc(rotuloSalvar || tr('Salvar')) + '</button>') + '</span></footer></form>';
+    document.body.appendChild(dlg);
+    let resultado = null;
+    const erro = dlg.querySelector('.painel-erro');
+    const mostrarErro = (t) => { erro.textContent = t; erro.hidden = !t; };
+    const executar = async (botao, fn) => {
+      botao.disabled = true; mostrarErro('');
+      try { const r = await fn(dlg); if (r && r.erro) mostrarErro(r.erro); else if (r && r.ok) { resultado = r; dlg.close(); } }
+      finally { botao.disabled = false; }
+    };
+    dlg.addEventListener('click', (ev) => {
+      if (ev.target === dlg || (ev.target.closest && ev.target.closest('[data-painel-fechar]'))) { dlg.close(); return; }   // fora do painel ou no ×
+      const b = ev.target.closest && ev.target.closest('[data-painel-extra]');
+      if (b) executar(b, extras[Number(b.dataset.painelExtra)].aoClicar);
+    });
+    dlg.querySelector('form').addEventListener('submit', (ev) => { ev.preventDefault(); if (aoSalvar) executar(dlg.querySelector('[data-painel-salvar]') || ev.submitter, aoSalvar); });
+    dlg.addEventListener('close', () => { dlg.remove(); resolve(resultado); });
+    dlg.showModal();
+    const foco = dlg.querySelector('input:not([disabled]):not([type="checkbox"]), textarea, select');
+    if (foco) foco.focus();
+  });
+}
+
+if (typeof window !== 'undefined') window.addEventListener('hashchange', () => document.querySelectorAll('dialog.painel[open]').forEach((d) => { if (d.dataset.hash !== location.hash) d.close(); }));
+
 export async function confirmar(titulo, texto, rotuloSim, classeSim) {
   const r = await abrirDialogo({
     titulo,

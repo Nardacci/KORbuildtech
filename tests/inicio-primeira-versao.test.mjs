@@ -183,11 +183,11 @@ try {
     await p.waitForSelector('#form-funcao', { timeout: 20000 });
     await p.fill('#fn-nome', 'Teste QA ' + Date.now().toString().slice(-5));
     await p.fill('#fn-valor', '33');
-    await p.click('[data-acao="cad-salvar-funcao"]');
-    await p.waitForFunction(() => /#\/conta\/funcoes\/[0-9a-f-]{36}$/.test(location.hash), null, { timeout: 20000 }).catch(() => null);
-    await p.waitForTimeout(800);
-    tf = await texto(p);
-    verificar('função criada no banco com o valor inicial: a página mostra US$ 33 vigente', /#\/conta\/funcoes\/[0-9a-f-]{36}$/.test(p.url()) && /33[.,]00/.test(tf) && /vigente/.test(tf), p.url() + ' · ' + tf.slice(0, 300));
+    await p.click('dialog.painel [data-painel-salvar]');
+    await p.waitForSelector('dialog.painel', { state: 'detached', timeout: 20000 }).catch(() => null);
+    await p.waitForSelector('.tabela-funcoes tr:has-text("Teste QA")', { timeout: 20000 }).catch(() => null);
+    tf = await texto(p, '.tabela-funcoes');
+    verificar('função criada no banco com o valor inicial: a lista mostra US$ 33 para ela', /Teste QA[^]*33[.,]00/.test(tf), p.url() + ' · ' + tf.slice(0, 300));
     const [fq] = await sql(`select count(*)::int n from public.funcao_valores v join public.funcoes f on f.id = v.funcao_id where f.empresa_id = '${emp.id}' and f.nome like 'Teste QA%'`);
     verificar('funcao_valores gravado com o autor', fq && fq.n === 1, fq);
     await sqlExec(`delete from public.funcoes where empresa_id = '${emp.id}' and nome like 'Teste QA%'`);

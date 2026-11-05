@@ -95,9 +95,12 @@ try {
   console.log('Perfis e empresa');
   await irPara(a, '#/conta/perfis', '.perfil-cartao');
   verificar(await a.locator('.perfil-cartao').count() === 4, 'os quatro perfis padrão', await a.locator('.perfil-cartao').count());
-  verificar(await a.locator('.perfil-cartao').first().locator('input[name="perm"]:disabled').count() > 0, 'o Administrador é travado (caixas desabilitadas)');
+  await a.locator('.perfil-cartao').first().locator('[data-acao="of-editar-perfil"]').click(); await a.waitForSelector('dialog.painel input[name="perm"]');
+  verificar(await a.locator('dialog.painel input[name="perm"]:disabled').count() > 0, 'o Administrador é travado (caixas desabilitadas)');
+  await a.click('dialog.painel [data-painel-fechar]');
+  await a.click('[data-acao="of-novo-perfil"]'); await a.waitForSelector('dialog.painel #np-nome');
   await a.fill('#np-nome', 'Encarregado com diário'); await a.selectOption('#np-base', { label: 'Encarregado' });
-  await a.click('[data-acao="of-novo-perfil"]');
+  await a.click('dialog.painel [data-painel-salvar]');
   await a.waitForFunction(() => document.querySelectorAll('.perfil-cartao').length === 5, null, { timeout: ESPERA }).catch(() => null);
   verificar(await a.locator('.perfil-cartao').count() === 5, 'perfil novo a partir do Encarregado', await a.locator('.perfil-cartao').count() + ' cartões · ' + await tela(a));
   await irPara(a, '#/conta/empresa', '#em-telefone');
@@ -125,7 +128,7 @@ try {
   console.log('Cadastros (fatia 2)');
   await irPara(a, '#/conta/contatos/novo', '#form-contato');
   await a.fill('#ct-nome', 'Granite E2E'); await a.check('input[name="papeis"][value="cliente"]');
-  await a.click('[data-acao="cad-salvar-contato"]'); await esperar(a, 3000);
+  await a.click('dialog.painel [data-painel-salvar]'); await esperar(a, 3000);
   verificar((await sql(`select count(*)::int n from public.contatos c join public.empresas e on e.id = c.empresa_id where e.nome = 'Construtora E2E' and c.nome = 'Granite E2E'`))[0].n === 1, 'contato gravado no banco');
   await irPara(a, '#/conta/obras/nova', '#form-obra');
   await a.fill('#ob-nome', 'Obra E2E'); await a.selectOption('#ob-contratanteId', { label: 'Granite E2E' });
@@ -153,9 +156,10 @@ try {
   verificar((await sql(`select count(*)::int n from public.modelos_cronograma where nome = 'Modelo E2E'`))[0].n === 1, 'modelo de etapas gravado');
 
   console.log('Convidar e aceitar');
-  await irPara(a, '#/conta/usuarios', '#cv-email');
+  await irPara(a, '#/conta/usuarios', '.tabela-membros');
+  await a.click('[data-acao="of-novo-usuario"]'); await aparecer(a, 'dialog.painel #cv-email');
   await a.fill('#cv-email', BETO); await a.fill('#cv-nome', 'Beto E2E'); await a.selectOption('#cv-perfil', { label: 'Gestor de obras' });
-  await a.click('[data-acao="of-convidar"]');
+  await a.click('dialog.painel [data-painel-salvar]');
   await aparecer(a, '.oficial-link');
   const link = await a.locator('.oficial-link').inputValue().catch(() => '');
   verificar(link.includes('#/aceitar/') && (await a.locator('body').innerText()).includes(BETO), 'convite gerado: o link e o convite pendente', 'link="' + link + '"');

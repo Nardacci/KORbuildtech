@@ -4,8 +4,9 @@
  * serem os mesmos. O mapa da obra e as linhas dos modelos reaproveitam js/obras-telas.js (só dependem dos ids). */
 
 import { PRIMEIRA_VERSAO } from './versao.js';
-import { esc, toast, confirmar, abrirDialogo, dataCurta, dataHora, decimal, numTexto, hoje } from './util.js';
-import { htmlListaFuncoes, htmlFuncao, htmlFormFuncao, dialogoNovoValor } from './funcoes.js';
+import { esc, toast, confirmar, abrirDialogo, abrirPainel, dataCurta, dataHora, decimal, numTexto, hoje } from './util.js';
+import { cabecalhoDePagina, botaoCriar, barraDeBusca, atributosDeLinha, gradeEmCartao, avatar, campoPainel, lerCampos } from './padrao-cadastro.js';
+import { dialogoNovoValor, valorDaFuncao, custoHoraDaFuncao, historicoDaFuncao } from './funcoes.js';
 import { tr, tn } from './i18n.js';
 import { icone } from './icones.js';
 import { conta, pode } from './conta.js';
@@ -58,7 +59,7 @@ const etiquetaVigencia = (x, v) => (x === v ? ' <span class="etiqueta etiqueta-v
 
 function cabeca(titulo, acoes, voltar) {
   return (voltar ? '<a class="voltar" href="' + voltar[0] + '">← ' + esc(voltar[1]) + '</a>' : '') +
-    '<div class="oficial-cabeca"><h1 class="oficial-titulo">' + esc(titulo) + '</h1>' + (acoes || '') + '</div>';
+    cabecalhoDePagina(esc(titulo), '', acoes || '');
 }
 
 /* Devolve { html, depois } ou { trocar }. Enquanto lê do banco, "Carregando…". */
@@ -83,16 +84,13 @@ export function telaCadastro(aba, resto) {
     return { html: telaFuncionarios(resto[0] || '') };
   }
   if (aba === 'funcoes') {
-    if (resto[0] === 'nova') return { html: telaFormFuncaoCad(null) };
-    if (resto[0]) {
-      const f = funcoesCad().find((x) => x.id === resto[0]);
-      if (!f) return { trocar: '#/conta/funcoes' };
-      return { html: resto[1] === 'editar' ? telaFormFuncaoCad(f) : telaFuncaoCad(f) };
-    }
+    if (resto[0] && resto[0] !== 'nova' && !funcoesCad().some((x) => x.id === resto[0])) return { trocar: '#/conta/funcoes' };
+    if (resto[0]) return { html: telaFuncoesCad(), depois: () => { if (!document.querySelector('dialog.painel[open]')) painelFuncao(resto[0] === 'nova' ? null : resto[0]); } };
     return { html: telaFuncoesCad() };
   }
   if (aba === 'contatos') {
-    if (resto[0]) return resto[0] === 'novo' || contato(resto[0]) ? { html: telaFormContato(resto[0] === 'novo' ? null : resto[0]) } : { trocar: '#/conta/contatos' };
+    if (resto[0] && resto[0] !== 'novo' && !contato(resto[0])) return { trocar: '#/conta/contatos' };
+    if (resto[0]) return { html: telaContatos(), depois: () => { if (!document.querySelector('dialog.painel[open]')) painelContato(resto[0] === 'novo' ? null : resto[0]); } };
     return { html: telaContatos() };
   }
   if (aba === 'regras') {
@@ -103,28 +101,61 @@ export function telaCadastro(aba, resto) {
   return { trocar: '#/conta' };
 }
 
-/* ---------- Funções (docs/funcoes.md): telas compartilhadas em js/funcoes.js ---------- */
+/* ---------- Funções (docs/funcoes.md): grade + painel lateral; o valor hora tem vigência e nunca apaga o anterior ---------- */
 
-function ctxFuncoesCad() {
-  const chave = (x) => String(x || '').trim().toLowerCase();
-  return {
-    base: '#/conta/funcoes', lista: '#/conta/funcoes', prefixo: 'cad', podeEditar: pode('settings.funcionarios') || pode('measure.catalogo'), encargos: totalEncargos(encargosVigentes()), dados: { funcoes: funcoesCad() },
-    funcionariosDe: (f) => cad.funcionarios.filter((x) => x.situacao !== 'desligado' && chave(x.funcao) === chave(f.nome)).length,
-    itensDe: (f) => cad.itens.filter((it) => it.funcao_id === f.id && it.ativo !== false).map((it) => ({ id: it.id, nome: it.nome })),
-  };
-}
+const chaveFuncao = (x) => String(x || '').trim().toLowerCase();
+const podeEditarFuncoes = () => pode('settings.funcionarios') || pode('measure.catalogo');
+const funcionariosDaFuncao = (f) => cad.funcionarios.filter((x) => x.situacao !== 'desligado' && chaveFuncao(x.funcao) === chaveFuncao(f.nome)).length;
+const itensDaFuncao = (f) => cad.itens.filter((it) => it.funcao_id === f.id && it.ativo !== false);
+
 function telaFuncoesCad() {
-  const ctx = ctxFuncoesCad();
-  return cabeca(tr('Funções'), ctx.podeEditar ? '<a class="btn btn-primario btn-pequeno" href="#/conta/funcoes/nova">' + icone('mais', 16) + tr('Nova função') + '</a>' : '') +
-    '<p class="mudo">' + tr('A função com o valor hora padrão: o orçamento do Takeoff usa; o funcionário tem o valor dele') + '</p>' + htmlListaFuncoes(ctx);
+  const enc = totalEncargos(encargosVigentes());
+  const lista = funcoesCad().slice().sort((a, b) => (a.ativa === false) - (b.ativa === false) || a.nome.localeCompare(b.nome));
+  const ativas = lista.filter((f) => f.ativa !== false).length;
+  const linhas = lista.map((f) => {
+    const v = valorDaFuncao(f, hoje()), custo = custoHoraDaFuncao(f, hoje(), enc), nFun = funcionariosDaFuncao(f), nItens = itensDaFuncao(f).length;
+    return '<tr' + atributosDeLinha(f.nome, [f.ativa === false ? 'inativas' : 'ativas', v ? 'com-valor' : 'sem-valor']) + '><td><div class="pessoa">' + avatar(f.nome, f.ativa === false) + '<div><b>' + esc(f.nome) + '</b>' + (f.ativa === false ? ' <span class="etiqueta etiqueta-neutro">' + tr('inativa') + '</span>' : '') + '</div></div></td>' +
+      '<td class="num">' + (v ? '<b>' + dinheiro(v.valor) + '</b><span class="mudo pequeno bloco">' + tr('desde {data}', { data: dataCurta(v.desde) }) + '</span>' : '<span class="etiqueta etiqueta-ambar">' + tr('sem valor') + '</span>') + '</td>' +
+      '<td class="num">' + (custo != null ? dinheiro(custo) : '—') + '</td><td class="num">' + (nFun || '—') + '</td><td class="num">' + (nItens || '—') + '</td>' +
+      '<td class="acoes-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="cad-editar-funcao" data-id="' + f.id + '">' + (podeEditarFuncoes() ? tr('Editar') : tr('Ver')) + '</button></td></tr>';
+  }).join('');
+  return cabecalhoDePagina(tr('Funções'), tr('A função com o valor hora padrão: o orçamento do Takeoff usa; o funcionário tem o valor dele') + '. ' + tr('Custo da hora = valor hora padrão + {pct} de encargos.', { pct: pct(enc) }),
+      podeEditarFuncoes() ? botaoCriar('cad-nova-funcao', tr('Nova função'), icone('mais', 16)) : '') +
+    barraDeBusca(tr('Buscar função'), [['', tr('Todas'), lista.length], ['ativas', tr('Ativas'), ativas], ['inativas', tr('Inativas'), lista.length - ativas], ['sem-valor', tr('Sem valor'), lista.filter((f) => !valorDaFuncao(f, hoje())).length]]) +
+    gradeEmCartao('tabela-funcoes', [tr('Função'), tr('Valor hora padrão'), tr('Custo da hora'), tr('Funcionários'), tr('Itens de mão de obra'), ''], linhas, tr('Nenhuma função cadastrada.'));
 }
-function telaFuncaoCad(f) {
-  const ctx = ctxFuncoesCad();
-  return cabeca(f.nome, ctx.podeEditar ? '<a class="btn btn-contorno btn-pequeno" href="#/conta/funcoes/' + f.id + '/editar">' + tr('Editar') + '</a>' : '', ['#/conta/funcoes', tr('Funções')]) +
-    '<p class="mudo">' + (f.ativa === false ? tr('Função inativa') : tr('Função ativa')) + '</p>' + htmlFuncao(ctx, f);
-}
-function telaFormFuncaoCad(f) {
-  return cabeca(f ? tr('Editar') + ' ' + f.nome : tr('Nova função'), '', f ? ['#/conta/funcoes/' + f.id, f.nome] : ['#/conta/funcoes', tr('Funções')]) + htmlFormFuncao(ctxFuncoesCad(), f);
+
+function painelFuncao(id) {
+  const f = id ? funcoesCad().find((x) => x.id === id) : null;
+  if (id && !f) return;
+  const edita = podeEditarFuncoes(), enc = totalEncargos(encargosVigentes());
+  const atual = f ? valorDaFuncao(f, hoje()) : null, hist = f ? historicoDaFuncao(f) : [];
+  const historico = !f ? '' : '<h3 class="painel-secao">' + tr('Histórico do valor hora') + '</h3>' + (hist.length ? '<div class="tabela-rolagem"><table class="tabela tabela-valores"><thead><tr><th>' + tr('Vale desde') + '</th><th class="num">' + tr('Valor hora') + '</th><th>' + tr('Motivo') + '</th><th>' + tr('Registrado por') + '</th></tr></thead><tbody>' +
+    hist.map((x) => '<tr' + (atual && x.desde === atual.desde ? ' class="vigente"' : '') + '><td>' + dataCurta(x.desde) + (atual && x.desde === atual.desde ? ' <span class="etiqueta etiqueta-verde">' + tr('vigente') + '</span>' : x.desde > hoje() ? ' <span class="etiqueta etiqueta-neutro">' + tr('futuro') + '</span>' : '') + '</td><td class="num"><b>' + dinheiro(x.valor) + '</b></td><td>' + esc(x.motivo || '') + '</td><td class="mudo pequeno">' + esc(x.por || '') + (x.em ? ' · ' + dataHora(x.em) : '') + '</td></tr>').join('') + '</tbody></table></div>'
+    : '<p class="vazio">' + tr('Esta função ainda não tem valor hora: os itens de mão de obra ligados a ela ficam sem preço.') + '</p>') +
+    '<p class="mudo pequeno">' + tr('Cada valor vale a partir de uma data e nunca apaga o anterior: a proposta usa o valor que vale no dia em que é emitida.') + '</p>' +
+    (itensDaFuncao(f).length ? '<h3 class="painel-secao">' + tr('Itens de mão de obra com esta função') + '</h3><ul class="lista-simples">' + itensDaFuncao(f).map((it) => '<li><a href="#/measure/item/' + it.id + '"><b>' + esc(it.nome) + '</b></a></li>').join('') + '</ul>' : '');
+  return abrirPainel({
+    titulo: f ? f.nome : tr('Nova função'), subtitulo: f ? (atual ? dinheiro(atual.valor) + '/h · ' + tr('custo {v}/h', { v: dinheiro(custoHoraDaFuncao(f, hoje(), enc)) }) : tr('sem valor hora ainda')) : tr('Carpinteiro, Eletricista, Servente…'),
+    classe: 'painel-largo', somenteLeitura: !edita, rotuloSalvar: f ? tr('Salvar') : tr('Criar função'),
+    extras: f && edita ? [{ rotulo: tr('Novo valor hora'), classe: 'btn-contorno', aoClicar: async () => {
+      const campos = await dialogoNovoValor(abrirDialogo, f);
+      if (!campos) return null;
+      const r = await novoValorDaFuncaoCad(f.id, campos);
+      return r.erro ? r : { ok: true, reabrir: true };
+    } }] : [],
+    corpo: '<div id="form-funcao" class="painel-campos">' + campoPainel('fn-nome', tr('Nome *'), '<input id="fn-nome" name="nome" value="' + esc(f ? f.nome : '') + '" placeholder="' + esc(tr('Ex.: Carpinteiro')) + '"' + (edita ? '' : ' disabled') + '>') +
+      (f ? campoPainel('fn-ativa', tr('Situação'), '<select id="fn-ativa" name="ativa"' + (edita ? '' : ' disabled') + '><option value="true"' + (f.ativa !== false ? ' selected' : '') + '>' + tr('Ativa') + '</option><option value="false"' + (f.ativa === false ? ' selected' : '') + '>' + tr('Inativa') + '</option></select>', tr('Inativa some das listas; o histórico fica.'))
+        : '<div class="painel-linha">' + campoPainel('fn-valor', tr('Valor hora (US$)'), '<input type="number" id="fn-valor" name="valor" min="0.01" step="0.01" inputmode="decimal">', tr('Opcional. Sem encargos: eles entram no custo da hora.')) + campoPainel('fn-desde', tr('Vale a partir de'), '<input type="date" id="fn-desde" name="desde" value="' + hoje() + '">') + '</div>') + '</div>' + historico,
+    aoSalvar: async (p) => {
+      const r = await salvarFuncaoCad(id, lerCampos(p.querySelector('#form-funcao')));
+      return r.erro ? r : { ok: true };
+    },
+  }).then((r) => {
+    if (r) toast(r.reabrir ? tr('Valor hora registrado.') : id ? tr('Função atualizada.') : tr('Função cadastrada.'));
+    if (location.hash.startsWith('#/conta/funcoes/')) ir('#/conta/funcoes'); else if (r) redesenhar();
+    if (r && r.reabrir) setTimeout(() => painelFuncao(id), 80);
+  });
 }
 
 /* ---------- Funcionários ---------- */
@@ -146,7 +177,7 @@ function telaFuncionarios(filtro) {
   return cabeca(tr('Funcionários'), '<a class="btn btn-primario btn-pequeno" href="#/conta/funcionarios/novo">' + icone('mais', 16) + tr('Novo funcionário') + '</a>') +
     '<p class="mudo">' + tr('Cadastro único da empresa: vale para o Crew, o Daily e o Measure') + '</p>' +
     '<nav class="abas-segmento abas-filtro" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r]) => '<a href="#/conta/funcionarios' + (id ? '/' + id : '') + '"' + (filtro === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + '</a>').join('') + '</nav>' +
-    '<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-funcionarios"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Função') + '</th><th>' + tr('Classificação') + '</th>' +
+    '<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela grade tabela-funcionarios"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Função') + '</th><th>' + tr('Classificação') + '</th>' +
       (veValores() ? '<th class="num">' + tr('Valor hora') + '</th><th class="num">' + tr('Custo carregado') + '</th>' : '') + '<th>' + tr('Situação') + '</th></tr></thead><tbody>' +
       (linhas || '<tr><td colspan="6" class="mudo">' + tr('Nenhum funcionário.') + '</td></tr>') + '</tbody></table></div></section>' +
     (veValores() ? '<p class="dica">' + tr('Custo carregado = valor hora + {pct} de <a href="#/settings/encargos">encargos</a>. Autônomo (1099) não tem encargos nem hora extra.', { pct: pct(totalEncargos(encargosVigentes())) }).replace('#/settings/encargos', '#/conta/regras') + '</p>' : '');
@@ -294,36 +325,53 @@ function telaFormRegra() {
 
 /* ---------- Contatos ---------- */
 
+const etiquetaDoPapel = (p) => '<span class="etiqueta ' + ({ construtora: 'etiqueta-azul', fornecedor: 'etiqueta-ambar', prestadora: 'etiqueta-neutro' }[p] || 'etiqueta-verde') + '">' + esc((PAPEIS[p] || {}).nome || p) + '</span>';
+
 function telaContatos() {
-  const lista = cad.contatos;
-  return cabeca(tr('Contatos'), '<a class="btn btn-primario btn-pequeno" href="#/conta/contatos/novo">' + icone('mais', 16) + tr('Novo contato') + '</a>') +
-    '<p class="mudo">' + tr('Construtoras, clientes, fornecedores e prestadoras: um diretório só, com marcadores.') + '</p>' +
-    '<section class="cartao"><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Nome') + '</th><th>' + tr('Marcadores') + '</th><th>' + tr('Contato') + '</th><th>' + tr('Obras') + '</th></tr></thead><tbody>' +
-      (lista.map((c) => {
-        const obras = cad.obras.filter((o) => o.contratante_id === c.id || o.dono_id === c.id).length;
-        return '<tr><td><a href="#/conta/contatos/' + c.id + '"><b>' + esc(c.nome) + '</b></a>' + (c.pessoa ? '<span class="mudo pequeno bloco">' + esc(c.pessoa) + '</span>' : '') + '</td>' +
-          '<td>' + c.papeis.map((p) => '<span class="etiqueta etiqueta-neutro">' + esc((PAPEIS[p] || {}).nome || p) + '</span>').join(' ') + '</td>' +
-          '<td class="pequeno">' + esc([c.email, c.telefone].filter(Boolean).join(' · ')) + '</td><td class="num">' + (obras || '') + '</td></tr>';
-      }).join('') || '<tr><td colspan="4" class="mudo">' + tr('Nenhum contato ainda.') + '</td></tr>') +
-    '</tbody></table></div></section>';
+  const lista = cad.contatos.slice().sort((a, b) => a.nome.localeCompare(b.nome));
+  const porPapel = (p) => lista.filter((c) => c.papeis.includes(p)).length;
+  const chips = [['', tr('Todos'), lista.length]].concat(PAPEIS_CONTATO.filter((p) => porPapel(p) > 0).map((p) => [p, esc((PAPEIS[p] || {}).nome || p), porPapel(p)]));
+  const linhas = lista.map((c) => {
+    const obras = cad.obras.filter((o) => o.contratante_id === c.id || o.dono_id === c.id).length;
+    return '<tr' + atributosDeLinha([c.nome, c.pessoa, c.email, c.telefone, c.cidade].join(' '), c.papeis) + '><td><div class="pessoa">' + avatar(c.nome) + '<div><b>' + esc(c.nome) + '</b>' + (c.pessoa ? '<span class="mudo pequeno bloco">' + esc(c.pessoa) + '</span>' : '') + '</div></div></td>' +
+      '<td>' + c.papeis.map(etiquetaDoPapel).join(' ') + '</td><td class="pequeno">' + esc([c.email, c.telefone].filter(Boolean).join(' · ')) + '</td><td class="num">' + (obras || '') + '</td>' +
+      '<td class="acoes-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="cad-editar-contato" data-id="' + c.id + '">' + tr('Editar') + '</button></td></tr>';
+  }).join('');
+  return cabecalhoDePagina(tr('Contatos'), tr('Construtoras, clientes, fornecedores e prestadoras: um diretório só, com marcadores.'), botaoCriar('cad-novo-contato', tr('Novo contato'), icone('mais', 16))) +
+    barraDeBusca(tr('Buscar por nome, pessoa, e-mail ou telefone'), chips) +
+    gradeEmCartao('tabela-contatos', [tr('Contato'), tr('Marcadores'), tr('E-mail e telefone'), tr('Obras'), ''], linhas, tr('Nenhum contato ainda. Use "Novo contato".'));
 }
 
-function telaFormContato(id) {
+/* A edição abre num painel lateral; os endereços antigos (contatos/novo e contatos/<id>) abrem a lista com o painel por cima. */
+function painelContato(id) {
   const c = id ? contato(id) : { papeis: [], etapas: [] };
-  return cabeca(id ? c.nome : tr('Novo contato'), '', ['#/conta/contatos', tr('Contatos')]) +
-    '<form id="form-contato" class="form-settings" data-id="' + (id || '') + '" data-sem-envio>' +
-    '<section class="cartao"><div class="grade-campos">' +
-      campo('ct-nome', tr('Nome (empresa ou pessoa) *'), texto('ct-nome', 'nome', c.nome)) + campo('ct-pessoa', tr('Pessoa de contato'), texto('ct-pessoa', 'pessoa', c.pessoa)) +
-      campo('ct-email', tr('E-mail'), '<input type="email" id="ct-email" name="email" value="' + esc(c.email || '') + '">') + campo('ct-telefone', tr('Telefone'), texto('ct-telefone', 'telefone', c.telefone, ' inputmode="tel"')) +
-    '</div><fieldset class="dias-obra"><legend class="rotulo-pequeno">' + tr('Marcadores *') + '</legend>' +
-      PAPEIS_CONTATO.map((p) => '<label class="check pequeno" title="' + esc((PAPEIS[p] || {}).dica || '') + '"><input type="checkbox" name="papeis" value="' + p + '"' + (c.papeis.includes(p) ? ' checked' : '') + '> ' + esc((PAPEIS[p] || {}).nome || p) + '</label>').join('') +
-    '</fieldset></section>' +
-    '<section class="cartao"><h2 class="cartao-titulo">' + tr('Endereço') + '</h2>' + texto('ct-endereco', 'endereco', c.endereco, ' aria-label="' + tr('Endereço') + '"') +
-      '<div class="grade-campos mz-grade-local">' + campo('ct-cidade', tr('Cidade'), texto('ct-cidade', 'cidade', c.cidade)) + campo('ct-estado', tr('Estado'), texto('ct-estado', 'estado', c.estado, ' maxlength="2"')) + campo('ct-zip', tr('ZIP code'), texto('ct-zip', 'zip', c.zip, ' maxlength="10"')) + '</div></section>' +
-    '<section class="cartao">' + campo('ct-etapas', tr('Etapas que cota (fornecedor)'), texto('ct-etapas', 'etapas', (c.etapas || []).join(', ')), tr('Separadas por vírgula. Ex.: Framing, Siding')) +
-      campo('ct-notas', tr('Notas'), '<textarea id="ct-notas" name="notas" rows="3">' + esc(c.notas || '') + '</textarea>') + '</section>' +
-    '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="cad-excluir-contato" data-id="' + id + '">' + tr('Excluir') + '</button>' : '') +
-      '<a class="btn btn-contorno" href="#/conta/contatos">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="cad-salvar-contato">' + (id ? tr('Salvar') : tr('Criar contato')) + '</button></div></form>';
+  if (!c) return;
+  const v = (k) => esc(c[k] || '');
+  return abrirPainel({
+    titulo: id ? c.nome : tr('Novo contato'), subtitulo: id ? c.papeis.map((p) => (PAPEIS[p] || {}).nome || p).join(' · ') : tr('Empresa ou pessoa: construtora, cliente, fornecedor ou prestadora.'), classe: 'painel-largo',
+    rotuloSalvar: id ? tr('Salvar') : tr('Criar contato'),
+    extras: id ? [{ rotulo: tr('Excluir'), classe: 'btn-perigo', aoClicar: async () => {
+      if (!(await confirmar(tr('Excluir este contato?'), '', tr('Excluir')))) return null;
+      const r = await excluirContato(id);
+      return r.erro ? r : { ok: true, excluido: true };
+    } }] : [],
+    corpo: '<div id="form-contato" class="painel-campos"><div class="painel-linha">' +
+      campoPainel('ct-nome', tr('Nome (empresa ou pessoa) *'), '<input id="ct-nome" name="nome" value="' + v('nome') + '" autocomplete="off">') + campoPainel('ct-pessoa', tr('Pessoa de contato'), '<input id="ct-pessoa" name="pessoa" value="' + v('pessoa') + '">') +
+      campoPainel('ct-email', tr('E-mail'), '<input type="email" id="ct-email" name="email" value="' + v('email') + '">') + campoPainel('ct-telefone', tr('Telefone'), '<input id="ct-telefone" name="telefone" inputmode="tel" value="' + v('telefone') + '">') + '</div>' +
+      '<fieldset class="painel-marcadores"><legend class="rotulo-pequeno">' + tr('Marcadores *') + '</legend>' + PAPEIS_CONTATO.map((p) => '<label class="check pequeno" title="' + esc((PAPEIS[p] || {}).dica || '') + '"><input type="checkbox" name="papeis" value="' + p + '"' + (c.papeis.includes(p) ? ' checked' : '') + '> ' + esc((PAPEIS[p] || {}).nome || p) + '</label>').join('') + '</fieldset>' +
+      '<h3 class="painel-secao">' + tr('Endereço') + '</h3>' + campoPainel('ct-endereco', tr('Rua e número'), '<input id="ct-endereco" name="endereco" value="' + v('endereco') + '">') +
+      '<div class="painel-linha tres">' + campoPainel('ct-cidade', tr('Cidade'), '<input id="ct-cidade" name="cidade" value="' + v('cidade') + '">') + campoPainel('ct-estado', tr('Estado'), '<input id="ct-estado" name="estado" maxlength="2" value="' + v('estado') + '">') + campoPainel('ct-zip', 'ZIP', '<input id="ct-zip" name="zip" value="' + v('zip') + '">') + '</div>' +
+      '<h3 class="painel-secao">' + tr('Outras informações') + '</h3>' + campoPainel('ct-etapas', tr('Etapas que cota (fornecedor)'), '<input id="ct-etapas" name="etapas" value="' + esc((c.etapas || []).join(', ')) + '">', tr('Separadas por vírgula. Ex.: Framing, Siding')) +
+      campoPainel('ct-notas', tr('Notas'), '<textarea id="ct-notas" name="notas" rows="3">' + v('notas') + '</textarea>') + '</div>',
+    aoSalvar: async (p) => {
+      const d = lerCampos(p.querySelector('#form-contato'));
+      const r = await salvarContato(id, { ...d, papeis: d.papeis || [] });
+      return r.erro ? r : { ok: true };
+    },
+  }).then((r) => {
+    if (r) toast(r.excluido ? tr('Contato excluído.') : id ? tr('Contato salvo.') : tr('Contato criado.'));
+    if (location.hash.startsWith('#/conta/contatos/')) ir('#/conta/contatos'); else if (r) redesenhar();   // aberto por endereço (contatos/novo): volta à lista ao fechar
+  });
 }
 
 /* ---------- Obras, alocações e modelos de etapas ---------- */
@@ -332,7 +380,7 @@ function telaObras() {
   const sit = (o) => SITUACOES_OBRA[o.situacao] || SITUACOES_OBRA.andamento;
   return cabeca(tr('Obras'), '<span class="btn-linha">' + (PRIMEIRA_VERSAO ? '' : '<a class="btn btn-contorno btn-pequeno" href="#/conta/obras/modelos">' + tr('Modelos de etapas') + '</a>') +
       '<a class="btn btn-primario btn-pequeno" href="#/conta/obras/nova">' + icone('mais', 16) + tr('Nova obra') + '</a></span>') +
-    '<section class="cartao"><div class="tabela-rolagem"><table class="tabela"><thead><tr><th>' + tr('Obra') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Prazo') + '</th>' + (PRIMEIRA_VERSAO ? '' : '<th>' + tr('Equipe') + '</th>') + '<th>' + tr('Situação') + '</th></tr></thead><tbody>' +
+    '<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela grade"><thead><tr><th>' + tr('Obra') + '</th><th>' + tr('Contratante') + '</th><th>' + tr('Prazo') + '</th>' + (PRIMEIRA_VERSAO ? '' : '<th>' + tr('Equipe') + '</th>') + '<th>' + tr('Situação') + '</th></tr></thead><tbody>' +
       (cad.obras.map((o) => '<tr><td><a href="#/conta/obras/' + o.id + '"><b>' + esc(o.nome) + '</b></a><span class="mudo pequeno bloco">' + esc([o.municipio, o.estado].filter(Boolean).join(', ')) + '</span></td>' +
         '<td>' + esc((contato(o.contratante_id) || {}).nome || '') + '</td><td class="pequeno">' + dataCurta(o.inicio) + ' → ' + dataCurta(o.prazo) + '</td>' +
         (PRIMEIRA_VERSAO ? '' : '<td class="num">' + (alocacoesDa(o.id).filter((a) => !a.ate).length || '') + '</td>') + '<td><span class="etiqueta ' + sit(o).classe + '">' + sit(o).nome + '</span></td></tr>').join('') ||
@@ -448,18 +496,8 @@ async function resultado(promessa, ok, destino) {
 }
 
 export const acoesCadastros = {
-  'cad-salvar-funcao'() {
-    const f = form('form-funcao');
-    const id = f.dataset.id || null;
-    return resultado(salvarFuncaoCad(id, Object.fromEntries(new FormData(f).entries())), id ? tr('Função atualizada.') : tr('Função cadastrada.'), (r) => '#/conta/funcoes/' + (id || r.id));
-  },
-  async 'cad-valor-funcao'(el) {
-    const f = funcoesCad().find((x) => x.id === el.dataset.id);
-    if (!f) return;
-    const campos = await dialogoNovoValor(abrirDialogo, f);
-    if (!campos) return;
-    return resultado(novoValorDaFuncaoCad(f.id, campos), tr('Valor hora registrado.'));
-  },
+  'cad-nova-funcao'() { return painelFuncao(null); },
+  'cad-editar-funcao'(el) { return painelFuncao(el.dataset.id); },
   'cad-salvar-func'() {
     const f = form('form-func');
     const d = Object.fromEntries(new FormData(f).entries());
@@ -485,16 +523,8 @@ export const acoesCadastros = {
       diariaDobra: v('diaria-dobra'), diariaFatorDobra: v('diaria-fatorDobra'), intervaloMinimo: v('intervalo-minimo'), intervaloApos: v('intervalo-apos'),
     }), tr('Nova regra salva.'), '#/conta/regras');
   },
-  'cad-salvar-contato'() {
-    const f = form('form-contato');
-    const fd = new FormData(f);
-    const id = f.dataset.id || null;
-    return resultado(salvarContato(id, { ...Object.fromEntries(fd.entries()), papeis: fd.getAll('papeis') }), id ? tr('Contato salvo.') : tr('Contato criado.'), '#/conta/contatos');
-  },
-  async 'cad-excluir-contato'(el) {
-    if (!(await confirmar(tr('Excluir este contato?'), '', tr('Excluir')))) return;
-    resultado(excluirContato(el.dataset.id), tr('Contato excluído.'), '#/conta/contatos');
-  },
+  'cad-novo-contato'() { return painelContato(null); },
+  'cad-editar-contato'(el) { return painelContato(el.dataset.id); },
   'cad-salvar-obra'() {
     const f = form('form-obra');
     const fd = new FormData(f);

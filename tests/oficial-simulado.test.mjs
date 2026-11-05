@@ -103,20 +103,21 @@ try {
   console.log('Leitura que falha no meio');
   await ir(a, '#/conta/perfis', '.perfil-cartao');
   await a.evaluate(() => { window.__falharUmaVez = 'perfis_acesso'; });
+  await a.click('[data-acao="of-novo-perfil"]'); await a.waitForSelector('dialog.painel #np-nome');
   await a.fill('#np-nome', 'Perfil X'); await a.selectOption('#np-base', { label: 'Encarregado' });
-  await a.click('[data-acao="of-novo-perfil"]'); await a.waitForTimeout(800);
+  await a.click('dialog.painel [data-painel-salvar]'); await a.waitForTimeout(800);
   verificar(a.url().endsWith('#/conta/perfis') && await a.locator('.perfil-cartao').count() >= 2, 'uma leitura que falha não tira o Administrador da aba Perfis', a.url());
   verificar((await a.locator('.oficial-pagina > .abas-segmento a').allInnerTexts()).includes('Usuários'), 'nem esconde as abas de quem cuida dos acessos');
 
   console.log('Contatos');
   await ir(a, '#/conta/contatos/novo', '#form-contato');
   await a.fill('#ct-nome', 'Granite Builders'); await a.check('input[name="papeis"][value="construtora"]');
-  await a.click('[data-acao="cad-salvar-contato"]'); await a.waitForSelector('a[href^="#/conta/contatos/id-"]', { timeout: 5000 }).catch(() => null);
+  await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('dialog.painel', { state: 'detached', timeout: 5000 }).catch(() => null);
   const ct = await gravou(a, 'contatos', 'insert');
   verificar(ct.length === 1 && ct[0].nome === 'Granite Builders' && ct[0].papeis.join() === 'construtora' && ct[0].etapas.length === 0, 'contato novo gravado com o marcador', ct);
   verificar((await a.locator('body').innerText()).includes('Granite Builders'), 'o contato aparece na lista');
   await ir(a, '#/conta/contatos/novo', '#form-contato');
-  await a.fill('#ct-nome', 'Sem marcador'); await a.click('[data-acao="cad-salvar-contato"]'); await esperarToast(a);
+  await a.fill('#ct-nome', 'Sem marcador'); await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('dialog.painel .painel-erro:not([hidden])', { timeout: 5000 });
   verificar((await gravou(a, 'contatos', 'insert')).length === 1, 'contato sem marcador não vai para o banco');
 
   console.log('Obras');

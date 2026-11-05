@@ -139,7 +139,7 @@ function telaProjetos() {
     conteudo: ('<div class="btn-linha mz-filtros" role="group" aria-label="' + tr('Filtrar por situação') + '">') + filtro('todos', tr('Todos'), todos.length) +
         Object.entries(SITUACOES).map(([id, x]) => filtro(id, x.nome, todos.filter((p) => p.situacao === id).length)).join('') + '</div>' +
       '<div class="mz-busca-linha"><input type="search" class="mz-busca" data-filtrar=".tabela-projetos" placeholder="' + esc(tr('Buscar projetos…')) + '" aria-label="' + esc(tr('Buscar projetos')) + '"></div>' +
-      (lista.length ? ('<section class="cartao"><div class="tabela-rolagem"><table class="tabela tabela-projetos"><thead><tr><th>' + tr('Projeto') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Andamento') + '</th><th class="num">' + tr('Proposta') + '</th><th>' + tr('Estimador') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
+      (lista.length ? ('<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela grade tabela-projetos"><thead><tr><th>' + tr('Projeto') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Andamento') + '</th><th class="num">' + tr('Proposta') + '</th><th>' + tr('Estimador') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
         lista.map((p) => {
           const pr = andamentoDoProjeto(p);
           const emitidas = p.propostas || [];
@@ -357,7 +357,7 @@ function telaAssemblies() {
   return moldura({
     ativo: 'assemblies', largura: 'larga', titulo: tr('Assemblies'), subtitulo: tr('Um conjunto de itens com fórmulas: uma medição alimenta vários materiais e a mão de obra'),
     acoes: podeCatalogo() ? '<a class="btn btn-primario btn-pequeno" href="#/measure/assembly/novo">' + icone('mais', 16) + (tr('Novo assembly') + '</a>') : '',
-    conteudo: ('<section class="cartao"><div class="tabela-rolagem"><table class="tabela mz-assemblies"><thead><tr><th>' + tr('Assembly') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Resumo') + '</th><th class="num">' + tr('Em uso') + '</th><th></th></tr></thead><tbody>') +
+    conteudo: ('<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela grade mz-assemblies"><thead><tr><th>' + tr('Assembly') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Resumo') + '</th><th class="num">' + tr('Em uso') + '</th><th></th></tr></thead><tbody>') +
       assemblies().map((a) => '<tr><td><a class="mz-assembly" href="#/measure/assembly/' + a.id + '"><b>' + esc(a.nome) + '</b></a>' + (a.descricao ? '<span class="mudo pequeno bloco">' + esc(a.descricao) + '</span>' : '') + '</td>' +
         '<td>' + TIPOS[a.tipo].nome + '</td><td class="pequeno">' + esc(resumoAssembly(a)) + '</td>' +
         '<td class="num">' + (usos(a) ? usos(a) + (usos(a) === 1 ? (' ' + tr('condição')) : (' ' + tr('condições'))) : '<span class="mudo">—</span>') + '</td>' +
