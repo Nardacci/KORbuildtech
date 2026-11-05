@@ -1500,6 +1500,13 @@ const acoes = {
     app.innerHTML = carregando();
     location.reload();
   },
+  'preencher-email-oficial'(el) {
+    const e = document.getElementById('oficial-email');
+    if (!e) return;
+    e.value = el.dataset.email;
+    const erro = document.getElementById('login-erro'); if (erro) erro.hidden = true;
+    const s = document.getElementById('oficial-senha'); if (s) s.focus();
+  },
   'preencher-email'(el) {
     document.getElementById('login-email').value = el.dataset.email;
     document.getElementById('login-erro').hidden = true;

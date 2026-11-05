@@ -10,7 +10,7 @@ export const HOSTS_HOMOLOGACAO = ['nardacci.github.io'];
 
 export const NO_DOMINIO = (() => { try { return HOSTS_PRODUCAO.includes(location.hostname); } catch { return false; } })();
 
-const NA_HOMOLOGACAO = (() => { try { return HOSTS_HOMOLOGACAO.includes(location.hostname); } catch { return false; } })();
+export const NA_HOMOLOGACAO = (() => { try { return HOSTS_HOMOLOGACAO.includes(location.hostname); } catch { return false; } })();
 
 function preferenciaDoNavegador() {
   try {

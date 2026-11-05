@@ -42,14 +42,14 @@ try {
   await p.goto(URL_BASE);
   await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
   const t = (await p.locator('body').innerText()).replace(/\s+/g, ' ');
-  verificar(/Takeoff/.test(t) && !/Daily|Crew|Bids|Concorr/.test(t), 'só fala do KORbuild Takeoff', t.slice(0, 250));
+  verificar(/Takeoff/.test(t) && !/Crew|Bids|Concorr/.test(t), 'fala do Takeoff e do Daily por projeto (1ª versão), sem Crew nem Concorrências', t.slice(0, 250));
   verificar(await p.locator('a[href*="demo"]').count() === 0 && await p.locator('a[href*="teste-"]').count() === 0, 'sem link do protótipo nem dos roteiros');
   await p.goto(URL_BASE + '?demo#/entrar');
   await p.waitForSelector('#form-login-oficial, #form-login', { timeout: 30000 });
   verificar(await p.locator('#form-login-oficial').count() === 1 && await p.locator('#form-login').count() === 0, 'o ?demo não abre o protótipo no domínio');
   await p.goto(URL_BASE + '?versao=completa');
   await p.waitForSelector('#form-login-oficial', { timeout: 30000 });
-  verificar(!/Daily/.test(await p.locator('body').innerText()), 'o ?versao=completa não destrava os outros módulos no domínio');
+  verificar(!/Crew|Concorr/.test(await p.locator('body').innerText()), 'o ?versao=completa não destrava os outros módulos (Crew, Concorrências) no domínio');
 
   console.log('\nO que ficou de fora');
   for (const f of ['teste-iphone.html', 'teste-android.html', 'manual/manual-de-teste.html']) {

@@ -3942,4 +3942,8 @@ export const EN = {
   'Real': 'Actual',
   'Real − orçado': 'Actual − budget',
   'Ponto sem tarefa: {v} ({h}) em etapas que nenhuma tarefa tem (ex.: deslocamento, limpeza). Entra no custo real, mas não nas tarefas.': 'Time clock without a task: {v} ({h}) in phases no task has (e.g. travel, cleanup). It counts in the actual cost, but not in the tasks.',
+  'Contas de teste (homologação)': 'Test accounts (staging)',
+  'toque no e-mail para preencher; a senha é combinada por fora.': 'tap an email to fill it in; the password is shared separately.',
+  'Encarregado (celular)': 'Foreman (phone)',
+  'Outra empresa': 'Other company',
 };

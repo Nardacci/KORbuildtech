@@ -23,6 +23,9 @@ Na Prestadora: 4 funções com valor hora (Carpenter 38, Painter 30, Electrician
 | HOM · Loja Birch (perdida) | perdida | não aparece no Gantt nem no andamento do Início |
 | HOM · Projeto da Parceira (empresa `hq`) | orçamento | só a Parceira deve ver |
 
+## Logins na tela de login (temporário)
+Na homologação (`nardacci.github.io`) o login oficial mostra os cinco e-mails acima, clicáveis (preenchem o campo; **a senha não aparece**). Nunca aparece no domínio de produção. **Remover depois dos testes:** em `js/plataforma.js`, `MOSTRAR_LOGINS_DE_TESTE = false` (some na hora) e, para limpar de vez, apagar `LOGINS_DE_TESTE` e `htmlLoginsDeTeste`, a ação `preencher-email-oficial` em `js/app.js`, o bloco `.logins-teste` do `css/app.css` e `tests/login-logins-teste.test.mjs`.
+
 ## Como rodar
 ```
 # 1) a massa (o app aponta para o Supabase do js/config.js; as variáveis ficam só no terminal)

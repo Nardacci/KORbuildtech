@@ -1835,3 +1835,8 @@ td.mz-obs textarea { width: 100%; min-height: 52px; resize: vertical; font: inhe
 .curva-s .cs-plan { fill: none; stroke: #2563EB; stroke-width: 2.5; stroke-linejoin: round; }
 .curva-s .cs-hoje { stroke: #DC2626; stroke-width: 1.5; stroke-dasharray: 4 3; } .curva-s .cs-feito { fill: #16A34A; stroke: #fff; stroke-width: 2; }
 .tabela-valor-gantt td, .tabela-valor-gantt th { white-space: nowrap; }
+
+/* Logins de teste no login oficial (só na homologação) */
+.logins-teste { margin: 14px 0 0; padding: 10px 12px; border: 1px dashed var(--borda); border-radius: 10px; background: #F8F9FB; }
+.logins-teste ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.logins-teste li { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }

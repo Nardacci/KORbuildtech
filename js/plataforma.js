@@ -4,7 +4,7 @@
  * módulos. No protótipo há uma empresa só e tudo fica no navegador; na versão real, o servidor
  * isola os dados de cada empresa. */
 
-import { PRIMEIRA_VERSAO, NO_DOMINIO, NOME_MEASURE } from './versao.js';
+import { PRIMEIRA_VERSAO, NO_DOMINIO, NOME_MEASURE, NA_HOMOLOGACAO } from './versao.js';
 import { DOMINIOS_EN } from './exemplo.js';
 import { esc, dataCurta, diasEntre, hoje, dataHora, isoDoDia, horaCurta } from './util.js';
 import { estado, todasAsEmpresas, salvar, chaveDaSessao } from './armazem.js';
@@ -280,6 +280,20 @@ export function htmlCaminhosEntrada() {
 }
 
 /* O formulário de entrar (contas reais; ações em oficial-telas.js). */
+/* Logins da massa de homologação (tools/massa-homologacao.mjs, docs/massa-homologacao.md). Só aparecem na homologação (nardacci.github.io), nunca no domínio de produção.
+ * São e-mails fictícios (example.com): a senha não aparece aqui, é combinada por fora. Clicar no e-mail preenche o campo. */
+const LOGINS_DE_TESTE = [
+  ['hom.hp.admin@example.com', 'Administrador'], ['hom.hp.gestor@example.com', 'Gestor de obras'], ['hom.hp.encarregado@example.com', 'Encarregado (celular)'],
+  ['hom.hp.trabalhador@example.com', 'Trabalhador'], ['hom.hq.admin@example.com', 'Outra empresa'],
+];
+/* TEMPORÁRIO (05/11/2026): remover depois dos testes de homologação. Para tirar da tela: MOSTRAR_LOGINS_DE_TESTE = false (e depois apagar este bloco, a ação
+ * 'preencher-email-oficial' em js/app.js, o CSS .logins-teste e tests/login-logins-teste.test.mjs). */
+export const MOSTRAR_LOGINS_DE_TESTE = true;
+function mostrarLoginsDeTeste() { try { return MOSTRAR_LOGINS_DE_TESTE && !NO_DOMINIO && (NA_HOMOLOGACAO || localStorage.getItem('kbt.loginsDeTeste') === '1'); } catch { return false; } }
+const htmlLoginsDeTeste = () => !mostrarLoginsDeTeste() ? '' :
+  '<div class="logins-teste" id="logins-teste"><p class="mudo pequeno"><b>' + tr('Contas de teste (homologação)') + '</b> · ' + tr('toque no e-mail para preencher; a senha é combinada por fora.') + '</p><ul>' +
+  LOGINS_DE_TESTE.map(([e, p]) => '<li><button type="button" class="email-demo" data-acao="preencher-email-oficial" data-email="' + esc(e) + '">' + esc(e) + '</button> <span class="mudo pequeno">' + tr(p) + '</span></li>').join('') + '</ul></div>';
+
 export function telaLoginOficial() {
   return paginaEntrada(
       '<form class="login-form" id="form-login-oficial" novalidate>' +
@@ -292,6 +306,7 @@ export function telaLoginOficial() {
         '<p class="login-erro" id="login-erro" role="alert" hidden></p>' +
         '<button type="submit" class="btn btn-primario btn-bloco btn-grande">' + tr('Entrar') + '</button>' +
         '<p class="login-alternativa">' + tr('Ainda não tem conta?') + ' <a href="#/criar-conta">' + tr('Criar a conta da sua empresa') + '</a></p>' +
+        htmlLoginsDeTeste() +
         htmlCaminhosEntrada() +
       '</form>');
 }
