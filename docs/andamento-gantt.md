@@ -19,3 +19,6 @@ A Reforma de cozinha (ganha) tem um cronograma em andamento com uma tarefa atras
 
 ## Testes
 `tests/projeto-espaco.test.mjs` (coluna % feito, atrasada, página do Gantt) e `tests/inicio-primeira-versao.test.mjs` (bloco do Início na conta real).
+
+## Gantt financeiro (04/11/2026)
+Abaixo do gráfico, a página do Gantt agora tem o valor por tarefa e a curva S, as horas do diário contra as orçadas e o custo real do ponto. Ver `docs/gantt-financeiro.md`.

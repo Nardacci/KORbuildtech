@@ -99,3 +99,6 @@ Apaga só as empresas com `plano.massa = 'pv'` (em cascata: obras, contatos, con
 Famílias: p1 siding, p2 framing, p3 concreto, p4 telhado, a1 calhas, a2 e c1 partições de drywall (`tools/massa-pv/dados.mjs`, `FAMILIAS`).
 
 Homologação automática: `tests/homologacao-pv.test.mjs` (local, ou `--real` contra o endereço de homologação com `KOR_DEMO_SENHA`) confere, por empresa, o painel, o catálogo, os assemblies, as condições, a lista para cotação por fornecedor, o PDF do pedido de cotação e a proposta (107 verificações). Só lê.
+
+## O que esta massa NÃO cobre (atualizado em 05/11/2026)
+Esta massa é de outubro e cobre empresas, logins, contatos, obras, concorrências e o Measure básico. Depois dela entraram: projeto liberado para obra com início da obra, diário do projeto, % feito e horas no Gantt, funções com valor hora, Gantt financeiro e o Settings por fluxo. Esses caminhos são cobertos pelos **fluxos F01 a F05** (`docs/testes/fluxos/`, com massa própria que o teste cria e apaga) e, em volume, pela **massa de estresse** (`docs/testes/estresse.md`).

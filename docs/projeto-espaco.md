@@ -87,3 +87,6 @@ A aba **Project summary** só mostra: status, proposta, custo e margem, dados do
 Empresas sem projetos (ex.: a construtora que só tem obras) continuam usando o formulário da obra, agora também com o editor de escopo. A decisão sobre "obra sem projeto" fica para a análise posterior.
 
 Como o escopo viaja no banco: o texto formatado é guardado como um único item do campo `incluso` (lista de textos) da concorrência, sem migração nem mudança nas funções do servidor; ao ler, um item em HTML é tratado como escopo formatado, e listas antigas continuam funcionando.
+
+## Valor por tarefa, horas e custo real (04/11/2026)
+A aba Schedule gera as tarefas guardando a **etapa** (cost code) de cada uma (`tarefa.etapa`); é por ela que a tarefa pega o valor do Takeoff. A página do Gantt mostra valor por tarefa e curva S, horas orçadas × apontadas no diário e custo real do ponto (Crew). Detalhes e limites: `docs/gantt-financeiro.md`.

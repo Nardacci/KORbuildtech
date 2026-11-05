@@ -26,3 +26,6 @@ Até a migração entrar na conta real: o projeto ganho não vira obra no banco 
 
 ## Testes
 `tests/primeira-versao.test.mjs` (Daily aberto, Crew fora), `tests/daily-primeira-versao.test.mjs` (protótipo: projeto → etapas prontas → Liberar para obra → Daily → RDO aponta a tarefa → aprovação → % feito no Gantt; Voltar para análise), `tests/inicio-primeira-versao.test.mjs` (conta real: gatilho e Daily), `tests/projeto-espaco.test.mjs` e `tests/concorrencias.test.mjs` (obra automática).
+
+## Horas gastas por tarefa (04/11/2026)
+A atividade do diário que aponta uma tarefa do cronograma pede também as **horas gastas nessa tarefa no dia** (todas as pessoas somadas). Ficam no JSON da atividade (sem migração) e o Gantt as soma dos diários **aprovados**. Ver `docs/gantt-financeiro.md` (fatia 2).

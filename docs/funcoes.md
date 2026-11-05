@@ -16,5 +16,5 @@
 - Preço da mão de obra: `precoEm` em `js/precos.js`; item: `funcaoId` (`js/measure.js`, `js/itens-telas.js`).
 - Banco: migração **0023** (`funcoes`, `funcao_valores`, `itens.funcao_id`, dez funções padrão por empresa); teste `supabase/testes/0015_funcoes.sql`. No app, `PERSISTE_FUNCAO` (`js/measure-oficial.js`) está ligado desde que a migração entrou (28/10).
 
-## Próximo (Gantt físico-financeiro, fatia 1)
-O valor de cada tarefa do cronograma = material + horas por função × custo da hora da função.
+## Uso no Gantt físico-financeiro (feito, 04/11/2026)
+O valor de cada tarefa do cronograma = material + horas × custo da hora da função (valor hora padrão × (1 + encargos)). Ver `docs/gantt-financeiro.md` (fatias 1 a 3: valor e curva S, horas do diário, custo real do Crew).
