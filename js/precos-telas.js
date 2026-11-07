@@ -2,7 +2,7 @@
  * as margens (overhead, lucro, imposto sobre material) com vigência, e o registro dos preços que o
  * fornecedor devolveu na cotação. */
 
-import { esc, toast, abrirDialogo, hoje, dataCurta } from './util.js';
+import { esc, toast, abrirDialogo, hoje, dataCurta, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { usuarioAtual, pode } from './plataforma.js';
 import { salvar } from './armazem.js';
@@ -72,7 +72,7 @@ export async function dialogoPreco(it) {
   });
   if (!res || !res.valor) return;
   const r = registrarPreco(it.id, { valor: lerValor(res.campos.valor), desde: res.campos.desde, fonte: res.campos.fonte }, quem());
-  toast(r.erro || tr('Preço salvo.'));
+  r.erro ? avisarErro(r.erro) : toast(tr('Preço salvo.'));
   if (r.ok) app.desenhar();
 }
 
@@ -90,7 +90,7 @@ export async function dialogoMargens() {
   });
   if (!res || !res.valor) return;
   const r = novasMargens(res.campos, quem());
-  toast(r.erro || tr('Margens salvas.'));
+  r.erro ? avisarErro(r.erro) : toast(tr('Margens salvas.'));
   if (r.ok) app.desenhar();
 }
 

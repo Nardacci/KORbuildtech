@@ -21,6 +21,7 @@ import { ligarConcorrenciasOficial, lerConvitePublico, mostrarConvitePublico } f
 import { ligarAvisosOficial, avisosDoServidor } from './avisos-oficial.js';
 import { ligarRegistroDeLocalizacao } from './localizacao.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+import { filtrarGrade } from './padrao-cadastro.js';
 import { avisarBaixando, avisarAtualizando, avisarPronta } from './atualizacao.js';
 import { usarArmazem, mostrarSemGuardar } from './armazem.js';
 import { tr, tn, idioma, definirIdioma } from './i18n.js';
@@ -236,6 +237,7 @@ function desenhar() {
     document.documentElement.lang = idioma() === 'en' ? 'en' : 'pt-BR';
     document.body.dataset.modo = location.hash.startsWith('#/conta') ? 'oficial' : 'entrar';
     if (r.depois) r.depois();
+    filtrarGrade();   // a busca e os filtros das grades valem desde que a tela abre (ex.: Itens abre só com os ativos)
     return;
   }
   desenharPrototipo();

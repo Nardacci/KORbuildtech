@@ -3,7 +3,7 @@
  * e a área da conta: início, usuários (convites), perfis de acesso e empresa. Os módulos chegam nas próximas fatias. */
 
 import { PRIMEIRA_VERSAO, NOME_MEASURE, MODULOS_DA_VERSAO } from './versao.js';
-import { esc, toast, confirmar, dataHora, abrirPainel } from './util.js';
+import { esc, toast, confirmar, dataHora, abrirPainel, avisarErro } from './util.js';
 import { iniciais, quando, cabecalhoDePagina, botaoCriar, barraDeBusca, atributosDeLinha, gradeEmCartao, avatar, campoPainel } from './padrao-cadastro.js';
 import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
 import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario, hrefManual, CONTROLE_DE_TESTE } from './plataforma.js';
@@ -395,15 +395,18 @@ function htmlPerfis() {
     const usuarios = conta.membros.filter((m) => m.perfil_id === p.id);
     const [tipo, rotuloTipo] = tipoDoPerfil(p);
     const n = p.permissoes.filter((x) => ids.has(x)).length;
-    return '<tr class="perfil-cartao" data-perfil="' + p.id + '"><td><div class="pessoa"><span class="icone-perfil" aria-hidden="true">' + icone('conta', 18) + '</span><div><b>' + esc(nomeDoPerfil(p)) + '</b><span class="mudo pequeno bloco">' + esc(descricaoDoPerfil(p) || '—') + '</span></div></div></td>' +
+    return '<tr class="perfil-cartao"' + atributosDeLinha([nomeDoPerfil(p), p.descricao].join(' '), [tipo]) + ' data-perfil="' + p.id + '"><td><div class="pessoa"><span class="icone-perfil" aria-hidden="true">' + icone('conta', 18) + '</span><div><b>' + esc(nomeDoPerfil(p)) + '</b><span class="mudo pequeno bloco">' + esc(descricaoDoPerfil(p) || '—') + '</span></div></div></td>' +
       '<td><span class="tipo-perfil tipo-' + tipo + '">' + (p.sistema ? icone('olho', 12) : '') + rotuloTipo + '</span></td>' +
       '<td><div class="meter" title="' + n + ' / ' + total + '"><span style="width:' + Math.round(n * 100 / Math.max(1, total)) + '%"></span></div><span class="mudo pequeno">' + tr('{n} de {total} permissões', { n, total }) + '</span></td>' +
       '<td>' + (usuarios.length ? '<span class="pilha-avatares" title="' + esc(usuarios.map((u) => u.nome).join(', ')) + '">' + usuarios.slice(0, 3).map((u) => '<span class="avatar mini">' + esc(iniciais(u.nome)) + '</span>').join('') + '</span> <span class="mudo pequeno">' + (usuarios.length === 1 ? tr('1 usuário') : tr('{n} usuários', { n: usuarios.length })) + '</span>' : '<span class="mudo pequeno">' + tr('Ninguém') + '</span>') + '</td>' +
       '<td class="acoes-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-editar-perfil" data-id="' + p.id + '">' + (p.sistema ? tr('Ver') : tr('Editar')) + '</button></td></tr>';
   }).join('');
+  const tipos = [...new Set(conta.perfis.map((p) => tipoDoPerfil(p)[0]))];
+  const chips = [['', tr('Todos'), conta.perfis.length]].concat(tipos.map((t) => [t, tipoDoPerfil(conta.perfis.find((p) => tipoDoPerfil(p)[0] === t))[1], conta.perfis.filter((p) => tipoDoPerfil(p)[0] === t).length]));
   return cabecalhoDePagina(tr('Perfis de acesso'), tr('Cada perfil é um conjunto de permissões. Crie os que a sua empresa precisa e escolha, em Usuários, quem usa cada um.'),
       botaoCriar('of-novo-perfil', tr('Novo perfil'), icone('mais', 16))) +
-    '<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela tabela-perfis grade"><thead><tr><th>' + tr('Perfil') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Permissões') + '</th><th>' + tr('Quem usa') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div></section>' +
+    barraDeBusca(tr('Buscar perfil'), chips) +
+    gradeEmCartao('tabela-perfis', [tr('Perfil'), tr('Tipo'), tr('Permissões'), tr('Quem usa'), ''], linhas, tr('Nenhum perfil com esses filtros.')) +
     '<p class="mudo pequeno">' + tr('O Administrador é protegido: a empresa sempre precisa de alguém que cuide dos acessos. Os perfis "Modelo" vêm prontos e podem ser alterados ou excluídos quando ninguém os usa.') + '</p>';
 }
 
@@ -433,7 +436,7 @@ function painelEditarPerfil(id) {
   const usuarios = conta.membros.filter((m) => m.perfil_id === p.id);
   const visiveis = new Set(gruposVisiveis().flatMap((g) => g.itens.map((i) => i.id)));
   const extras = [];
-  if (!travado) extras.push({ rotulo: tr('Excluir'), classe: 'btn-perigo', aoClicar: async () => {
+  if (!travado) extras.push({ rotulo: tr('Excluir'), classe: 'btn-perigo-contorno', aoClicar: async () => {
     if (usuarios.length) return { erro: tr('Em uso por {n} pessoa(s): troque antes o perfil delas em Usuários.', { n: usuarios.length }) };
     if (!(await confirmar(tr('Excluir este perfil?'), tr('Ele deixa de existir. Ninguém usa este perfil agora.'), tr('Excluir')))) return null;
     const r = await excluirPerfil(p.id);
@@ -466,7 +469,7 @@ function htmlEmpresa() {
   const edita = pode('settings.conta');
   return cabecalhoDePagina(tr('Empresa'), tr('Os dados da empresa aparecem nas propostas e nos relatórios.'), '') + '<section class="cartao"><h2 class="cartao-titulo">' + tr('Dados da empresa') + '</h2><form id="form-empresa" class="grade-campos" novalidate data-sem-envio>' +
     CAMPOS_EMPRESA.map(([k, r]) => '<div class="campo"><label class="rotulo-pequeno" for="em-' + k + '">' + tr(r) + '</label><input id="em-' + k + '" name="' + k + '" value="' + esc(e[k] || '') + '"' + (edita ? '' : ' readonly') + (k === 'estado' ? ' maxlength="2"' : '') + '></div>').join('') + '</form>' +
-    (edita ? '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="of-salvar-empresa">' + tr('Salvar') + '</button></div>' : '<p class="mudo pequeno">' + tr('Só quem tem a permissão Empresa, conta e plano altera estes dados.') + '</p>') +
+    (edita ? '<div class="rodape-form"><button type="button" class="btn btn-primario" data-acao="of-salvar-empresa">' + tr('Salvar') + '</button></div>' : '<p class="mudo pequeno">' + tr('Só quem tem a permissão Empresa, conta e plano altera estes dados.') + '</p>') +
     '<p class="mudo pequeno">' + tr('Como a empresa atua: {atuacao}. Módulos: {modulos}.', { atuacao: esc(ATUACOES[e.atuacao] || ''), modulos: esc((e.modulos || []).join(', ')) }) + '</p></section>';
 }
 
@@ -489,7 +492,7 @@ function htmlMeuPerfil() {
         linha('mp-nome', tr('Nome'), '<input id="mp-nome" name="nome" type="text" value="' + esc(m.nome) + '" autocomplete="name">') +
         linha('mp-telefone', tr('Telefone'), '<input id="mp-telefone" name="telefone" type="tel" value="' + esc(m.telefone || '') + '" autocomplete="tel">') +
       '</form>' +
-      '<div class="btn-linha"><button type="button" class="btn btn-primario" data-acao="of-salvar-meu-perfil">' + tr('Salvar') + '</button></div>' +
+      '<div class="rodape-form"><button type="button" class="btn btn-primario" data-acao="of-salvar-meu-perfil">' + tr('Salvar') + '</button></div>' +
       '<p class="mudo pequeno">' + tr('Perfil de acesso: {perfil}. Só quem cuida dos acessos da empresa muda o perfil.', { perfil: esc(nomeDoPerfil(conta.perfil)) }) + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Idioma') + '</h2>' +
       '<p>' + tr('O idioma das telas vale também para os e-mails que o KORbuild manda para você.') + '</p>' + htmlSeletorIdioma('perfil-idioma') + '</section>' +
@@ -500,14 +503,14 @@ function htmlMeuPerfil() {
       '<form id="form-trocar-email" class="grade-campos" novalidate data-sem-envio>' +
         linha('mp-email', tr('E-mail novo'), '<input id="mp-email" name="email" type="email" autocomplete="email">') +
       '</form>' +
-      '<div class="btn-linha"><button type="button" class="btn btn-contorno" data-acao="of-trocar-email">' + tr('Trocar o e-mail') + '</button></div>' +
+      '<div class="rodape-form"><button type="button" class="btn btn-primario" data-acao="of-trocar-email">' + tr('Trocar o e-mail') + '</button></div>' +
       '<p class="mudo pequeno">' + tr('O e-mail só muda depois que você abrir o link enviado para o endereço novo. A empresa, o perfil e o histórico continuam os mesmos.') + '</p></section>' +
     '<section class="cartao"><h2 class="cartao-titulo">' + tr('Senha') + '</h2>' +
       '<form id="form-trocar-senha" class="grade-campos" novalidate data-sem-envio>' +
         linha('mp-senha', tr('Senha nova (pelo menos 8 caracteres)'), '<input id="mp-senha" name="senha" type="password" autocomplete="new-password" minlength="8">') +
         linha('mp-senha2', tr('Repita a senha nova'), '<input id="mp-senha2" name="senha2" type="password" autocomplete="new-password" minlength="8">') +
       '</form>' +
-      '<div class="btn-linha"><button type="button" class="btn btn-contorno" data-acao="of-trocar-senha">' + tr('Trocar a senha') + '</button></div></section>';
+      '<div class="rodape-form"><button type="button" class="btn btn-primario" data-acao="of-trocar-senha">' + tr('Trocar a senha') + '</button></div></section>';
 }
 
 /* ---------- Ações ---------- */
@@ -558,7 +561,7 @@ export async function enviarFormOficial(form) {
 }
 export const FORMS_OFICIAIS = ['form-login-oficial', 'form-criar-conta', 'form-esqueci-senha', 'form-nova-senha', 'form-nova-empresa'];
 
-const comResultado = (r, ok) => { if (r.erro) { toast(r.erro); return; } if (ok) toast(ok); redesenhar(); };
+const comResultado = (r, ok) => { if (r.erro) { avisarErro(r.erro); return; } if (ok) toast(ok); redesenhar(); };
 
 export const acoesOficiais = {
   async 'of-sair'() { await sair(); esquecerConvite(); esquecerCadastros(); espelho.pronto = false; ir('#/entrar'); location.reload(); },   // recarrega: zera de vez o que ficou em memória (e a sessão antiga do cliente do Auth)
@@ -577,7 +580,10 @@ export const acoesOficiais = {
   async 'of-copiar'(el) {
     try { await navigator.clipboard.writeText(el.dataset.link); toast(tr('Link copiado.')); } catch (e) { toast(tr('Selecione o link e copie.')); }
   },
-  async 'of-cancelar-convite'(el) { comResultado(await cancelarConvite(el.dataset.id), tr('Convite cancelado.')); },
+  async 'of-cancelar-convite'(el) {
+    if (!(await confirmar(tr('Cancelar este convite?'), tr('O link deixa de funcionar. Dá para convidar de novo depois.'), tr('Cancelar o convite'), 'btn-perigo'))) return;
+    comResultado(await cancelarConvite(el.dataset.id), tr('Convite cancelado.'));
+  },
   async 'of-ativar'(el) {
     const ativo = !!el.dataset.ativo;
     if (!ativo && !(await confirmar(tr('Desativar este usuário?'), tr('A pessoa deixa de entrar no KORbuild. O histórico fica, e dá para reativar depois.'), tr('Desativar')))) return;
@@ -591,13 +597,13 @@ export const acoesOficiais = {
   },
   async 'of-pref-email'(el) {
     const r = await salvarPrefEmail(el.dataset.categoria, el.checked);
-    if (r.erro) { el.checked = !el.checked; toast(r.erro); return; }
+    if (r.erro) { el.checked = !el.checked; avisarErro(r.erro); return; }
     toast(el.checked ? tr('Você vai receber esses avisos por e-mail.') : tr('Esses avisos não vão mais por e-mail. Continuam no sininho.'));
   },
   async 'of-trocar-email'() {
     const f = document.getElementById('form-trocar-email');
     const r = await trocarEmail(f.email.value);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Enviamos um link para {email}. O e-mail muda quando você abrir o link.', { email: f.email.value.trim() }));
     redesenhar();
   },
@@ -605,7 +611,7 @@ export const acoesOficiais = {
     const f = document.getElementById('form-trocar-senha');
     if (f.senha.value !== f.senha2.value) { toast(tr('As duas senhas não são iguais.')); return; }
     const r = await definirNovaSenha(f.senha.value);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     f.reset();
     toast(tr('Senha alterada.'));
   },

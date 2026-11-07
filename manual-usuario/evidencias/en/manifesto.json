@@ -1,8 +1,8 @@
 {
   "idioma": "en",
   "versao": "v165",
-  "commit": "2bad830",
-  "geradoEm": "2026-11-07T14:32:18.325Z",
+  "commit": "7583fae",
+  "geradoEm": "2026-11-07T15:26:32.911Z",
   "ambiente": "banco local com dados de exemplo (Northfield Builders)",
   "capturas": [
     {
@@ -11,8 +11,8 @@
       "titulo": "Tela de entrada",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:22.215Z",
-      "ms": 765
+      "em": "2026-11-07T15:24:51.782Z",
+      "ms": 783
     },
     {
       "chave": "criar-conta",
@@ -20,8 +20,8 @@
       "titulo": "Criar a conta",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:23.340Z",
-      "ms": 772
+      "em": "2026-11-07T15:24:52.959Z",
+      "ms": 769
     },
     {
       "chave": "sua-empresa",
@@ -29,8 +29,8 @@
       "titulo": "Cadastrar a empresa",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:41.109Z",
-      "ms": 766
+      "em": "2026-11-07T15:24:54.420Z",
+      "ms": 773
     },
     {
       "chave": "inicio",
@@ -38,8 +38,8 @@
       "titulo": "Início",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:44.314Z",
-      "ms": 806
+      "em": "2026-11-07T15:24:57.591Z",
+      "ms": 775
     },
     {
       "chave": "usuarios",
@@ -47,8 +47,8 @@
       "titulo": "Usuários",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:45.567Z",
-      "ms": 761
+      "em": "2026-11-07T15:24:58.906Z",
+      "ms": 769
     },
     {
       "chave": "novo-usuario",
@@ -56,8 +56,8 @@
       "titulo": "Novo usuário",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:47.033Z",
-      "ms": 768
+      "em": "2026-11-07T15:25:00.388Z",
+      "ms": 771
     },
     {
       "chave": "senha-provisoria",
@@ -65,8 +65,8 @@
       "titulo": "Senha provisória",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:47.932Z",
-      "ms": 762
+      "em": "2026-11-07T15:25:01.323Z",
+      "ms": 769
     },
     {
       "chave": "editar-usuario",
@@ -74,8 +74,8 @@
       "titulo": "Editar usuário",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:49.261Z",
-      "ms": 756
+      "em": "2026-11-07T15:25:02.702Z",
+      "ms": 789
     },
     {
       "chave": "perfis",
@@ -83,8 +83,8 @@
       "titulo": "Perfis de acesso",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:50.509Z",
-      "ms": 758
+      "em": "2026-11-07T15:25:04.161Z",
+      "ms": 769
     },
     {
       "chave": "perfil-editor",
@@ -92,8 +92,8 @@
       "titulo": "Editor de perfil",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:51.344Z",
-      "ms": 784
+      "em": "2026-11-07T15:25:05.004Z",
+      "ms": 786
     },
     {
       "chave": "novo-perfil",
@@ -101,7 +101,7 @@
       "titulo": "Novo perfil",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:52.181Z",
+      "em": "2026-11-07T15:25:05.849Z",
       "ms": 757
     },
     {
@@ -110,8 +110,8 @@
       "titulo": "Contatos",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:53.572Z",
-      "ms": 754
+      "em": "2026-11-07T15:25:07.300Z",
+      "ms": 763
     },
     {
       "chave": "contato-painel",
@@ -119,8 +119,8 @@
       "titulo": "Contato",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:54.396Z",
-      "ms": 770
+      "em": "2026-11-07T15:25:08.123Z",
+      "ms": 772
     },
     {
       "chave": "funcoes",
@@ -128,8 +128,8 @@
       "titulo": "Funções",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:56.546Z",
-      "ms": 769
+      "em": "2026-11-07T15:25:10.329Z",
+      "ms": 780
     },
     {
       "chave": "funcao-painel",
@@ -137,8 +137,8 @@
       "titulo": "Função com histórico do valor hora",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:57.384Z",
-      "ms": 786
+      "em": "2026-11-07T15:25:11.170Z",
+      "ms": 782
     },
     {
       "chave": "empresa",
@@ -146,8 +146,8 @@
       "titulo": "Empresa",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:58.676Z",
-      "ms": 761
+      "em": "2026-11-07T15:25:12.434Z",
+      "ms": 773
     },
     {
       "chave": "meu-perfil",
@@ -155,8 +155,8 @@
       "titulo": "Meu perfil",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:30:59.969Z",
-      "ms": 772
+      "em": "2026-11-07T15:25:13.706Z",
+      "ms": 764
     },
     {
       "chave": "item-novo",
@@ -164,8 +164,8 @@
       "titulo": "Novo item",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:01.856Z",
-      "ms": 763
+      "em": "2026-11-07T15:25:15.348Z",
+      "ms": 764
     },
     {
       "chave": "item-precos",
@@ -173,7 +173,7 @@
       "titulo": "Item: preços",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:04.244Z",
+      "em": "2026-11-07T15:25:17.832Z",
       "ms": 759
     },
     {
@@ -182,8 +182,8 @@
       "titulo": "Assemblies",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:06.134Z",
-      "ms": 753
+      "em": "2026-11-07T15:25:19.817Z",
+      "ms": 767
     },
     {
       "chave": "assembly-editor",
@@ -191,8 +191,8 @@
       "titulo": "Assembly: linhas e fórmulas",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:08.923Z",
-      "ms": 792
+      "em": "2026-11-07T15:25:22.297Z",
+      "ms": 773
     },
     {
       "chave": "projeto-novo",
@@ -200,8 +200,8 @@
       "titulo": "Novo projeto",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:11.997Z",
-      "ms": 760
+      "em": "2026-11-07T15:25:25.783Z",
+      "ms": 784
     },
     {
       "chave": "plantas-vazio",
@@ -209,8 +209,8 @@
       "titulo": "Plantas: enviar",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:15.404Z",
-      "ms": 769
+      "em": "2026-11-07T15:25:29.210Z",
+      "ms": 757
     },
     {
       "chave": "plantas",
@@ -218,8 +218,8 @@
       "titulo": "Plantas enviadas",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:19.260Z",
-      "ms": 801
+      "em": "2026-11-07T15:25:33.399Z",
+      "ms": 796
     },
     {
       "chave": "escala",
@@ -227,8 +227,8 @@
       "titulo": "Definir a escala da folha",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:21.193Z",
-      "ms": 785
+      "em": "2026-11-07T15:25:35.242Z",
+      "ms": 775
     },
     {
       "chave": "escala-conferir",
@@ -236,8 +236,8 @@
       "titulo": "Conferir a escala numa cota",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:22.081Z",
-      "ms": 782
+      "em": "2026-11-07T15:25:36.132Z",
+      "ms": 780
     },
     {
       "chave": "takeoff-assembly",
@@ -245,8 +245,8 @@
       "titulo": "Incluir um assembly no desenho",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:29.982Z",
-      "ms": 788
+      "em": "2026-11-07T15:25:44.080Z",
+      "ms": 785
     },
     {
       "chave": "takeoff",
@@ -254,8 +254,8 @@
       "titulo": "Takeoff: medição no desenho",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:33.189Z",
-      "ms": 775
+      "em": "2026-11-07T15:25:47.275Z",
+      "ms": 767
     },
     {
       "chave": "materiais",
@@ -263,8 +263,8 @@
       "titulo": "Materiais e mão de obra",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:35.821Z",
-      "ms": 761
+      "em": "2026-11-07T15:25:50.380Z",
+      "ms": 772
     },
     {
       "chave": "cronograma",
@@ -272,8 +272,8 @@
       "titulo": "Cronograma",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:41.700Z",
-      "ms": 768
+      "em": "2026-11-07T15:25:56.335Z",
+      "ms": 764
     },
     {
       "chave": "projeto-visao",
@@ -281,8 +281,8 @@
       "titulo": "Visão geral do projeto",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:43.190Z",
-      "ms": 772
+      "em": "2026-11-07T15:25:58.242Z",
+      "ms": 778
     },
     {
       "chave": "proposta",
@@ -290,8 +290,8 @@
       "titulo": "Proposta",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:44.692Z",
-      "ms": 777
+      "em": "2026-11-07T15:26:00.184Z",
+      "ms": 795
     },
     {
       "chave": "liberar",
@@ -299,8 +299,8 @@
       "titulo": "Liberar para obra",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:47.157Z",
-      "ms": 776
+      "em": "2026-11-07T15:26:02.227Z",
+      "ms": 783
     },
     {
       "chave": "liberado",
@@ -308,8 +308,8 @@
       "titulo": "Projeto liberado para obra",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:48.068Z",
-      "ms": 796
+      "em": "2026-11-07T15:26:03.094Z",
+      "ms": 773
     },
     {
       "chave": "daily-hoje",
@@ -317,8 +317,8 @@
       "titulo": "Daily: Hoje",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:51.656Z",
-      "ms": 769
+      "em": "2026-11-07T15:26:06.547Z",
+      "ms": 781
     },
     {
       "chave": "daily-projeto",
@@ -326,8 +326,8 @@
       "titulo": "Daily: o projeto",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:31:52.479Z",
-      "ms": 785
+      "em": "2026-11-07T15:26:07.397Z",
+      "ms": 775
     },
     {
       "chave": "daily-rdo",
@@ -335,8 +335,8 @@
       "titulo": "Novo RDO",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:01.548Z",
-      "ms": 793
+      "em": "2026-11-07T15:26:16.517Z",
+      "ms": 817
     },
     {
       "chave": "daily-atividade",
@@ -344,8 +344,8 @@
       "titulo": "Atividade ligada à tarefa do cronograma",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:02.938Z",
-      "ms": 794
+      "em": "2026-11-07T15:26:17.885Z",
+      "ms": 782
     },
     {
       "chave": "daily-enviar",
@@ -353,8 +353,8 @@
       "titulo": "Enviar para aprovação",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:03.797Z",
-      "ms": 808
+      "em": "2026-11-07T15:26:18.738Z",
+      "ms": 794
     },
     {
       "chave": "daily-enviado",
@@ -362,8 +362,8 @@
       "titulo": "Diário enviado",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:06.250Z",
-      "ms": 813
+      "em": "2026-11-07T15:26:20.865Z",
+      "ms": 806
     },
     {
       "chave": "daily-painel",
@@ -371,8 +371,8 @@
       "titulo": "Daily: painel",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:09.536Z",
-      "ms": 761
+      "em": "2026-11-07T15:26:24.091Z",
+      "ms": 753
     },
     {
       "chave": "daily-revisar",
@@ -380,8 +380,8 @@
       "titulo": "Revisar o diário",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:10.375Z",
-      "ms": 762
+      "em": "2026-11-07T15:26:24.927Z",
+      "ms": 770
     },
     {
       "chave": "daily-aprovado",
@@ -389,8 +389,8 @@
       "titulo": "Diário aprovado e lacrado",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:12.821Z",
-      "ms": 801
+      "em": "2026-11-07T15:26:27.377Z",
+      "ms": 800
     },
     {
       "chave": "gantt",
@@ -398,8 +398,8 @@
       "titulo": "Gantt com o andamento do diário",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:15.299Z",
-      "ms": 763
+      "em": "2026-11-07T15:26:29.902Z",
+      "ms": 772
     },
     {
       "chave": "inicio-final",
@@ -407,8 +407,8 @@
       "titulo": "Início com os projetos andando",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:18.257Z",
-      "ms": 2958
+      "em": "2026-11-07T15:26:32.821Z",
+      "ms": 2919
     },
     {
       "chave": "(erros de JavaScript)",
@@ -416,7 +416,7 @@
       "titulo": "Nenhum erro de JavaScript em todo o percurso",
       "ok": true,
       "motivo": "",
-      "em": "2026-11-07T14:32:18.257Z"
+      "em": "2026-11-07T15:26:32.821Z"
     }
   ]
 }

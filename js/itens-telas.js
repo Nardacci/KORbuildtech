@@ -2,7 +2,7 @@
  * Lista com busca e filtros (categoria, cost code, situação), a página do item (Details, Prices, Used in),
  * o histórico de preços e os markups. Item nunca é apagado: fica ativo ou inativo. */
 
-import { esc, toast, hoje, dataCurta } from './util.js';
+import { esc, toast, hoje, dataCurta, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
@@ -17,6 +17,7 @@ import { dialogoPreco, dialogoMargens } from './precos-telas.js';
 import { PERSISTE_ATIVO_ITEM } from './measure-oficial.js';
 import { lerValor } from './measure-relatorios.js';
 import { acoesPlanilha, dialogoImportar } from './itens-planilha.js';
+import { barraDeBusca, filtroSelect, atributosDeLinha, gradeEmCartao, filtrarGrade } from './padrao-cadastro.js';
 
 let app = { desenhar: () => {}, ir: () => {} };
 export function ligarItens(funcoes) { app = { ...app, ...funcoes }; }
@@ -49,14 +50,18 @@ export function telaItens(moldura) {
   const conta = (st) => todos.filter((i) => situacaoDoItem(i) === st).length;
   const linha = (it) => {
     const p = precoEm(it), st = situacaoDoItem(it);
-    return '<tr data-cat="' + esc(it.categoria) + '" data-etapa="' + esc(it.etapa || '') + '" data-st="' + st + '" data-q="' + esc((it.codigo + ' ' + it.nome + ' ' + (it.nota || '')).toLowerCase()) + '"' + (st === 'inativo' ? ' hidden' : '') + '>' +
+    const slug = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return '<tr' + atributosDeLinha(it.codigo + ' ' + it.nome + ' ' + (it.nota || ''), ['cat:' + it.categoria, 'etapa:' + slug(it.etapa), 'st:' + st].concat(st !== 'inativo' ? ['ativo'] : [])) + '>' +
       '<td class="mudo">' + esc(it.codigo) + '</td><td><a href="#/measure/item/' + it.id + '"><b>' + esc(it.nome) + '</b></a>' + (it.nota ? '<span class="mudo pequeno bloco">' + esc(it.nota) + '</span>' : '') + '</td>' +
       '<td>' + esc(CATEGORIAS[it.categoria] || '') + '</td><td>' + esc(it.etapa || '') + '</td><td>' + esc(it.unidade) + '</td>' +
       '<td class="num">' + (p ? '<b>' + dinheiro(p.valor) + '</b>' : '<span class="mudo">—</span>') + '</td>' +
       '<td class="pequeno">' + (p ? dataCurta(p.desde) : '') + '</td><td>' + etiqueta(st) + '</td>' +
-      '<td class="num">' + (ed && st !== 'inativo' ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="preco-novo" data-id="' + it.id + '">' + tr('Novo preço') + '</button>' : '') + '</td></tr>';
+      '<td class="acoes-linha">' + (ed && st !== 'inativo' ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="preco-novo" data-id="' + it.id + '">' + tr('Novo preço') + '</button> ' : '') + '<a class="btn btn-contorno btn-pequeno" href="#/measure/item/' + it.id + '">' + (ed ? tr('Editar') : tr('Ver')) + '</a></td></tr>';
   };
-  const opcoes = (lista, rot) => '<option value="">' + rot + '</option>' + lista.map(([v, n]) => '<option value="' + esc(v) + '">' + esc(n) + '</option>').join('');
+  const slug = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const filtros = filtroSelect(tr('Categoria'), [['', tr('Todas as categorias')]].concat(Object.entries(CATEGORIAS).map(([v, n]) => ['cat:' + v, n]))) +
+    filtroSelect(tr('Etapa (cost code)'), [['', tr('Todos os cost codes')]].concat(etapas.map((e) => ['etapa:' + slug(e), e]))) +
+    filtroSelect(tr('Situação'), [['ativo', tr('Ativos') + ' (' + (todos.length - conta('inativo')) + ')'], ['st:sem-preco', tr('Sem preço') + ' (' + conta('sem-preco') + ')'], ['st:desatualizado', tr('Desatualizado') + ' (' + conta('desatualizado') + ')'], ['st:inativo', tr('Inativos') + ' (' + conta('inativo') + ')'], ['', tr('Todos') + ' (' + todos.length + ')']], 'ativo');
   return moldura({
     ativo: 'itens', largura: 'larga', titulo: tr('Itens'), subtitulo: tr('Catálogo de materiais, mão de obra, equipamentos e subempreiteiros, com o preço de cada um'),
     acoes: '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="itens-exportar">' + tr('Exportar') + '</button>' +
@@ -66,43 +71,14 @@ export function telaItens(moldura) {
         '<p class="margens-atual"><b>' + esc(textoMargens(m)) + '</b> <span class="mudo pequeno">' + tr('desde {data}', { data: dataCurta(m.desde) }) + '</span></p></div>' +
         (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="margens-nova">' + tr('Nova versão') + '</button>' : '') + '</div>' +
         (historicoDeMargens().length > 1 ? '<details class="preco-historico"><summary>' + tr('Histórico') + '</summary><ul>' + historicoDeMargens().map((x) => '<li>' + dataCurta(x.desde) + ' · ' + esc(textoMargens(x)) + (x.motivo ? ' · ' + esc(x.motivo) : '') + '</li>').join('') + '</ul></details>' : '') + '</section>' +
-      '<div class="mz-filtros itens-filtros" id="itens-filtros">' +
-        '<div class="mz-busca-campo">' + icone('lupa', 16) + '<input type="search" id="itens-busca" class="mz-busca" placeholder="' + esc(tr('Buscar por nome ou código…')) + '" aria-label="' + esc(tr('Buscar')) + '"></div>' +
-        '<select id="itens-cat" aria-label="' + esc(tr('Categoria')) + '">' + opcoes(Object.entries(CATEGORIAS), tr('Todas as categorias')) + '</select>' +
-        '<select id="itens-etapa" aria-label="' + esc(tr('Etapa (cost code)')) + '">' + opcoes(etapas.map((e) => [e, e]), tr('Todos os cost codes')) + '</select>' +
-        '<select id="itens-st" aria-label="' + esc(tr('Situação')) + '"><option value="ativos">' + tr('Ativos') + ' (' + (todos.length - conta('inativo')) + ')</option>' +
-          '<option value="sem-preco">' + tr('Sem preço') + ' (' + conta('sem-preco') + ')</option><option value="desatualizado">' + tr('Desatualizado') + ' (' + conta('desatualizado') + ')</option>' +
-          '<option value="inativo">' + tr('Inativos') + ' (' + conta('inativo') + ')</option><option value="todos">' + tr('Todos') + ' (' + todos.length + ')</option></select>' +
-        '<span class="mudo pequeno" id="itens-contagem"></span></div>' +
-      '<section class="cartao grade-cartao">' + (todos.length
-        ? '<div class="tabela-rolagem"><table class="tabela grade tabela-itens tabela-precos" id="itens-tabela"><thead><tr><th>' + tr('Código') + '</th><th>' + tr('Item') + '</th><th>' + tr('Categoria') + '</th><th>' + tr('Etapa (cost code)') + '</th><th>' + tr('Unidade de compra') + '</th><th class="num">' + tr('Preço atual') + '</th><th>' + tr('Desde') + '</th><th>' + tr('Situação') + '</th><th></th></tr></thead><tbody>' + todos.map(linha).join('') + '</tbody></table></div><p class="vazio" id="itens-nenhum" hidden>' + tr('Nenhum item com esses filtros.') + '</p>'
-        : '<p class="vazio">' + tr('Ainda não há itens. Crie o primeiro.') + '</p>') + '</section>' +
+      barraDeBusca(tr('Buscar por nome ou código…'), [], filtros) +
+      (todos.length ? gradeEmCartao('tabela-itens tabela-precos', [tr('Código'), tr('Item'), tr('Categoria'), tr('Etapa (cost code)'), tr('Unidade de compra'), [tr('Preço atual'), 'num'], tr('Desde'), tr('Situação'), ''], todos.map(linha).join(''), tr('Nenhum item com esses filtros.')) : '<p class="vazio">' + tr('Ainda não há itens. Crie o primeiro.') + '</p>') +
       '<p class="dica">' + tr('Os preços nunca são apagados: um preço novo vale a partir de uma data, e a proposta usa o que vale no dia em que é emitida. Preço com mais de 12 meses aparece como desatualizado. Item não se exclui: fica inativo.') + '</p>',
   });
 }
 
 /* Os filtros escondem as linhas (sem redesenhar a tela). */
-function filtrarItens() {
-  const tabela = document.getElementById('itens-tabela');
-  if (!tabela) return;
-  const q = (document.getElementById('itens-busca').value || '').trim().toLowerCase();
-  const cat = document.getElementById('itens-cat').value, etapa = document.getElementById('itens-etapa').value, st = document.getElementById('itens-st').value;
-  let n = 0;
-  for (const tr_ of tabela.tBodies[0].rows) {
-    const ok = (!q || tr_.dataset.q.includes(q)) && (!cat || tr_.dataset.cat === cat) && (!etapa || tr_.dataset.etapa === etapa)
-      && (st === 'todos' || (st === 'ativos' ? tr_.dataset.st !== 'inativo' : tr_.dataset.st === st));
-    tr_.hidden = !ok;
-    if (ok) n++;
-  }
-  document.getElementById('itens-contagem').textContent = tn(n, '{n} item', '{n} itens');
-  document.getElementById('itens-nenhum').hidden = n > 0;
-}
-if (typeof document !== 'undefined') {
-  const alvo = (ev) => ev.target && ev.target.closest && ev.target.closest('#itens-filtros');
-  document.addEventListener('input', (ev) => { if (alvo(ev)) filtrarItens(); });
-  document.addEventListener('change', (ev) => { if (alvo(ev)) filtrarItens(); });
-}
-export function aposDesenharItens() { filtrarItens(); }
+export function aposDesenharItens() { filtrarGrade(); }
 
 /* ---------- A página do item ---------- */
 
@@ -188,7 +164,7 @@ export const acoesItens = {
     const dados = Object.fromEntries(new FormData(form).entries());
     const id = form.dataset.id || null;
     const r = salvarItem(id, dados);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     if (!id && String(dados.preco || '').trim() && !(dados.categoria === 'mao-de-obra' && dados.funcaoId)) {   // com função, o preço vem dela
       const pr = registrarPreco(r.id, { valor: lerValor(dados.preco), desde: dados.desde, fonte: tr('Digitado') }, quem());
       if (pr.erro) { toast(tr('Item criado, mas o preço não foi salvo: {erro}', { erro: pr.erro })); app.ir('#/measure/item/' + r.id + '/prices'); return; }

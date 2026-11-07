@@ -1928,3 +1928,25 @@ dialog.painel > form { display: flex; flex-direction: column; height: 100%; }
 .versao-app { margin: 18px 0 0; text-align: center; font-size: .75rem; color: var(--mudo, #6B7280); }
 
 .pessoa a { text-decoration: none; color: inherit; } .pessoa a:hover b { text-decoration: underline; }
+
+/* ---------- Padrão de telas (docs/padrao-de-telas.md) ---------- */
+/* o cabeçalho de página é um só: os botões do alto têm o mesmo tamanho em todo o sistema, venham de onde vierem */
+.pg-cab h1.pg-titulo { font-size: 22px; line-height: 1.25; font-weight: 700; }
+html .pg-cab .btn.btn-pequeno { min-height: 40px; padding: 8px 16px; font-size: 14.5px; }   /* mais forte que o ajuste da 1ª versão: o botão do cabeçalho é igual em todo o sistema */
+.pg-cab .btn-linha { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* barra de busca e filtros: a busca à esquerda, os filtros (chips ou listas) à direita */
+.pg-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; justify-content: flex-end; }
+.filtro-select { min-height: 36px; padding: 4px 28px 4px 12px; border: 1px solid var(--borda-forte); border-radius: 999px; background-color: var(--superficie); color: var(--texto-2); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.pg-contagem { white-space: nowrap; }
+/* o nome da linha é o link para abrir; só sublinha quando o mouse passa */
+table.grade td > a:not(.btn), table.grade td .pessoa a { color: inherit; text-decoration: none; }
+table.grade td > a:not(.btn):hover b, table.grade td > a:not(.btn):hover:not(:has(b)), table.grade td .pessoa a:hover b { text-decoration: underline; }
+table.grade td.acoes-linha { text-align: right; white-space: nowrap; }
+
+/* erros: sempre vermelhos e onde a pessoa está olhando; sucesso é o aviso neutro */
+.toast.erro { background: var(--vermelho); }
+.form-erro { margin: 4px 0 10px; padding: 9px 12px; border-radius: 10px; background: var(--vermelho-claro); border: 1px solid var(--vermelho-borda); color: var(--vermelho); font-size: 13.5px; font-weight: 600; }
+.form-erro[hidden] { display: none; }
+/* ações que apagam ou desativam: o mesmo botão em painel e em página (vermelho só no contorno; o vermelho cheio é o botão de confirmar do diálogo) */
+.btn-perigo-contorno { background: var(--superficie); color: var(--vermelho); border-color: var(--vermelho-borda); box-shadow: var(--sombra); }
+.btn-perigo-contorno:hover { background: var(--vermelho-claro); color: var(--vermelho); }

@@ -210,7 +210,7 @@ export function casca(o) {
       (nav.length ? '<nav class="lateral" aria-label="' + tr('Navegação do {modulo}', { modulo: m.nome }) + '"><span class="lateral-titulo">' + m.nome + '</span>' + itens('lateral') + '</nav>' : '') +
       '<main class="pagina pagina-' + (o.largura || 'larga') + '" id="conteudo">' +
         (o.voltar ? '<a class="voltar" href="' + o.voltar.href + '">' + icone('voltar', 18) + esc(o.voltar.rotulo) + '</a>' : '') +
-        (o.titulo ? '<div class="pagina-cabeca"><div class="pagina-titulo"><h1>' + esc(o.titulo) + '</h1>' + (o.subtitulo ? '<p>' + esc(o.subtitulo) + '</p>' : '') + '</div>' + (o.acoes || '') + '</div>' : '') +
+        (o.titulo ? '<header class="pg-cab"><div><h1 class="pg-titulo">' + esc(o.titulo) + '</h1>' + (o.subtitulo ? '<p class="mudo">' + esc(o.subtitulo) + '</p>' : '') + '</div><div class="btn-linha">' + (o.acoes || '') + '</div></header>' : '') +
         (estado().oficial ? htmlAvisoInstalar() : '') +
         o.conteudo +
       '</main>' +

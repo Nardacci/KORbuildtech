@@ -1,7 +1,7 @@
 /* KORbuild — telas do cronograma da obra (docs/cronograma.md): etapas, Gantt, linha de base, publicação,
  * próximas 3 semanas e a versão publicada que a construtora vê. */
 
-import { esc, toast, abrirDialogo, confirmar, hoje, somarDias, diasEntre, dataCurta, diaMes, dataHora, nomeDoMes } from './util.js';
+import { esc, toast, abrirDialogo, confirmar, hoje, somarDias, diasEntre, dataCurta, diaMes, dataHora, nomeDoMes, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, obra as acharObra } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
@@ -232,12 +232,12 @@ async function dialogoEtapa(obraId, id) {
   if (res.valor === 'excluir') {
     if (!(await confirmar(tr('Excluir "{nome}"?', { nome: e.nome }), tr('A etapa sai do cronograma. O histórico fica na auditoria.'), tr('Excluir'), 'btn-perigo'))) return;
     const r = await excluirEtapa(obraId, e.id, quem());
-    toast(r.erro || tr('Etapa excluída.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Etapa excluída.'));
     app.desenhar();
     return;
   }
   const r = await salvarEtapa(obraId, e ? e.id : null, res.campos, quem());
-  toast(r.erro || (e ? tr('Etapa atualizada.') : tr('Etapa criada.')));
+  r.erro ? avisarErro(r.erro) : toast((e ? tr('Etapa atualizada.') : tr('Etapa criada.')));
   if (r.ok) app.desenhar();
 }
 
@@ -254,7 +254,7 @@ async function dialogoAvanco(obraId, id) {
   });
   if (!res || !res.valor) return;
   const r = await registrarAvanco(obraId, id, res.campos.pct, { fonte: 'manual', por: quem() });
-  toast(r.erro || tr('% concluído atualizado.'));
+  r.erro ? avisarErro(r.erro) : toast(tr('% concluído atualizado.'));
   if (r.ok) app.desenhar();
 }
 
@@ -267,7 +267,7 @@ async function dialogoBase(obraId) {
   });
   if (!res || !res.valor) return;
   const r = await novaBase(obraId, res.campos.motivo, quem());
-  toast(r.erro || tr('Nova linha de base salva.'));
+  r.erro ? avisarErro(r.erro) : toast(tr('Nova linha de base salva.'));
   if (r.ok) app.desenhar();
 }
 
@@ -288,19 +288,19 @@ export const acoesCronograma = {
     document.removeEventListener('change', trocar);
     if (!res || !res.valor) return;
     const r = await aplicarModelo(o.id, res.campos.modeloId, (usuarioAtual() || {}).nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Etapas criadas a partir do modelo. A primeira linha de base foi salva.'));
     app.desenhar();
   },
   async 'cr-etapa'(el) { await dialogoEtapa(el.dataset.obra || document.getElementById('cronograma').dataset.obra, el.dataset.id || null); },
   async 'cr-avanco'(el) { await dialogoAvanco(document.getElementById('cronograma').dataset.obra, el.dataset.id); },
-  async 'cr-mover'(el) { const r = await moverEtapa(document.getElementById('cronograma').dataset.obra, el.dataset.id, Number(el.dataset.passo)); if (r && r.erro) toast(r.erro); app.desenhar(); },
+  async 'cr-mover'(el) { const r = await moverEtapa(document.getElementById('cronograma').dataset.obra, el.dataset.id, Number(el.dataset.passo)); if (r && r.erro) avisarErro(r.erro); app.desenhar(); },
   async 'cr-base'(el) { await dialogoBase(el.dataset.obra); },
   async 'cr-publicar'(el) {
     const o = acharObra(el.dataset.obra);
     if (!(await confirmar(tr('Publicar o cronograma para {empresa}?', { empresa: nomeDaEmpresaVinculada(o) }), tr('A construtora passa a ver esta versão (datas, andamento e desvios), sem poder editar. O que você mudar depois só aparece quando publicar de novo.'), tr('Publicar')))) return;
     const r = await publicar(o, quem());
-    toast(r.erro || tr('Versão {n} publicada para o contratante.', { n: r.versao }));
+    r.erro ? avisarErro(r.erro) : toast(tr('Versão {n} publicada para o contratante.', { n: r.versao }));
     if (r.ok) app.desenhar();
   },
   async 'cr-excel'(el) {

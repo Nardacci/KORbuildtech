@@ -1,7 +1,7 @@
 /* KORbuild — telas dos atores: perfil da empresa (com logo) e contatos (construtoras, clientes,
  * fornecedores), mais o campo de escolher um contato com "novo contato" no próprio formulário. */
 
-import { esc, toast, abrirDialogo, confirmar } from './util.js';
+import { esc, toast, abrirDialogo, confirmar, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { usuarioAtual } from './plataforma.js';
 import { icone } from './icones.js';
@@ -49,7 +49,7 @@ async function dialogoContatoRapido(papel) {
   if (!res || !res.valor) return null;
   const papeis = Object.keys(PAPEIS).filter((p) => res.campos['papel-' + p]);
   const r = salvarContato(null, { ...res.campos, papeis }, quem());
-  if (r.erro) { toast(r.erro); return null; }
+  if (r.erro) { avisarErro(r.erro); return null; }
   return contato(r.id);
 }
 
@@ -149,7 +149,7 @@ export function telaFormContato(moldura, id, papelInicial) {
         ('<p class="mudo pequeno">' + tr('As etapas (cost codes) dos itens do catálogo. A lista de materiais para cotação vai separada por fornecedor.') + '</p><div class="etapas-contato">') +
         etapas.map((x) => '<label class="check pequeno"><input type="checkbox" name="etapas" value="' + esc(x) + '"' + (c.etapas.includes(x) ? ' checked' : '') + '> ' + esc(x) + '</label>').join('') + '</div></section>' +
       '<section class="cartao">' + area(pre, 'notas', tr('Notas'), c.notas, 2) + '</section>' +
-      '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="contato-excluir" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
+      '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-perigo-contorno" data-acao="contato-excluir" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
         ('<a class="btn btn-contorno" href="#/settings/contatos">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="contato-salvar">') + (id ? tr('Salvar') : tr('Criar contato')) + '</button></div></form>',
   });
 }
@@ -167,7 +167,7 @@ export const acoesContatos = {
   'empresa-salvar'() {
     const dados = Object.fromEntries(new FormData(document.getElementById('form-empresa')).entries());
     const r = salvarEmpresa(dados, quem());
-    toast(r.erro || tr('Dados da empresa salvos.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Dados da empresa salvos.'));
     if (r.ok) app.desenhar();
   },
   async 'empresa-tirar-logo'() {
@@ -180,7 +180,7 @@ export const acoesContatos = {
     const fd = new FormData(form);
     const id = form.dataset.id || null;
     const r = salvarContato(id, { ...Object.fromEntries(fd.entries()), papeis: fd.getAll('papeis'), etapas: fd.getAll('etapas') }, quem());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(id ? tr('Contato atualizado.') : tr('Contato criado.'));
     app.ir('#/settings/contatos');
   },
@@ -188,7 +188,7 @@ export const acoesContatos = {
     const c = contato(el.dataset.id);
     if (!(await confirmar(tr('Excluir "') + c.nome + '"?', tr('O contato sai do cadastro.'), tr('Excluir')))) return;
     const r = excluirContato(c.id, quem());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Contato excluído.'));
     app.ir('#/settings/contatos');
   },

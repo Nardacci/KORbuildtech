@@ -23,23 +23,23 @@ await p.goto(BASE);
 await p.waitForSelector('#form-login', { timeout: 30000 });
 await p.evaluate(() => localStorage.setItem('kbt.sessao', 'u-tom'));
 const ir = async (rota, espera) => { await p.goto('about:blank'); await p.goto(BASE + rota); await p.waitForSelector(espera, { timeout: 10000 }); };
-const visiveis = () => p.locator('#itens-tabela tbody tr:not([hidden])').count();
+const visiveis = () => p.locator('.tabela-itens tbody tr:not([hidden])').count();
 
 console.log('Lista');
-await ir('#/measure/itens', '#itens-tabela');
+await ir('#/measure/itens', '.tabela-itens');
 verificar(await p.locator('.lateral-item:has-text("Preços")').count() === 0, 'o menu não tem mais a tela Preços: itens e preços ficam juntos');
 const total = await visiveis();
-verificar(total >= 20 && /preço atual/i.test(await p.locator('#itens-tabela thead').innerText()), 'a lista mostra os itens ativos com o preço atual', total);
-await p.fill('#itens-busca', 'osb');
+verificar(total >= 20 && /preço atual/i.test(await p.locator('.tabela-itens thead').innerText()), 'a lista mostra os itens ativos com o preço atual', total);
+await p.fill('#grade-busca', 'osb');
 verificar(await visiveis() === 1, 'a busca por nome ou código filtra na hora');
-await p.fill('#itens-busca', '');
-await p.selectOption('#itens-cat', 'mao-de-obra');
+await p.fill('#grade-busca', '');
+await p.selectOption('select[aria-label="Categoria"]', 'cat:mao-de-obra');
 const mo = await visiveis();
 verificar(mo > 0 && mo < total, 'o filtro por categoria', mo);
-await p.selectOption('#itens-cat', '');
-await p.selectOption('#itens-etapa', '07 46 33 · Plastic siding');
+await p.selectOption('select[aria-label="Categoria"]', '');
+await p.selectOption('select[aria-label="Etapa (cost code)"]', 'etapa:07-46-33-plastic-siding');
 verificar(await visiveis() >= 2, 'o filtro por cost code');
-await p.selectOption('#itens-etapa', '');
+await p.selectOption('select[aria-label="Etapa (cost code)"]', '');
 
 console.log('Novo item, preço e histórico');
 await p.click('a[href="#/measure/item/novo"]');
@@ -51,10 +51,10 @@ await p.fill('#it-etapa', '07 92 00 · Joint sealants');
 await p.click('[data-acao="item-salvar"]');
 await p.waitForSelector('.abas-sublinhadas');
 verificar(p.url().endsWith('/prices') && (await p.locator('main').innerText()).includes('ainda não tem preço'), 'item criado sem preço abre na aba Preços, avisando que falta o preço');
-await ir('#/measure/itens', '#itens-tabela');
-await p.selectOption('#itens-st', 'sem-preco');
-verificar(await visiveis() === 1 && (await p.locator('#itens-tabela tbody tr:not([hidden])').innerText()).includes('Selante exterior'), 'o filtro "Sem preço" mostra o item novo');
-await p.locator('#itens-tabela tbody tr:not([hidden]) a').first().click();
+await ir('#/measure/itens', '.tabela-itens');
+await p.selectOption('select[aria-label="Situação"]', 'st:sem-preco');
+verificar(await visiveis() === 1 && (await p.locator('.tabela-itens tbody tr:not([hidden])').innerText()).includes('Selante exterior'), 'o filtro "Sem preço" mostra o item novo');
+await p.locator('.tabela-itens tbody tr:not([hidden]) a').first().click();
 await p.waitForSelector('.abas-sublinhadas');
 await p.click('.abas-sublinhadas a:has-text("Preços")');
 for (const [valor, desde] of [['8,40', '2026-08-01'], ['9,10', '2026-10-01']]) {
@@ -71,44 +71,44 @@ verificar((await p.locator('main').innerText()).includes('Em dia'), 'preço de h
 
 console.log('Desatualizado (mais de 12 meses)');
 await p.evaluate(async () => { const m = await import('/js/measure.js'); const pr = await import('/js/precos.js'); const a = await import('/js/armazem.js'); const it = m.itens().find((x) => x.codigo === 'SL-EXT'); it.precos = []; pr.registrarPreco(it.id, { valor: 9, desde: '2025-01-15', fonte: 'Digitado' }, 'teste'); a.salvar(); });
-await ir('#/measure/itens', '#itens-tabela');
-await p.selectOption('#itens-st', 'desatualizado');
-verificar(await visiveis() === 1 && (await p.locator('#itens-tabela tbody tr:not([hidden])').innerText()).includes('Selante'), 'preço com mais de 12 meses aparece como Desatualizado');
+await ir('#/measure/itens', '.tabela-itens');
+await p.selectOption('select[aria-label="Situação"]', 'st:desatualizado');
+verificar(await visiveis() === 1 && (await p.locator('.tabela-itens tbody tr:not([hidden])').innerText()).includes('Selante'), 'preço com mais de 12 meses aparece como Desatualizado');
 
 console.log('Inativo (nunca apagar)');
-await p.selectOption('#itens-st', 'todos');
-await p.locator('#itens-tabela tr:has-text("Selante exterior") a').first().click();
+await p.selectOption('select[aria-label="Situação"]', '');
+await p.locator('.tabela-itens tr:has-text("Selante exterior") a').first().click();
 await p.waitForSelector('.abas-sublinhadas');
 verificar(await p.locator('[data-acao="mz-excluir-item"]').count() === 0 && (await p.locator('main').innerText()).includes('nunca são excluídos'), 'não existe botão de excluir: o item fica ativo ou inativo');
 await p.click('[data-acao="item-ativo"]');
 await p.waitForTimeout(300);
 verificar((await p.locator('main').innerText()).includes('Inativo') && await p.locator('.abas-sublinhadas').count() === 1, 'item inativo');
-await ir('#/measure/itens', '#itens-tabela');
-verificar(await p.locator('#itens-tabela tr:has-text("Selante exterior"):not([hidden])').count() === 0, 'o item inativo some da lista padrão (Ativos)');
-await p.selectOption('#itens-st', 'inativo');
+await ir('#/measure/itens', '.tabela-itens');
+verificar(await p.locator('.tabela-itens tr:has-text("Selante exterior"):not([hidden])').count() === 0, 'o item inativo some da lista padrão (Ativos)');
+await p.selectOption('select[aria-label="Situação"]', 'st:inativo');
 verificar(await visiveis() === 1, 'e aparece no filtro Inativos');
 await ir('#/measure/assembly/novo', '#form-assembly');
 verificar(await p.locator('.mz-linha select[name="item"] option', { hasText: 'Selante exterior' }).count() === 0, 'o item inativo não aparece para escolher num assembly novo');
-await ir('#/measure/itens', '#itens-tabela');
-await p.selectOption('#itens-st', 'inativo');
-await p.locator('#itens-tabela tbody tr:not([hidden]) a').first().click();
+await ir('#/measure/itens', '.tabela-itens');
+await p.selectOption('select[aria-label="Situação"]', 'st:inativo');
+await p.locator('.tabela-itens tbody tr:not([hidden]) a').first().click();
 await p.waitForSelector('[data-acao="item-ativo"]');
 await p.click('[data-acao="item-ativo"]');
 await p.waitForTimeout(300);
-await ir('#/measure/itens', '#itens-tabela');
-verificar(await p.locator('#itens-tabela tr:has-text("Selante exterior"):not([hidden])').count() === 1, 'reativado, o item volta para a lista');
+await ir('#/measure/itens', '.tabela-itens');
+verificar(await p.locator('.tabela-itens tr:has-text("Selante exterior"):not([hidden])').count() === 1, 'reativado, o item volta para a lista');
 
 console.log('Usado em');
-await ir('#/measure/itens', '#itens-tabela');
-await p.fill('#itens-busca', 'osb');
-await p.locator('#itens-tabela tbody tr:not([hidden]) a').first().click();
+await ir('#/measure/itens', '.tabela-itens');
+await p.fill('#grade-busca', 'osb');
+await p.locator('.tabela-itens tbody tr:not([hidden]) a').first().click();
 await p.waitForSelector('.abas-sublinhadas');
 await p.click('.abas-sublinhadas a:has-text("Usado em")');
 await p.waitForTimeout(400);
 verificar((await p.locator('main').innerText()).includes('Assemblies que usam este item'), 'a aba Usado em lista os assemblies do item');
 
 console.log('Exportar e importar');
-await ir('#/measure/itens', '#itens-tabela');
+await ir('#/measure/itens', '.tabela-itens');
 const baixou = async (formato) => {
   await p.click('[data-acao="itens-exportar"]');
   await p.waitForSelector('dialog[open] input[name="formato"]');
@@ -142,11 +142,11 @@ verificar(/Itens novos\s*1/i.test(prev.replace(/\n/g, ' ')) && /Com erro\s*1/i.t
 verificar(prev.includes('Linha 4'), 'o erro aponta a linha da planilha');
 await p.click('dialog[open] .btn-primario');
 await p.waitForTimeout(500);
-await ir('#/measure/itens', '#itens-tabela');
-await p.fill('#itens-busca', 'Item importado');
+await ir('#/measure/itens', '.tabela-itens');
+await p.fill('#grade-busca', 'Item importado');
 verificar(await visiveis() === 1, 'o item importado aparece na lista');
-await p.fill('#itens-busca', 'osb');
-await p.locator('#itens-tabela tbody tr:not([hidden]) a').first().click();
+await p.fill('#grade-busca', 'osb');
+await p.locator('.tabela-itens tbody tr:not([hidden]) a').first().click();
 await p.waitForSelector('.abas-sublinhadas');
 await p.click('.abas-sublinhadas a:has-text("Preços")');
 await p.waitForTimeout(400);
@@ -155,7 +155,7 @@ verificar(txtPrecos.includes('99,99') || txtPrecos.includes('99.99'), 'o preço 
 verificar(await p.locator('.tabela-historico tbody tr').count() >= 2, 'o histórico anterior continua (nada foi sobrescrito)');
 
 // o Excel exportado, importado de volta, não muda nada (ida e volta)
-await ir('#/measure/itens', '#itens-tabela');
+await ir('#/measure/itens', '.tabela-itens');
 const xl2 = await baixou('xlsx');
 await p.click('[data-acao="itens-importar"]');
 await p.waitForSelector('dialog[open] input[type="file"]');

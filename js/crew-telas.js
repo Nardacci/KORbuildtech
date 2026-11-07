@@ -3,7 +3,7 @@
  *   e vê as horas da semana.
  * Administrador: quem está trabalhando agora, timesheets com aprovação e ajustes, custo por obra e o mapa do dia. */
 
-import { esc, decimal, distancia, numTexto, diaMes, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar } from './util.js';
+import { esc, decimal, distancia, numTexto, diaMes, hoje, somarDias, diasEntre, isoDoDia, dataCurta, dataLonga, diaDaSemana, horaCurta, dataHora, toast, abrirDialogo, confirmar, avisarErro } from './util.js';
 import { estado, salvar, obra as acharObra, guardarFoto, urlDaFoto, idDaFotoDePonto } from './armazem.js';
 import { tr, tn, locale, emIngles } from './i18n.js';
 import { casca, usuarioAtual, pode } from './plataforma.js';
@@ -321,7 +321,7 @@ export const acoesCrew = {
   'crew-mapa-cheio'() { alternarTelaCheia(); },
   async 'crew-aceitar-aviso'() {
     const r = await aceitarAvisoDeLocalizacao();
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Aviso aceito. Obrigado!'));
     if (await registrarLocalizacaoSePreciso()) pedirEnvioDoPonto();
     app.desenhar();
@@ -341,7 +341,7 @@ export const acoesCrew = {
     });
     if (!res || !res.valor) return;
     const r = await alterarValorHora(f.id, Number(String(res.campos.valor).replace(',', '.')), res.campos.desde, res.campos.motivo, usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast((tr('Novo valor de') + ' ') + f.nome.split(' ')[0] + ': ' + dinheiro(Number(String(res.campos.valor).replace(',', '.'))) + (tr('/h a partir de') + ' ') + dataCurta(res.campos.desde) + '.');
     app.desenhar();
   },
@@ -359,7 +359,7 @@ export const acoesCrew = {
     const valor = Number(res.campos.valor), avanco = res.campos.avanco === '' ? null : Number(res.campos.avanco);
     if (!(valor > 0) || (avanco != null && (avanco < 0 || avanco > 100))) { toast(tr('Informe um orçamento maior que zero e um avanço entre 0 e 100%.')); return; }
     const gravado = await definirOrcamento(id, { valor, avanco }, usuarioAtual().nome);
-    if (gravado && gravado.erro) { toast(gravado.erro); return; }
+    if (gravado && gravado.erro) { avisarErro(gravado.erro); return; }
     toast((tr('Orçamento de') + ' ') + nomeObra(id) + ' atualizado.');
     app.desenhar();
   },
@@ -435,7 +435,7 @@ export const acoesCrew = {
   },
   async 'crew-conferir'(el) {
     const r = await conferirBatida(el.dataset.id, usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Batida conferida. Ela continua registrada como fora da cerca.'));
     app.desenhar();
   },
@@ -453,7 +453,7 @@ export const acoesCrew = {
     }
     if (!(await confirmar(tn(ids.length, 'Aprovar {n} timesheet?', 'Aprovar {n} timesheets?'), tr('As horas aprovadas ficam liberadas para a folha de pagamento.'), tr('Aprovar')))) return;
     const r = await decidirSemana(ids, segunda, 'aprovado', usuarioAtual().nome);
-    if (r && r.erro) { toast(r.erro); return; }
+    if (r && r.erro) { avisarErro(r.erro); return; }
     selecionados.clear();
     toast(tr('Aprovado. As horas já podem ser exportadas para a folha.'));
     app.desenhar();
@@ -466,7 +466,7 @@ export const acoesCrew = {
     });
     if (!res || !res.valor || !res.campos.motivo.trim()) return;
     const r = await decidirSemana([el.dataset.id], el.dataset.semana, 'devolvido', usuarioAtual().nome, res.campos.motivo.trim());
-    if (r && r.erro) { toast(r.erro); return; }
+    if (r && r.erro) { avisarErro(r.erro); return; }
     toast(tr('Devolvido ao encarregado com o motivo.'));
     app.desenhar();
   },
@@ -492,7 +492,7 @@ export const acoesCrew = {
       tipo: res.campos.tipo, obraId: ultima ? ultima.obraId : (equipe(f.equipeId) || {}).obraBaseId, etapa: ultima ? ultima.etapa : null, em,
       registradoPor: usuarioAtual().id, motivo: res.campos.motivo.trim(),
     }, usuarioAtual().nome);
-    if (r && r.erro) { toast(r.erro); return; }
+    if (r && r.erro) { avisarErro(r.erro); return; }
     toast(tr('Ajuste registrado.'));
     app.desenhar();
   },

@@ -220,7 +220,7 @@ verificar(feitos >= 2, 'o checklist marca o que já foi feito (escopo e cronogra
 console.log('Lista de projetos');
 await p.goto(BASE + '#/measure');
 await p.waitForSelector('.tabela-projetos', { timeout: 10000 });
-await p.fill('.mz-busca', 'barn');
+await p.fill('#grade-busca', 'barn');
 await p.waitForTimeout(200);
 verificar(await p.locator('.tabela-projetos tbody tr:not([hidden])').count() === 1, 'a busca deixa só o projeto que combina');
 verificar(erros.length === 0, 'sem erros de JavaScript', erros.join(' | '));

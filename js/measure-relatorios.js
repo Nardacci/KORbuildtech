@@ -5,7 +5,7 @@
  *    fechado, como a prestadora orça), linhas extras, subtotais, total e termos. Emitida, vira uma
  *    versão congelada e numerada: mudar o projeto depois não muda o que foi enviado. */
 
-import { esc, toast, hoje, somarDias, dataCurta, confirmar } from './util.js';
+import { esc, toast, hoje, somarDias, dataCurta, confirmar, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
@@ -403,7 +403,7 @@ export const acoesRelatorios = {
     if (!(await confirmar((tr('Emitir a proposta de') + ' ') + dinheiro(t.total) + '?', tr('Ela recebe um número e fica congelada: mudanças no projeto depois não alteram o que foi enviado.'), tr('Emitir')))) return;
     if (servidor) {
       const r = await servidor.emitir(p, dadosDaProposta(p));
-      if (r.erro) { toast(r.erro); return; }
+      if (r.erro) { avisarErro(r.erro); return; }
       toast((tr('Proposta') + ' ') + r.numero + (' ' + tr('emitida. Baixe o PDF ou envie por e-mail.')));
       app.desenhar();
       return;

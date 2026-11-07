@@ -4,7 +4,7 @@
  *   p.cronograma = { tarefas: [{ id, nome, quem, inicio, dias, pct }], marcos: [{ id, nome, data, nota }] }   (pct = % feito, informado pela equipe)
  * No app com conta, estes dois campos só vão para o banco depois da migração 0016 (supabase/migrations): ver PERSISTE_ESPACO em measure-oficial.js. */
 
-import { esc, toast, hoje, diasEntre, somarDias, dataCurta, novoId } from './util.js';
+import { esc, toast, confirmar, hoje, diasEntre, somarDias, dataCurta, novoId } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar } from './armazem.js';
 import { projeto, projetos, folhasDo, condicoesDo, assembly, item, itens, pendenciasParaObra, prontoParaObra, liberarProjeto, voltarParaAnalise } from './measure.js';
@@ -157,7 +157,7 @@ export function htmlCronograma(p, ajudas) {
     (c.confirmado ? tn(c.confirmado.tarefas.length, 'Base da obra desde {data}: {n} tarefa.', 'Base da obra desde {data}: {n} tarefas.', { data: dataCurta(c.confirmado.em) }) + ' ' + tr('Se mudar algo, confirme de novo para atualizar a base.')
       : tr('O projeto está liberado para obra. Ajuste as datas abaixo e confirme: o cronograma vira a base da obra.')) + '</p></div>' +
     '<button type="button" class="btn btn-primario btn-pequeno" data-acao="pj-confirmar-cronograma" data-id="' + p.id + '"' + (tarefas.length ? '' : ' disabled') + '>' + (c.confirmado ? tr('Atualizar a base') : tr('Confirmar cronograma')) + '</button></div></section>';
-  return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + '</h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
+  return faixaGanho + htmlLinhaDoTempo(p) + '<section class="cartao"><div class="cartao-cabeca"><div><h2 class="cartao-titulo">' + tr('Cronograma preliminar') + ' <span class="etiqueta etiqueta-neutro etiqueta-autosave">' + tr('Salva na hora') + '</span></h2><p class="mudo pequeno">' + tr('Faz parte da proposta. Quando você ganha, confirma ou ajusta, e ele vira a base da obra.') + '</p></div>' +
     '<div class="btn-linha"><button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-gerar-cronograma" data-id="' + p.id + '"' + (etapasDasCondicoes(p).length ? '' : ' disabled') + '>' + tr('Gerar a partir das etapas') + '</button>' +
     '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="pj-add-tarefa" data-id="' + p.id + '">' + icone('mais', 16) + tr('Adicionar tarefa') + '</button></div></div>' +
     (tarefas.length ? '<div class="tabela-rolagem"><table class="tabela tabela-cronograma"><thead><tr><th>' + tr('Tarefa') + '</th><th>' + tr('Quem') + '</th><th>' + tr('Data de início') + '</th><th>' + tr('Dias') + '</th><th>' + tr('Término') + '</th><th>' + tr('% feito') + '</th><th></th></tr></thead><tbody>' + linhas + '</tbody></table></div>'
@@ -273,9 +273,11 @@ export const acoesEspaco = {
     c.tarefas.push({ id: novoId('tf'), nome: '', quem: 'proprio', inicio: ultima ? somarDias(ultima, 1) : hoje(), dias: 5 });
     terminou();
   },
-  'pj-tirar-tarefa'(el) {
+  async 'pj-tirar-tarefa'(el) {
     const c = cronogramaDe(projeto(el.dataset.id));
-    c.tarefas = c.tarefas.filter((t) => t.id !== el.dataset.t);
+    const t = c.tarefas.find((x) => x.id === el.dataset.t);
+    if (t && !(await confirmar(tr('Remover "{nome}"?', { nome: t.nome || tr('esta tarefa') }), tr('A tarefa sai do cronograma. Isso vale na hora: não há botão de salvar.'), tr('Remover'), 'btn-perigo'))) return;
+    c.tarefas = c.tarefas.filter((x) => x.id !== el.dataset.t);
     terminou();
   },
   'pj-gerar-cronograma'(el) {
@@ -300,9 +302,11 @@ export const acoesEspaco = {
     cronogramaDoProjetoNaObra(projeto(el.dataset.id));   // o projeto ganho é a obra: as tarefas viram as etapas dela
     terminou(tr('Cronograma confirmado como base da obra.'));
   },
-  'pj-tirar-marco'(el) {
+  async 'pj-tirar-marco'(el) {
     const c = cronogramaDe(projeto(el.dataset.id));
-    c.marcos = c.marcos.filter((m) => m.id !== el.dataset.m);
+    const m = c.marcos.find((x) => x.id === el.dataset.m);
+    if (m && !(await confirmar(tr('Remover "{nome}"?', { nome: m.nome || tr('este marco') }), tr('O marco sai do cronograma. Isso vale na hora: não há botão de salvar.'), tr('Remover'), 'btn-perigo'))) return;
+    c.marcos = c.marcos.filter((x) => x.id !== el.dataset.m);
     terminou();
   },
 };

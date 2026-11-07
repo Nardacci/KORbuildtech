@@ -142,7 +142,28 @@ export async function sha256(dados) {
 /* ---------- Toast ---------- */
 
 let toastTimer;
-export function toast(mensagem) {
+/* Erro de gravação ou de validação: aparece onde a pessoa está olhando. Num painel lateral, no próprio painel; numa página com formulário, acima dos botões do formulário;
+ * em qualquer outro lugar, num aviso vermelho. Sucesso é sempre o aviso neutro (toast). Uma regra só para o sistema todo (docs/padrao-de-telas.md). */
+let ultimoClique = null;
+if (typeof document !== 'undefined') document.addEventListener('click', (ev) => { ultimoClique = ev.target; }, true);
+export function avisarErro(mensagem) {
+  const painel = document.querySelector('dialog.painel[open] .painel-erro');
+  if (painel) { painel.textContent = mensagem; painel.hidden = false; return; }
+  // o rodapé do formulário onde a pessoa clicou (uma página pode ter vários formulários); sem isso, o primeiro da página
+  const perto = ultimoClique && ultimoClique.closest && ultimoClique.closest('form, section, .cartao, .pagina, main');
+  const rodape = (perto && perto.querySelector('.rodape-form')) || document.querySelector('.rodape-form');
+  if (rodape && rodape.parentElement) {
+    let e = rodape.parentElement.querySelector(':scope > .form-erro');
+    if (!e) { e = document.createElement('p'); e.className = 'form-erro'; e.setAttribute('role', 'alert'); rodape.parentElement.insertBefore(e, rodape); }
+    e.textContent = mensagem; e.hidden = false;
+    if (e.scrollIntoView) e.scrollIntoView({ block: 'nearest' });
+    return;
+  }
+  toast(mensagem, true);
+}
+if (typeof document !== 'undefined') document.addEventListener('input', (ev) => { const e = ev.target && ev.target.closest && ev.target.closest('form, .pagina, main'); if (e) e.querySelectorAll('.form-erro').forEach((x) => { x.hidden = true; }); });
+
+export function toast(mensagem, erro) {
   let el = document.getElementById('toast');
   if (!el) {
     el = document.createElement('div');
@@ -152,6 +173,7 @@ export function toast(mensagem) {
     document.body.appendChild(el);
   }
   el.textContent = mensagem;
+  el.classList.toggle('erro', !!erro);
   el.classList.add('on');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('on'), 3200);

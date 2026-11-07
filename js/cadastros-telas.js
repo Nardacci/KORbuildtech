@@ -4,7 +4,7 @@
  * serem os mesmos. O mapa da obra e as linhas dos modelos reaproveitam js/obras-telas.js (só dependem dos ids). */
 
 import { PRIMEIRA_VERSAO } from './versao.js';
-import { esc, toast, confirmar, abrirDialogo, abrirPainel, dataCurta, dataHora, decimal, numTexto, hoje } from './util.js';
+import { esc, toast, confirmar, abrirDialogo, abrirPainel, dataCurta, dataHora, decimal, numTexto, hoje, avisarErro } from './util.js';
 import { cabecalhoDePagina, botaoCriar, barraDeBusca, atributosDeLinha, gradeEmCartao, avatar, campoPainel, lerCampos } from './padrao-cadastro.js';
 import { dialogoNovoValor, valorDaFuncao, custoHoraDaFuncao, historicoDaFuncao } from './funcoes.js';
 import { tr, tn } from './i18n.js';
@@ -233,7 +233,7 @@ function painelFuncionario(id) {
   const certs = (v.certificacoes || []).concat([{}, {}]);
   return abrirPainel({
     titulo: f ? f.nome : tr('Novo funcionário'), subtitulo: f ? [f.funcao, CLASSIFICACOES[f.classificacao]].filter(Boolean).join(' · ') : tr('Quem trabalha na empresa, com ou sem login no sistema.'),
-    classe: 'painel-largo', rotuloSalvar: f ? tr('Salvar') : tr('Cadastrar funcionário'),
+    classe: 'painel-largo', rotuloSalvar: f ? tr('Salvar') : tr('Criar funcionário'),
     corpo: '<div id="form-func" class="painel-campos" data-id="' + (f ? f.id : '') + '">' +
       '<h3 class="painel-secao">' + tr('Identificação') + '</h3>' +
       '<div class="painel-linha">' + campoPainel('ff-nome', tr('Nome completo *'), texto('ff-nome', 'nome', v.nome, ' autocomplete="off"')) + campoPainel('ff-codigo', tr('Código (employee ID)'), texto('ff-codigo', 'codigo', v.codigo), tr('O mesmo do sistema de folha')) + '</div>' +
@@ -385,7 +385,7 @@ function painelContato(id) {
   return abrirPainel({
     titulo: id ? c.nome : tr('Novo contato'), subtitulo: id ? c.papeis.map((p) => (PAPEIS[p] || {}).nome || p).join(' · ') : tr('Empresa ou pessoa: construtora, cliente, fornecedor ou prestadora.'), classe: 'painel-largo',
     rotuloSalvar: id ? tr('Salvar') : tr('Criar contato'),
-    extras: id ? [{ rotulo: tr('Excluir'), classe: 'btn-perigo', aoClicar: async () => {
+    extras: id ? [{ rotulo: tr('Excluir'), classe: 'btn-perigo-contorno', aoClicar: async () => {
       if (!(await confirmar(tr('Excluir este contato?'), '', tr('Excluir')))) return null;
       const r = await excluirContato(id);
       return r.erro ? r : { ok: true, excluido: true };
@@ -531,7 +531,7 @@ function painelModelo(id) {
   if (!m) return;
   const painel = abrirPainel({
     titulo: id ? m.nome : tr('Novo modelo'), subtitulo: tr('Etapas na ordem e a parte do prazo de cada uma.'), classe: 'painel-largo', rotuloSalvar: id ? tr('Salvar') : tr('Criar modelo'),
-    extras: id ? [{ rotulo: tr('Excluir'), classe: 'btn-perigo', aoClicar: async () => {
+    extras: id ? [{ rotulo: tr('Excluir'), classe: 'btn-perigo-contorno', aoClicar: async () => {
       if (!(await confirmar(tr('Excluir o modelo "{nome}"?', { nome: m.nome }), tr('As obras que já usaram o modelo não mudam.'), tr('Excluir')))) return null;
       const r = await excluirModelo(id);
       return r.erro ? r : { ok: true, excluido: true };
@@ -563,7 +563,7 @@ const form = (id) => document.getElementById(id);
 const valor = (f, nome) => { const el = f.querySelector('[name="' + nome + '"]'); return el ? (el.type === 'checkbox' ? el.checked : el.value) : ''; };
 async function resultado(promessa, ok, destino) {
   const r = await promessa;
-  if (r.erro) { toast(r.erro); return r; }
+  if (r.erro) { avisarErro(r.erro); return r; }
   if (ok) toast(ok);
   if (destino) ir(typeof destino === 'function' ? destino(r) : destino); else redesenhar();
   return r;
@@ -572,7 +572,7 @@ async function resultado(promessa, ok, destino) {
 /* Incluir ou tirar alguém da equipe acontece dentro do painel da obra: depois de gravar, o painel é reaberto para mostrar a equipe nova. */
 async function naEquipe(obraId, promessa, ok) {
   const r = await promessa;
-  if (r.erro) { toast(r.erro); return r; }
+  if (r.erro) { avisarErro(r.erro); return r; }
   toast(ok);
   const aberto = document.querySelector('dialog.painel[open]');
   if (aberto) aberto.close();

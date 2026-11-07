@@ -27,7 +27,8 @@ const comoUsuario = async (id, hash) => {
   await page.goto(BASE + hash);
   await page.waitForTimeout(350);
 };
-const toast = async () => { await page.waitForSelector('#toast.on'); const t = await page.textContent('#toast'); await page.evaluate(() => document.getElementById('toast').classList.remove('on')); return t; };
+/* aviso de sucesso (toast) ou erro de validação, que fica acima dos botões do formulário: lê o que aparecer e limpa */
+const toast = async () => { await page.waitForSelector('#toast.on, .form-erro:not([hidden])'); return page.evaluate(() => { const e = document.querySelector('.form-erro:not([hidden])'); if (e) { const t = e.textContent; e.hidden = true; return t; } const x = document.getElementById('toast'); const t = x.textContent; x.classList.remove('on'); return t; }); };
 const banco = () => page.evaluate(() => JSON.parse(localStorage.getItem('kbt.rdo.v1')));
 const prestadora = async () => (await banco()).empresas['prestadora-exemplo'];
 

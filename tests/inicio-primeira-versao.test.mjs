@@ -140,6 +140,7 @@ try {
     await p.goto(BASE + '#/measure/projeto/' + pj.id + '/schedule');
     await p.waitForSelector('[data-acao="pj-tirar-tarefa"]', { timeout: 40000 });
     await p.click('[data-acao="pj-tirar-tarefa"]');
+    await p.click('dialog button:has-text("Remover")'); await p.waitForSelector('dialog', { state: 'detached' });   // remover do cronograma pede confirmação (vale na hora)
     for (let i = 0; i < 20; i++) { await p.waitForTimeout(500); c = await noBanco(); if (!c || !(c.tarefas || []).length) break; }
     verificar('a tarefa de teste foi removida', !c || !(c.tarefas || []).length);
 

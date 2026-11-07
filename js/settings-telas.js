@@ -2,7 +2,7 @@
  * Só o escritório (administrador) entra. */
 
 import { PRIMEIRA_VERSAO } from './versao.js';
-import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast, abrirDialogo, decimal, numTexto } from './util.js';
+import { esc, hoje, somarDias, diasEntre, dataCurta, dataHora, toast, abrirDialogo, decimal, numTexto, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado } from './armazem.js';
 import { casca, usuarioAtual, pode, MODULOS } from './plataforma.js';
@@ -445,7 +445,7 @@ export const acoesSettings = {
     const form = document.getElementById('form-funcao');
     const id = form.dataset.id || null;
     const r = salvarFuncao(id, { nome: valorDe(form, 'nome'), ativa: id ? valorDe(form, 'ativa') : true, valor: valorDe(form, 'valor'), desde: valorDe(form, 'desde') }, usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(id ? tr('Função atualizada.') : tr('Função cadastrada.'));
     app.ir('#/settings/funcao/' + r.id);
   },
@@ -455,7 +455,7 @@ export const acoesSettings = {
     const campos = await dialogoNovoValor(abrirDialogo, f);
     if (!campos) return;
     const r = novoValorDaFuncao(f.id, campos, usuarioAtual().nome);
-    toast(r.erro || tr('Valor hora registrado.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Valor hora registrado.'));
     if (!r.erro) app.desenhar();
   },
   'settings-salvar-usuario'() {
@@ -466,7 +466,7 @@ export const acoesSettings = {
       nome: valorDe(form, 'nome'), email: valorDe(form, 'email'), cargo: valorDe(form, 'cargo'), funcionarioId: valorDe(form, 'funcionarioId'),
       perfilId: marcado ? marcado.value : '', ativo: ativo ? ativo.checked : true,
     }, usuarioAtual().nome, usuarioAtual());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(form.dataset.id ? tr('Acesso atualizado.') : tr('Usuário criado. Na versão real, ele recebe um convite por e-mail.'));
     app.ir('#/settings/usuarios');
   },
@@ -488,13 +488,13 @@ export const acoesSettings = {
     });
     if (!res || !res.valor) return;
     const r = criarPerfil(res.campos.nome, res.campos.base, usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Perfil criado. Ajuste as permissões e salve.'));
     app.desenhar();
   },
   'settings-excluir-perfil'(el) {
     const r = excluirPerfil(el.dataset.id, usuarioAtual().nome);
-    toast(r.erro || tr('Perfil excluído.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Perfil excluído.'));
     app.desenhar();
   },
   'settings-salvar-func'() {
@@ -504,7 +504,7 @@ export const acoesSettings = {
     dados.certificacoes = [];
     for (let i = 0; form.querySelector('[name="cert-nome-' + i + '"]'); i++) dados.certificacoes.push({ nome: valorDe(form, 'cert-nome-' + i), validade: valorDe(form, 'cert-validade-' + i) });
     const r = salvarFuncionario(form.dataset.id || null, dados, usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(r.semMudanca ? tr('Nada mudou.') : form.dataset.id ? tr('Cadastro atualizado.') : tr('Funcionário cadastrado.'));
     app.ir('#/settings/funcionario/' + r.id);
   },
@@ -513,7 +513,7 @@ export const acoesSettings = {
     const itens = [];
     for (let i = 0; form.querySelector('[name="nome-' + i + '"]'); i++) itens.push({ nome: valorDe(form, 'nome-' + i), pct: valorDe(form, 'pct-' + i) });
     const r = novosEncargos(itens, valorDe(form, 'desde'), valorDe(form, 'motivo'), usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Nova versão dos encargos salva.'));
     app.ir('#/settings/encargos');
   },
@@ -536,7 +536,7 @@ export const acoesSettings = {
       diaria: { ativo: v('diaria-ativo'), limite: v('diaria-limite'), fator: v('diaria-fator'), dobra: v('diaria-dobra'), fatorDobra: v('diaria-fatorDobra') },
       intervalo: { minimo: v('intervalo-minimo'), apos: v('intervalo-apos') },
     }, v('motivo'), usuarioAtual().nome);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast((tr('Nova regra salva: vale a partir da semana de') + ' ') + dataCurta(r.desde) + '.');
     app.ir('#/settings/regras');
   },

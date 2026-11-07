@@ -3,7 +3,7 @@
  * prorrogar, convidar mais, fechar e cancelar. O motor e as regras estão em concorrencias.js. */
 
 import { PRIMEIRA_VERSAO } from './versao.js';
-import { esc, toast, abrirDialogo, confirmar, dataCurta, dataHora, isoDoDia, diasEntre, somarDias, hoje } from './util.js';
+import { esc, toast, abrirDialogo, confirmar, dataCurta, dataHora, isoDoDia, diasEntre, somarDias, hoje, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, salvar, obra as acharObra } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
@@ -790,7 +790,7 @@ export const acoesConcorrencias = {
   },
   async 'lk-vou'(el) {
     const r = await responder(porToken(el.dataset.token).id, true, '', '', { token: el.dataset.token });
-    toast(r.erro || tr('Resposta enviada à contratante.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Resposta enviada à contratante.'));
     app.desenhar();
   },
   async 'lk-nao'(el) {
@@ -801,7 +801,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await responder(porToken(el.dataset.token).id, false, res.campos.motivo, '', { token: el.dataset.token });
-    toast(r.erro || tr('Resposta enviada à contratante.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Resposta enviada à contratante.'));
     app.desenhar();
   },
   async 'lk-enviar'(el) {
@@ -815,23 +815,23 @@ export const acoesConcorrencias = {
     const arquivo = (document.getElementById('lk-pdf').files || [])[0];
     if (!arquivo) { toast(tr('Anexe a proposta em PDF.')); return; }
     const r = await enviarProposta(x.id, { total: num(fd.get('total')), porEtapa, prazoExecucaoDias: fd.get('prazo'), exclusoes: fd.get('exclusoes'), pdf: { nome: arquivo.name, arquivo } }, x.convite.nome, { token });
-    toast(r.erro || tr('Proposta enviada (rev. {rev}).', { rev: r.rev }));
+    r.erro ? avisarErro(r.erro) : toast(tr('Proposta enviada (rev. {rev}).', { rev: r.rev }));
     if (r.ok) app.desenhar();
   },
   async 'lk-perguntar'(el) {
     const x = porToken(el.dataset.token);
     const r = await escreverComoConvidada(x.id, textoDe(el), '', { token: el.dataset.token });
-    toast(r.erro || tr('Mensagem enviada.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Mensagem enviada.'));
     if (r.ok) app.desenhar();
   },
   async 'co-usar'(el) {
     const c = concorrenciaEnviada(el.dataset.id);
     const r = usarNoOrcamento(c, el.dataset.convite);
-    toast(r.erro || tn(r.linhas, 'Preço levado à proposta do projeto (1 linha, com as suas margens).', 'Preço levado à proposta do projeto ({n} linhas, com as suas margens).'));
+    r.erro ? avisarErro(r.erro) : toast(tn(r.linhas, 'Preço levado à proposta do projeto (1 linha, com as suas margens).', 'Preço levado à proposta do projeto ({n} linhas, com as suas margens).'));
   },
   async 'co-aprovar-q'(el) {
     const r = await decidirQuarteirizacao(el.dataset.id, true, '', quem());
-    toast(r.erro || tr('Quarteirização aprovada.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Quarteirização aprovada.'));
     if (r.ok) app.desenhar();
   },
   async 'co-recusar-q'(el) {
@@ -842,12 +842,12 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await decidirQuarteirizacao(el.dataset.id, false, res.campos.motivo, quem());
-    toast(r.erro || tr('Quarteirização recusada.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Quarteirização recusada.'));
     if (r.ok) app.desenhar();
   },
   async 'co-escrever'(el) {
     const r = await escreverComoContratante(el.dataset.id, { conviteId: el.dataset.convite, texto: textoDe(el) }, quem());
-    toast(r.erro || tr('Mensagem enviada.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Mensagem enviada.'));
     if (r.ok) app.desenhar();
   },
   async 'co-aviso'(el) {
@@ -855,7 +855,7 @@ export const acoesConcorrencias = {
     if (!texto.trim()) { toast(tr('Escreva a mensagem.')); return; }
     if (!(await confirmar(tr('Avisar todas as convidadas?'), texto, tr('Avisar a todos')))) return;
     const r = await escreverComoContratante(el.dataset.id, { conviteId: null, texto }, quem());
-    toast(r.erro || tr('Aviso enviado a todas as convidadas.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Aviso enviado a todas as convidadas.'));
     if (r.ok) app.desenhar();
   },
   async 'co-responder'(el) {
@@ -871,25 +871,25 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await escreverComoContratante(c.id, { respostaDe: q.id, paraTodos: res.campos.para === 'todos', texto: res.campos.texto }, quem());
-    toast(r.erro || (res.campos.para === 'todos' ? tr('Resposta enviada a todas as convidadas.') : tr('Resposta enviada.')));
+    r.erro ? avisarErro(r.erro) : toast((res.campos.para === 'todos' ? tr('Resposta enviada a todas as convidadas.') : tr('Resposta enviada.')));
     if (r.ok) app.desenhar();
   },
   async 'cv-escrever'(el) {
     const r = await escreverComoConvidada(el.dataset.id, textoDe(el), quem());
-    toast(r.erro || tr('Mensagem enviada.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Mensagem enviada.'));
     if (r.ok) app.desenhar();
   },
   async 'cv-vou'(el) {
     const r = await responder(el.dataset.id, true, '', quem());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     const pj = await criarProjetoDoConvite(recebida(el.dataset.id));
-    if (pj.erro) { toast(pj.erro); app.desenhar(); return; }
+    if (pj.erro) { avisarErro(pj.erro); app.desenhar(); return; }
     toast(tr('Projeto criado no Measure. Meça, monte a proposta e envie pela plataforma.'));
     app.ir('#/measure/projeto/' + pj.id);
   },
   async 'cv-projeto'(el) {
     const pj = await criarProjetoDoConvite(recebida(el.dataset.id));
-    if (pj.erro) { toast(pj.erro); return; }
+    if (pj.erro) { avisarErro(pj.erro); return; }
     toast(tr('Projeto criado no Measure.'));
     app.ir('#/measure/projeto/' + pj.id);
   },
@@ -901,7 +901,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await responder(el.dataset.id, false, res.campos.motivo, quem());
-    toast(r.erro || tr('Resposta enviada à contratante.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Resposta enviada à contratante.'));
     app.desenhar();
   },
   async 'cv-plataforma'(el) {
@@ -922,7 +922,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await enviarProposta(x.id, { ...m, numero: emitida.numero, propostaEmitidaId: emitida._banco ? emitida.id : null, prazoExecucaoDias: res.campos.prazo, exclusoes: res.campos.exclusoes, pdf: { numero: emitida.numero } }, quem());
-    toast(r.erro || tr('Proposta enviada para {nome} (rev. {rev}).', { nome: nomeContratante(x), rev: r.rev }));
+    r.erro ? avisarErro(r.erro) : toast(tr('Proposta enviada para {nome} (rev. {rev}).', { nome: nomeContratante(x), rev: r.rev }));
     if (r.ok) app.desenhar();
   },
   async 'co-aba'(el) {
@@ -982,7 +982,7 @@ export const acoesConcorrencias = {
       dados.desenhos = dados.desenhos.concat(dados.desenhosNovos.filter((n) => !dados.desenhos.some((x) => x.nome === n.nome)).map((n) => ({ nome: n.nome, observacao: n.observacao })));
       const r = await salvarRascunho(id, dados, quem());
       if (r.id) document.getElementById('form-concorrencia').dataset.id = r.id;   // se falhou depois de criar, a próxima tentativa atualiza o mesmo rascunho
-      if (r.erro) { toast(r.erro); return; }
+      if (r.erro) { avisarErro(r.erro); return; }
       toast(tr('Rascunho salvo.'));
       app.ir('#/daily/concorrencias/' + r.id);
     } catch (e) {
@@ -995,7 +995,7 @@ export const acoesConcorrencias = {
     if (!c.desenhos.length && !(await confirmar(tr('Sem desenhos anexados'), tr('Quem for cotar não vai ver nenhum desenho da obra. Enviar assim mesmo?'), tr('Enviar sem desenhos')))) return;
     if (!(await confirmar(tr('Enviar os convites?'), tn(c.convites.length, 'A prestadora recebe o pacote para cotar. Depois de enviado, só dá para prorrogar o prazo, convidar mais ou cancelar.', 'As {n} prestadoras recebem o pacote para cotar. Depois de enviado, só dá para prorrogar o prazo, convidar mais ou cancelar.'), tr('Enviar')))) return;
     const r = await enviar(c.id, quem());
-    toast(r.erro || tr('Convites enviados.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Convites enviados.'));
     if (r.ok) await mostrarLinks(r.links);
     app.desenhar();
   },
@@ -1011,7 +1011,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await prorrogar(c.id, res.campos.data + 'T' + res.campos.hora, res.campos.motivo, quem());
-    toast(r.erro || tr('Prazo prorrogado.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Prazo prorrogado.'));
     if (r.ok) app.desenhar();
   },
   async 'co-convidar'(el) {
@@ -1028,7 +1028,7 @@ export const acoesConcorrencias = {
     const ids = Object.values(res.campos);
     if (!ids.length) { toast(tr('Marque pelo menos uma prestadora.')); return; }
     const r = await convidarMais(c.id, ids, quem());
-    toast(r.erro || tn(ids.length, 'Convite enviado.', '{n} convites enviados.'));
+    r.erro ? avisarErro(r.erro) : toast(tn(ids.length, 'Convite enviado.', '{n} convites enviados.'));
     if (r.ok) { await mostrarLinks(r.links); app.desenhar(); }
   },
   async 'co-fechar'(el) {
@@ -1047,7 +1047,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await fechar(c.id, v.id, res.campos.observacao, quem());
-    toast(r.erro || (r.pendente ? tr('Pedido de aprovação enviado a quem contratou a sua empresa.') : tr('Fechada com {nome}.', { nome: v.nome })));
+    r.erro ? avisarErro(r.erro) : toast((r.pendente ? tr('Pedido de aprovação enviado a quem contratou a sua empresa.') : tr('Fechada com {nome}.', { nome: v.nome })));
     if (r.ok) app.ir('#/daily/concorrencias/' + c.id);
   },
   async 'co-cancelar'(el) {
@@ -1061,7 +1061,7 @@ export const acoesConcorrencias = {
     });
     if (!res || !res.valor) return;
     const r = await cancelar(c.id, res.campos.motivo, quem());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(r.excluida ? tr('Rascunho excluído.') : tr('Concorrência cancelada.'));
     app.ir(r.excluida ? '#/daily/concorrencias' : '#/daily/concorrencias/' + c.id);
   },

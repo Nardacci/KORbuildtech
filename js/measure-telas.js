@@ -1,9 +1,10 @@
 /* KORbuild Measure — telas: projeto (folhas e quantidades) e o visor de medição (PDF.js + canvas).
  * Medir planta é trabalho de computador: o visor é pensado para mouse e teclado. */
 
+import { barraDeBusca, atributosDeLinha, gradeEmCartao } from './padrao-cadastro.js';
 import { PRIMEIRA_VERSAO, NOME_MEASURE } from './versao.js';
 import { liberadoParaObra } from './obras.js';
-import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta } from './util.js';
+import { esc, toast, abrirDialogo, confirmar, novoId, hoje, diasEntre, dataCurta, avisarErro } from './util.js';
 import { dinheiro } from './crew.js';
 import { tr, tn } from './i18n.js';
 import { lerFoto, guardarFoto, estado, obra, salvar } from './armazem.js';
@@ -116,7 +117,6 @@ function textoProps(c) {
 
 /* ---------- Projetos: lista e cadastro ---------- */
 
-let filtroSituacao = 'todos';
 const nomeUsuario = (id) => (estado().usuarios.find((u) => u.id === id) || {}).nome || '';
 const etiquetaSituacao = (p) => '<span class="etiqueta ' + SITUACOES[p.situacao].classe + '">' + SITUACOES[p.situacao].nome + '</span>' + (liberadoParaObra(p) ? ' <span class="etiqueta etiqueta-verde">' + tr('Liberado para obra') + '</span>' : '');
 /* Prazo da proposta (bid due date): em quantos dias, ou se já passou. */
@@ -129,29 +129,24 @@ function textoPrazo(p) {
 }
 
 function telaProjetos() {
-  const todos = projetos();
-  const lista = todos.filter((p) => filtroSituacao === 'todos' || p.situacao === filtroSituacao)
-    .sort((a, b) => (a.situacao === 'orcamento' ? 0 : 1) - (b.situacao === 'orcamento' ? 0 : 1) || String(a.prazoProposta || '9').localeCompare(String(b.prazoProposta || '9')));
-  const filtro = (id, nome, n) => '<button type="button" class="btn btn-pequeno ' + (filtroSituacao === id ? 'btn-primario' : 'btn-contorno') + '" data-acao="mz-filtro" data-situacao="' + id + '" aria-pressed="' + (filtroSituacao === id) + '">' + nome + ' <span class="mz-contagem">' + n + '</span></button>';
+  const lista = projetos().slice().sort((a, b) => (a.situacao === 'orcamento' ? 0 : 1) - (b.situacao === 'orcamento' ? 0 : 1) || String(a.prazoProposta || '9').localeCompare(String(b.prazoProposta || '9')));
+  const chips = [['', tr('Todos'), lista.length]].concat(Object.entries(SITUACOES).map(([id, x]) => ['sit:' + id, x.nome, lista.filter((p) => p.situacao === id).length]));
+  const linhas = lista.map((p) => {
+    const pr = andamentoDoProjeto(p);
+    const emitidas = p.propostas || [];
+    return '<tr' + atributosDeLinha([p.nome, textoPartes(p), p.cidade, p.estado].join(' '), ['sit:' + p.situacao]) + '><td><a href="#/measure/projeto/' + p.id + '" class="mz-projeto-nome">' + esc(p.nome) + '</a><span class="mudo pequeno bloco">' + esc(textoPartes(p)) + (p.obraId && obra(p.obraId) ? (' ' + tr('· obra') + ' ') + esc(obra(p.obraId).nome) : '') + '</span>' +
+      '<span class="mudo pequeno bloco">' + esc(p.cidade) + ', ' + esc(p.estado) + ' · ' + esc(TIPOS_PROJETO[p.tipo] || '') + '</span></td>' +
+      '<td>' + textoPrazo(p) + '</td>' +
+      '<td><div class="mz-prog" role="img" aria-label="' + pr.feitos + '/' + pr.total + '"><span style="width:' + Math.round(pr.feitos * 100 / pr.total) + '%"></span></div><span class="mudo pequeno bloco">' + tn(pr.folhas, '{n} folha', '{n} folhas') + ' · ' + tn(pr.condicoes, '{n} condição', '{n} condições') + '</span></td>' +
+      '<td class="num">' + (emitidas.length ? '<b>' + dinheiro(emitidas[emitidas.length - 1].total) + '</b>' : '<span class="mudo">—</span>') + '</td>' +
+      '<td>' + esc(nomeUsuario(p.estimadorId)) + '</td><td>' + etiquetaSituacao(p) + '</td>' +
+      '<td class="acoes-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/projeto/' + p.id + '">' + tr('Abrir') + '</a></td></tr>';
+  }).join('');
   return moldura({
     ativo: 'projetos', largura: 'larga', titulo: tr('Projetos'), subtitulo: tr('Orçamentos em andamento e propostas já enviadas'),
     acoes: '<a class="btn btn-primario btn-pequeno" href="#/measure/projeto/novo">' + icone('mais', 16) + (tr('Novo projeto') + '</a>'),
-    conteudo: ('<div class="btn-linha mz-filtros" role="group" aria-label="' + tr('Filtrar por situação') + '">') + filtro('todos', tr('Todos'), todos.length) +
-        Object.entries(SITUACOES).map(([id, x]) => filtro(id, x.nome, todos.filter((p) => p.situacao === id).length)).join('') + '</div>' +
-      '<div class="mz-busca-linha"><input type="search" class="mz-busca" data-filtrar=".tabela-projetos" placeholder="' + esc(tr('Buscar projetos…')) + '" aria-label="' + esc(tr('Buscar projetos')) + '"></div>' +
-      (lista.length ? ('<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela grade tabela-projetos"><thead><tr><th>' + tr('Projeto') + '</th><th>' + tr('Prazo da proposta') + '</th><th>' + tr('Andamento') + '</th><th class="num">' + tr('Proposta') + '</th><th>' + tr('Estimador') + '</th><th>' + tr('Situação') + '</th></tr></thead><tbody>') +
-        lista.map((p) => {
-          const pr = andamentoDoProjeto(p);
-          const emitidas = p.propostas || [];
-          return '<tr><td><a href="#/measure/projeto/' + p.id + '" class="mz-projeto-nome">' + esc(p.nome) + '</a><span class="mudo pequeno bloco">' + esc(textoPartes(p)) + (p.obraId && obra(p.obraId) ? (' ' + tr('· obra') + ' ') + esc(obra(p.obraId).nome) : '') + '</span>' +
-            '<span class="mudo pequeno bloco">' + esc(p.cidade) + ', ' + esc(p.estado) + ' · ' + esc(TIPOS_PROJETO[p.tipo] || '') + '</span></td>' +
-            '<td>' + textoPrazo(p) + '</td>' +
-            '<td><div class="mz-prog" role="img" aria-label="' + pr.feitos + '/' + pr.total + '"><span style="width:' + Math.round(pr.feitos * 100 / pr.total) + '%"></span></div><span class="mudo pequeno bloco">' + tn(pr.folhas, '{n} folha', '{n} folhas') + ' · ' + tn(pr.condicoes, '{n} condição', '{n} condições') + '</span></td>' +
-            '<td class="num">' + (emitidas.length ? '<b>' + dinheiro(emitidas[emitidas.length - 1].total) + '</b>' : '<span class="mudo">—</span>') + '</td>' +
-            '<td>' + esc(nomeUsuario(p.estimadorId)) + '</td><td>' + etiquetaSituacao(p) + '</td></tr>';
-        }).join('') +
-        '</tbody></table></div></section>'
-        : ('<p class="vazio">' + tr('Nenhum projeto') + ' ') + (filtroSituacao === 'todos' ? tr('cadastrado.') : tr('com a situação "') + SITUACOES[filtroSituacao].nome + '".') + '</p>'),
+    conteudo: barraDeBusca(tr('Buscar projetos…'), chips) +
+      gradeEmCartao('tabela-projetos', [tr('Projeto'), tr('Prazo da proposta'), tr('Andamento'), [tr('Proposta'), 'num'], tr('Estimador'), tr('Situação'), ''], linhas, lista.length ? tr('Nenhum projeto com esses filtros.') : tr('Nenhum projeto cadastrado. Use "Novo projeto".')),
   });
 }
 
@@ -207,7 +202,7 @@ function telaFormProjeto(id) {
         (PRIMEIRA_VERSAO ? '<input type="hidden" name="obraId" value="' + esc(p.obraId || '') + '"></div></section>' :         campo('obraId', tr('Obra vinculada (opcional)'), ('<select id="pj-obraId" name="obraId"><option value="">' + tr('Nenhuma (obra nova)') + '</option>') + opcoes(estado().obras.map((o) => [o.id, o.nome]), p.obraId) + '</select>') +
       ('</div><p class="mudo pequeno">' + tr('Vincule a uma obra já cadastrada quando o orçamento for um aditivo ou uma ampliação.') + '</p></section>')) +
       secExecucao + secEscopo +
-      '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="mz-excluir-projeto" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
+      '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-perigo-contorno" data-acao="mz-excluir-projeto" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
         '<a class="btn btn-contorno" href="' + (id ? '#/measure/projeto/' + id : '#/measure') + ('">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-projeto">') + (id ? tr('Salvar') : tr('Criar projeto')) + '</button></div>' +
     '</form>',
   });
@@ -354,15 +349,18 @@ function htmlMateriais(projetoId) {
 
 function telaAssemblies() {
   const usos = (a) => projetos().flatMap((p) => condicoesDo(p.id)).filter((c) => (c.assemblies || []).includes(a.id)).length;
+  const lista = assemblies().slice().sort((a, b) => a.nome.localeCompare(b.nome));
+  const linhas = lista.map((a) => '<tr' + atributosDeLinha([a.nome, a.descricao, resumoAssembly(a)].join(' '), ['tipo:' + a.tipo]) + '><td><a class="mz-assembly" href="#/measure/assembly/' + a.id + '"><b>' + esc(a.nome) + '</b></a>' + (a.descricao ? '<span class="mudo pequeno bloco">' + esc(a.descricao) + '</span>' : '') + '</td>' +
+    '<td>' + TIPOS[a.tipo].nome + '</td><td class="pequeno">' + esc(resumoAssembly(a)) + '</td>' +
+    '<td class="num">' + (usos(a) ? usos(a) + (usos(a) === 1 ? (' ' + tr('condição')) : (' ' + tr('condições'))) : '<span class="mudo">—</span>') + '</td>' +
+    '<td class="acoes-linha"><a class="btn btn-contorno btn-pequeno" href="#/measure/assembly/' + a.id + '">' + (podeCatalogo() ? tr('Editar') : tr('Ver')) + '</a></td></tr>').join('');
+  const tipos = [...new Set(lista.map((a) => a.tipo))];
+  const chips = [['', tr('Todos'), lista.length]].concat(tipos.map((t) => ['tipo:' + t, TIPOS[t].nome, lista.filter((a) => a.tipo === t).length]));
   return moldura({
     ativo: 'assemblies', largura: 'larga', titulo: tr('Assemblies'), subtitulo: tr('Um conjunto de itens com fórmulas: uma medição alimenta vários materiais e a mão de obra'),
     acoes: podeCatalogo() ? '<a class="btn btn-primario btn-pequeno" href="#/measure/assembly/novo">' + icone('mais', 16) + (tr('Novo assembly') + '</a>') : '',
-    conteudo: ('<section class="cartao grade-cartao"><div class="tabela-rolagem"><table class="tabela grade mz-assemblies"><thead><tr><th>' + tr('Assembly') + '</th><th>' + tr('Tipo') + '</th><th>' + tr('Resumo') + '</th><th class="num">' + tr('Em uso') + '</th><th></th></tr></thead><tbody>') +
-      assemblies().map((a) => '<tr><td><a class="mz-assembly" href="#/measure/assembly/' + a.id + '"><b>' + esc(a.nome) + '</b></a>' + (a.descricao ? '<span class="mudo pequeno bloco">' + esc(a.descricao) + '</span>' : '') + '</td>' +
-        '<td>' + TIPOS[a.tipo].nome + '</td><td class="pequeno">' + esc(resumoAssembly(a)) + '</td>' +
-        '<td class="num">' + (usos(a) ? usos(a) + (usos(a) === 1 ? (' ' + tr('condição')) : (' ' + tr('condições'))) : '<span class="mudo">—</span>') + '</td>' +
-        '<td class="num"><a class="btn btn-contorno btn-pequeno" href="#/measure/assembly/' + a.id + '">' + (podeCatalogo() ? tr('Editar') : tr('Ver')) + '</a></td></tr>').join('') +
-      '</tbody></table></div></section>',
+    conteudo: barraDeBusca(tr('Buscar assembly…'), chips) +
+      gradeEmCartao('mz-assemblies', [tr('Assembly'), tr('Tipo'), tr('Resumo'), [tr('Em uso'), 'num'], ''], linhas, lista.length ? tr('Nenhum assembly com esses filtros.') : tr('Nenhum assembly ainda. Use "Novo assembly".')),
   });
 }
 
@@ -408,7 +406,7 @@ function telaAssembly(id) {
         linhas.map((l, i) => htmlLinhaAssembly(l, a.tipo, i, ed)).join('') + '</tbody></table></div>' +
         (ed ? '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="mz-nova-linha">' + icone('mais', 14) + (tr('Linha') + '</button>') : '') +
         '<div class="mz-ajuda" id="as-ajuda">' + htmlAjudaVariaveis(a.tipo) + '</div></section>' +
-      (ed ? '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="mz-excluir-assembly" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
+      (ed ? '<div class="rodape-form">' + (id ? '<button type="button" class="btn btn-perigo-contorno" data-acao="mz-excluir-assembly" data-id="' + id + ('">' + tr('Excluir') + '</button>') : '') +
         ('<a class="btn btn-contorno" href="#/measure/assemblies">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="mz-salvar-assembly">' + tr('Salvar assembly') + '</button></div>') : ('<p class="dica">' + tr('Só quem tem a permissão "Itens e assemblies" edita.') + '</p>')) +
     '</form>',
   });
@@ -790,7 +788,7 @@ async function cliqueCalibracao(p) {
   visor.cal = [];
   if (!res || !res.valor) { atualizarInterface(); return; }
   const r = interpretarComprimento(res.campos.real);
-  if (r.erro || !(r.pol > 0)) { toast(r.erro || tr('Informe uma medida maior que zero.')); atualizarInterface(); return; }
+  if (r.erro || !(r.pol > 0)) { r.erro ? avisarErro(r.erro) : toast(tr('Informe uma medida maior que zero.')); atualizarInterface(); return; }
   if (conferir) {
     const k = registrarConferencia(f.id, r.pol, dPts * f.escala.polPorPonto);
     toast(k.ok ? (tr('Escala conferida ✓ medido') + ' ') + tr('{medido} para {real}', { medido: formatarPesPolegadas(k.medidoPol), real: formatarPesPolegadas(r.pol) }) + ' (' + numero(k.diferenca * 100, 1) + '%).'
@@ -1028,10 +1026,10 @@ async function dialogoCondicao(c, comAssembly) {
     }
     if (tipo === 'area') { const v = ler('espessura', tr('Espessura'), 'pol'); if (v) props.profundidadePol = v; }
   } catch (e) { toast(e.message); return; }
-  if (tipo !== 'contagem' && (res.campos.inclinacao || '').trim()) { const r = interpretarInclinacao(res.campos.inclinacao); if (r.erro) { toast(r.erro); return; } props.inclinacao = r.razao; }
+  if (tipo !== 'contagem' && (res.campos.inclinacao || '').trim()) { const r = interpretarInclinacao(res.campos.inclinacao); if (r.erro) { avisarErro(r.erro); return; } props.inclinacao = r.razao; }
   if (tipo !== 'contagem') props.vaos = Object.keys(res.campos).filter((k) => k.startsWith('vao-')).map((k) => k.slice(4));
   const r = salvarCondicao(c ? c.id : null, { projetoId, folhaId: visor.folhaId, nome: res.campos.nome, tipo, props, cor: res.campos.cor });
-  if (r.erro) { toast(r.erro); return; }
+  if (r.erro) { avisarErro(r.erro); return; }
   if (comAssembly) aplicarAssembly(r.id, comAssembly.id);
   visor.condicaoId = r.id;
   visor.pontos = [];
@@ -1061,7 +1059,7 @@ async function dialogoTypical(t, regiao) {
   }
   const ocorrencias = linhas.map((_, i) => ({ rotulo: res.campos['oc-rotulo-' + i], quantidade: res.campos['oc-qtd-' + i] === '' ? 0 : Number(res.campos['oc-qtd-' + i]) }));
   const r = salvarTypical(t ? t.id : null, { folhaId: f.id, nome: res.campos.nome, regiao, ocorrencias }, (usuarioAtual() || {}).nome);
-  if (r.erro) { toast(r.erro); atualizarInterface(); return; }
+  if (r.erro) { avisarErro(r.erro); atualizarInterface(); return; }
   const novo = typical(r.id);
   toast('"' + novo.nome + '" vale × ' + repeticoes(novo) + (tr(': as medições') + ' ') + (novo.regiao ? tr('dentro da região') : tr('desta folha')) + (' ' + tr('já contam as repetições.')));
   if (visor.ferramenta === 'typical') visor.ferramenta = 'medir';
@@ -1134,7 +1132,7 @@ export const acoesMeasure = {
     }));
     const id = form.dataset.id || null;
     const r = salvarAssembly(id, { nome: form.querySelector('[name="nome"]').value, tipo: form.querySelector('[name="tipo"]').value, descricao: form.querySelector('[name="descricao"]').value, linhas });
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Assembly salvo.'));
     app.ir('#/measure/assemblies');
   },
@@ -1156,7 +1154,7 @@ export const acoesMeasure = {
     });
     if (!res || !res.valor) return;
     const r = aplicarAssembly(c.id, res.campos.assembly);
-    toast(r.erro || tr('Assembly aplicado. Os materiais aparecem nas quantidades do projeto.'));
+    r.erro ? avisarErro(r.erro) : toast(tr('Assembly aplicado. Os materiais aparecem nas quantidades do projeto.'));
     atualizarInterface();
   },
   'mz-remover-assembly'(el) { removerAssembly(el.dataset.cond, el.dataset.id); atualizarInterface(); },
@@ -1255,7 +1253,6 @@ export const acoesMeasure = {
       else await document.querySelector('.mz-visor').requestFullscreen();
     } catch (e) { toast(tr('O navegador não permitiu a tela cheia.')); }
   },
-  'mz-filtro'(el) { filtroSituacao = el.dataset.situacao; app.desenhar(); },
   'pj-form-aba'(el) {
     for (const b of document.querySelectorAll('#form-projeto [data-acao="pj-form-aba"]')) { const on = b === el; b.classList.toggle('ativa', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }
     for (const sec of document.querySelectorAll('#form-projeto section[data-pj-aba]')) sec.hidden = sec.dataset.pjAba !== el.dataset.aba;
@@ -1268,7 +1265,7 @@ export const acoesMeasure = {
     if (escopo != null) dados.descricao = escopo;
     const id = form.dataset.id || null;
     const r = salvarProjeto(id, dados);
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(id ? tr('Projeto atualizado.') : tr('Projeto criado. Agora envie o PDF das plantas.'));
     app.ir('#/measure/projeto/' + r.id + (id ? '' : '/plans'));
   },
@@ -1309,12 +1306,3 @@ document.addEventListener('fullscreenchange', () => {
   requestAnimationFrame(() => { visor.zoom = ajustarZoom(document.getElementById('mz-area')); renderizar(); });
 });
 
-/* Busca na tabela: esconde as linhas que não contêm o texto, sem redesenhar a tela. */
-if (typeof document !== 'undefined') {
-  document.addEventListener('input', (e) => {
-    const el = e.target;
-    if (!el || !el.matches || !el.matches('[data-filtrar]')) return;
-    const q = el.value.trim().toLowerCase();
-    for (const tr of document.querySelectorAll(el.dataset.filtrar + ' tbody tr')) tr.hidden = !!q && !tr.textContent.toLowerCase().includes(q);
-  });
-}

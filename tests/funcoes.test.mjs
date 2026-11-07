@@ -24,7 +24,8 @@ await p.waitForSelector('#form-login', { timeout: 30000 });
 await p.evaluate(() => localStorage.setItem('kbt.sessao', 'u-tom'));
 const ir = async (rota, espera) => { await p.goto('about:blank'); await p.goto(BASE + rota); await p.waitForSelector(espera, { timeout: 20000 }); await p.waitForTimeout(300); };
 const texto = async (sel = 'main') => (await p.locator(sel).innerText()).replace(/\s+/g, ' ');
-const toast = async () => { await p.waitForSelector('#toast.on', { timeout: 5000 }); const t = await p.textContent('#toast'); await p.evaluate(() => document.getElementById('toast').classList.remove('on')); return t; };
+/* aviso de sucesso (toast) ou erro de validação, que fica acima dos botões do formulário: lê o que aparecer e limpa */
+const toast = async () => { await p.waitForSelector('#toast.on, .form-erro:not([hidden])', { timeout: 5000 }); return p.evaluate(() => { const e = document.querySelector('.form-erro:not([hidden])'); if (e) { const t = e.textContent; e.hidden = true; return t; } const x = document.getElementById('toast'); const t = x.textContent; x.classList.remove('on'); return t; }); };
 
 console.log('Settings › Funções: a lista antiga de nomes virou cadastro');
 await ir('#/settings/funcoes', '.tabela-funcoes');

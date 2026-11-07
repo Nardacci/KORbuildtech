@@ -1,7 +1,7 @@
 /* KORbuild — telas do cadastro de obras e dos modelos de etapas (docs/obras.md).
  * Ficam em Settings › Obras; a lista de obras do Daily e o projeto ganho do Measure levam até aqui. */
 
-import { esc, dataCurta, decimal, toast, confirmar } from './util.js';
+import { esc, dataCurta, decimal, toast, confirmar, avisarErro } from './util.js';
 import { tr, tn } from './i18n.js';
 import { estado, obrasLigadas } from './armazem.js';
 import { usuarioAtual, pode } from './plataforma.js';
@@ -224,7 +224,7 @@ export function telaFormModelo(moldura, id) {
       '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="modelo-nova-linha">' + icone('mais', 14) + tr('Incluir etapa') + '</button>' +
       '<p class="pequeno" id="md-soma"></p>' +
       '<p class="mudo pequeno">' + tr('A parte do prazo diz quanto do período da obra cada etapa ocupa. As partes somam 100%. Ao criar a obra, as etapas entram em sequência.') + '</p>' +
-      '</section><div class="rodape-form">' + (id ? '<button type="button" class="btn btn-contorno" data-acao="modelo-excluir" data-id="' + id + '">' + tr('Excluir') + '</button>' : '') +
+      '</section><div class="rodape-form">' + (id ? '<button type="button" class="btn btn-perigo-contorno" data-acao="modelo-excluir" data-id="' + id + '">' + tr('Excluir') + '</button>' : '') +
       '<a class="btn btn-contorno" href="#/settings/modelos">' + tr('Cancelar') + '</a><button type="button" class="btn btn-primario" data-acao="modelo-salvar">' + (id ? tr('Salvar') : tr('Criar modelo')) + '</button></div></form>',
   });
 }
@@ -247,7 +247,7 @@ export const acoesObras = {
     const fd = new FormData(form);
     const id = form.dataset.id || null;
     const r = salvarObra(id, { ...Object.fromEntries(fd.entries()), diasTrabalho: fd.getAll('diasTrabalho') }, quem());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(id ? tr('Obra atualizada.') : tr('Obra criada.'));
     app.ir(pode(usuarioAtual(), 'daily.acompanhar') ? '#/daily/obras/' + r.id : '#/settings/obras');
   },
@@ -278,7 +278,7 @@ export const acoesObras = {
     const fd = new FormData(form);
     const nomes = fd.getAll('etapaNome'), pcts = fd.getAll('etapaPct');
     const r = salvarModelo(form.dataset.id || null, { nome: fd.get('nome'), etapas: nomes.map((nome, i) => ({ nome, pct: pcts[i] })) }, quem());
-    if (r.erro) { toast(r.erro); return; }
+    if (r.erro) { avisarErro(r.erro); return; }
     toast(tr('Modelo salvo.'));
     app.ir('#/settings/modelos');
   },
