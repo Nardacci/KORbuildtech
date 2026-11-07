@@ -6,7 +6,7 @@ import { PRIMEIRA_VERSAO, NOME_MEASURE, MODULOS_DA_VERSAO } from './versao.js';
 import { esc, toast, confirmar, dataHora, abrirPainel } from './util.js';
 import { iniciais, quando, cabecalhoDePagina, botaoCriar, barraDeBusca, atributosDeLinha, gradeEmCartao, avatar, campoPainel } from './padrao-cadastro.js';
 import { tr, idioma, htmlSeletorIdioma, nomeDoPlano } from './i18n.js';
-import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario, CONTROLE_DE_TESTE } from './plataforma.js';
+import { paginaEntrada, htmlCaminhosEntrada, telaLoginOficial, URL_PROTOTIPO, URL_PORTAL, usuarioAtual, sino, botaoModulos, menuUsuario, hrefManual, CONTROLE_DE_TESTE } from './plataforma.js';
 import { icone, marca, logotipo } from './icones.js';
 import { PERMISSOES, permissao } from './settings.js';
 import { ATUACOES } from './contatos.js';
@@ -175,7 +175,7 @@ const ICONES_DO_SETTINGS = { obras: 'obras', contatos: 'crew', funcionarios: 'cr
 function ladoDireitoDoTopo() {
   const u = PRIMEIRA_VERSAO && espelho.pronto && estado() && estado().oficial ? usuarioAtual() : null;
   if (u) return sino(u) + botaoModulos(u) + menuUsuario(u);
-  return htmlSeletorIdioma('oficial-idioma') + (PRIMEIRA_VERSAO ? botaoModulos(null) : '') + '<button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button>';
+  return htmlSeletorIdioma('oficial-idioma') + (PRIMEIRA_VERSAO ? botaoModulos(null) : '') + '<a class="btn btn-contorno btn-pequeno" id="menu-manual" href="' + hrefManual() + '" download target="_blank" rel="noopener">' + icone('baixar', 16) + '<span>' + tr('Manual (PDF)') + '</span></a><button type="button" class="btn btn-contorno btn-pequeno" data-acao="of-sair">' + tr('Sair') + '</button>';
 }
 
 /* A moldura da área da conta. Na 1ª versão: o Início é o painel, em tela cheia (opcoes.cheio), e as outras telas do Settings têm o menu

@@ -22,6 +22,10 @@ for (const item of COPIAR) {
   if (existsSync(join(RAIZ, item))) cpSync(join(RAIZ, item), join(SAIDA, item), { recursive: true });
 }
 cpSync(join(RAIZ, 'portal-measure'), join(SAIDA, 'portal'), { recursive: true });
+// o manual do usuário em PDF (menu da conta › Manual do usuário): só os PDFs, sem os documentos de teste de manual/
+for (const pdf of ['KORbuild_Manual_do_Usuario_pt.pdf', 'KORbuild_User_Manual_en.pdf']) {
+  if (existsSync(join(RAIZ, 'manual', pdf))) { mkdirSync(join(SAIDA, 'manual'), { recursive: true }); cpSync(join(RAIZ, 'manual', pdf), join(SAIDA, 'manual', pdf)); } else console.log('Aviso: falta manual/' + pdf + ' (node tools/gerar-manual.mjs)');
+}
 
 // o app instalado se chama KORbuild Takeoff (a homologação, com o mesmo código, mantém o nome KORbuild)
 const manifesto = JSON.parse(readFileSync(join(SAIDA, 'manifest.webmanifest'), 'utf8'));

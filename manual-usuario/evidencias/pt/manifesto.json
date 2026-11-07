@@ -1,0 +1,422 @@
+{
+  "idioma": "pt",
+  "versao": "v165",
+  "commit": "2bad830",
+  "geradoEm": "2026-11-07T14:30:19.508Z",
+  "ambiente": "banco local com dados de exemplo (Northfield Builders)",
+  "capturas": [
+    {
+      "chave": "login",
+      "cena": "1. Entrar e criar a conta",
+      "titulo": "Tela de entrada",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:42.663Z",
+      "ms": 772
+    },
+    {
+      "chave": "criar-conta",
+      "cena": "1. Entrar e criar a conta",
+      "titulo": "Criar a conta",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:43.768Z",
+      "ms": 754
+    },
+    {
+      "chave": "sua-empresa",
+      "cena": "1. Entrar e criar a conta",
+      "titulo": "Cadastrar a empresa",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:45.217Z",
+      "ms": 764
+    },
+    {
+      "chave": "inicio",
+      "cena": "2. Início",
+      "titulo": "Início",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:48.429Z",
+      "ms": 791
+    },
+    {
+      "chave": "usuarios",
+      "cena": "3. Settings: usuários",
+      "titulo": "Usuários",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:49.634Z",
+      "ms": 769
+    },
+    {
+      "chave": "novo-usuario",
+      "cena": "3. Settings: usuários",
+      "titulo": "Novo usuário",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:51.103Z",
+      "ms": 766
+    },
+    {
+      "chave": "senha-provisoria",
+      "cena": "3. Settings: usuários",
+      "titulo": "Senha provisória",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:52.114Z",
+      "ms": 769
+    },
+    {
+      "chave": "editar-usuario",
+      "cena": "3. Settings: usuários",
+      "titulo": "Editar usuário",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:53.450Z",
+      "ms": 754
+    },
+    {
+      "chave": "perfis",
+      "cena": "4. Settings: perfis de acesso",
+      "titulo": "Perfis de acesso",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:54.670Z",
+      "ms": 759
+    },
+    {
+      "chave": "perfil-editor",
+      "cena": "4. Settings: perfis de acesso",
+      "titulo": "Editor de perfil",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:55.501Z",
+      "ms": 785
+    },
+    {
+      "chave": "novo-perfil",
+      "cena": "4. Settings: perfis de acesso",
+      "titulo": "Novo perfil",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:56.366Z",
+      "ms": 767
+    },
+    {
+      "chave": "contatos",
+      "cena": "5. Settings: contatos, funções, empresa e meu perfil",
+      "titulo": "Contatos",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:57.545Z",
+      "ms": 757
+    },
+    {
+      "chave": "contato-painel",
+      "cena": "5. Settings: contatos, funções, empresa e meu perfil",
+      "titulo": "Contato",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:28:58.366Z",
+      "ms": 763
+    },
+    {
+      "chave": "funcoes",
+      "cena": "5. Settings: contatos, funções, empresa e meu perfil",
+      "titulo": "Funções",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:00.447Z",
+      "ms": 785
+    },
+    {
+      "chave": "funcao-painel",
+      "cena": "5. Settings: contatos, funções, empresa e meu perfil",
+      "titulo": "Função com histórico do valor hora",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:01.280Z",
+      "ms": 781
+    },
+    {
+      "chave": "empresa",
+      "cena": "5. Settings: contatos, funções, empresa e meu perfil",
+      "titulo": "Empresa",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:02.464Z",
+      "ms": 758
+    },
+    {
+      "chave": "meu-perfil",
+      "cena": "5. Settings: contatos, funções, empresa e meu perfil",
+      "titulo": "Meu perfil",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:03.669Z",
+      "ms": 785
+    },
+    {
+      "chave": "item-novo",
+      "cena": "6. Takeoff: itens e assemblies",
+      "titulo": "Novo item",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:05.225Z",
+      "ms": 770
+    },
+    {
+      "chave": "item-precos",
+      "cena": "6. Takeoff: itens e assemblies",
+      "titulo": "Item: preços",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:07.587Z",
+      "ms": 754
+    },
+    {
+      "chave": "assemblies",
+      "cena": "6. Takeoff: itens e assemblies",
+      "titulo": "Assemblies",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:09.438Z",
+      "ms": 751
+    },
+    {
+      "chave": "assembly-editor",
+      "cena": "6. Takeoff: itens e assemblies",
+      "titulo": "Assembly: linhas e fórmulas",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:11.696Z",
+      "ms": 769
+    },
+    {
+      "chave": "projeto-novo",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Novo projeto",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:14.691Z",
+      "ms": 772
+    },
+    {
+      "chave": "plantas-vazio",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Plantas: enviar",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:18.091Z",
+      "ms": 764
+    },
+    {
+      "chave": "plantas",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Plantas enviadas",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:21.936Z",
+      "ms": 801
+    },
+    {
+      "chave": "escala",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Definir a escala da folha",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:23.711Z",
+      "ms": 764
+    },
+    {
+      "chave": "escala-conferir",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Conferir a escala numa cota",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:24.597Z",
+      "ms": 783
+    },
+    {
+      "chave": "takeoff-assembly",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Incluir um assembly no desenho",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:32.211Z",
+      "ms": 779
+    },
+    {
+      "chave": "takeoff",
+      "cena": "7. Takeoff: projeto, plantas, escala e medição",
+      "titulo": "Takeoff: medição no desenho",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:35.417Z",
+      "ms": 785
+    },
+    {
+      "chave": "materiais",
+      "cena": "8. Takeoff: materiais, cronograma, proposta e liberar",
+      "titulo": "Materiais e mão de obra",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:38.163Z",
+      "ms": 746
+    },
+    {
+      "chave": "cronograma",
+      "cena": "8. Takeoff: materiais, cronograma, proposta e liberar",
+      "titulo": "Cronograma",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:43.574Z",
+      "ms": 770
+    },
+    {
+      "chave": "projeto-visao",
+      "cena": "8. Takeoff: materiais, cronograma, proposta e liberar",
+      "titulo": "Visão geral do projeto",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:44.977Z",
+      "ms": 770
+    },
+    {
+      "chave": "proposta",
+      "cena": "8. Takeoff: materiais, cronograma, proposta e liberar",
+      "titulo": "Proposta",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:46.508Z",
+      "ms": 764
+    },
+    {
+      "chave": "liberar",
+      "cena": "8. Takeoff: materiais, cronograma, proposta e liberar",
+      "titulo": "Liberar para obra",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:48.461Z",
+      "ms": 777
+    },
+    {
+      "chave": "liberado",
+      "cena": "8. Takeoff: materiais, cronograma, proposta e liberar",
+      "titulo": "Projeto liberado para obra",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:49.329Z",
+      "ms": 784
+    },
+    {
+      "chave": "daily-hoje",
+      "cena": "9. Daily no celular: o diário do dia",
+      "titulo": "Daily: Hoje",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:52.878Z",
+      "ms": 764
+    },
+    {
+      "chave": "daily-projeto",
+      "cena": "9. Daily no celular: o diário do dia",
+      "titulo": "Daily: o projeto",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:29:53.750Z",
+      "ms": 777
+    },
+    {
+      "chave": "daily-rdo",
+      "cena": "9. Daily no celular: o diário do dia",
+      "titulo": "Novo RDO",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:02.791Z",
+      "ms": 781
+    },
+    {
+      "chave": "daily-atividade",
+      "cena": "9. Daily no celular: o diário do dia",
+      "titulo": "Atividade ligada à tarefa do cronograma",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:04.172Z",
+      "ms": 794
+    },
+    {
+      "chave": "daily-enviar",
+      "cena": "9. Daily no celular: o diário do dia",
+      "titulo": "Enviar para aprovação",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:05.012Z",
+      "ms": 785
+    },
+    {
+      "chave": "daily-enviado",
+      "cena": "9. Daily no celular: o diário do dia",
+      "titulo": "Diário enviado",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:07.474Z",
+      "ms": 818
+    },
+    {
+      "chave": "daily-painel",
+      "cena": "10. Daily no computador: aprovar o diário",
+      "titulo": "Daily: painel",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:10.700Z",
+      "ms": 748
+    },
+    {
+      "chave": "daily-revisar",
+      "cena": "10. Daily no computador: aprovar o diário",
+      "titulo": "Revisar o diário",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:11.542Z",
+      "ms": 761
+    },
+    {
+      "chave": "daily-aprovado",
+      "cena": "10. Daily no computador: aprovar o diário",
+      "titulo": "Diário aprovado e lacrado",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:14.015Z",
+      "ms": 819
+    },
+    {
+      "chave": "gantt",
+      "cena": "10. Daily no computador: aprovar o diário",
+      "titulo": "Gantt com o andamento do diário",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:16.512Z",
+      "ms": 786
+    },
+    {
+      "chave": "inicio-final",
+      "cena": "10. Daily no computador: aprovar o diário",
+      "titulo": "Início com os projetos andando",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:19.441Z",
+      "ms": 2929
+    },
+    {
+      "chave": "(erros de JavaScript)",
+      "cena": "Todas",
+      "titulo": "Nenhum erro de JavaScript em todo o percurso",
+      "ok": true,
+      "motivo": "",
+      "em": "2026-11-07T14:30:19.441Z"
+    }
+  ]
+}

@@ -3306,6 +3306,8 @@ export const EN = {
   'Primeiro acesso: entre com a senha provisória e veja se pede a troca de senha.': 'First sign-in: sign in with the temporary password and check that it asks for a new password.',
   'Se algo falhar, mande um print da tela e a hora aproximada.': 'If something fails, send a screenshot and the approximate time.',
   'Nenhuma obra ainda. Use \"Nova obra\".': 'No jobs yet. Use \"New job\".',
+  'Manual do usuário (PDF)': 'User manual (PDF)',
+  'Manual (PDF)': 'Manual (PDF)',
   'Baixando a versão nova do KORbuild…': 'Downloading the new version of KORbuild…',
   'Atualizando o app… um instante.': 'Updating the app… one moment.',
   'Versão nova do KORbuild pronta.': 'A new version of KORbuild is ready.',

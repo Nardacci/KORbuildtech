@@ -37,6 +37,8 @@ try {
     await esperarAte(async () => (await p.locator('.tabela-membros tbody tr').count()) >= 2, 20000);
     const linhas = (await texto(p, '.tabela-membros'));
     verificar(linhas.includes('Fábio Fluxo') && linhas.includes('Eduardo Encarregado'), 'a lista mostra o Fábio e o Eduardo', linhas.slice(0, 300));
+    const manual = await p.locator('#menu-manual').first().getAttribute('href').catch(() => null);
+    verificar(manual === 'manual/KORbuild_Manual_do_Usuario_pt.pdf', 'depois do login, o menu da conta oferece o manual do usuário em PDF (português)', manual);
     verificar(await p.locator('select[data-acao-mudar="of-perfil-membro"]').count() === 1, 'o Administrador não tem seletor para mudar o próprio perfil (só o do Eduardo)', await p.locator('select[data-acao-mudar="of-perfil-membro"]').count());
     await p.click('[data-acao="of-convidar-link"]');
     await p.waitForSelector('dialog.painel #cv-email');

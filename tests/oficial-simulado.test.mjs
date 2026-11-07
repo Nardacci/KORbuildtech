@@ -182,6 +182,12 @@ try {
   const txt = await b.locator('body').innerText();
   verificar(txt.includes('Job name') || txt.includes('Job'), 'a tela da obra em inglês', txt.slice(0, 200));
   verificar(await b.evaluate(() => document.documentElement.scrollWidth) <= 390, 'no celular a página não passa da largura da tela', await b.evaluate(() => document.documentElement.scrollWidth));
+  console.log('Manual do usuário em PDF');
+  for (const [pg, href, idioma] of [[a, 'manual/KORbuild_Manual_do_Usuario_pt.pdf', 'português'], [b, 'manual/KORbuild_User_Manual_en.pdf', 'inglês']]) {
+    verificar(await pg.locator('#menu-manual').getAttribute('href') === href && await pg.locator('#menu-manual[download]').count() === 1, 'o menu da conta oferece o manual em ' + idioma + ' para baixar', await pg.locator('#menu-manual').getAttribute('href'));
+    const r = await fetch(BASE + href);
+    verificar(r.ok && /pdf/.test(r.headers.get('content-type') || '') && (await r.arrayBuffer()).byteLength > 100000, 'o arquivo ' + href + ' existe e é um PDF', r.status);
+  }
   verificar(erros.length === 0, 'sem erros na página' + (erros.length ? ': ' + erros.slice(0, 3).join(' | ') : ''));
 } finally {
   await browser.close();

@@ -10,7 +10,7 @@ import { esc, dataCurta, diasEntre, hoje, dataHora, isoDoDia, horaCurta } from '
 import { estado, todasAsEmpresas, salvar, chaveDaSessao } from './armazem.js';
 import { pode, perfilDe, modulosDe } from './settings.js';
 import { icone, marca, logotipo, ASSINATURA, SOBRESCRITO } from './icones.js';
-import { tr, tn, htmlSeletorIdioma } from './i18n.js';
+import { tr, tn, htmlSeletorIdioma, idioma } from './i18n.js';
 import { VERSAO_APP } from './config.js';
 import { htmlAvisoInstalar } from './instalar.js';
 
@@ -226,6 +226,10 @@ export function botaoModulos(u) {
   return '<a class="topo-botao" href="' + (PRIMEIRA_VERSAO && !(d && !d.oficial) ? '#/conta' : '#/inicio') + '" aria-label="' + tr('Módulos') + '" title="' + tr('Módulos') + '">' + icone('modulos') + '</a>';
 }
 
+/* O manual do usuário em PDF (manual/, gerado por tools/gerar-manual.mjs), no idioma da tela. */
+const MANUAIS = { pt: 'manual/KORbuild_Manual_do_Usuario_pt.pdf', en: 'manual/KORbuild_User_Manual_en.pdf' };
+export const hrefManual = () => MANUAIS[idioma()] || MANUAIS.en;
+
 export function menuUsuario(u) {
   return '<details class="menu-usuario"><summary aria-label="' + tr('Menu de {nome}', { nome: esc(u.nome) }) + '"><span class="avatar">' + esc(iniciais(u.nome)) + '</span></summary>' +
     '<div class="menu">' +
@@ -235,6 +239,7 @@ export function menuUsuario(u) {
       (estado().oficial ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Minha conta') + '</a>')
         : pode(u, 'settings.conta') ? '<a class="menu-item" href="#/conta">' + icone('conta', 18) + (tr('Conta da empresa') + '</a>') : '') +
       (estado().oficial ? '<a class="menu-item" href="#/conta/diagnostico">' + icone('wifi', 18) + (tr('Diagnóstico do aparelho') + '</a>') : '') +
+      (estado().oficial ? '<a class="menu-item" id="menu-manual" href="' + hrefManual() + '" download target="_blank" rel="noopener">' + icone('baixar', 18) + (tr('Manual do usuário (PDF)') + '</a>') : '') +
       (podeInstalar ? '<button type="button" class="menu-item" data-acao="instalar">' + icone('instalar', 18) + (tr('Instalar no celular') + '</button>') : '') +
       '<div class="menu-item menu-idioma">' + icone('idioma', 18) + '<span>' + tr('Idioma') + '</span>' + htmlSeletorIdioma() + '</div>' +
       (estado().oficial ? '' : '<button type="button" class="menu-item" data-acao="recomecar">' + icone('recomecar', 18) + (tr('Recomeçar demonstração') + '</button>')) +

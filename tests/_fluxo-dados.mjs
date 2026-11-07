@@ -105,11 +105,11 @@ export async function criarProjetoLiberado(dados, { nome, tarefas = [], liberado
 export async function apagarEmpresaFluxo() { await limparMassa('fluxo.%@example.com', "plano ->> 'massa' = 'fluxo'"); }
 
 /** Abre o app, na conta real local, como uma das pessoas. Com campo: true é o celular do canteiro (390 × 844, GPS ligado e clima simulado). */
-export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, alt = 1100, ir = '#/conta', campo = false, semSessao = false } = {}) {
+export async function abrirComo(browser, chave, { idioma = 'pt', larg = 1440, alt = 1100, ir = '#/conta', campo = false, semSessao = false, escala = 1 } = {}) {
   const p = typeof chave === 'string' ? PESSOAS[chave] : chave;   // uma pessoa de PESSOAS ou um objeto { email, nome }
   const rotuloErros = typeof chave === 'string' ? chave : 'nova';
   const [u] = await sql(`select id, coalesce(raw_user_meta_data ->> 'nome', 'x') as nome from auth.users where email = '${aspas(p.email)}'`);
-  const ctx = await browser.newContext({ viewport: campo ? { width: 390, height: 844 } : { width: larg, height: alt }, ...(campo ? { geolocation: { latitude: 43.2081, longitude: -71.5376, accuracy: 8 }, permissions: ['geolocation'] } : {}) });
+  const ctx = await browser.newContext({ deviceScaleFactor: escala, viewport: campo ? { width: 390, height: 844 } : { width: larg, height: alt }, ...(campo ? { geolocation: { latitude: 43.2081, longitude: -71.5376, accuracy: 8 }, permissions: ['geolocation'] } : {}) });
   await ctx.addInitScript(([s, i]) => { try { if (s) localStorage.setItem('kbt.conta', s); localStorage.setItem('kbt.idioma', i); localStorage.setItem('kbt.versao', 'primeira'); } catch { /* */ } }, [semSessao ? '' : await sessao(u.id, p.email, u.nome), idioma]);   // semSessao: a pessoa entra pela tela de login
   await rotear(ctx, URL_PROJETO);
   await ctx.route('https://fonts.**', (r) => r.abort());
