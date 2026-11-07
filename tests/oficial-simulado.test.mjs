@@ -127,13 +127,14 @@ try {
   await a.fill('#ob-nome', 'Atlantic Ave'); await a.selectOption('#ob-contratanteId', { label: 'Granite Builders' });
   await a.fill('#ob-municipio', 'Manchester'); await a.fill('#ob-estado', 'nh'); await a.fill('#ob-lat', '42.99'); await a.fill('#ob-lon', '-71.46');
   await a.fill('#ob-inicio', '2026-10-01'); await a.fill('#ob-prazo', '2026-12-15'); await a.selectOption('#ob-responsavelId', { label: 'Joe Foreman' });
-  await a.click('[data-acao="cad-salvar-obra"]'); await a.waitForSelector('#equipe-obra', { timeout: 5000 }).catch(() => null);
+  await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('#equipe-obra', { timeout: 5000 }).catch(() => null);
   const ob = (await gravou(a, 'obras', 'insert'))[0] || {};
   verificar(ob.nome === 'Atlantic Ave' && ob.estado === 'NH' && ob.lat === 42.99 && ob.raio === 150 && ob.dias_trabalho.join() === '1,2,3,4,5' && ob.responsavel_id === 'm-joe' && !('empresa_id' in ob) && !('vinculo_empresa_id' in ob),
     'obra gravada com o que o banco espera (sem empresa nem ligação entre obras)', ob);
-  verificar(a.url().includes('#/conta/obras/id-'), 'depois de criar, abre a obra com a equipe', a.url());
+  verificar(a.url().endsWith('#/conta/obras') && await a.locator('dialog.painel #equipe-obra').count() === 1, 'depois de criar, a lista fica por trás e o painel da obra reabre com a equipe', a.url());
+  verificar((await a.locator('tr[data-linha]').allInnerTexts()).some((t) => t.includes('Atlantic Ave')), 'a obra nova aparece na grade');
   await a.selectOption('#al-quem', { label: 'Joe Foreman · usuário' }); await a.fill('#al-papel', 'Encarregado');
-  await a.click('[data-acao="cad-alocar"]'); await a.waitForTimeout(500);
+  await a.click('[data-acao="cad-alocar"]'); await a.waitForSelector('dialog.painel #equipe-obra li', { timeout: 5000 }).catch(() => null);
   const al = await gravou(a, 'alocacoes', 'insert');
   verificar(al.length === 1 && al[0].membro_id === 'm-joe' && al[0].papel === 'Encarregado', 'pessoa incluída na obra', al);
   verificar(await a.locator('#equipe-obra li').count() === 1, 'a equipe da obra mostra quem foi incluído');
@@ -142,7 +143,9 @@ try {
   await ir(a, '#/conta/funcionarios/novo', '#form-func');
   await a.fill('#ff-nome', 'Carlos Mendes'); await a.fill('#ff-funcao', 'Carpenter'); await a.fill('#ff-admissao', '2026-01-05'); await a.fill('#ff-valorHora', '32.5');
   await a.fill('input[name="cert-nome-0"]', 'OSHA 10'); await a.fill('input[name="cert-validade-0"]', '2027-01-01');
-  await a.click('[data-acao="cad-salvar-func"]'); await a.waitForSelector('#form-valor-hora', { timeout: 5000 }).catch(() => null);
+  await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('dialog.painel', { state: 'detached', timeout: 5000 }).catch(() => null);
+  verificar((await a.locator('tr[data-linha]').allInnerTexts()).some((t) => t.includes('Carlos Mendes')), 'o funcionário novo aparece na grade');
+  await a.click('a:has-text("Carlos Mendes")'); await a.waitForSelector('#form-valor-hora', { timeout: 5000 }).catch(() => null);
   const cf = (await gravou(a, 'rpc', 'criar_funcionario'))[0] || {};
   verificar(cf.p_valor === 32.5 && cf.p && cf.p.nome === 'Carlos Mendes' && cf.p.certificacoes.length === 1 && cf.p.desligamento === null, 'funcionário cadastrado com o valor da admissão e a certificação', cf);
   verificar((await a.locator('body').innerText()).includes('OSHA 10'), 'a página do funcionário mostra a certificação');
@@ -154,12 +157,12 @@ try {
   console.log('Regras');
   await ir(a, '#/conta/regras/encargos', '#form-encargos');
   verificar(await a.locator('#form-encargos input[name="nome-0"]').inputValue() !== '', 'a primeira versão dos encargos já vem preenchida com os comuns');
-  await a.fill('#enc-motivo', 'Tabela 2026'); await a.click('[data-acao="cad-salvar-encargos"]'); await a.waitForSelector('.lista-regras, .tabela', { timeout: 5000 }).catch(() => null);
+  await a.fill('#enc-motivo', 'Tabela 2026'); await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('dialog.painel', { state: 'detached', timeout: 5000 }).catch(() => null);
   const en = (await gravou(a, 'encargos_versoes', 'insert'))[0] || {};
   verificar(en.itens && en.itens.length === 5 && en.motivo === 'Tabela 2026', 'encargos gravados como versão', en);
   await ir(a, '#/conta/regras/jornada', '#form-regra');
   await a.click('[data-acao="settings-modelo"][data-modelo="diaria"]');
-  await a.fill('#rg-motivo', 'Regra inicial'); await a.click('[data-acao="cad-salvar-regra"]'); await a.waitForTimeout(600);
+  await a.fill('#rg-motivo', 'Regra inicial'); await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('dialog.painel', { state: 'detached', timeout: 5000 }).catch(() => null);
   const rg = (await gravou(a, 'regras_jornada_versoes', 'insert'))[0] || {};
   verificar(rg.diaria && rg.diaria.ativo === true && rg.semanal.limite === 40 && rg.motivo === 'Regra inicial', 'regra de jornada gravada a partir do modelo', rg);
   verificar(a.url().endsWith('#/conta/regras') && (await a.locator('body').innerText()).includes('Total sobre o salário'), 'a página de regras mostra a versão vigente');
@@ -169,7 +172,7 @@ try {
   await a.fill('#md-nome', 'Casa'); await a.fill('#md-linhas [name="etapaNome"]', 'Framing'); await a.fill('#md-linhas [name="etapaPct"]', '60');
   await a.click('[data-acao="modelo-nova-linha"]');
   await a.locator('#md-linhas [name="etapaNome"]').nth(1).fill('Siding'); await a.locator('#md-linhas [name="etapaPct"]').nth(1).fill('40');
-  await a.click('[data-acao="cad-salvar-modelo"]'); await a.waitForTimeout(500);
+  await a.click('dialog.painel [data-painel-salvar]'); await a.waitForSelector('dialog.painel', { state: 'detached', timeout: 5000 }).catch(() => null);
   const md = (await gravou(a, 'modelos_cronograma', 'insert'))[0] || {};
   verificar(md.nome === 'Casa' && md.etapas && md.etapas.length === 2 && md.etapas[1].pct === 40, 'modelo de etapas gravado', md);
 

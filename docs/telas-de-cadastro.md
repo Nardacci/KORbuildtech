@@ -18,7 +18,10 @@ Decisão do dono (05/11/2026): as telas de administração e cadastro não podem
 | **Settings › Funções** | grade (valor hora, custo da hora, funcionários, itens); painel com nome, situação, **histórico do valor hora** e "Novo valor hora" |
 | **Settings › Empresa e Meu perfil** | cabeçalho de página no mesmo estilo (continuam formulários de uma tela só) |
 | **Takeoff › Itens, Assemblies e Projetos** | mesma grade (cabeçalho, linhas, chips). O editor de item (histórico de preços) e o de assembly (linhas com fórmulas) continuam em página própria: são áreas de trabalho, não formulários curtos |
-| Funcionários, Obras (lista) | mesma grade; os formulários grandes continuam em página até o Crew chegar |
+| **Funcionários** | grade com busca e chips (Todos / Ativos / Desligados / Certificação a vencer); **Novo funcionário** e **Editar** em painel largo (identificação, contrato, certificações, privacidade). A página do funcionário (valor hora, histórico, certificações) continua, aberta pelo nome |
+| **Regras** (encargos e jornada) | cabeçalho com os dois botões ("Nova versão dos encargos", "Nova regra de jornada"), cada um num painel; as versões vigentes e o histórico continuam na página |
+| **Obras** | grade com busca e chips por situação; **Nova obra** e **Editar** em painel largo, com o mapa; depois de criar, o painel reabre com a equipe (incluir e tirar pessoas dentro do painel) |
+| **Obras › Modelos de etapas** | grade; **Novo modelo** e **Editar** em painel (etapas com a soma de 100%) |
 
 ## Regras de comportamento
 - O administrador cuida do cadastro de todas as pessoas e de todos os perfis. A própria pessoa muda só os dados pessoais, em "Meu perfil"; **nunca o próprio perfil nem as permissões** (regra do banco: ninguém altera o próprio acesso).
@@ -39,3 +42,7 @@ Monte com `cabecalhoDePagina`, `barraDeBusca`, `gradeEmCartao` e `atributosDeLin
 ## Pendente
 - Opção "é funcionário" (ponto e valor hora) na mesma tela de Pessoas, junto com o Crew.
 - Editor de itens e de assemblies em painel, se o uso mostrar que vale.
+- O protótipo local (`?demo`, `js/settings-telas.js` e `js/obras-telas.js`) ainda tem os formulários em página: fica assim enquanto for só demonstração.
+
+## Botões dentro do painel (07/11/2026)
+O painel é anexado ao `<body>`, fora do `#app`. O despacho dos botões com `data-acao` dentro dele é feito por um ouvinte próprio em `js/app.js`; sem ele, "Incluir na obra", o modelo da regra de jornada e o "Copiar endereço, e-mail e senha" não faziam nada.

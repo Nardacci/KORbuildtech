@@ -1836,6 +1836,16 @@ app.addEventListener('click', (ev) => {
   if (fn) fn(el, ev);
 });
 
+/* Os painéis laterais (abrirPainel) ficam no <body>, fora do #app: os botões com data-acao de dentro deles (incluir na equipe, modelo da regra, copiar a senha…) precisam do mesmo despacho. */
+document.addEventListener('click', (ev) => {
+  const painel = ev.target.closest && ev.target.closest('dialog.painel');
+  if (!painel) return;
+  const el = ev.target.closest('[data-acao]');
+  if (!el || el.disabled) return;
+  const fn = acoes[el.dataset.acao];
+  if (fn) fn(el, ev);
+});
+
 function fazerLogin(u) {
   u.ultimoAcesso = Date.now();
   salvar();

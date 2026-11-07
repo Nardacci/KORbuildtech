@@ -157,6 +157,9 @@ try {
     const senha = await p.inputValue('.senha-provisoria');
     verificar(/^[A-Za-z2-9]{4}-[A-Za-z2-9]{4}-[A-Za-z2-9]{4}$/.test(senha), 'a senha provisória aparece uma vez, em três grupos de quatro, sem caracteres que se confundem', senha.replace(/./g, '*'));
     verificar(await p.locator('dialog.painel', { hasText: HEITOR.email }).count() === 1 && /só agora/.test(await texto(p, 'dialog.painel')), 'o painel mostra o e-mail e avisa que a senha aparece só agora');
+    await p.click('dialog.painel [data-acao="of-copiar-texto"]');
+    await p.waitForFunction(() => /Copiado|Selecione o texto/.test((document.getElementById('toast') || {}).textContent || ''), null, { timeout: 5000 }).catch(() => null);
+    verificar(/Copiado|Selecione o texto/.test(await texto(p, '#toast')), 'o botão "Copiar endereço, e-mail e senha" funciona dentro do painel', await texto(p, '#toast'));
     await p.click('dialog.painel [data-painel-fechar]');
     const [m] = await sql(`select m.id, m.cargo, m.telefone, m.ativo, pa.chave from public.membros m join auth.users u on u.id = m.user_id join public.perfis_acesso pa on pa.id = m.perfil_id where u.email = '${HEITOR.email}' and m.empresa_id = '${empresaId}'`);
     verificar(m && m.ativo && m.chave === 'encarregado' && m.cargo === 'Encarregado de obra' && m.telefone === '(603) 555-0180', 'no banco: membro ativo com o perfil Encarregado, cargo e telefone', m);
