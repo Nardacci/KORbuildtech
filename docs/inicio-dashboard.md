@@ -1,4 +1,35 @@
-# Início da 1ª versão: o painel
+# Início da 1ª versão: o painel (limpo e objetivo)
+
+**Princípio (08/11/2026):** o Início é limpo e objetivo, feito para apresentar. Só o principal fica à vista; o resto fica recolhido e só aparece quando tem o que mostrar. Nenhum número é calculado duas vezes: cada um vem da mesma função que a tela de origem usa, para o Início, o Gantt e o Daily nunca divergirem.
+
+## O que fica à vista
+| Bloco | O que mostra | Fonte (função única) |
+|---|---|---|
+| **Precisa de você agora** | Só o que tem pendência, em cartões que abrem o item (ex.: o diário a revisar). Sem pendência: uma linha, "Tudo em dia por aqui". | `blocoAcao` em `js/inicio-calculo.js`; os diários vêm do resumo do Daily |
+| **Andamento dos projetos** | Por projeto: situação, barra do % feito contra o previsto, a tarefa mais atrasada e, quando o projeto tem medição, **Valor: feito de total** e **Horas: apontadas de orçadas**. | % do cronograma: `andamentoDoCronograma` (`js/andamento.js`); valor e horas: `valorDasTarefas`, `curvaS` e `horasApontadas` (`js/valor-cronograma.js`), as mesmas do Gantt |
+| **Diário de obra** | Diários de hoje (enviados / projetos), aguardando aprovação, projetos com diário atrasado. | `resumoDoDaily` em `js/app.js`, a mesma conta do painel do Daily |
+| **Dinheiro em jogo** | Propostas abertas e ganho no ano. Taxa de acerto e ticket médio só aparecem quando há projeto decidido. | `blocoProjetos` |
+| **Projetos por status** | A rosca com os cinco status. | `blocoProjetos` |
+
+## O que fica recolhido ("Mais indicadores")
+Cotações de material, concorrências, parceiras, catálogo e preços, prazo das obras. Cada um só entra se tem dado: o bloco que só diria "ainda não há nada" não aparece.
+
+## Como ler o % feito (duas medidas, nomes diferentes)
+- **% feito do projeto (barra)**: peso = dias de cada tarefa. Existe para todo projeto com cronograma. Ex.: tarefas de 3, 5 e 4 dias, a de 5 dias a 60% → 25% feito.
+- **Valor feito**: peso = quanto cada tarefa vale pela medição do Takeoff. Só existe quando o projeto tem medição ligada às tarefas (as etapas do cronograma batem com as dos itens). É o "Feito até hoje" do Gantt.
+- "Andamento" é só a execução da obra. A montagem do orçamento (plantas, escala, medição, proposta) passou a se chamar **Preparo**, para as duas palavras não se confundirem.
+
+## Quem vê o quê
+O bloco do Daily e os cartões do diário aparecem para quem pode aprovar ou acompanhar diários (`daily.aprovar` ou `daily.acompanhar`). Dinheiro, catálogo e preços seguem as permissões do Takeoff. Quem só responde convites vê só o que lhe cabe.
+
+## Testes
+- `tests/inicio-primeira-versao.test.mjs`: o cálculo sozinho (cartões do diário, valor e horas do Gantt, permissões) e o painel por perfil e idioma.
+- `tests/fluxo-03-obra-diario-gantt.test.mjs`: **conciliação Início × Daily × cronograma** no banco: antes de aprovar o Início tem 1 diário esperando, igual ao painel do Daily, e o cartão abre o diário; depois de aprovar, zero; o % feito do Início é o do cronograma (25%).
+
+
+---
+
+## Referência (desenho de 05/11/2026, ainda vale para o cálculo e o layout)
 
 O Início da conta (`#/conta`) deixa de ser dois cartões com botão e passa a mostrar o que importa a quem gerencia a empresa. Só dados que já existem; **nenhuma mudança no banco**.
 

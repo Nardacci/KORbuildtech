@@ -100,6 +100,15 @@ try {
     // na conta real o sininho traz só avisos do servidor (avisos-oficial.js); o lembrete de tarefa atrasada é do relógio e só existe no protótipo.
     // O atraso aparece no Início. Pendência de decisão registrada no relatório da rodada.
     verificar(/Demolição e remoção/.test(t) || /Atrasado/i.test(t), 'o Início aponta a tarefa atrasada', t.slice(0, 300));
+    // conciliação Daily × Início: o Início mostra o mesmo que o painel do Daily acabou de mostrar (1 diário esperando)
+    await irPara(fab.p, '#/conta', '.ini-painel', 60000);
+    await fab.p.waitForSelector('.ini-diario', { timeout: 30000 });
+    const ini = await texto(fab.p, '.ini-painel');
+    verificar(/1\s*Diário para aprovar/.test(ini) || /1\s*Report to approve/.test(ini), 'o Início tem o cartão "Diário para aprovar" com 1, como o painel do Daily', ini.slice(0, 300));
+    verificar(/1\s*Aguardando aprovação/.test(await texto(fab.p, ".ini-diario")), 'o bloco "Diário de obra" do Início mostra 1 aguardando aprovação', await texto(fab.p, '.ini-diario'));
+    verificar(await fab.p.locator('.ini-acao[href*="/daily/painel/rdo/"]').count() === 1, 'o cartão leva direto ao diário a revisar');
+    await irPara(fab.p, '#/daily/painel', 'main .kpis');   // o passo seguinte revisa o diário a partir do painel do Daily
+    await fab.p.waitForTimeout(1200);
   });
 
   await fluxo.passo(7, async () => {
@@ -154,6 +163,9 @@ try {
     await fab.p.waitForTimeout(800);
     const t = await texto(fab.p, '.ini-painel');
     verificar(/Andamento dos projetos/.test(t) && t.includes(NOME) && /Atrasado/i.test(t), '"Andamento dos projetos" mostra "Reforma Mitchell" atrasada', t.slice(0, 400));
+    // conciliação Daily × Gantt × Início depois de aprovar: nada esperando; o % feito do projeto é o peso dos dias das tarefas (3 d a 0%, 5 d a 60%, 4 d a 0% = 25%)
+    verificar(/0\s*Aguardando aprovação/.test(await texto(fab.p, ".ini-diario")) && !(await fab.p.locator('.ini-acao[href*="/daily/painel/rdo/"]').count()), 'depois de aprovar, o Início não tem diário esperando (igual ao painel do Daily)', await texto(fab.p, '.ini-diario'));
+    verificar(/25% feito/.test(t), 'o Início mostra 25% feito (a mesma conta do cronograma: 60% da tarefa de 5 dias entre 12 dias de tarefas)', t.slice(0, 400));
     // Na conta real o sininho traz só avisos do servidor; o lembrete "Tarefa atrasada" é do relógio e só existe no protótipo (pendência de decisão no relatório).
   });
 

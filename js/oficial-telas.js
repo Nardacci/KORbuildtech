@@ -19,6 +19,7 @@ import { esquecer as esquecerCadastros } from './cadastros.js';
 import { espelho } from './espelho.js';
 import { estado, bancoDeDados } from './armazem.js';
 import { calcularInicio } from './inicio-calculo.js';
+import { valorDasTarefas, curvaS, horasApontadas, baseEscolhida } from './valor-cronograma.js';
 import { htmlPainelInicio } from './inicio-dashboard.js';
 import { listaDeCotacao } from './measure-relatorios.js';
 import { htmlAvisoInstalar } from './instalar.js';
@@ -35,6 +36,10 @@ const descricaoDoPerfil = (p) => (p && p.descricao ? (p.chave ? tr(p.descricao) 
  * mexeu não o vê apagado. As ações da própria pessoa chamam redesenhar() direto e não passam por aqui; as telas de entrada
  * (login, cadastro) ficam de fora, porque precisam trocar de tela quando a sessão muda. */
 const formularioEmEdicao = () => !!(conta.membro && location.hash.startsWith('#/conta') && document.querySelector('#app form[data-sujo]'));
+/* O Daily é de app.js (que importa este arquivo): ele entrega aqui a função que resume os diários, para o Início usar os mesmos números do Daily. */
+let resumoDoDaily = () => null;
+export function ligarDailyNoInicio(fn) { resumoDoDaily = fn; }
+
 export function ligarOficial(fn) { redesenhar = fn; aoMudar(() => { if (!formularioEmEdicao()) redesenhar(); }); ligarCadastros({ redesenhar: () => redesenhar(), ir: (h) => ir(h) }); }
 
 const CONVITE = 'kbt.convite';
@@ -222,9 +227,21 @@ export const temPainelDoInicio = () => PRIMEIRA_VERSAO && !!conta.membro && (pod
 export const espelhoProntoParaOInicio = () => !!(espelho.pronto && estado() && estado().oficial && conta.empresa && estado().empresa.id === conta.empresa.id);
 function htmlPainel(cabeca, rodape) {
   const medir = pode('measure.medir');
-  const ver = { medir, dinheiro: medir && (pode('measure.catalogo') || pode('crew.custos')), concorrenciasEnviadas: pode('concorrencias.gerir'), concorrenciasRecebidas: pode('concorrencias.responder'), obras: !PRIMEIRA_VERSAO && (pode('settings.obras') || medir), semObra: PRIMEIRA_VERSAO };
+  const ver = { diario: pode('daily.aprovar') || pode('daily.acompanhar'), medir, dinheiro: medir && (pode('measure.catalogo') || pode('crew.custos')), concorrenciasEnviadas: pode('concorrencias.gerir'), concorrenciasRecebidas: pode('concorrencias.responder'), obras: !PRIMEIRA_VERSAO && (pode('settings.obras') || medir), semObra: PRIMEIRA_VERSAO };
   const dados = { ...estado(), concorrencias: (bancoDeDados() || {}).concorrencias || [] };   // as concorrências ficam fora das empresas, numa lista só
-  const calc = calcularInicio(dados, { eu: conta.empresa.id, agora: Date.now(), ver, itensDaLista: (id) => { try { return listaDeCotacao(id).total; } catch { return 0; } } });
+  // o valor e as horas de cada projeto vêm das mesmas funções do Gantt (js/valor-cronograma.js): o Início e o Gantt não podem mostrar números diferentes
+  const valorDoProjeto = (p) => {
+    try {
+      const tarefas = ((p.cronograma || {}).tarefas || []).filter((t) => t.inicio);
+      if (!tarefas.length) return null;
+      const v = valorDasTarefas(p), c = curvaS(tarefas, v, baseEscolhida());
+      if (!(c.total > 0)) return null;
+      const apontadas = [...horasApontadas(p).values()].reduce((s, x) => s + x.horas, 0);
+      return { total: c.total, previsto: c.previstoHoje, feito: c.feitoHoje, horasOrcadas: v.total.horas, horasApontadas: Math.round(apontadas * 100) / 100 };
+    } catch { return null; }
+  };
+  let diario = null; try { diario = ver.diario ? resumoDoDaily() : null; } catch { diario = null; }
+  const calc = calcularInicio(dados, { eu: conta.empresa.id, agora: Date.now(), ver, diario, valorDoProjeto, itensDaLista: (id) => { try { return listaDeCotacao(id).total; } catch { return 0; } } });
   return htmlPainelInicio(calc, { ver, cabeca, rodape });
 }
 function htmlInicioComPainel() {

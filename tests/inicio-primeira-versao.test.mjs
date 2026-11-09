@@ -43,6 +43,16 @@ const verificar = (nome, cond, detalhe = '') => { if (cond) ok++; else { falhas+
   verificar('calc: prazo: a obra atrasada vem primeiro, 10 dias de atraso; a concluída não entra', r.prazos.length === 2 && r.prazos[0].atrasada && r.prazos[0].restantes === -10 && r.prazos[1].pct === 50, JSON.stringify(r.prazos));
   verificar('calc: preços: só o item de janeiro passa de 90 dias; margem 16%', r.precos.semPrecoNovo === 1 && r.precos.lista[0].nome === 'Velho' && r.precos.margem.total === 16, JSON.stringify(r.precos));
   verificar('calc: parceiras com a obra em comum e dias restantes', r.parceiras.length === 2 && r.parceiras[0].obras[0] === 'Obra' && r.parceiras[0].restantes === 30, JSON.stringify(r.parceiras));
+  // diário (Daily) e valor/horas do Gantt entram no Início pelos mesmos resumos das outras telas
+  d.measure.projetos[2].cronograma = { tarefas: [{ id: 't1', nome: 'Drywall', inicio: '2026-10-15', dias: 10, pct: 50 }] };
+  const diario = { total: 2, deHoje: 1, fotosHoje: 3, atrasadas: 1, atrasadasLista: [{ nome: 'B', texto: '1 dia de atraso', href: '#/daily/obras/o2' }], aguardando: [{ id: 'r1', numero: 7, projeto: 'C', data: '2026-10-19', href: '#/daily/painel/rdo/r1' }] };
+  const valorDoProjeto = (p) => (p.id === 'p3' ? { total: 1000, previsto: 400, feito: 300, horasOrcadas: 20, horasApontadas: 24 } : null);
+  const com = calcularInicio(d, { eu: 'E', agora, hoje: '2026-10-19', ver: { ...ver, diario: true }, diario, valorDoProjeto, itensDaLista: () => 0 });
+  verificar('calc: o diário esperando aprovação vira cartão de ação que abre o próprio RDO', com.acao.some((c) => c.id === 'diarios' && c.n === 1 && c.href === '#/daily/painel/rdo/r1'), JSON.stringify(com.acao));
+  verificar('calc: projeto com diário atrasado vira cartão de ação', com.acao.some((c) => c.id === 'diarioatrasado' && c.n === 1));
+  verificar('calc: o bloco do diário traz os números do resumo do Daily, sem recalcular', com.diario.deHoje === 1 && com.diario.total === 2 && com.diario.nAguardando === 1 && com.diario.atrasadas === 1, JSON.stringify(com.diario));
+  verificar('calc: valor e horas do projeto são os do Gantt (função única), no andamento', (com.andamento.lista.find((x) => x.id === 'p3') || {}).valor.feito === 300 && com.andamento.lista.find((x) => x.id === 'p3').valor.horasApontadas === 24);
+  verificar('calc: sem permissão do Daily não há bloco nem cartões do diário', calcularInicio(d, { eu: 'E', agora, hoje: '2026-10-19', ver, diario, itensDaLista: () => 0 }).diario === null && !calcularInicio(d, { eu: 'E', agora, hoje: '2026-10-19', ver, diario, itensDaLista: () => 0 }).acao.some((c) => c.id === 'diarios'));
   const sem = calcularInicio(d, { eu: 'E', agora, hoje: '2026-10-19', ver: { ...ver, dinheiro: false }, itensDaLista: () => 0 });
   verificar('calc: sem permissão de dinheiro não há valores', sem.projetos.dinheiro === undefined);
   const so = calcularInicio(d, { eu: 'E', agora, hoje: '2026-10-19', ver: { medir: false, dinheiro: false, concorrenciasEnviadas: false, concorrenciasRecebidas: true, obras: false }, itensDaLista: () => 0 });
@@ -69,6 +79,9 @@ async function painel(chave, papel, idioma) {
   const a = await abrir(chave, papel, idioma);
   await a.p.waitForSelector('.ini-painel, .oficial-titulo', { timeout: 40000 });
   await a.p.waitForTimeout(500);
+  // o Início é limpo: os indicadores secundários ficam recolhidos em "Mais indicadores"; o teste os abre para ler os números
+  a.recolhido = await a.p.locator('details.ini-mais:not([open])').count();
+  await a.p.evaluate(() => document.querySelectorAll('details.ini-mais').forEach((d) => { d.open = true; }));
   return a;
 }
 const acao = async (p, id) => (await p.locator('.ini-acao').allInnerTexts()).map((t) => t.replace(/\s+/g, ' '));
@@ -76,8 +89,9 @@ const acao = async (p, id) => (await p.locator('.ini-acao').allInnerTexts()).map
 try {
   console.log('Construtora (pv.c1.admin): concorrências enviadas e recebidas, projeto do Measure');
   {
-    const { ctx, p } = await painel('c1', 'admin');
+    const a0 = await painel('c1', 'admin'); const { ctx, p } = a0;
     verificar('o painel aparece', await p.locator('.ini-painel').count() === 1);
+    verificar('os indicadores secundários vêm recolhidos (Início limpo)', await p.locator('details.ini-mais').count() === 1 && a0.recolhido === 1);
     const t = await texto(p);
     const cards = await acao(p);
     verificar('3 propostas recebidas para comparar (2 das janelas + 1 do aço)', cards.some((c) => /^3\b.*Propostas recebidas/.test(c)), cards.join(' | '));

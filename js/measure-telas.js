@@ -146,7 +146,7 @@ function telaProjetos() {
     ativo: 'projetos', largura: 'larga', titulo: tr('Projetos'), subtitulo: tr('Orçamentos em andamento e propostas já enviadas'),
     acoes: '<a class="btn btn-primario btn-pequeno" href="#/measure/projeto/novo">' + icone('mais', 16) + (tr('Novo projeto') + '</a>'),
     conteudo: barraDeBusca(tr('Buscar projetos…'), chips) +
-      gradeEmCartao('tabela-projetos', [tr('Projeto'), tr('Prazo da proposta'), tr('Andamento'), [tr('Proposta'), 'num'], tr('Estimador'), tr('Situação'), ''], linhas, lista.length ? tr('Nenhum projeto com esses filtros.') : tr('Nenhum projeto cadastrado. Use "Novo projeto".')),
+      gradeEmCartao('tabela-projetos', [tr('Projeto'), tr('Prazo da proposta'), tr('Preparo'), [tr('Proposta'), 'num'], tr('Estimador'), tr('Situação'), ''], linhas, lista.length ? tr('Nenhum projeto com esses filtros.') : tr('Nenhum projeto cadastrado. Use "Novo projeto".')),
   });
 }
 

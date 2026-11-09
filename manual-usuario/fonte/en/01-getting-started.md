@@ -22,7 +22,12 @@ After signing in for the first time, the **Your company** screen asks for the co
 
 ## Home
 
-When you sign in, **Home** shows what needs your attention: projects, deadlines and daily reports awaiting approval.
+When you sign in, **Home** shows the essentials, nothing more:
+
+- **Needs you now:** only what is pending (for example, a daily report waiting for your review). Each card opens the item. With nothing pending, it says "All caught up here".
+- **Project progress:** each project with the bar of what is done against what should be done today, and the latest task. When the project has measurements, it also shows the value done and the hours.
+- **Daily report, Money in play and Projects by status:** three cards with the main numbers.
+- **More indicators:** whatever is left (quotes, catalog and prices…) stays collapsed and only appears when there is something to show.
 
 ![Home](img:inicio)
 

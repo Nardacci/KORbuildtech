@@ -2,6 +2,17 @@
 
 Protótipo de validação da plataforma KORbuild (veja o README). Site estático, sem build: HTML, CSS e módulos JS em `js/`.
 
+## Regra de ouro: mudou a tela, o layout, o processo ou a regra, mude tudo junto
+
+Toda alteração em páginas, layout, processo ou regra de negócio só está pronta quando **todos** estes itens também foram atualizados, na mesma entrega:
+1. **O protótipo** (`?demo`: `js/settings-telas.js`, `js/obras-telas.js` e o que for só dele) e a conta real. Telas compartilhadas já valem para os dois; as que existem duplicadas (Settings, Obras) mudam as duas.
+2. **Os documentos**: o `docs/` do assunto (ex.: `docs/telas-de-cadastro.md`, `docs/padrao-de-telas.md`, `docs/inicio-dashboard.md`), a regra de negócio e este `CLAUDE.md` quando o assunto for geral.
+3. **O guia do portal**: `portal/fonte/{pt,en}/` e `portal/fonte-measure/{pt,en}/` (as duas línguas juntas); depois `python3 tools/gerar_portal.py` (e `--edicao=measure`).
+4. **O manual do usuário**: `manual-usuario/fonte/{pt,en}/`, as capturas (`node tools/manual-capturas.mjs`) e os PDFs (`node tools/gerar-manual.mjs`).
+5. **Os testes**, e o inglês (`node tools/i18n-faltando.mjs` precisa dar 0).
+6. **O padrão de telas** (`docs/padrao-de-telas.md`): a mesma coisa se faz do mesmo jeito em todo o sistema; `node tests/padrao-telas.test.mjs` acusa desvio.
+Se algum item não puder ser feito na hora, diga qual ficou de fora e por quê, e deixe registrado em `docs/pendencias-de-padrao.md`. Nunca entregue só o código.
+
 ## Mercado: Estados Unidos
 
 - **O produto é feito para o mercado americano** (pelo menos neste momento). Regras de negócio, legislação (FLSA, leis estaduais, OSHA, Davis-Bacon), unidades, formatos e integrações seguem os EUA.
@@ -70,6 +81,7 @@ Ao mudar arquivos do app, suba a versão do cache em `sw.js` (`korbuild-rdo-vN`)
 - O que decide é `js/versao.js`: valem o domínio de produção e a homologação (`nardacci.github.io`), onde a 1ª versão é o padrão e não precisa de parâmetro (`?versao=completa` mostra o app inteiro e fica guardado no navegador; `?versao=primeira` volta). Em qualquer outro endereço, como o localhost, a 1ª versão só vale com `?versao=primeira`. Só esconde telas; banco, regras de acesso e testes são os mesmos. O protótipo não foi alterado.
 - Documentação da 1ª versão: `python3 tools/gerar_portal.py --edicao=measure` gera `portal-measure/` (só Measure Takeoff e Settings; textos próprios em `portal/fonte-measure/`). `node tools/gerar-producao.mjs` monta `producao/` (o que vai para o domínio). Passo a passo e pendências: `docs/lancamento-measure.md`.
 - Testes: `tests/primeira-versao.test.mjs` (banco local) e `tests/producao.test.mjs` (a pasta `producao/`).
+- **Início (dashboard)** (`docs/inicio-dashboard.md`): limpo e objetivo, só o principal à vista; cada número vem da mesma função da tela de origem (Gantt, Daily), nunca recalculado. Conciliação testada no F03.
 - **Padrão de telas e de comportamentos** (`docs/padrao-de-telas.md`): a mesma coisa se faz do mesmo jeito em todo o sistema (lista, painel, formulário, erros, confirmações). Mudou o padrão, mude todas as telas. `node tests/padrao-telas.test.mjs` acusa desvio. Erro de gravação: `avisarErro` (`js/util.js`); busca e filtros de grade: `js/padrao-cadastro.js`.
 - **Manual do usuário** (PDF em português e inglês, para baixar no menu da conta depois do login): texto em `manual-usuario/fonte/{pt,en}/`, capturas em `manual-usuario/evidencias/` (`node tools/manual-capturas.mjs`) e PDFs em `manual/` (`node tools/gerar-manual.mjs`). Como refazer: `docs/manual-usuario.md`.
 - **Testes por fluxo** (F01 a F05, roteiros em `docs/testes/fluxos/`, um teste por fluxo, `--real` roda no Supabase do `js/config.js`; registro de cada rodada em `docs/testes/rodadas/`). **Gantt físico-financeiro** (valor por tarefa, curva S, horas do diário, custo real do Crew): `docs/gantt-financeiro.md`, testes `gantt-valor`, `gantt-horas` e `gantt-real`. **Telas de cadastro** (Usuários, Perfis de acesso, Contatos, Funções…): sempre no mesmo padrão (cabeçalho com ação, busca e chips, grade, painel lateral): `docs/telas-de-cadastro.md`, `js/padrao-cadastro.js`. **Massa de homologação em volume** (`tools/massa-homologacao.mjs`, guia `docs/massa-homologacao.md`; confere com `tests/homologacao-hom.test.mjs`) e **estresse do Takeoff** (`tests/estresse-takeoff.test.mjs`, `docs/testes/estresse.md`). **Período de teste:** o aviso de fim de teste está desligado por `CONTROLE_DE_TESTE = false` em `js/plataforma.js`; a suspensão manual segue valendo.

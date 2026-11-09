@@ -140,6 +140,10 @@ function blocoAcao(d, ctx, projetos, cotacoes) {
     const prazoMs = (c) => (c.prazo ? new Date(c.prazo).getTime() : Infinity);
     cards.push({ id: 'convites', n: rec.length, vencem: rec.filter((c) => prazoMs(c) - agoraMs <= 3 * DIA).length, href: '#/measure/convites' });
   }
+  if (ctx.ver.diario && ctx.diario) {
+    cards.push({ id: 'diarios', n: ctx.diario.aguardando.length, href: ctx.diario.aguardando.length === 1 ? ctx.diario.aguardando[0].href : '#/daily/aprovacoes' });
+    cards.push({ id: 'diarioatrasado', n: ctx.diario.atrasadas, href: '#/daily/painel' });
+  }
   if (cotacoes) cards.push({ id: 'cotacoes', n: cotacoes.semRetorno, href: cotacoes.primeiroSemRetorno ? '#/measure/projeto/' + cotacoes.primeiroSemRetorno + '/cotacao' : '#/measure' });
   if (projetos && projetos.ganhosSemObra) cards.push({ id: 'ganhos', n: projetos.ganhosSemObra, href: '#/measure' });
   return cards;
@@ -190,7 +194,7 @@ function blocoPrecos(d, ctx) {
 /* Andamento dos projetos com cronograma (perdidos de fora): os atrasados primeiro. */
 function blocoAndamento(d, ctx) {
   const projetos = ((d.measure && d.measure.projetos) || []).filter((p) => p.situacao !== 'perdida');
-  const lista = projetos.map((p) => ({ id: p.id, nome: p.nome, ganho: p.situacao === 'ganha', ...andamentoDoCronograma(p.cronograma, ctx.hoje) }))
+  const lista = projetos.map((p) => ({ id: p.id, nome: p.nome, ganho: p.situacao === 'ganha', valor: ctx.valorDoProjeto ? ctx.valorDoProjeto(p) : null, ...andamentoDoCronograma(p.cronograma, ctx.hoje) }))
     .filter((x) => x.tarefas > 0)
     .sort((a, b) => ORDEM_SITUACAO[a.situacao] - ORDEM_SITUACAO[b.situacao] || (a.fim || '').localeCompare(b.fim || ''))
     .map((x) => ({ ...x, atrasadas: x.atrasadas.length, maisAtrasada: x.atrasadas.slice().sort((a, b) => b.diasAtraso - a.diasAtraso)[0] || null }));
@@ -199,7 +203,14 @@ function blocoAndamento(d, ctx) {
     semCronograma: projetos.filter((p) => p.situacao === 'ganha' && !lista.some((x) => x.id === p.id)).length };
 }
 
-/* ctx: { eu, agora (ms), hoje ('AAAA-MM-DD'), ver: { medir, dinheiro, concorrenciasEnviadas, concorrenciasRecebidas, obras }, itensDaLista(projetoId) } */
+/* Diário de obra (Daily): o que chegou, o que espera aprovação e quem está atrasado. Os números vêm do mesmo resumo do painel do Daily (ctx.diario). */
+function blocoDiario(d, ctx) {
+  const x = ctx.diario;
+  if (!x) return null;
+  return { total: x.total, deHoje: x.deHoje, fotosHoje: x.fotosHoje, atrasadas: x.atrasadas, atrasadasLista: x.atrasadasLista || [], nAguardando: x.aguardando.length, aguardando: x.aguardando.slice(0, 4) };
+}
+
+/* ctx: { eu, agora (ms), hoje ('AAAA-MM-DD'), diario (resumo do Daily), valorDoProjeto(p) (valor e horas do Gantt), ver: { diario, medir, dinheiro, concorrenciasEnviadas, concorrenciasRecebidas, obras }, itensDaLista(projetoId) } */
 export function calcularInicio(d, ctx) {
   const c = { ...ctx, hoje: ctx.hoje || isoDe(new Date(ctx.agora)), agora: ctx.agora || Date.now() };
   const projetos = c.ver.medir ? blocoProjetos(d, c) : null;
@@ -209,6 +220,7 @@ export function calcularInicio(d, ctx) {
     acao: blocoAcao(d, c, projetos, cotacoes),
     projetos, cotacoes, concorrencias,
     andamento: c.ver.medir ? blocoAndamento(d, c) : null,
+    diario: c.ver.diario ? blocoDiario(d, c) : null,
     prazos: !c.ver.semObra && (c.ver.obras || c.ver.medir) ? blocoPrazos(d, c) : null,
     parceiras: c.ver.concorrenciasEnviadas ? blocoParceiras(d, c) : null,
     precos: c.ver.medir ? blocoPrecos(d, c) : null,

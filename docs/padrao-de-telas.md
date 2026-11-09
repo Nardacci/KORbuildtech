@@ -57,5 +57,8 @@ Seções em cartão; no fim, o **rodapé do formulário** (`.rodape-form`): bot�
 | Cronograma grava sozinho sem avisar | Etiqueta "Salva na hora" |
 | "Cadastrar funcionário" no lugar de "Criar …" | "Criar funcionário" |
 
-## 8. Criar uma tela nova
+## 8. Manutenção: mudou aqui, mude em todo lugar
+Qualquer mudança de tela, layout, processo ou regra atualiza **na mesma entrega** o protótipo, os documentos, o guia do portal, o manual do usuário (texto, capturas e PDFs) e os testes. A lista completa está em `CLAUDE.md` ("Regra de ouro"). Pendência que não coube na entrega vai para `docs/pendencias-de-padrao.md`.
+
+## 9. Criar uma tela nova
 Monte a lista com `cabecalhoDePagina`, `barraDeBusca`, `gradeEmCartao` e `atributosDeLinha`; abra a edição com `abrirPainel`; mostre erros com `avisarErro`; peça `confirmar` antes de apagar. Rode `node tests/padrao-telas.test.mjs`.

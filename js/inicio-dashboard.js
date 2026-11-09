@@ -29,9 +29,13 @@ function htmlAcao(cards) {
     convites: (c) => ({ n: c.n, titulo: tn(c.n, 'Convite para responder', 'Convites para responder'), nota: c.vencem ? tn(c.vencem, '{n} vence em 3 dias', '{n} vencem em 3 dias') : tr('Nenhum vence em 3 dias'), cor: 'b' }),
     rascunhos: (c) => ({ n: c.n, titulo: tn(c.n, 'Rascunho de concorrência', 'Rascunhos de concorrência'), nota: tr('Parados há mais de 7 dias'), cor: 'c' }),
     cotacoes: (c) => ({ n: c.n, titulo: tn(c.n, 'Cotação de material', 'Cotações de material'), nota: tr('Sem retorno do fornecedor'), cor: 'd' }),
+    diarios: (c) => ({ n: c.n, titulo: tn(c.n, 'Diário para aprovar', 'Diários para aprovar'), nota: tr('Esperando a sua revisão'), cor: 'a' }),
+    diarioatrasado: (c) => ({ n: c.n, titulo: tn(c.n, 'Projeto com diário atrasado', 'Projetos com diário atrasado'), nota: tr('O campo ainda não enviou'), cor: 'c' }),
     ganhos: (c) => ({ n: c.n, titulo: tn(c.n, 'Projeto ganho sem obra', 'Projetos ganhos sem obra'), nota: tr('Crie a obra para acompanhar'), cor: 'e' }),
   };
-  const itens = cards.map((c) => {
+  const pendentes = cards.filter((c) => c.n);
+  if (!pendentes.length) return '<section class="ini-bloco ini-acao-bloco ini-acao-ok"><header class="ini-cab"><div><h2 class="ini-titulo">' + icone('sino', 22) + ' ' + tr('Tudo em dia por aqui') + '</h2><p class="ini-sub">' + tr('Nada precisa da sua atenção agora.') + '</p></div></header></section>';
+  const itens = pendentes.map((c) => {
     const t = textos[c.id](c);
     return '<a class="ini-acao ini-acao-' + t.cor + (c.n ? '' : ' ini-acao-vazio') + '" href="' + c.href + '"><b class="ini-acao-n">' + t.n + '</b><span class="ini-acao-txt"><b>' + t.titulo + '</b><span>' + (c.n ? t.nota : tr('Nada pendente')) + '</span></span>' + icone('seta', 16) + '</a>';
   }).join('');
@@ -64,8 +68,8 @@ function htmlDinheiro(p) {
   if (!p || !p.dinheiro) return '';
   const x = p.dinheiro;
   const kpis = '<div class="ini-kpis">' + kpi(usd(x.abertas), tr('Propostas abertas'), tn(x.nAbertas, '{n} proposta', '{n} propostas')) + kpi(usd(x.ganhoNoAno), tr('Ganho no ano'), tn(x.nGanhosNoAno, '{n} projeto', '{n} projetos')) +
-    kpi(x.taxaDeAcerto == null ? '—' : x.taxaDeAcerto + '%', tr('Taxa de acerto'), x.decididos ? tr('{g} de {d} decididos', { g: x.nGanhos, d: x.decididos }) : tr('Sem projeto decidido')) +
-    kpi(x.ticketMedio == null ? '—' : usd(x.ticketMedio), tr('Ticket médio'), tr('Projetos ganhos')) + '</div>';
+    (x.decididos ? kpi(x.taxaDeAcerto + '%', tr('Taxa de acerto'), tr('{g} de {d} decididos', { g: x.nGanhos, d: x.decididos })) : '') +   // sem projeto decidido, nada de número vazio
+    (x.ticketMedio != null ? kpi(usd(x.ticketMedio), tr('Ticket médio'), tr('Projetos ganhos')) : '') + '</div>';
   const contratantes = x.porContratante.length
     ? '<h3 class="ini-sub-titulo">' + tr('Valor das propostas por contratante') + '</h3><ul class="ini-ranking">' + x.porContratante.map((c) => '<li><span class="ini-rk-nome">' + esc(c.nome === 'Outros' ? tr('Outros') : c.nome) + '</span>' + barra(c.pct) + '<span class="ini-rk-pct">' + c.pct + '%</span><b>' + usd(c.valor) + '</b></li>').join('') + '</ul>'
     : '<p class="ini-vazio">' + tr('As propostas emitidas aparecem aqui.') + '</p>';
@@ -139,6 +143,19 @@ function htmlPrecos(p, dinheiro) {
 }
 
 /* calc: o que calcularInicio() devolveu; o: { ver } */
+/* Valor e horas do projeto: os mesmos números do Gantt (Valor por tarefa e Horas orçadas × apontadas). O % da barra é do cronograma (peso = dias da tarefa); o do valor é do que a medição diz que cada tarefa vale. */
+const linhaDeValor = (v) => !v ? '' : '<span class="ini-and-valor">' + tr('Valor: {feito} de {total} ({pct}%)', { feito: usd(v.feito), total: usd(v.total), pct: v.total ? Math.round(v.feito * 100 / v.total) : 0 }) +
+  (v.horasOrcadas ? ' · ' + tr('Horas: {a} de {o} orçadas', { a: dec(v.horasApontadas), o: dec(v.horasOrcadas) }) : '') + '</span>';
+
+/* Diário de obra (Daily): números do mesmo resumo do painel do Daily. */
+function htmlDiario(x) {
+  if (!x) return '';
+  if (!x.total && !x.nAguardando) return bloco('ini-diario', tr('Diário de obra'), '#/daily', '<p class="ini-vazio">' + tr('Nenhum projeto liberado para a obra ainda. Quando você liberar um projeto, o diário do campo aparece aqui.') + '</p>');
+  const kpis = '<div class="ini-kpis ini-kpis3">' + kpi(x.deHoje + '/' + x.total, tr('Diários de hoje'), tr('já enviados')) + kpi(x.nAguardando, tr('Aguardando aprovação'), x.nAguardando ? tr('Esperando a sua revisão') : tr('Nada pendente')) +
+    kpi(x.atrasadas, tr('Com diário atrasado'), x.atrasadas ? tr('O campo ainda não enviou') : tr('Tudo em dia')) + '</div>';
+  return bloco('ini-diario', tr('Diário de obra'), '#/daily/painel', kpis, x.atrasadas ? tn(x.atrasadas, '{n} projeto com diário atrasado', '{n} projetos com diário atrasado') : null);
+}
+
 /* Andamento dos projetos: o principal do painel. Uma linha por projeto com cronograma: situação, barra do feito (o tracejado é o previsto para hoje) e a tarefa mais atrasada. */
 function htmlAndamento(a) {
   if (!a) return '';
@@ -148,16 +165,19 @@ function htmlAndamento(a) {
         : x.situacao === 'nao-iniciado' ? tr('Começa em {data}', { data: dataCurta(x.inicio) }) : tr('Término previsto: {data}', { data: dataCurta(x.fim) })) + '</small></div>' +
     etiquetaAndamento(x.situacao) +
     '<div class="ini-and-barra">' + barra(x.feito, x.situacao === 'atrasado' ? 'ini-barra-atraso' : x.situacao === 'concluido' ? 'ini-barra-verde' : '') + '<i class="ini-and-prev" style="left:' + x.previsto + '%" title="' + esc(tr('{n}% previsto para hoje', { n: x.previsto })) + '"></i></div>' +
-    '<span class="ini-and-pct">' + tr('{a}% feito · {b}% previsto', { a: x.feito, b: x.previsto }) + '</span></div>').join('');
+    '<span class="ini-and-pct">' + tr('{a}% feito · {b}% previsto', { a: x.feito, b: x.previsto }) + '</span>' + linhaDeValor(x.valor) + '</div>').join('');
   const resumo = '<div class="ini-and-resumo"><span><b>' + a.atrasados + '</b> ' + tr('atrasados') + '</span><span><b>' + a.emDia + '</b> ' + tr('em dia') + '</span><span><b>' + a.naoIniciados + '</b> ' + tr('não iniciados') + '</span><span><b>' + a.concluidos + '</b> ' + tr('concluídos') + '</span>' +
     (a.semCronograma ? '<span class="mudo">' + tn(a.semCronograma, '{n} projeto ganho sem cronograma', '{n} projetos ganhos sem cronograma') + '</span>' : '') + '</div>';
   return bloco('ini-andamento-bloco', tr('Andamento dos projetos'), '#/measure/gantt', resumo + '<div class="ini-andamento">' + linhas + '</div>' + (a.total > a.lista.length ? '<p class="mudo pequeno">' + tr('… e mais {n}.', { n: a.total - a.lista.length }) + '</p>' : ''),
     a.atrasados ? tn(a.atrasados, '{n} projeto atrasado', '{n} projetos atrasados') : tr('Tudo em dia'));
 }
 
+/* O Início é limpo: em cima o que pede ação e o andamento; depois três cartões (diário, dinheiro, projetos); o resto fica recolhido em "Mais indicadores" e só entra quando tem o que mostrar. */
 export function htmlPainelInicio(calc, o) {
+  const principais = [htmlDiario(calc.diario), htmlDinheiro(calc.projetos), calc.projetos ? htmlProjetos(calc.projetos) : ''].filter(Boolean);
+  const mais = [htmlCotacoes(calc.cotacoes), htmlConcorrencias(calc.concorrencias, o.ver), htmlPrazos(calc.prazos), htmlParceiras(calc.parceiras), htmlPrecos(calc.precos, o.ver.dinheiro)]
+    .filter((h) => h && !/<\/header><p class="ini-vazio">[^<]*<\/p><\/section>$/.test(h));   // fora o bloco que só diria "ainda não há nada"; bloco com números fica, mesmo com um aviso dentro
   return '<div class="ini-painel">' + (o.cabeca || '') + htmlAcao(calc.acao) + htmlAndamento(calc.andamento) +
-    '<div class="ini-grade ini-g3">' + (calc.projetos ? htmlProjetos(calc.projetos) : '') + htmlDinheiro(calc.projetos) + htmlCotacoes(calc.cotacoes) + '</div>' +
-    '<div class="ini-grade ini-g2">' + htmlConcorrencias(calc.concorrencias, o.ver) + htmlPrazos(calc.prazos) + '</div>' +
-    '<div class="ini-grade ini-g2b">' + htmlParceiras(calc.parceiras) + htmlPrecos(calc.precos, o.ver.dinheiro) + '</div>' + (o.rodape || '') + '</div>';
+    (principais.length ? '<div class="ini-grade ini-g3">' + principais.join('') + '</div>' : '') +
+    (mais.length ? '<details class="ini-mais"><summary>' + tr('Mais indicadores') + ' <span>' + mais.length + '</span></summary><div class="ini-grade ini-g2">' + mais.join('') + '</div></details>' : '') + (o.rodape || '') + '</div>';
 }

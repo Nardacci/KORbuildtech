@@ -22,7 +22,12 @@ Depois de entrar pela primeira vez, a tela **Sua empresa** pede o nome da empres
 
 ## O Início
 
-Ao entrar, o **Início** mostra o que precisa da sua atenção: projetos, prazos e diários aguardando aprovação.
+Ao entrar, o **Início** mostra o essencial, sem enfeite:
+
+- **Precisa de você agora:** só o que tem pendência (por exemplo, um diário esperando a sua revisão). Cada cartão abre o item. Sem pendência, aparece "Tudo em dia por aqui".
+- **Andamento dos projetos:** cada projeto com a barra do que já foi feito contra o que devia estar feito hoje, e a tarefa mais atrasada. Quando o projeto tem medição, mostra também o valor feito e as horas.
+- **Diário de obra, Dinheiro em jogo e Projetos por status:** três cartões com os números principais.
+- **Mais indicadores:** o que sobra (cotações, catálogo e preços…) fica recolhido e só aparece quando há o que mostrar.
 
 ![Início](img:inicio)
 

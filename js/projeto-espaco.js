@@ -86,7 +86,7 @@ export function htmlOverview(p, ajudas) {
   const ultima = (p.propostas || [])[(p.propostas || []).length - 1];
   const kpis = '<div class="co-kpis co-kpis-4">' +
     '<div class="co-kpi"><span>' + tr('Prazo da proposta') + '</span><b>' + (p.prazoProposta ? dataCurta(p.prazoProposta) : '—') + '</b>' + (p.prazoProposta && p.situacao === 'orcamento' ? '<small>' + ajudas.textoDias(p.prazoProposta) + '</small>' : '') + '</div>' +
-    '<div class="co-kpi"><span>' + tr('Andamento') + '</span><b>' + tr('{n} de {total} passos', { n: a.feitos, total: a.total }) + '</b><small>' + (atual >= 0 ? tr('Próximo: {passo}', { passo: nomes[a.passos[atual].id][0].toLowerCase() }) : tr('Tudo pronto')) + '</small></div>' +
+    '<div class="co-kpi"><span>' + tr('Preparo') + '</span><b>' + tr('{n} de {total} passos', { n: a.feitos, total: a.total }) + '</b><small>' + (atual >= 0 ? tr('Próximo: {passo}', { passo: nomes[a.passos[atual].id][0].toLowerCase() }) : tr('Tudo pronto')) + '</small></div>' +
     '<div class="co-kpi"><span>' + tr('Plantas e medições') + '</span><b>' + tn(a.folhas, '{n} folha', '{n} folhas') + '</b><small>' + tn(a.condicoes, '{n} condição', '{n} condições') + '</small></div>' +
     '<div class="co-kpi"><span>' + tr('Proposta') + '</span><b>' + (ultima ? dinheiro(ultima.total) : '—') + '</b><small>' + (ultima ? ultima.numero : tr('Ainda não emitida')) + '</small></div></div>';
   const lista = '<section class="cartao"><h2 class="cartao-titulo">' + tr('Montar este projeto') + '</h2><p class="mudo pequeno">' + tr('Faça em qualquer ordem. O projeto está pronto para enviar quando tudo estiver feito.') + '</p><ul class="mz-checklist">' +

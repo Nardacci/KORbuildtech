@@ -39,7 +39,7 @@ import { acoesRelatorios, ligarRelatorios } from './measure-relatorios.js';
 import { acoesPrecos, ligarPrecos } from './precos-telas.js';
 import { acoesInstalar } from './instalar.js';
 import { htmlAvisoGps, verificarGps, acoesGps } from './gps.js';
-import { telaOficial, ligarOficial, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, acoesCadastros, mudarOficial, temPainelDoInicio, espelhoProntoParaOInicio } from './oficial-telas.js';
+import { telaOficial, ligarOficial, ligarDailyNoInicio, enviarFormOficial, FORMS_OFICIAIS, acoesOficiais, acoesCadastros, mudarOficial, temPainelDoInicio, espelhoProntoParaOInicio } from './oficial-telas.js';
 import { telaConcorrencias, telaFormConcorrencia, telaConcorrencia, htmlConcorrenciasDaObra, htmlCanalDaObra, acoesConcorrencias, ligarConcorrencias, podeResponder, telaConvitePublico } from './concorrencias-telas.js';
 import { avisosDaContratante, avisosDaConvidada } from './concorrencias.js';
 import { telaCronograma, telaCronogramaRecebido, htmlProximasSemanas, htmlCartaoCronograma, acoesCronograma, ligarCronograma } from './cronograma-telas.js';
@@ -946,7 +946,8 @@ function semRdoOntemAqui() {
   return lista;
 }
 
-function telaPainel() {
+/* Os números do Daily num lugar só: o painel do Daily e o Início do sistema leem daqui, para nunca divergirem. */
+function resumoDoDaily() {
   const obras = obrasEmAndamento();
   const recebidos = diariosRecebidos();
   const aguardando = aguardandoAprovacao();
@@ -955,6 +956,20 @@ function telaPainel() {
   const deHoje = recebidos.filter((r) => r.data === hoje());
   const fotosHoje = deHoje.reduce((s, r) => s + r.fotos.length, 0);
   const atrasadas = faroes.filter((f) => f.cor !== 'verde').length;
+  return { obras, recebidos, aguardando, faroes, deHoje, fotosHoje, atrasadas };
+}
+/* A versão simples do resumo, para o Início (js/inicio-calculo.js): só números e textos. */
+export function resumoDoDailyParaInicio() {
+  const { aguardando, faroes, deHoje, fotosHoje, atrasadas } = resumoDoDaily();
+  return {
+    total: faroes.length, deHoje: deHoje.length, fotosHoje, atrasadas,
+    atrasadasLista: faroes.filter((f) => f.cor !== 'verde').slice(0, 3).map((f) => ({ nome: f.o.nome, texto: f.texto, cor: f.cor, href: '#/daily/obras/' + f.o.id })),
+    aguardando: aguardando.map((r) => ({ id: r.id, numero: r.numero, projeto: (obraDoRdo(r) || {}).nome || '', data: r.data, href: '#/daily/painel/rdo/' + r.id })),
+  };
+}
+
+function telaPainel() {
+  const { recebidos, aguardando, faroes, deHoje, fotosHoje, atrasadas } = resumoDoDaily();
 
   return moldura({
     ativo: 'painel', largo: true, titulo: saudacao() + ', ' + usuarioAtual().nome.split(' ')[0], subtitulo: primeiraMaiuscula(dataLonga(hoje())),
@@ -2033,6 +2048,7 @@ async function iniciar() {
     let envioDoPonto = null;
     aoRegistrarBatida(() => { clearTimeout(envioDoPonto); envioDoPonto = setTimeout(sincronizarOficial, 1200); });
     ligarOficial(desenhar);
+    ligarDailyNoInicio(resumoDoDailyParaInicio);
     window.addEventListener('hashchange', desenhar);
     window.addEventListener('online', () => { atualizarConexao(); sincronizarOficial(); });
     window.addEventListener('offline', atualizarConexao);
