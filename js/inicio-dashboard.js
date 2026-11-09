@@ -34,13 +34,12 @@ function htmlAcao(cards) {
     ganhos: (c) => ({ n: c.n, titulo: tn(c.n, 'Projeto ganho sem obra', 'Projetos ganhos sem obra'), nota: tr('Crie a obra para acompanhar'), cor: 'e' }),
   };
   const pendentes = cards.filter((c) => c.n);
-  if (!pendentes.length) return '<section class="ini-bloco ini-acao-bloco ini-acao-ok"><header class="ini-cab"><div><h2 class="ini-titulo">' + icone('sino', 22) + ' ' + tr('Tudo em dia por aqui') + '</h2><p class="ini-sub">' + tr('Nada precisa da sua atenção agora.') + '</p></div></header></section>';
+  if (!pendentes.length) return '<section class="ini-acao-fina ini-acao-ok"><b>' + icone('sino', 18) + ' ' + tr('Tudo em dia por aqui') + '</b><span>' + tr('Nada precisa da sua atenção agora.') + '</span></section>';
   const itens = pendentes.map((c) => {
     const t = textos[c.id](c);
-    return '<a class="ini-acao ini-acao-' + t.cor + (c.n ? '' : ' ini-acao-vazio') + '" href="' + c.href + '"><b class="ini-acao-n">' + t.n + '</b><span class="ini-acao-txt"><b>' + t.titulo + '</b><span>' + (c.n ? t.nota : tr('Nada pendente')) + '</span></span>' + icone('seta', 16) + '</a>';
+    return '<a class="ini-acao-item ini-acao-' + t.cor + '" href="' + c.href + '" title="' + esc(t.nota) + '"><b class="ini-acao-n">' + t.n + '</b><span>' + t.titulo + '</span>' + icone('seta', 14) + '</a>';
   }).join('');
-  const pend = cards.reduce((s, c) => s + (c.n ? 1 : 0), 0);
-  return '<section class="ini-bloco ini-acao-bloco"><header class="ini-cab"><div><h2 class="ini-titulo">' + icone('sino', 22) + ' ' + tr('Precisa de você agora') + '</h2><p class="ini-sub">' + (pend ? tr('Itens que precisam de atenção imediata') : tr('Tudo em dia por aqui')) + '</p></div></header><div class="ini-acoes">' + itens + '</div></section>';
+  return '<section class="ini-acao-fina"><b>' + icone('sino', 18) + ' ' + tr('Precisa de você agora') + '</b>' + itens + '</section>';
 }
 
 function rosca(porSituacao, total) {
@@ -156,28 +155,82 @@ function htmlDiario(x) {
   return bloco('ini-diario', tr('Diário de obra'), '#/daily/painel', kpis, x.atrasadas ? tn(x.atrasadas, '{n} projeto com diário atrasado', '{n} projetos com diário atrasado') : null);
 }
 
-/* Andamento dos projetos: o principal do painel. Uma linha por projeto com cronograma: situação, barra do feito (o tracejado é o previsto para hoje) e a tarefa mais atrasada. */
-function htmlAndamento(a) {
-  if (!a) return '';
-  if (!a.total) return bloco('ini-andamento-bloco', tr('Andamento dos projetos'), '#/measure/gantt', '<p class="ini-vazio">' + tr('Nenhum projeto com cronograma. Monte o cronograma na aba Schedule do projeto e o andamento aparece aqui.') + '</p>', tr('Nenhum cronograma'));
-  const linhas = a.lista.map((x) => '<div class="ini-and-linha"><div class="ini-and-nome"><a href="#/measure/gantt/' + x.id + '">' + esc(x.nome) + '</a><small>' +
-      (x.maisAtrasada ? esc(x.maisAtrasada.nome) + ' · ' + tn(x.maisAtrasada.diasAtraso, '{n} dia de atraso', '{n} dias de atraso') + (x.atrasadas > 1 ? ' · ' + tr('+{n} atrasadas', { n: x.atrasadas - 1 }) : '')
-        : x.situacao === 'nao-iniciado' ? tr('Começa em {data}', { data: dataCurta(x.inicio) }) : tr('Término previsto: {data}', { data: dataCurta(x.fim) })) + '</small></div>' +
+/* A faixa de números: o que o dono quer saber ao abrir o sistema. Cada cartão leva à lista correspondente. */
+const cartao = (cor, icon, rotulo, valor, nota, href, classeValor) => '<a class="ini-cartao ini-cartao-' + cor + '" href="' + href + '"><span class="ini-cartao-ico">' + icone(icon, 22) + '</span><span class="ini-cartao-txt"><span class="ini-cartao-rotulo">' + rotulo + '</span><b class="ini-cartao-valor ' + (classeValor || '') + '">' + valor + '</b><span class="ini-cartao-nota">' + nota + '</span></span></a>';
+function htmlFaixa(calc) {
+  const p = calc.projetos, d = calc.diario, a = calc.andamento;
+  const itens = [];
+  if (p && p.dinheiro) {
+    const x = p.dinheiro, s = p.porSituacao;
+    itens.push(cartao('o', 'tabela', tr('Propostas abertas'), usd(x.abertas), tn(x.nAbertas, '{n} proposta', '{n} propostas'), '#/measure'));
+    itens.push(cartao('g', 'dinheiro', tr('Ganho no ano'), usd(x.ganhoNoAno), tn(x.nGanhosNoAno, '{n} projeto', '{n} projetos'), '#/measure'));
+    itens.push(cartao('b', 'obras', tr('Projetos em aberto'), String(s.rascunho + s.medicao + s.proposta), tr('{m} em medição · {p} com proposta', { m: s.medicao, p: s.proposta }), '#/measure'));
+  }
+  if (a) {
+    const pior = a.lista.find((x) => x.situacao === 'atrasado');
+    itens.push(cartao(a.atrasados ? 'r' : 'g', 'relogio', tr('Atrasados'), String(a.atrasados),
+      a.atrasados && pior ? esc(pior.nome) + (pior.maisAtrasada ? ' · ' + tn(pior.maisAtrasada.diasAtraso, '{n} dia', '{n} dias') : '') : (a.total ? tr('Tudo em dia') : tr('Nenhum cronograma')), '#/measure/gantt', a.atrasados ? 'ini-vermelho' : ''));
+  }
+  if (d && !p) {   // quem só acompanha o diário vê os números do diário
+    itens.push(cartao('b', 'hoje', tr('Diários de hoje'), d.deHoje + '/' + d.total, tr('já enviados'), '#/daily/painel'));
+    itens.push(cartao('o', 'sino', tr('Aguardando aprovação'), String(d.nAguardando), d.nAguardando ? tr('Esperando a sua revisão') : tr('Nada pendente'), '#/daily/painel'));
+    itens.push(cartao(d.atrasadas ? 'r' : 'g', 'relogio', tr('Com diário atrasado'), String(d.atrasadas), d.atrasadas ? tr('O campo ainda não enviou') : tr('Tudo em dia'), '#/daily/painel', d.atrasadas ? 'ini-vermelho' : ''));
+  }
+  return itens.length ? '<div class="ini-faixa">' + itens.join('') + '</div>' : '';
+}
+
+/* O gráfico de linha: o previsto (tracejado) e o feito de hoje, do projeto em destaque. Um gráfico por projeto da lista; o clique na linha troca o que aparece. */
+const dia = (iso) => Math.round(new Date(iso + 'T12:00:00Z').getTime() / 864e5);
+function svgLinha(x, hojeIso) {
+  const L = 700, A = 236, mx = 46, mb = 28, mt = 14, w = L - mx - 14, h = A - mb - mt;
+  const d0 = dia(x.inicio), d1 = Math.max(d0 + 1, dia(x.fim));
+  const px = (iso) => mx + Math.max(0, Math.min(1, (dia(iso) - d0) / (d1 - d0))) * w;
+  const py = (p) => mt + h - (Math.max(0, Math.min(100, p)) / 100) * h;
+  const grade = [0, 50, 100].map((p) => '<line class="ini-g-grade" x1="' + mx + '" x2="' + (L - 14) + '" y1="' + py(p).toFixed(1) + '" y2="' + py(p).toFixed(1) + '"/><text class="ini-g-eixo" x="' + (mx - 8) + '" y="' + (py(p) + 4).toFixed(1) + '" text-anchor="end">' + p + '%</text>').join('');
+  const linha = x.curva.map((q) => px(q.d).toFixed(1) + ',' + py(q.p).toFixed(1)).join(' ');
+  const depois = hojeIso > x.fim;   // fora do período, "hoje" fica preso na borda: o feito de hoje sempre aparece
+  const hx = px(hojeIso).toFixed(1);
+  const hoje = '<line class="ini-g-hoje" x1="' + hx + '" x2="' + hx + '" y1="' + mt + '" y2="' + (mt + h) + '"/><text class="ini-g-hoje-t" x="' + (Number(hx) + (depois ? -6 : 6)) + '" y="' + (mt + 11) + '" text-anchor="' + (depois ? 'end' : 'start') + '">' + tr('hoje') + '</text>' +
+    '<circle class="ini-g-prev" cx="' + hx + '" cy="' + py(x.previsto).toFixed(1) + '" r="4"/><circle class="ini-g-feito" cx="' + hx + '" cy="' + py(x.feito).toFixed(1) + '" r="6"><title>' + esc(tr('{n}% feito', { n: x.feito })) + '</title></circle>';
+  return '<svg class="ini-g-svg" viewBox="0 0 ' + L + ' ' + A + '" role="img" aria-label="' + esc(tr('Previsto × feito: {a}% feito, {b}% previsto', { a: x.feito, b: x.previsto })) + '">' + grade +
+    '<polyline class="ini-g-linha" points="' + linha + '"/>' + hoje +
+    '<text class="ini-g-eixo" x="' + mx + '" y="' + (A - 8) + '">' + esc(dataCurta(x.inicio)) + '</text><text class="ini-g-eixo" x="' + (L - 14) + '" y="' + (A - 8) + '" text-anchor="end">' + esc(dataCurta(x.fim)) + '</text></svg>';
+}
+function htmlGrafico(a, hojeIso) {
+  if (!a || !a.total) return '<section class="ini-bloco ini-grafico"><header class="ini-cab"><div><h2 class="ini-titulo">' + tr('Previsto × feito') + '</h2><p class="ini-sub">' + tr('Nenhum cronograma') + '</p></div></header><p class="ini-vazio">' + tr('Monte o cronograma na aba Schedule do projeto e o previsto × feito aparece aqui.') + '</p></section>';
+  return a.lista.map((x) => '<section class="ini-bloco ini-grafico" data-ini-grafico="' + x.id + '"' + (x.id === a.destaque ? '' : ' hidden') + '><header class="ini-cab"><div><h2 class="ini-titulo">' + esc(x.nome) + ' · ' + tr('previsto × feito') + '</h2><p class="ini-sub">' +
+    (x.maisAtrasada ? '<span class="ini-vermelho">' + tn(x.maisAtrasada.diasAtraso, '{n} dia de atraso', '{n} dias de atraso') + '</span> · ' + esc(x.maisAtrasada.nome) : x.situacao === 'nao-iniciado' ? tr('Começa em {data}', { data: dataCurta(x.inicio) }) : tr('Término previsto: {data}', { data: dataCurta(x.fim) })) + '</p></div>' + etiquetaAndamento(x.situacao) + '</header>' +
+    svgLinha(x, hojeIso) +
+    '<div class="ini-g-resumo"><span><i class="ini-g-leg-prev"></i>' + tr('previsto') + ' <b>' + x.previsto + '%</b></span><span><i class="ini-g-leg-feito"></i>' + tr('feito') + ' <b>' + x.feito + '%</b></span>' + (x.valor ? '<span>' + tr('Valor do projeto') + ' <b>' + usd(x.valor.total) + '</b></span>' : '') + '<a class="ini-vertodos" href="#/measure/gantt/' + x.id + '">' + tr('Abrir o Gantt') + ' ' + icone('seta', 14) + '</a></div></section>').join('');
+}
+/* A lista ao lado: clicar numa linha (fora do nome, que abre o Gantt) troca o projeto do gráfico. */
+function htmlListaAndamento(a) {
+  if (!a || !a.total) return '';
+  const linhas = a.lista.map((x) => '<div class="ini-and-linha' + (x.id === a.destaque ? ' ativa' : '') + '" data-ini-proj="' + x.id + '"><div class="ini-and-nome"><a href="#/measure/gantt/' + x.id + '">' + esc(x.nome) + '</a><small>' +
+      (x.maisAtrasada ? tn(x.maisAtrasada.diasAtraso, '{n} dia de atraso', '{n} dias de atraso') : x.situacao === 'nao-iniciado' ? tr('Começa em {data}', { data: dataCurta(x.inicio) }) : tr('Término previsto: {data}', { data: dataCurta(x.fim) })) + '</small></div>' +
     etiquetaAndamento(x.situacao) +
     '<div class="ini-and-barra">' + barra(x.feito, x.situacao === 'atrasado' ? 'ini-barra-atraso' : x.situacao === 'concluido' ? 'ini-barra-verde' : '') + '<i class="ini-and-prev" style="left:' + x.previsto + '%" title="' + esc(tr('{n}% previsto para hoje', { n: x.previsto })) + '"></i></div>' +
     '<span class="ini-and-pct">' + tr('{a}% feito · {b}% previsto', { a: x.feito, b: x.previsto }) + '</span>' + linhaDeValor(x.valor) + '</div>').join('');
-  const resumo = '<div class="ini-and-resumo"><span><b>' + a.atrasados + '</b> ' + tr('atrasados') + '</span><span><b>' + a.emDia + '</b> ' + tr('em dia') + '</span><span><b>' + a.naoIniciados + '</b> ' + tr('não iniciados') + '</span><span><b>' + a.concluidos + '</b> ' + tr('concluídos') + '</span>' +
-    (a.semCronograma ? '<span class="mudo">' + tn(a.semCronograma, '{n} projeto ganho sem cronograma', '{n} projetos ganhos sem cronograma') + '</span>' : '') + '</div>';
-  return bloco('ini-andamento-bloco', tr('Andamento dos projetos'), '#/measure/gantt', resumo + '<div class="ini-andamento">' + linhas + '</div>' + (a.total > a.lista.length ? '<p class="mudo pequeno">' + tr('… e mais {n}.', { n: a.total - a.lista.length }) + '</p>' : ''),
-    a.atrasados ? tn(a.atrasados, '{n} projeto atrasado', '{n} projetos atrasados') : tr('Tudo em dia'));
+  return bloco('ini-andamento-bloco', tr('Andamento dos projetos'), '#/measure/gantt', '<div class="ini-andamento">' + linhas + '</div>' + (a.total > a.lista.length ? '<p class="mudo pequeno">' + tr('… e mais {n}.', { n: a.total - a.lista.length }) + '</p>' : ''),
+    tr('Clique num projeto para ver o gráfico'));
+}
+if (typeof document !== 'undefined' && !window.__iniGraficoLigado) {
+  window.__iniGraficoLigado = true;
+  document.addEventListener('click', (e) => {
+    const linha = e.target.closest && e.target.closest('[data-ini-proj]');
+    if (!linha || e.target.closest('a')) return;
+    const id = linha.getAttribute('data-ini-proj');
+    document.querySelectorAll('[data-ini-grafico]').forEach((g) => { g.hidden = g.getAttribute('data-ini-grafico') !== id; });
+    document.querySelectorAll('[data-ini-proj]').forEach((l) => l.classList.toggle('ativa', l === linha));
+  });
 }
 
-/* O Início é limpo: em cima o que pede ação e o andamento; depois três cartões (diário, dinheiro, projetos); o resto fica recolhido em "Mais indicadores" e só entra quando tem o que mostrar. */
+/* O Início: em cima a faixa de números e, só quando há pendência, uma linha fina "Precisa de você"; depois o gráfico previsto × feito e a lista dos projetos; o resto fica recolhido em "Mais indicadores". */
 export function htmlPainelInicio(calc, o) {
   const principais = [htmlDiario(calc.diario), htmlDinheiro(calc.projetos), calc.projetos ? htmlProjetos(calc.projetos) : ''].filter(Boolean);
-  const mais = [htmlCotacoes(calc.cotacoes), htmlConcorrencias(calc.concorrencias, o.ver), htmlPrazos(calc.prazos), htmlParceiras(calc.parceiras), htmlPrecos(calc.precos, o.ver.dinheiro)]
+  const mais = [...principais, htmlCotacoes(calc.cotacoes), htmlConcorrencias(calc.concorrencias, o.ver), htmlPrazos(calc.prazos), htmlParceiras(calc.parceiras), htmlPrecos(calc.precos, o.ver.dinheiro)]
     .filter((h) => h && !/<\/header><p class="ini-vazio">[^<]*<\/p><\/section>$/.test(h));   // fora o bloco que só diria "ainda não há nada"; bloco com números fica, mesmo com um aviso dentro
-  return '<div class="ini-painel">' + (o.cabeca || '') + htmlAcao(calc.acao) + htmlAndamento(calc.andamento) +
-    (principais.length ? '<div class="ini-grade ini-g3">' + principais.join('') + '</div>' : '') +
+  const meio = calc.andamento ? '<div class="ini-meio">' + htmlGrafico(calc.andamento, calc.hoje) + htmlListaAndamento(calc.andamento) + '</div>' : '';
+  return '<div class="ini-painel">' + (o.cabeca || '') + htmlFaixa(calc) + htmlAcao(calc.acao) + meio +
     (mais.length ? '<details class="ini-mais"><summary>' + tr('Mais indicadores') + ' <span>' + mais.length + '</span></summary><div class="ini-grade ini-g2">' + mais.join('') + '</div></details>' : '') + (o.rodape || '') + '</div>';
 }

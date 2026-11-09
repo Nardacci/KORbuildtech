@@ -22,12 +22,13 @@ After signing in for the first time, the **Your company** screen asks for the co
 
 ## Home
 
-When you sign in, **Home** shows the essentials, nothing more:
+When you sign in, **Home** shows the essentials, from top to bottom:
 
-- **Needs you now:** only what is pending (for example, a daily report waiting for your review). Each card opens the item. With nothing pending, it says "All caught up here".
-- **Project progress:** each project with the bar of what is done against what should be done today, and the latest task. When the project has measurements, it also shows the value done and the hours.
-- **Daily report, Money in play and Projects by status:** three cards with the main numbers.
-- **More indicators:** whatever is left (quotes, catalog and prices…) stays collapsed and only appears when there is something to show.
+- **Number strip:** four cards that open the matching list: **Open proposals**, **Won this year**, **Open projects** and **Late** (in red, with the project and the days late).
+- **Needs you now:** a thin line with what is pending (for example, a daily report waiting for your review). Each item opens the right screen. With nothing pending, it says "All caught up here".
+- **Planned vs done:** the line chart of the project that needs the most attention (the latest one). The dashed line is what should be done along the schedule; the orange dot is what is done today.
+- **Project progress:** the list beside it, with each project's bar of done against planned. **Click a row to switch the chart's project**; click the name to open the Gantt.
+- **More indicators:** whatever is left (daily report, money in play, projects by status, quotes, catalog and prices…) stays collapsed and only appears when there is something to show.
 
 ![Home](img:inicio)
 

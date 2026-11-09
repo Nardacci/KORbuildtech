@@ -2,17 +2,22 @@
 
 **Princípio (08/11/2026):** o Início é limpo e objetivo, feito para apresentar. Só o principal fica à vista; o resto fica recolhido e só aparece quando tem o que mostrar. Nenhum número é calculado duas vezes: cada um vem da mesma função que a tela de origem usa, para o Início, o Gantt e o Daily nunca divergirem.
 
-## O que fica à vista
+## O que fica à vista (modelo aprovado em 09/11/2026)
+De cima para baixo, o dono do sistema sabe em segundos o que está acontecendo:
+
 | Bloco | O que mostra | Fonte (função única) |
 |---|---|---|
-| **Precisa de você agora** | Só o que tem pendência, em cartões que abrem o item (ex.: o diário a revisar). Sem pendência: uma linha, "Tudo em dia por aqui". | `blocoAcao` em `js/inicio-calculo.js`; os diários vêm do resumo do Daily |
-| **Andamento dos projetos** | Por projeto: situação, barra do % feito contra o previsto, a tarefa mais atrasada e, quando o projeto tem medição, **Valor: feito de total** e **Horas: apontadas de orçadas**. | % do cronograma: `andamentoDoCronograma` (`js/andamento.js`); valor e horas: `valorDasTarefas`, `curvaS` e `horasApontadas` (`js/valor-cronograma.js`), as mesmas do Gantt |
-| **Diário de obra** | Diários de hoje (enviados / projetos), aguardando aprovação, projetos com diário atrasado. | `resumoDoDaily` em `js/app.js`, a mesma conta do painel do Daily |
-| **Dinheiro em jogo** | Propostas abertas e ganho no ano. Taxa de acerto e ticket médio só aparecem quando há projeto decidido. | `blocoProjetos` |
-| **Projetos por status** | A rosca com os cinco status. | `blocoProjetos` |
+| **Faixa de 4 cartões** | Propostas abertas (valor e quantidade) · Ganho no ano · Projetos em aberto (rascunho + medição + proposta) · **Atrasados** (vermelho, com o projeto e os dias). Cada cartão abre a lista. Quem só acompanha o diário vê Diários de hoje, Aguardando aprovação e Com diário atrasado. | `blocoProjetos`, `blocoAndamento`, `resumoDoDaily` |
+| **Precisa de você agora** | Uma **linha fina**, só com as pendências (itens que abrem a tela certa). Sem pendência: "Tudo em dia por aqui". | `blocoAcao` em `js/inicio-calculo.js` |
+| **Previsto × feito** | Gráfico de linha do projeto em destaque: a curva do previsto (tracejada, do início ao fim do cronograma), a marca de "hoje" e o ponto do feito de hoje. Fora do período, "hoje" fica preso na borda. Sem cronograma: orientação para montar o Schedule. | `curvaPrevista` em `js/andamento.js`; destaque em `projetoEmDestaque` |
+| **Andamento dos projetos** | A lista ao lado: situação, barra do feito contra o previsto e, com medição, **Valor: feito de total** e **Horas**. **Clicar na linha troca o projeto do gráfico**; o nome abre o Gantt. | `andamentoDoCronograma` (`js/andamento.js`); valor/horas de `js/valor-cronograma.js` |
+
+**Projeto em destaque:** o de mais dias de atraso; sem atrasado, o de maior valor entre os em dia; senão, o primeiro da lista.
+
+**A curva do feito:** só se conhece o feito de **hoje** (a equipe informa o % no Schedule; não guardamos histórico). Por isso o feito é um ponto, não uma linha.
 
 ## O que fica recolhido ("Mais indicadores")
-Cotações de material, concorrências, parceiras, catálogo e preços, prazo das obras. Cada um só entra se tem dado: o bloco que só diria "ainda não há nada" não aparece.
+Diário de obra, Dinheiro em jogo (taxa de acerto e ticket médio só com projeto decidido), Projetos por status, cotações de material, concorrências, parceiras, catálogo e preços, prazo das obras. Cada um só entra se tem dado: o bloco que só diria "ainda não há nada" não aparece.
 
 ## Como ler o % feito (duas medidas, nomes diferentes)
 - **% feito do projeto (barra)**: peso = dias de cada tarefa. Existe para todo projeto com cronograma. Ex.: tarefas de 3, 5 e 4 dias, a de 5 dias a 60% → 25% feito.
@@ -23,6 +28,7 @@ Cotações de material, concorrências, parceiras, catálogo e preços, prazo da
 O bloco do Daily e os cartões do diário aparecem para quem pode aprovar ou acompanhar diários (`daily.aprovar` ou `daily.acompanhar`). Dinheiro, catálogo e preços seguem as permissões do Takeoff. Quem só responde convites vê só o que lhe cabe.
 
 ## Testes
+- `tests/inicio-destaque.test.mjs`: a curva do previsto e a escolha do projeto em destaque (funções puras).
 - `tests/inicio-primeira-versao.test.mjs`: o cálculo sozinho (cartões do diário, valor e horas do Gantt, permissões) e o painel por perfil e idioma.
 - `tests/fluxo-03-obra-diario-gantt.test.mjs`: **conciliação Início × Daily × cronograma** no banco: antes de aprovar o Início tem 1 diário esperando, igual ao painel do Daily, e o cartão abre o diário; depois de aprovar, zero; o % feito do Início é o do cronograma (25%).
 

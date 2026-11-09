@@ -22,12 +22,13 @@ Depois de entrar pela primeira vez, a tela **Sua empresa** pede o nome da empres
 
 ## O Início
 
-Ao entrar, o **Início** mostra o essencial, sem enfeite:
+Ao entrar, o **Início** mostra o essencial, de cima para baixo:
 
-- **Precisa de você agora:** só o que tem pendência (por exemplo, um diário esperando a sua revisão). Cada cartão abre o item. Sem pendência, aparece "Tudo em dia por aqui".
-- **Andamento dos projetos:** cada projeto com a barra do que já foi feito contra o que devia estar feito hoje, e a tarefa mais atrasada. Quando o projeto tem medição, mostra também o valor feito e as horas.
-- **Diário de obra, Dinheiro em jogo e Projetos por status:** três cartões com os números principais.
-- **Mais indicadores:** o que sobra (cotações, catálogo e preços…) fica recolhido e só aparece quando há o que mostrar.
+- **Faixa de números:** quatro cartões que abrem a lista correspondente: **Propostas abertas**, **Ganho no ano**, **Projetos em aberto** e **Atrasados** (em vermelho, com o projeto e os dias de atraso).
+- **Precisa de você agora:** uma linha fina com o que tem pendência (por exemplo, um diário esperando a sua revisão). Cada item abre a tela certa. Sem pendência, aparece "Tudo em dia por aqui".
+- **Previsto × feito:** o gráfico de linha do projeto que mais precisa de atenção (o mais atrasado). A linha tracejada é o que devia estar feito ao longo do cronograma; o ponto laranja é o que já foi feito hoje.
+- **Andamento dos projetos:** a lista ao lado, com a barra do feito contra o previsto de cada projeto. **Clique numa linha para trocar o projeto do gráfico**; clique no nome para abrir o Gantt.
+- **Mais indicadores:** o que sobra (diário de obra, dinheiro em jogo, projetos por status, cotações, catálogo e preços…) fica recolhido e só aparece quando há o que mostrar.
 
 ![Início](img:inicio)
 

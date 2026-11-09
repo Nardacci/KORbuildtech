@@ -4,7 +4,7 @@
  * Situação do projeto, para o gráfico: rascunho (ainda sem medição), em medição, proposta emitida, ganho, perdido.
  * "Aberto" = rascunho, em medição ou proposta emitida; "fechado" = ganho ou perdido. */
 
-import { andamentoDoCronograma, ORDEM_SITUACAO } from './andamento.js';
+import { andamentoDoCronograma, curvaPrevista, ORDEM_SITUACAO } from './andamento.js';
 
 const DIA = 864e5;
 const isoDe = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -191,15 +191,24 @@ function blocoPrecos(d, ctx) {
   };
 }
 
+/* O projeto do gráfico de linha do Início: o mais atrasado (mais dias de atraso); sem atraso, o de maior valor entre os em andamento; senão, o primeiro da lista. */
+export function projetoEmDestaque(lista) {
+  const atrasados = lista.filter((x) => x.situacao === 'atrasado').sort((a, b) => ((b.maisAtrasada || {}).diasAtraso || 0) - ((a.maisAtrasada || {}).diasAtraso || 0));
+  if (atrasados.length) return atrasados[0].id;
+  const emDia = lista.filter((x) => x.situacao === 'em-dia').sort((a, b) => ((b.valor || {}).total || 0) - ((a.valor || {}).total || 0));
+  return (emDia[0] || lista[0] || {}).id || null;
+}
+
 /* Andamento dos projetos com cronograma (perdidos de fora): os atrasados primeiro. */
 function blocoAndamento(d, ctx) {
   const projetos = ((d.measure && d.measure.projetos) || []).filter((p) => p.situacao !== 'perdida');
   const lista = projetos.map((p) => ({ id: p.id, nome: p.nome, ganho: p.situacao === 'ganha', valor: ctx.valorDoProjeto ? ctx.valorDoProjeto(p) : null, ...andamentoDoCronograma(p.cronograma, ctx.hoje) }))
     .filter((x) => x.tarefas > 0)
     .sort((a, b) => ORDEM_SITUACAO[a.situacao] - ORDEM_SITUACAO[b.situacao] || (a.fim || '').localeCompare(b.fim || ''))
-    .map((x) => ({ ...x, atrasadas: x.atrasadas.length, maisAtrasada: x.atrasadas.slice().sort((a, b) => b.diasAtraso - a.diasAtraso)[0] || null }));
+    .map((x) => ({ ...x, atrasadas: x.atrasadas.length, maisAtrasada: x.atrasadas.slice().sort((a, b) => b.diasAtraso - a.diasAtraso)[0] || null,
+      curva: curvaPrevista((projetos.find((p) => p.id === x.id) || {}).cronograma) }));
   const conta = (s) => lista.filter((x) => x.situacao === s).length;
-  return { lista: lista.slice(0, 8), total: lista.length, atrasados: conta('atrasado'), emDia: conta('em-dia'), naoIniciados: conta('nao-iniciado'), concluidos: conta('concluido'),
+  return { lista: lista.slice(0, 8), destaque: projetoEmDestaque(lista.slice(0, 8)), total: lista.length, atrasados: conta('atrasado'), emDia: conta('em-dia'), naoIniciados: conta('nao-iniciado'), concluidos: conta('concluido'),
     semCronograma: projetos.filter((p) => p.situacao === 'ganha' && !lista.some((x) => x.id === p.id)).length };
 }
 
@@ -217,6 +226,7 @@ export function calcularInicio(d, ctx) {
   const cotacoes = c.ver.medir ? blocoCotacoes(d, c) : null;
   const concorrencias = (c.ver.concorrenciasEnviadas || c.ver.concorrenciasRecebidas) ? blocoConcorrencias(d, c) : null;
   return {
+    hoje: c.hoje,
     acao: blocoAcao(d, c, projetos, cotacoes),
     projetos, cotacoes, concorrencias,
     andamento: c.ver.medir ? blocoAndamento(d, c) : null,

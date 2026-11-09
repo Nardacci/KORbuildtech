@@ -41,4 +41,21 @@ export function andamentoDoCronograma(c, hojeIso) {
   return r;
 }
 
+/* A curva do previsto: % do cronograma que devia estar feito em cada dia, do início ao fim (mesmo peso do `previsto`: a duração de cada tarefa).
+ * Devolve até `n` pontos { d, p } (d = data, p = 0 a 100). Serve ao gráfico de linha do Início. */
+export function curvaPrevista(c, n = 40) {
+  const tarefas = ((c && c.tarefas) || []).filter((t) => t.inicio);
+  if (!tarefas.length) return [];
+  const inicio = tarefas.map((t) => t.inicio).sort()[0], fim = tarefas.map(fimDaTarefa).sort().pop();
+  const total = Math.max(1, dias(inicio, fim));
+  const peso = tarefas.reduce((s, t) => s + duracaoDe(t), 0);
+  const passos = Math.min(n, total + 1);
+  const pontos = [];
+  for (let i = 0; i < passos; i++) {
+    const d = somar(inicio, Math.round((total * i) / Math.max(1, passos - 1)));
+    pontos.push({ d, p: Math.round(tarefas.reduce((s, t) => s + pctPrevisto(t, d) * duracaoDe(t), 0) / peso) });
+  }
+  return pontos;
+}
+
 export const ORDEM_SITUACAO = { atrasado: 0, 'em-dia': 1, 'nao-iniciado': 2, concluido: 3, 'sem-cronograma': 4 };

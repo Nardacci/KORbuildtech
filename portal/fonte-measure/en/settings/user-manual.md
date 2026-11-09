@@ -2,6 +2,10 @@
 
 Step by step, one task at a time. Settings is under the **Settings** tab of your account (the page you land on after signing in).
 
+## Home (dashboard)
+
+When you sign in, **Home** shows, from top to bottom: **4 cards** with the main numbers (open proposals, won this year, open projects and late), a **thin "Needs you now" line** with what is pending, the **Planned vs done** chart of the project that needs the most attention and the **Project progress** list. Click a row in the list to switch the chart's project; click the name to open the Gantt. Everything else (daily report, money in play, projects by status, quotes, catalog and prices) stays collapsed under **More indicators**.
+
 ## Set up the company
 
 1. Open **Company**.

@@ -84,7 +84,7 @@ async function painel(chave, papel, idioma) {
   await a.p.evaluate(() => document.querySelectorAll('details.ini-mais').forEach((d) => { d.open = true; }));
   return a;
 }
-const acao = async (p, id) => (await p.locator('.ini-acao').allInnerTexts()).map((t) => t.replace(/\s+/g, ' '));
+const acao = async (p, id) => (await p.locator('.ini-acao-item').allInnerTexts()).map((t) => t.replace(/\s+/g, ' '));
 
 try {
   console.log('Construtora (pv.c1.admin): concorrências enviadas e recebidas, projeto do Measure');
@@ -122,7 +122,7 @@ try {
   console.log('Prestadora (pv.p1.admin): andamento dos projetos no Início (tarefa com % feito no Schedule)');
   {
     const { ctx, p } = await painel('p1', 'admin');
-    verificar('sem cronograma, o bloco Andamento dos projetos diz que não há cronograma', /Andamento dos projetos/.test(await texto(p)) && /Nenhum projeto com cronograma/.test(await texto(p)));
+    verificar('sem cronograma, o bloco Andamento dos projetos diz que não há cronograma', /Previsto × feito/.test(await texto(p)) && /Monte o cronograma/.test(await texto(p)));
     const [emp] = await sql(`select e.id from public.empresas e join public.membros m on m.empresa_id = e.id join auth.users u on u.id = m.user_id where u.email = '${emailDe('p1', 'admin')}' limit 1`);
     const [pj] = await sql(`select id from public.projetos where empresa_id = '${emp.id}' and situacao <> 'perdida' order by criado_em limit 1`);
     await p.goto(BASE + '#/measure/projeto/' + pj.id + '/schedule');
@@ -147,8 +147,12 @@ try {
     await p.waitForSelector('.ini-painel', { timeout: 40000 });
     await p.waitForTimeout(500);
     const t = await texto(p);
-    verificar('o Início mostra o projeto atrasado, com o feito e o previsto', /Andamento dos projetos 1 projeto atrasado/.test(t) && /Drywall · \d+ dias de atraso/.test(t) && /40% feito · 100% previsto/.test(t), t.match(/Andamento dos projetos.{0,300}/));
-    verificar('o bloco leva ao Gantt do projeto', await p.locator('.ini-andamento a[href="#/measure/gantt/' + pj.id + '"]').count() === 1);
+    verificar('o Início mostra o projeto atrasado, com o feito e o previsto', /Atrasados 1/i.test(t) && /\d+ dias de atraso/.test(t) && /Drywall/.test(t) && /40% feito · 100% previsto/.test(t), t.match(/Atrasados.{0,300}/));
+    verificar('o bloco leva ao Gantt do projeto', await p.locator('.ini-andamento a[href="#/measure/gantt/' + pj.id + '"]').count() === 1 && await p.locator('.ini-grafico:not([hidden]) svg.ini-g-svg').count() === 1);
+    // clicar numa linha da lista troca o gráfico (duplica linha e gráfico para ter dois projetos)
+    await p.evaluate(() => { const l = document.querySelector('[data-ini-proj]'), g = document.querySelector('[data-ini-grafico]'); const l2 = l.cloneNode(true), g2 = g.cloneNode(true); l2.setAttribute('data-ini-proj', 'outro'); l2.classList.remove('ativa'); g2.setAttribute('data-ini-grafico', 'outro'); g2.hidden = true; l.after(l2); g.after(g2); });
+    await p.click('[data-ini-proj="outro"] .ini-and-pct');
+    verificar('clicar numa linha da lista troca o gráfico (e marca a linha)', await p.locator('[data-ini-grafico="outro"]:not([hidden])').count() === 1 && await p.locator('[data-ini-grafico]:not([hidden])').count() === 1 && await p.locator('[data-ini-proj="outro"].ativa').count() === 1);
     await p.screenshot({ path: process.env.PRINT_P1_ANDAMENTO || '/tmp/inicio-p1-andamento.png', fullPage: true });
     // deixa a massa como estava
     await p.goto(BASE + '#/measure/projeto/' + pj.id + '/schedule');
@@ -243,8 +247,7 @@ try {
     verificar('tudo dentro do painel: saudação, os três botões e o manual', await p.locator('.ini-painel .ini-ola').count() === 1 && await p.locator('.ini-painel .ini-botao').count() === 3 && await p.locator('.ini-painel .ini-rodape a').count() === 1);
     const botoes = await p.locator('.ini-botao').allInnerTexts();
     verificar('os botões são Daily, Takeoff e Settings', botoes.length === 3 && /Daily/.test(botoes[0]) && /Takeoff/.test(botoes[1]) && /Settings/.test(botoes[2]), botoes.join(' | '));
-    const fundo = await p.evaluate(() => getComputedStyle(document.querySelector('.ini-acao-bloco')).borderTopColor);
-    verificar('o bloco "Precisa de você agora" tem moldura laranja própria', /243, 129, 58/.test(fundo), fundo);
+    verificar('em cima, a faixa de cartões com número e ícone; "Precisa de você agora" é uma linha fina', await p.locator('.ini-faixa .ini-cartao').count() >= 3 && await p.locator('.ini-acao-fina').count() === 1 && (await p.locator('.ini-acao-fina').boundingBox()).height < 90);
     await p.screenshot({ path: process.env.PRINT_C1 || '/tmp/inicio-c1.png', fullPage: true });
     await p.click('.ini-botao-settings');
     await p.waitForSelector('.lateral', { timeout: 15000 });
@@ -267,7 +270,7 @@ try {
   {
     const { ctx, p } = await painel('c1', 'admin', 'en');
     const t = await texto(p);
-    verificar('os títulos saem em inglês', /Needs you now/.test(t) && /Projects by status/.test(t) && /Project progress/.test(t) && /My partners/.test(t) && /Catalog and prices/.test(t), t.slice(0, 300));
+    verificar('os títulos saem em inglês', /Needs you now/.test(t) && /Projects by status/.test(t) && /Project progress|Planned vs done/.test(t) && /My partners/.test(t) && /Catalog and prices/.test(t), t.slice(0, 300));
     verificar('nada sem tradução (sem português solto no painel)', !/Precisa de você|Dinheiro em jogo|Prazo das obras|Minhas parceiras/.test(await p.locator('.ini-painel').innerText()));
     const hrefs = await p.locator('.ini-painel a').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
     verificar('os links do painel apontam para rotas que existem', hrefs.every((h) => /^(#\/(measure|daily|conta\/contatos)|portal)/.test(h)), hrefs.join(' '));

@@ -2,6 +2,10 @@
 
 Passo a passo, uma tarefa por vez. O Settings fica na aba **Settings** da sua conta (a página em que você entra depois de fazer login).
 
+## O Início (painel)
+
+Ao entrar, o **Início** mostra, de cima para baixo: **4 cartões** com os números principais (propostas abertas, ganho no ano, projetos em aberto e atrasados), uma **linha fina "Precisa de você agora"** com o que está pendente, o gráfico **Previsto × feito** do projeto que mais precisa de atenção e a lista **Andamento dos projetos**. Clique numa linha da lista para trocar o projeto do gráfico; clique no nome para abrir o Gantt. O que sobra (diário de obra, dinheiro em jogo, projetos por status, cotações, catálogo e preços) fica em **Mais indicadores**, recolhido.
+
 ## Configurar a empresa
 
 1. Abra **Empresa**.
