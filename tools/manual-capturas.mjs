@@ -1,5 +1,5 @@
 /* KORbuild — capturas do manual do usuário, com a verificação de cada tela (as "evidências").
- * Percorre a 1ª versão (Settings, Takeoff e Daily) pelas telas, como uma pessoa de verdade, no banco LOCAL com dados de exemplo
+ * Percorre a 1ª versão (Settings, Takeoff com Bids e Daily) pelas telas, como uma pessoa de verdade, no banco LOCAL com dados de exemplo
  * (empresa Northfield Builders; nada toca o Supabase do projeto). Cada captura só é gravada se a tela mostrar o que o manual diz que ela mostra;
  * o resultado de cada uma (passou ou falhou, quando, em que versão) vai para manual-usuario/evidencias/<idioma>/manifesto.json.
  * Roda nos dois idiomas: os textos que o script procura na tela vêm do mesmo dicionário do app (js/i18n-en.js).
@@ -23,6 +23,8 @@ PESSOAS.admin = { email: 'daniel.rivera@northfield.example.com', nome: 'Daniel R
 PESSOAS.encarregado = { email: 'eduardo.lima@northfield.example.com', nome: 'Eduardo Lima', perfil: 'encarregado', cargo: 'Foreman' };
 const NORA = { email: 'nora.alves@northfield.example.com', nome: 'Nora Alves' };
 const EMPRESA = 'Northfield Builders';
+const CONSTRUTORA = 'Ridgeway Construction';
+const TOM = { email: 'tom.reyes@ridgeway.example.com', nome: 'Tom Reyes' };
 const CLIENTE = 'Hartwell Homes LLC';
 const PROJETO = 'Mitchell Garage Remodel';
 
@@ -36,6 +38,7 @@ let falhasTotais = 0;
 async function limpar() {
   await apagarEmpresaFluxo();
   await limparMassa('%@northfield.example.com', "plano ->> 'massa' = 'fluxo' or nome = '" + EMPRESA + "'");
+  await limparMassa('%@ridgeway.example.com', "nome = '" + CONSTRUTORA + "'");
 }
 
 async function rodar(idioma) {
@@ -66,7 +69,7 @@ async function rodar(idioma) {
   const tem = async (p, seletor, texto_) => { const l = p.locator(seletor); if (!(await l.count())) return 'faltou ' + seletor; if (texto_ && !(await p.locator(seletor).first().innerText()).includes(texto_)) return 'não achei "' + texto_ + '" em ' + seletor; return true; };
   const noDialogo = async (p, rotuloPt) => { await p.click('dialog button:has-text("' + T(rotuloPt) + '")'); await p.waitForSelector('dialog', { state: 'detached' }); };
   const esperaDesenho = (p) => p.waitForFunction(() => { const e = document.getElementById('mz-carregando'); return e && e.hidden; }, null, { timeout: 40000 });
-  const comCena = async (nome, fn) => { cena = nome; console.log('\n# ' + nome); try { await fn(); } catch (e) { falhasTotais++; manifesto.push({ chave: '(cena)', cena: nome, titulo: nome, ok: false, motivo: 'exceção: ' + String((e && e.message) || e).split('\n')[0].slice(0, 250), em: new Date().toISOString() }); console.log('FALHA cena "' + nome + '" · ' + String((e && e.message) || e).split('\n')[0]); } };
+  const comCena = async (nome, fn) => { cena = nome; console.log('\n# ' + nome); try { await fn(); } catch (e) { for (const [i, c] of ctxs.entries()) for (const [j, pg] of c.pages().entries()) await pg.screenshot({ path: '/tmp/falha-' + idioma + '-' + i + '-' + j + '.png' }).catch(() => null); falhasTotais++; manifesto.push({ chave: '(cena)', cena: nome, titulo: nome, ok: false, motivo: 'exceção: ' + String((e && e.message) || e).split('\n')[0].slice(0, 250), em: new Date().toISOString() }); console.log('FALHA cena "' + nome + '" · ' + String((e && e.message) || e).split('\n')[0]); } };
 
   // ---------- a empresa de exemplo ----------
   await limpar();
@@ -316,6 +319,93 @@ async function rodar(idioma) {
     await irPara(p, '#/measure/gantt/' + pj.id, '.mz-gantt');
     await p.waitForTimeout(1000);
     await foto(p, 'gantt', 'Gantt com o andamento do diário', async () => (await p.locator('.mz-gantt .mz-g-linha').count()) >= 2 || 'sem linhas no Gantt');
+  });
+
+  // ---------- 5. Licitações (Bids): duas empresas, do convite ao fechamento ----------
+  await comCena('11. Licitações (Bids): enviar, receber, comparar e fechar', async () => {
+    const OBRA_BIDS = 'Riverside Office Building', SERVICO = idioma === 'en' ? 'Framing and drywall' : 'Estrutura e drywall';
+    const tomId = await garantirUsuario(TOM.email, TOM.nome);
+    const construtora = await rest(tomId, '/rpc/criar_empresa', { metodo: 'POST', corpo: { p: { nome: CONSTRUTORA, atuacao: 'construtora', nome_pessoa: TOM.nome } } });
+    const [dono] = await rest(tomId, '/contatos', { metodo: 'POST', corpo: { nome: 'Riverside Partners LLC', papeis: ['cliente'] } });
+    const [ctNorth] = await rest(tomId, '/contatos', { metodo: 'POST', corpo: { nome: EMPRESA, papeis: ['prestadora'], email: PESSOAS.admin.email, conta_empresa_id: dados.empresaId } });
+    const [ctBay] = await rest(tomId, '/contatos', { metodo: 'POST', corpo: { nome: 'Bayside Interiors', papeis: ['prestadora'], email: 'office@bayside.example.com' } });
+    const [pjT] = await rest(tomId, '/projetos', { metodo: 'POST', corpo: { nome: OBRA_BIDS, contratante_id: dono.id, cidade: 'Nashua', estado: 'NH', tipo: 'novo', situacao: 'orcamento', cronograma: { tarefas: [{ id: 'tf-b1', nome: SERVICO, quem: 'terceiro', inicio: somar(hoje(), 14), dias: 20, pct: 0 }], marcos: [] }, liberado_em: new Date().toISOString(), liberado_por: TOM.nome, inicio_obra: somar(hoje(), 14) } });
+    const t = await abrir(TOM, { ...GRANDE, ir: '#/measure' });
+    const conc = () => sql(`select id, situacao from public.concorrencias where empresa_id = '${construtora}'`);
+
+    // a construtora monta a licitação
+    await irPara(t.p, '#/daily/concorrencias', 'a[href="#/daily/concorrencias/nova"]');
+    await foto(t.p, 'bids-vazio', 'Bids: enviadas (ainda sem licitações)', async () => (await t.p.locator('a[href="#/daily/concorrencias/nova"]').count()) >= 1 || 'sem o botão de nova licitação');
+    await irPara(t.p, '#/daily/concorrencias/nova', '[data-co-projeto]');
+    await foto(t.p, 'bids-projeto', 'Nova concorrência: escolher o projeto', async () => (await t.p.locator('[data-co-projeto] option').count()) >= 2 || 'o projeto não aparece na lista');
+    await t.p.selectOption('[data-co-projeto]', pjT.id);
+    await t.p.waitForSelector('#form-concorrencia', { timeout: 30000 });
+    await t.p.waitForFunction(async () => { const m = await import('./js/espelho.js'); return m.espelho.pronto && !m.espelho.lendo; }, null, { timeout: 30000 }).then(() => t.p.waitForTimeout(400));
+    await t.p.fill('#co-servico', SERVICO);
+    await t.p.selectOption('#co-tarefa-sel', SERVICO);
+    await t.p.click('[data-acao="co-tarefa-add"]');
+    await t.p.click('#co-escopo-ed');
+    await t.p.keyboard.type(idioma === 'en' ? 'Interior walls and ceilings in drywall' : 'Paredes e forros internos em drywall');
+    await t.p.click('[data-acao="co-aba"][data-aba="prazos"]');
+    await t.p.fill('#co-prazoData', somar(hoje(), 5)); await t.p.fill('#co-prazoHora', '17:00');
+    await t.p.click('[data-acao="co-aba"][data-aba="docs"]');
+    await t.p.setInputFiles('#co-arquivo', RAIZ + 'assets/plantas/casa-modelo.pdf');
+    await t.p.fill('#co-descricao', idioma === 'en' ? 'House plans' : 'Planta da casa');
+    await t.p.click('[data-acao="co-anexar"]');
+    await t.p.click('[data-acao="co-aba"][data-aba="convidados"]');
+    await t.p.check('input[name="convidados"][value="' + ctNorth.id + '"]');
+    await t.p.check('input[name="convidados"][value="' + ctBay.id + '"]');
+    await foto(t.p, 'bids-nova', 'Nova licitação: escopo, prazos, documentos e convidados', async () => (await t.p.locator('input[name="convidados"]:checked').count()) === 2 || 'não são 2 convidados');
+    await t.p.click('button[data-acao="co-salvar"]:not([data-enviar])');
+    await esperarAte(async () => (await conc()).length === 1, 30000);
+    await t.p.waitForURL('**#/daily/concorrencias/**', { timeout: 30000 });
+    const [c] = await conc();
+    await t.p.waitForSelector('[data-acao="co-enviar"]', { timeout: 20000 });
+    await t.p.click('[data-acao="co-enviar"]');
+    await t.p.click('dialog button:has-text("' + T('Enviar') + '")');
+    await esperarAte(async () => (await conc())[0].situacao === 'aberta', 30000);
+    await t.p.waitForSelector('[data-acao="co-link"]', { timeout: 30000 });
+    await foto(t.p, 'bids-enviada', 'Licitação enviada', async () => (await conc())[0].situacao === 'aberta' || 'a licitação não ficou aberta');
+    await irPara(t.p, '#/daily/concorrencias', 'main');
+    await t.p.waitForTimeout(800);
+    await foto(t.p, 'bids-lista', 'Bids: enviadas', async () => (await texto(t.p, 'main')).includes(SERVICO) || 'a licitação não aparece na lista');
+
+    // a prestadora (Daniel, da Northfield) recebe, cota e envia a proposta
+    await irPara(p, '#/measure/convites', '.tabela-convites a[href="#/measure/convite/' + c.id + '"]');
+    await foto(p, 'bids-recebidas', 'Bids: recebidas', async () => (await texto(p, '.tabela-convites')).includes(CONSTRUTORA) || 'a construtora não aparece nos convites');
+    await p.click('.tabela-convites a[href="#/measure/convite/' + c.id + '"]');
+    await p.waitForSelector('[data-acao="cv-vou"]', { timeout: 20000 });
+    await foto(p, 'bids-convite', 'Convite recebido', async () => (await texto(p, 'main')).includes(OBRA_BIDS) || 'o convite não mostra a obra');
+    await p.click('[data-acao="cv-vou"]');
+    await p.waitForURL('**#/measure/projeto/**', { timeout: 60000 });
+    const [cv] = await sql(`select id, projeto_id from public.concorrencia_convites where concorrencia_id = '${c.id}' and convidada_id = '${dados.empresaId}'`);
+    await esperarAte(async () => (await sql(`select count(*)::int n from public.folhas where projeto_id = '${cv.projeto_id}'`))[0].n === 3, 90000);
+    const retrato = { contratante: { nome: CONSTRUTORA }, obra: { nome: OBRA_BIDS }, linhas: [{ titulo: SERVICO, codigo: '', valor: 180000 }], extras: [{ descricao: 'Mobilization', valor: 6400 }], total: 186400, validadeDias: 30, termos: '' };
+    const emitida = await rest(dados.ids.admin, '/rpc/emitir_proposta', { metodo: 'POST', corpo: { p_projeto: cv.projeto_id, p_retrato: retrato } });
+    await irPara(p, '#/measure/projeto/' + cv.projeto_id + '/proposta', '[data-acao="cv-plataforma"]');
+    await p.click('[data-acao="cv-plataforma"]');
+    await p.waitForSelector('dialog:has-text("' + emitida.numero + '")', { timeout: 20000 });
+    await p.fill('dialog input[name="prazo"]', '45');
+    await foto(p, 'bids-proposta', 'Enviar a proposta pela plataforma', async () => (await p.inputValue('dialog input[name="prazo"]')) === '45' || 'o prazo não ficou');
+    await p.click('dialog button:has-text("' + T('Enviar') + '")');
+    await esperarAte(async () => (await sql(`select count(*)::int n from public.concorrencia_propostas where convite_id = '${cv.id}'`))[0].n === 1, 30000);
+
+    // a construtora compara e fecha com a Northfield
+    await irPara(t.p, '#/daily/concorrencias/' + c.id + '/comparar', '[data-acao="co-fechar"]');
+    await t.p.waitForTimeout(800);
+    await foto(t.p, 'bids-comparar', 'Comparar as propostas', async () => (await t.p.locator('[data-acao="co-fechar"]').count()) >= 1 || 'sem proposta para fechar');
+    await sqlExec(`update public.projetos set liberado_em = now(), liberado_por = 'Daniel Rivera' where id = '${cv.projeto_id}'`);   // a obra da vencedora nasce ao liberar o projeto
+    await sqlExec(`update public.projetos set situacao = 'ganha' where id = '${pjT.id}'`);   // CO-24: a licitação sai de um projeto ganho, com obra
+    await t.p.reload(); await t.p.waitForSelector('[data-acao="co-fechar"]', { timeout: 30000 });
+    await t.p.click('[data-acao="co-fechar"][data-convite="' + cv.id + '"]');
+    await t.p.fill('dialog input[name="observacao"]', idioma === 'en' ? 'Best schedule' : 'Melhor prazo');
+    await foto(t.p, 'bids-fechar', 'Fechar a licitação', async () => (await t.p.locator('dialog input[name="observacao"]').count()) === 1 || 'sem o diálogo de fechamento');
+    await t.p.click('dialog button:has-text("' + T('Fechar negócio') + '")');
+    await esperarAte(async () => (await conc())[0].situacao === 'fechada', 30000);
+    await irPara(p, '#/measure/convite/' + c.id, 'main');
+    await p.reload();
+    await p.waitForFunction(() => /Você venceu|You were awarded/.test(document.body.innerText), null, { timeout: 40000 });
+    await foto(p, 'bids-venceu', 'Resultado para a prestadora vencedora', async () => /Você venceu|You were awarded/.test(await texto(p, 'main')) || 'não mostra que a empresa venceu');
   });
 
   await foto(p, 'inicio-final', 'Início com os projetos andando', async () => { await irPara(p, '#/conta', '.ini-painel, .oficial-titulo'); await p.waitForTimeout(1500); return true; });

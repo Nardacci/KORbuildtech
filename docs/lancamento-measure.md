@@ -1,6 +1,6 @@
 # Lançamento da 1ª versão: Measure Takeoff + Settings
 
-**Decisão (outubro de 2026):** o domínio **korbuildtech.com** recebe só a 1ª versão (o **Measure Takeoff** e o **Settings**, para computador). O app inteiro (Daily, Crew, concorrências, cronograma) continua no **GitHub Pages** (`https://nardacci.github.io/KORbuildtech/`) para homologar com calma. A 1ª versão vai para uma empresa que testa e homologa; assim o time dos EUA não fica esperando o resto.
+**Decisão (outubro de 2026):** o domínio **korbuildtech.com** recebe só a 1ª versão (o **Measure Takeoff** e o **Settings**, para computador). O app inteiro (Crew, cronograma de obras) continua no **GitHub Pages** (`https://nardacci.github.io/KORbuildtech/`) para homologar com calma. A 1ª versão vai para uma empresa que testa e homologa; assim o time dos EUA não fica esperando o resto.
 
 É o **mesmo código** nos dois lugares. O que muda é só o que aparece:
 
@@ -59,4 +59,4 @@ Consequências para se ter em mente:
 
 ## O que continua na homologação
 
-Daily, Crew, concorrências, cronograma, o protótipo e os roteiros de celular (iPhone e Android) seguem no GitHub Pages com os testes do WebKit e dos aparelhos. Quando cada módulo estiver pronto, ele entra em `js/versao.js` (lista `MODULOS_DA_VERSAO`) e o guia da edição ganha as páginas dele.
+Crew, cronograma de obras, o protótipo e os roteiros de celular (iPhone e Android) seguem no GitHub Pages com os testes do WebKit e dos aparelhos. Quando cada módulo estiver pronto, ele entra em `js/versao.js` (lista `MODULOS_DA_VERSAO`) e o guia da edição ganha as páginas dele.

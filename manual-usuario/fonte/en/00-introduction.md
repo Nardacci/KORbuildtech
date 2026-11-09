@@ -4,11 +4,11 @@
 
 KORbuild brings the work of estimating and following a job into one place: you measure the plans and build the proposal, release the project to the job, and receive the field's daily reports, all on the same data. This first version has three areas:
 
-- **Takeoff:** measures the plans, calculates materials and labor, builds the schedule and issues the proposal.
+- **Takeoff:** measures the plans, calculates materials and labor, builds the schedule, issues the proposal and, in **Bids**, sends and receives bid invitations.
 - **Daily:** the daily report (DDR). The foreman fills it in on the phone, the administrator approves it, and the progress goes into the schedule.
 - **Settings:** the company, the people, what each person can do, the contacts and the roles with their hourly rates.
 
-Other areas (time clock, bids) are not released yet and do not appear for you.
+Other areas (time clock) are not released yet and do not appear for you.
 
 ## Who does what
 

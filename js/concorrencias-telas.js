@@ -30,6 +30,8 @@ let app = { desenhar: () => {}, ir: () => {} };
 export function ligarConcorrencias(funcoes) { app = { ...app, ...funcoes }; }
 
 const quem = () => (usuarioAtual() || {}).nome || '';
+/** O nome do item nos títulos e no "voltar": o mesmo do menu (na 1ª versão, Licitações/Bids). */
+const rotuloBids = () => (PRIMEIRA_VERSAO ? tr('Licitações') : tr('Concorrências'));
 /* 1ª versão: o menu tem um item só, Bids; dentro dele, as abas Sent (eu convido) e Received (me convidaram). */
 const ativoBids = (antigo) => (PRIMEIRA_VERSAO ? 'bids' : antigo);
 function abasBids(ativa) {
@@ -71,7 +73,7 @@ export function telaConcorrencias(moldura, filtro) {
   const lista = todas.filter((c) => aba[2](situacaoDe(c)));
   const abas = ABAS.filter((x) => x[0] !== 'rascunhos' || todas.some((c) => c.situacao === 'rascunho'));
   return moldura({
-    ativo: ativoBids('concorrencias'), largo: true, titulo: tr('Concorrências'), subtitulo: tr('Convide prestadoras, compare as propostas e feche com a melhor'),
+    ativo: ativoBids('concorrencias'), largo: true, titulo: rotuloBids(), subtitulo: tr('Convide prestadoras, compare as propostas e feche com a melhor'),
     acoes: '<div class="acoes-cabeca">' + (podeResponder() && !PRIMEIRA_VERSAO ? '<a class="btn btn-contorno" href="#/measure/convites">' + tr('Convites recebidos') + (convitesPendentes() ? ' <span class="mz-contagem">' + convitesPendentes() + '</span>' : '') + '</a>' : '') +
       '<a class="btn btn-primario" href="#/daily/concorrencias/nova">' + icone('mais', 18) + tr('Nova concorrência') + '</a></div>',
     conteudo: abasBids('enviadas') + '<nav class="abas-segmento" aria-label="' + tr('Filtro') + '">' + abas.map(([id, r, f]) => '<a href="#/daily/concorrencias' + (id ? '/' + id : '') + '"' + (aba[0] === id ? ' class="ativa" aria-current="page"' : '') + '>' + r + ' <span class="mz-contagem">' + todas.filter((c) => f(situacaoDe(c))).length + '</span></a>').join('') + '</nav>' +
@@ -122,7 +124,7 @@ export function telaFormConcorrencia(moldura, id, obraId, projetoId) {
     const lista = todosProjetos().filter((x) => x.situacao !== 'perdida').sort((a, b) => a.nome.localeCompare(b.nome));
     return moldura({
       ativo: ativoBids('concorrencias'), largo: true, titulo: tr('Nova concorrência'), subtitulo: tr('Escolha o projeto: as tarefas das prestadoras, as plantas e o escopo vêm dele.'),
-      voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') },
+      voltar: { href: '#/daily/concorrencias', rotulo: rotuloBids() },
       conteudo: '<section class="cartao"><h2 class="cartao-titulo">' + tr('Projeto') + '</h2>' + (lista.length
         ? campo('co-escolher-projeto', tr('Projeto *'), '<select id="co-escolher-projeto" data-co-projeto><option value="">' + tr('Escolha…') + '</option>' + lista.map((x) => '<option value="' + x.id + '">' + esc(x.nome) + '</option>').join('') + '</select>') + '<p class="mudo pequeno">' + tr('Ao escolher, o formulário abre com as tarefas subcontratadas do cronograma, as plantas e o escopo do projeto.') + '</p>'
         : '<p class="vazio">' + tr('Ainda não há projetos. Crie um projeto no Takeoff primeiro.') + '</p>') + '</section>',
@@ -370,7 +372,7 @@ export function telaConcorrencia(moldura, id, abaPedida) {
   return moldura({
     ativo: ativoBids('concorrencias'), largo: true, titulo: c.servico || tr('(sem nome)'),
     subtitulo: nomeOrigem(c) + ' · ' + SITUACOES[s].nome + (ativa ? ' · ' + tr('prazo {quando}', { quando: textoPrazo(c) }) : ''),
-    voltar: { href: '#/daily/concorrencias', rotulo: tr('Concorrências') }, acoes,
+    voltar: { href: '#/daily/concorrencias', rotulo: rotuloBids() }, acoes,
     conteudo: aviso + '<div id="concorrencia" data-id="' + c.id + '"></div>' +
       (c.situacao === 'rascunho' ? '' : kpisDasPropostas(c) + '<nav class="abas-sublinhadas" aria-label="' + tr('Seções') + '">' + ABAS_PAGINA.map(([k, r]) => '<a href="#/daily/concorrencias/' + c.id + (k === 'convidados' ? '' : '/' + k) + '"' + (k === aba ? ' class="ativa" aria-current="page"' : '') + '>' + r + (k === 'comparar' ? ' <span class="mz-contagem">' + c.convites.filter((v) => v.propostas.length).length + '</span>' : '') + (k === 'perguntas' && perguntasSemResposta(c).length ? ' <span class="mz-contagem co-pendente">' + perguntasSemResposta(c).length + '</span>' : '') + '</a>').join('') + '</nav>') +
       conteudo,

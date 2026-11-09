@@ -4,11 +4,11 @@
 
 O KORbuild reúne, num só lugar, o trabalho de orçar e acompanhar uma obra: você mede a planta e monta a proposta, libera o projeto para a obra e recebe o diário do campo, tudo com os mesmos dados. Esta primeira versão tem três áreas:
 
-- **Takeoff:** mede as plantas, calcula materiais e mão de obra, monta o cronograma e emite a proposta.
+- **Takeoff:** mede as plantas, calcula materiais e mão de obra, monta o cronograma, emite a proposta e, em **Licitações (Bids)**, envia e recebe convites de concorrência.
 - **Daily:** o diário de obra (RDO). O encarregado preenche no celular, o administrador aprova, e o andamento vai para o cronograma.
 - **Settings:** a empresa, as pessoas, o que cada pessoa pode fazer, os contatos e as funções com o valor da hora.
 
-Outras áreas (controle de ponto, concorrências) ainda não estão liberadas e não aparecem para você.
+Outras áreas (controle de ponto) ainda não estão liberadas e não aparecem para você.
 
 ## Quem faz o quê
 

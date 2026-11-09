@@ -17,7 +17,7 @@ mkdirSync(TMP, { recursive: true });
 
 const TXT = {
   pt: {
-    arquivo: 'KORbuild_Manual_do_Usuario_pt.pdf', lang: 'pt-BR', titulo: 'Manual do usuário', sub: '1ª versão: Takeoff, Daily e Settings', toc: 'Conteúdo',
+    arquivo: 'KORbuild_Manual_do_Usuario_pt.pdf', lang: 'pt-BR', titulo: 'Manual do usuário', sub: '1ª versão: Takeoff (com Licitações), Daily e Settings', toc: 'Conteúdo',
     versao: 'Versão do sistema', data: 'Gerado em', rodape: 'KORbuild · Manual do usuário',
     evTitulo: 'Evidências do teste', evIntro: 'Cada imagem deste manual foi capturada por um percurso automatizado, pelas telas do sistema, como uma pessoa faria. A captura só é gravada se a tela mostra o que o manual diz que ela mostra. A tabela abaixo é o registro dessa conferência.',
     evResumo: 'Resumo', evVersao: 'Versão', evCommit: 'Código (commit)', evData: 'Data do percurso', evAmb: 'Ambiente', evAmbValor: 'banco local com dados de exemplo (empresa Northfield Builders)', evTotal: 'Capturas conferidas',
@@ -25,10 +25,10 @@ const TXT = {
     evFluxos: 'Rodadas dos fluxos de teste', evFluxosIntro: 'Os fluxos de teste exercitam as mesmas áreas com verificações de banco de dados (o que a tela mostra e o que foi gravado). Última rodada de cada um:',
     colFluxo: 'Fluxo', colPassos: 'Passos', colVerif: 'Verificações', colQuando: 'Quando', colCommit: 'Commit',
     fluxos: { F01: 'Empresa nova: conta, perfis, funções, contatos, itens e assemblies', F02: 'Projeto do zero até "Liberar para obra"', F03: 'Obra: diário do campo, aprovação e % feito no Gantt', F05: 'Settings: usuários, perfis de acesso, empresa e isolamento' },
-    nota: 'Os fluxos de concorrências e do Crew não fazem parte desta versão.', passos: 'passos', verif: 'verificações',
+    nota: 'O fluxo F04 (licitações) é exercitado pelas capturas do capítulo Licitações; o do Crew não faz parte desta versão.', passos: 'passos', verif: 'verificações',
   },
   en: {
-    arquivo: 'KORbuild_User_Manual_en.pdf', lang: 'en', titulo: 'User manual', sub: 'First version: Takeoff, Daily and Settings', toc: 'Contents',
+    arquivo: 'KORbuild_User_Manual_en.pdf', lang: 'en', titulo: 'User manual', sub: 'First version: Takeoff (with Bids), Daily and Settings', toc: 'Contents',
     versao: 'System version', data: 'Generated on', rodape: 'KORbuild · User manual',
     evTitulo: 'Test evidence', evIntro: 'Every image in this manual was captured by an automated run through the system\'s screens, the way a person would use them. A capture is only saved if the screen shows what the manual says it shows. The table below is the record of that check.',
     evResumo: 'Summary', evVersao: 'Version', evCommit: 'Code (commit)', evData: 'Run date', evAmb: 'Environment', evAmbValor: 'local database with sample data (company Northfield Builders)', evTotal: 'Captures checked',
@@ -36,7 +36,7 @@ const TXT = {
     evFluxos: 'Test flow runs', evFluxosIntro: 'The test flows exercise the same areas with database checks (what the screen shows and what was saved). Latest run of each:',
     colFluxo: 'Flow', colPassos: 'Steps', colVerif: 'Checks', colQuando: 'When', colCommit: 'Commit',
     fluxos: { F01: 'New company: account, roles, job roles, contacts, items and assemblies', F02: 'Project from scratch to "Release for construction"', F03: 'Job: field daily report, approval and % done on the Gantt', F05: 'Settings: users, access roles, company and isolation' },
-    nota: 'The bids and Crew flows are not part of this version.', passos: 'steps', verif: 'checks',
+    nota: 'Flow F04 (bids) is exercised by the captures in the Bids chapter; the Crew flow is not part of this version.', passos: 'steps', verif: 'checks',
   },
 };
 

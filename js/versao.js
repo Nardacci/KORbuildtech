@@ -1,5 +1,5 @@
 /* KORbuild — qual versão do app está valendo.
- * 1ª versão (lançamento): só o Measure Takeoff e o Settings; Daily, Crew, concorrências, cronograma e o protótipo ficam ocultos.
+ * 1ª versão (lançamento): o Takeoff (com as concorrências, Bids), o Daily por projeto e o Settings; Crew, cronograma de obras, Funcionários e o protótipo ficam ocultos.
  * Ela vale no domínio de produção (korbuildtech.com) e na homologação (GitHub Pages: nardacci.github.io); fora deles, com ?versao=primeira no
  * endereço (guardado neste navegador). ?versao=completa mostra o app inteiro (guardado neste navegador, também na homologação), para continuar testando.
  * Só esconde telas: o banco, as regras de acesso e os testes são os mesmos nas duas versões. */

@@ -39,7 +39,7 @@ Seções em cartão; no fim, o **rodapé do formulário** (`.rodape-form`): bot�
 ## 6. Exceções conhecidas
 - **Daily › Projetos em execução** usa cartões, não grade: é a tela do campo, feita para o celular.
 - **Cronograma do projeto** grava ao digitar (sinalizado).
-- Telas das áreas ainda não liberadas (Crew, Concorrências) e o protótipo `?demo` (`js/settings-telas.js`, `js/obras-telas.js`) ainda têm o desenho antigo. Entram no padrão quando forem liberadas.
+- Telas das áreas ainda não liberadas (Crew) e o protótipo `?demo` (`js/settings-telas.js`, `js/obras-telas.js`) ainda têm o desenho antigo. Entram no padrão quando forem liberadas.
 - O campo de data usa o formato do navegador do aparelho (pode diferir do idioma da tela). É do navegador.
 
 ## 7. Auditoria de 07/11/2026: o que estava diferente e o que foi feito
